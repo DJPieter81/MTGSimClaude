@@ -2339,16 +2339,17 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Lightning Bolt → {small.name}")
             update_goyf(gs)
 
-    # Boros combat: aggro deck — attack with everything that can swing.
-    # Only hold back Bowmasters (value engine) and 0-power creatures.
+    # Boros combat: attack aggressively but protect value engines.
     opp_has_blockers = len(opponent.creatures) > 0
     boros_desperate = player.life < 8
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick: continue
-        if c.power == 0: continue  # 0-power creatures don't attack
+        if c.power == 0: continue
         if c.card.tag == 'bowm' and opp_has_blockers and not boros_desperate:
             continue  # hold Bowmasters for ping value
+        if c.card.tag == 'eidolon' and not boros_desperate:
+            continue  # Eidolon is a damage engine — 2 life per BUG spell, don't trade it
         attackers_this_turn.append(c)
 
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
@@ -2433,24 +2434,32 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     if gs.chalice_x is not None or gs.bridge_on_board or gs.trinisphere_active:
         _bug_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
 
-    # ── 3. Karn, the Great Creator ──
+    # ── 3. Karn, the Great Creator — recurring +1 each turn ──
+    karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
+    def _karn_wish():
+        """Karn +1: wish for the most impactful missing lock piece."""
+        if not gs.bridge_on_board and opponent.creatures:
+            log_fn("  Karn +1: wishes for Ensnaring Bridge", True)
+            gs.bridge_on_board = True
+        elif not gs.trinisphere_active:
+            log_fn("  Karn +1: wishes for Trinisphere", True)
+            gs.trinisphere_active = True
+        elif gs.chalice_x is None:
+            log_fn("  Karn +1: wishes for Chalice (on 1)", True)
+            gs.chalice_x = 1
+
+    # Karn already on board — tick +1 and wish each turn
+    if karn_on_board:
+        _karn_wish()
+
+    # Deploy Karn from hand if not yet on board
     karn = player.find_tag('karn')
-    if karn and total_mana >= 4 and not any(p.card.tag == 'karn' for p in player.artifacts):
+    if karn and total_mana >= 4 and not karn_on_board:
         player.remove_from_hand(karn)
         if not _try_counter_any(player, opponent, gs, karn, log_entries):
             player.put_artifact_in_play(karn)
-            # Karn's static: opponent's artifacts lose activated abilities
-            # +1: wish for any artifact — prioritize Bridge (stops attacks) > Trini > Chalice
             log_fn("Karn, the Great Creator (static: opp artifacts lose abilities)", True)
-            if not gs.bridge_on_board and opponent.creatures:
-                log_fn("  Karn +1: wishes for Ensnaring Bridge from sideboard", True)
-                gs.bridge_on_board = True
-            elif not gs.trinisphere_active:
-                log_fn("  Karn +1: wishes for Trinisphere from sideboard", True)
-                gs.trinisphere_active = True
-            elif gs.chalice_x is None:
-                log_fn("  Karn +1: wishes for Chalice of the Void (on 1) from sideboard", True)
-                gs.chalice_x = 1
+            _karn_wish()
         else:
             player.add_to_grave(karn)
 
@@ -3073,9 +3082,10 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     wst_on_board = next((p for p in player.creatures if p.card.tag == 'wst'), None)
     if wst_card and not wst_on_board and opp_can_cast(wst_card, total_mana, gs, caster=player):
         x = max(0, min(total_mana - 2, 4))  # pay UU + X generic
-        # Only deploy if X≥2 (value play) OR opp has no other threats and needs a body
+        # Deploy at X≥1 (2/2 flier w/ vigilance is strong) or X=0 with no board
+        # Earlier WST = more fetch triggers = more cards + bigger body
         has_board = len(player.creatures) > 0
-        deploy = (x >= 2) or (x >= 0 and not has_board and total_mana >= 2)
+        deploy = (x >= 1) or (x >= 0 and not has_board and total_mana >= 2)
         if deploy:
             player.remove_from_hand(wst_card)
             if not _try_counter_any(player, opponent, gs, wst_card, log_entries):
@@ -3828,11 +3838,11 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(bowm)
 
-    # STP — exile biggest BUG threat
+    # STP — exile big BUG threats only (Murktide, Kaito — hard to re-deploy)
     stp = player.find_tag('stp')
     if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
         target = max(opponent.creatures, key=lambda c: c.power)
-        if target.power >= 2:
+        if target.power >= 3:  # only exile big threats, not cheap 1-2 power creatures
             player.remove_from_hand(stp); player.add_to_grave(stp)
             total_mana -= 1
             opponent.remove_creature(target)
