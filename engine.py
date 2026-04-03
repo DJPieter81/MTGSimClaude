@@ -2827,7 +2827,8 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
     # Veil of Summer costs {G} — also needs a green source
     vos_castable = has_green
     # Oops costs {1}{G} = 2 mana; fire as soon as we can assemble it
-    if oops and total_mana >= 2 and has_green:
+    # Leyline of the Void exiles all cards that would go to GY — Oops fizzles entirely
+    if oops and total_mana >= 2 and has_green and not gs.leyline_active:
         vos = player.find_tag('vos') if vos_castable else None
         if vos:
             player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True  # protect all spells this turn
@@ -3393,18 +3394,18 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     # it can fetch a ritual or kill spell
     itutor_proxy = player.find_tag('itutor') and sim_mana >= 2
     tendrils = player.find_tag('tendrils')
-    # Storm should only go off when safe: opp tapped out OR Veil active this turn
-    # Check if opponent has mana up (untapped lands) — if so, hold unless desperate
+    # Storm should only go off when safe: Veil active, opp has no FoW, or desperate
     opp_mana_up = sum(1 for l in opponent.lands if not l.tapped)
     veil_protecting = getattr(gs, 'veil_active', False)
     storm_desperate = player.life <= 4  # opponent about to kill us
-    safe_to_combo = veil_protecting or opp_mana_up == 0 or storm_desperate or gs.turn >= 2
-    # Storm should only go off when safe: opp tapped out OR Veil active this turn
-    # Check if opponent has mana up (untapped lands) — if so, hold unless desperate
-    opp_mana_up = sum(1 for l in opponent.lands if not l.tapped)
-    veil_protecting = getattr(gs, 'veil_active', False)
-    storm_desperate = player.life <= 4  # opponent about to kill us
-    safe_to_combo = veil_protecting or opp_mana_up == 0 or storm_desperate or gs.turn >= 2
+    # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
+    opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
+    opp_blue_pitch = sum(1 for c in opponent.hand if 'U' in getattr(c, 'colors', set())) >= 2  # FoW itself + pitch
+    opp_has_free_counter = opp_fow and opp_blue_pitch
+    # Safe if: Veil protects, opp has no free counter, desperate, or late game (must race BUG clock)
+    storm_late = gs.turn >= 4  # can't wait forever — BUG's creatures will kill us
+    safe_to_combo = (veil_protecting or storm_desperate or storm_late or
+                     not opp_has_free_counter)
     itutor   = player.find_tag('itutor')
     led      = player.find_tag('led')
     adnaus   = player.find_tag('adnauseam')
