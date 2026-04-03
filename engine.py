@@ -468,11 +468,14 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
         spell_card.win_condition or spell_card.is_combo_piece or
         spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
     )
-    # Bowmasters: counter only if we have no removal AND 2+ counters to spare
-    if spell_card.tag == 'bowm' and not has_removal and total_counters >= 2:
+    # Bowmasters: only counter if critical (no removal AND 3+ counters AND no creatures to block)
+    if spell_card.tag == 'bowm' and not has_removal and total_counters >= 3 and not o.creatures:
         is_major_threat = True
+    # CMC 2 creatures (Bowmasters, Nethergoyf) should NEVER be FoW'd by control — STP them later
+    if spell_card.cmc <= 2 and not spell_card.win_condition and not spell_card.is_combo_piece:
+        is_major_threat = False
     is_minor_threat = spell_card.tag in ('tamiyo', 'nether', 'borrow')
-    if is_minor_threat and total_counters <= 2: return False  # never FoW small creatures with <3 counters
+    if is_minor_threat and total_counters <= 2: return False
     if not (is_major_threat or is_minor_threat): return False
 
     ctr = []
@@ -2052,56 +2055,57 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
 
-    # Hard cast creatures — Vial EOT deploy handles free deploy separately in bug_turn.
-    # Cast even when Vial is in play (use remaining mana to build board faster).
-    for tag in vial_tags:
-        crea = player.find_tag(tag)
-        if crea and opp_can_cast(crea, total_mana, gs, caster=player):
-            player.remove_from_hand(crea)
-            if not _try_counter_any(player, opponent, gs, crea, log_entries):
-                player.put_creature_in_play(crea)
-                total_mana -= crea.cmc
-                log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
-                if tag == 'skyclave' and opponent.creatures:
-                    target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
-                    if target:
+    # Hard cast creatures — only when Vial is NOT on board (Vial handles deployment).
+    # DnT preserves hand for Vial EOT deploy + combat ambush (instant speed).
+    if not vial_perm:
+        for tag in vial_tags:
+            crea = player.find_tag(tag)
+            if crea and opp_can_cast(crea, total_mana, gs, caster=player):
+                player.remove_from_hand(crea)
+                if not _try_counter_any(player, opponent, gs, crea, log_entries):
+                    player.put_creature_in_play(crea)
+                    total_mana -= crea.cmc
+                    log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
+                    if tag == 'skyclave' and opponent.creatures:
+                        target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
+                        if target:
+                            opponent.remove_creature(target)
+                            log_fn(f"  Skyclave Apparition exiles {target.card.name}")
+                    if tag == 'solitude' and opponent.creatures:
+                        target = opponent.creatures[-1]
                         opponent.remove_creature(target)
-                        log_fn(f"  Skyclave Apparition exiles {target.card.name}")
-                if tag == 'solitude' and opponent.creatures:
-                    target = opponent.creatures[-1]
-                    opponent.remove_creature(target)
-                    log_fn(f"  Solitude exiles {target.card.name}")
-                if tag == 'flickerwisp':
-                    tgt = max(opponent.creatures, key=lambda c: c.power, default=None)
-                    if tgt:
-                        opponent.remove_creature(tgt)
-                        new_p = opponent.put_creature_in_play(tgt.card)
-                        new_p.summoning_sick = True
-                        log_fn(f"  Flickerwisp blinks {tgt.card.name} (re-enters sick, misses combat)")
-                        update_goyf(gs)
-                    elif opponent.lands:
-                        tgt_land = opponent.lands[-1]
-                        opponent.lands.remove(tgt_land)
-                        opponent.revolt_this_turn = True
-                        from rules import LandPermanent
-                        new_land = LandPermanent(card=tgt_land.card, controller=('b' if player is gs.bug else 'o'), tapped=True)
-                        opponent.lands.append(new_land)
-                        log_fn(f"  Flickerwisp blinks {tgt_land.card.name} (re-enters tapped)")
-                if tag == 'recruiter':
-                    found = next((c for c in player.library
-                                  if c.is_creature() and c.base_power <= 2), None)
-                    if found:
-                        player.library.remove(found); player.hand.append(found)
-                        log_fn(f"  Recruiter tutors {found.name} (CMC {found.cmc})")
-                if crea.tag == 'sfm':
-                    equip = next((c for c in player.library if c.tag in CR.EQUIPMENT_SET), None)
-                    if equip:
-                        player.library.remove(equip)
-                        player.hand.append(equip)
-                        log_fn(f"  Stoneforge Mystic tutors {equip.name}")
-            else:
-                player.add_to_grave(crea)
-            break  # one hard cast per turn (mana-limited)
+                        log_fn(f"  Solitude exiles {target.card.name}")
+                    if tag == 'flickerwisp':
+                        tgt = max(opponent.creatures, key=lambda c: c.power, default=None)
+                        if tgt:
+                            opponent.remove_creature(tgt)
+                            new_p = opponent.put_creature_in_play(tgt.card)
+                            new_p.summoning_sick = True
+                            log_fn(f"  Flickerwisp blinks {tgt.card.name} (re-enters sick, misses combat)")
+                            update_goyf(gs)
+                        elif opponent.lands:
+                            tgt_land = opponent.lands[-1]
+                            opponent.lands.remove(tgt_land)
+                            opponent.revolt_this_turn = True
+                            from rules import LandPermanent
+                            new_land = LandPermanent(card=tgt_land.card, controller=('b' if player is gs.bug else 'o'), tapped=True)
+                            opponent.lands.append(new_land)
+                            log_fn(f"  Flickerwisp blinks {tgt_land.card.name} (re-enters tapped)")
+                    if tag == 'recruiter':
+                        found = next((c for c in player.library
+                                      if c.is_creature() and c.base_power <= 2), None)
+                        if found:
+                            player.library.remove(found); player.hand.append(found)
+                            log_fn(f"  Recruiter tutors {found.name} (CMC {found.cmc})")
+                    if crea.tag == 'sfm':
+                        equip = next((c for c in player.library if c.tag in CR.EQUIPMENT_SET), None)
+                        if equip:
+                            player.library.remove(equip)
+                            player.hand.append(equip)
+                            log_fn(f"  Stoneforge Mystic tutors {equip.name}")
+                else:
+                    player.add_to_grave(crea)
+                break  # one hard cast per turn (mana-limited)
 
     # SFM activated: put equipment into play, equip to a creature
     sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)
@@ -3174,25 +3178,19 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             player.put_creature_in_play(token)
             log_fn("  Mentor trigger → 1/1 Monk token")
 
-    # ── STP — instant removal, highest removal priority ──
-    # Fire up to 2 STPs if available (removal-dense hand)
-    for _ in range(2):
-        stp = player.find_tag('stp')
-        if stp and opponent.creatures and mana_ref[0] >= 1:
-            target = max(opponent.creatures, key=lambda c: c.power)
-            if target.power >= 1:
-                player.remove_from_hand(stp); player.add_to_grave(stp)
-                life_gain = MTGRules.stp_life_gain(target)
-                opponent.remove_creature(target, to_exile=True)
-                opponent.life += life_gain
-                spend(stp)
-                log_fn(f"Swords to Plowshares → exiles {target.card.name}, opp gains {life_gain} life")
-                update_goyf(gs)
-                mentor_trigger()
-            else:
-                break
-        else:
-            break
+    # ── STP — instant removal, fire 1 proactively (save rest for BUG's turn) ──
+    stp = player.find_tag('stp')
+    if stp and opponent.creatures and mana_ref[0] >= 1:
+        target = max(opponent.creatures, key=lambda c: c.power)
+        if target.power >= 2:   # only exile real threats (2+ power)
+            player.remove_from_hand(stp); player.add_to_grave(stp)
+            life_gain = MTGRules.stp_life_gain(target)
+            opponent.remove_creature(target, to_exile=True)
+            opponent.life += life_gain
+            spend(stp)
+            log_fn(f"Swords to Plowshares → exiles {target.card.name}, opp gains {life_gain} life")
+            update_goyf(gs)
+            mentor_trigger()
 
     # ── Terminus — wrath when opp has 2+ creatures AND we don't have Mentor on board ──
     mentor_on_board = any(c.card.tag == 'mentor' for c in player.creatures)
@@ -3282,8 +3280,8 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(narset)
 
-    # ── Cantrips — cast up to 3 per turn for Mentor tokens + card selection ──
-    for _ in range(3):
+    # ── Cantrips — cast up to 2 per turn (hold mana for reactive counters) ──
+    for _ in range(2):
         if mana_ref[0] < 1: break
         can_c = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
         if not can_c: break
