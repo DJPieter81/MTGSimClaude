@@ -3208,7 +3208,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             else:
                 player.add_to_grave(snap)
 
-    # ── Cantrips — card selection ──
+    # ── Cantrips — card selection (generates Mentor tokens) ──
     if mana_ref[0] >= 1:
         can_c = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
         if can_c:
@@ -3217,6 +3217,31 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"{can_c.name} ({draws} draw{'s' if draws>1 else ''})")
             player.draw(draws)
             bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.bug else 'b')
+            # Mentor token: each noncreature spell creates a 1/1 Monk
+            if any(c.card.tag == 'mentor' for c in player.creatures):
+                from rules import Card, CardType
+                token = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
+                             mana_cost={}, colors=set(), tag='monk_token',
+                             base_power=1, base_toughness=1, gy_type='creature')
+                player.put_creature_in_play(token)
+                log_fn("  Mentor trigger → 1/1 Monk token")
+
+    # ── Second cantrip if mana available (Mentor wants spell density) ──
+    if mana_ref[0] >= 1:
+        can_c2 = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
+        if can_c2:
+            player.remove_from_hand(can_c2); player.add_to_grave(can_c2); spend(can_c2)
+            draws = MTGRules.brainstorm_draws() if can_c2.tag == 'bs' else 1
+            log_fn(f"{can_c2.name} ({draws} draw{'s' if draws>1 else ''})")
+            player.draw(draws)
+            bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.bug else 'b')
+            if any(c.card.tag == 'mentor' for c in player.creatures):
+                from rules import Card, CardType
+                token = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
+                             mana_cost={}, colors=set(), tag='monk_token',
+                             base_power=1, base_toughness=1, gy_type='creature')
+                player.put_creature_in_play(token)
+                log_fn("  Mentor trigger → 1/1 Monk token")
 
     # ── Narset — lock piece, lower priority than Mentor ──
     narset = player.find_tag('narset')
