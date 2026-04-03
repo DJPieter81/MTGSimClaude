@@ -461,13 +461,18 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
         return False
 
     total_counters = sum(1 for c in o.hand if c.tag in ('fow','fon','daze','consign','counter','fluster','pyro','reb'))
+    # Control decks (UWx) should NOT FoW cheap creatures — card disadvantage.
+    # Only counter threats that removal can't handle or that win the game.
+    has_removal = any(c.tag == 'stp' for c in o.hand)  # can we answer it with STP instead?
     is_major_threat = (
-        spell_card.tag == 'bowm' or  # always counter: generates Orc Army from opp draws
         spell_card.win_condition or spell_card.is_combo_piece or
-        spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 3
+        spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
     )
+    # Bowmasters: counter only if we have no removal AND 2+ counters to spare
+    if spell_card.tag == 'bowm' and not has_removal and total_counters >= 2:
+        is_major_threat = True
     is_minor_threat = spell_card.tag in ('tamiyo', 'nether', 'borrow')
-    if is_minor_threat and total_counters <= 1: return False
+    if is_minor_threat and total_counters <= 2: return False  # never FoW small creatures with <3 counters
     if not (is_major_threat or is_minor_threat): return False
 
     ctr = []
@@ -2383,31 +2388,30 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     6. Null Rod (shuts off fetch lands)
     """
 
-    # ── 1. Trinisphere — highest priority lock piece ──
-    # Costs 3 generic; Ancient Tomb / City of Traitors gives CC each
-    tri = player.find_tag('trini')
-    if tri and not gs.trinisphere_active:
-        tomb_ok = any(l.card.tag == 'tomb' and not l.tapped for l in player.lands)
-        cot_ok  = any(l.card.tag == 'cot'  and not l.tapped for l in player.lands)
-        can_pay = (tomb_ok or cot_ok) and total_mana >= 3
-        if can_pay or total_mana >= 3:
-            player.remove_from_hand(tri)
-            if not _try_counter_any(player, opponent, gs, tri, log_entries):
-                player.put_artifact_in_play(tri)
-                gs.trinisphere_active = True
-                log_fn("Trinisphere — all spells cost minimum 3", True)
-            else:
-                player.add_to_grave(tri)
-
-    # ── 2. Chalice of the Void on 1 ──
+    # ── 1. Chalice of the Void on 1 — T1 priority with Ancient Tomb ──
+    # Chalice on 1 costs 2 mana (exactly Tomb output) and shuts off most BUG interaction.
+    # Deploy BEFORE Trinisphere — Chalice is castable T1 with Tomb, Trini needs 3 mana.
     ch = player.find_tag('chalice')
-    if ch and gs.chalice_x is None:
+    if ch and gs.chalice_x is None and total_mana >= 2:
         player.remove_from_hand(ch)
         if not _try_counter_any(player, opponent, gs, ch, log_entries):
             player.put_artifact_in_play(ch)
+            total_mana -= 2
             _resolve_lock(gs, ch, log_fn)
         else:
             player.add_to_grave(ch)
+
+    # ── 2. Trinisphere — second lock piece ──
+    tri = player.find_tag('trini')
+    if tri and not gs.trinisphere_active and total_mana >= 3:
+        player.remove_from_hand(tri)
+        if not _try_counter_any(player, opponent, gs, tri, log_entries):
+            player.put_artifact_in_play(tri)
+            total_mana -= 3
+            gs.trinisphere_active = True
+            log_fn("Trinisphere — all spells cost minimum 3", True)
+        else:
+            player.add_to_grave(tri)
 
     # FoV reactive: destroy Trinisphere + Chalice + Bridge
     # Trinisphere was previously missing from target list — BUG never answered T1 Trini
