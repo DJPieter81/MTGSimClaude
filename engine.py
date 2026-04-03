@@ -2016,57 +2016,56 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
 
-    # Manual cast: only when Vial is NOT in play (Vial deploys via EOT hook in bug_turn)
-    # This prevents the hand from emptying before the EOT Vial window fires
-    if not vial_perm:
-        for tag in vial_tags:
-            crea = player.find_tag(tag)
-            if crea and opp_can_cast(crea, total_mana, gs, caster=player):
-                player.remove_from_hand(crea)
-                if not _try_counter_any(player, opponent, gs, crea, log_entries):
-                    player.put_creature_in_play(crea)
-                    log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
-                    if tag == 'skyclave' and opponent.creatures:
-                        target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
-                        if target:
-                            opponent.remove_creature(target)
-                            log_fn(f"  Skyclave Apparition exiles {target.card.name}")
-                    if tag == 'solitude' and opponent.creatures:
-                        target = opponent.creatures[-1]
+    # Hard cast creatures — Vial EOT deploy handles free deploy separately in bug_turn.
+    # Cast even when Vial is in play (use remaining mana to build board faster).
+    for tag in vial_tags:
+        crea = player.find_tag(tag)
+        if crea and opp_can_cast(crea, total_mana, gs, caster=player):
+            player.remove_from_hand(crea)
+            if not _try_counter_any(player, opponent, gs, crea, log_entries):
+                player.put_creature_in_play(crea)
+                total_mana -= crea.cmc
+                log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
+                if tag == 'skyclave' and opponent.creatures:
+                    target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
+                    if target:
                         opponent.remove_creature(target)
-                        log_fn(f"  Solitude exiles {target.card.name}")
-                    if tag == 'flickerwisp':
-                        # Blink biggest BUG creature — misses combat, re-enters sick
-                        tgt = max(opponent.creatures, key=lambda c: c.power, default=None)
-                        if tgt:
-                            opponent.remove_creature(tgt)
-                            new_p = opponent.put_creature_in_play(tgt.card)
-                            new_p.summoning_sick = True
-                            log_fn(f"  Flickerwisp blinks {tgt.card.name} (re-enters sick, misses combat)")
-                            update_goyf(gs)
-                        elif opponent.lands:
-                            tgt_land = opponent.lands[-1]
-                            opponent.lands.remove(tgt_land)
-                            opponent.revolt_this_turn = True
-                            from rules import LandPermanent
-                            new_land = LandPermanent(card=tgt_land.card, controller=('b' if player is gs.bug else 'o'), tapped=True)
-                            opponent.lands.append(new_land)
-                            log_fn(f"  Flickerwisp blinks {tgt_land.card.name} (re-enters tapped)")
-                    if tag == 'recruiter':
-                        # Oracle: tutor any creature with power 2 or less
-                        found = next((c for c in player.library
-                                      if c.is_creature() and c.base_power <= 2), None)
-                        if found:
-                            player.library.remove(found); player.hand.append(found)
-                            log_fn(f"  Recruiter tutors {found.name} (CMC {found.cmc})")
-                    if crea.tag == 'sfm':
-                        equip = next((c for c in player.library if c.tag in CR.EQUIPMENT_SET), None)
-                        if equip:
-                            player.library.remove(equip)
-                            player.hand.append(equip)
-                            log_fn(f"  Stoneforge Mystic tutors {equip.name}")
-                else:
-                    player.add_to_grave(crea)
+                        log_fn(f"  Skyclave Apparition exiles {target.card.name}")
+                if tag == 'solitude' and opponent.creatures:
+                    target = opponent.creatures[-1]
+                    opponent.remove_creature(target)
+                    log_fn(f"  Solitude exiles {target.card.name}")
+                if tag == 'flickerwisp':
+                    tgt = max(opponent.creatures, key=lambda c: c.power, default=None)
+                    if tgt:
+                        opponent.remove_creature(tgt)
+                        new_p = opponent.put_creature_in_play(tgt.card)
+                        new_p.summoning_sick = True
+                        log_fn(f"  Flickerwisp blinks {tgt.card.name} (re-enters sick, misses combat)")
+                        update_goyf(gs)
+                    elif opponent.lands:
+                        tgt_land = opponent.lands[-1]
+                        opponent.lands.remove(tgt_land)
+                        opponent.revolt_this_turn = True
+                        from rules import LandPermanent
+                        new_land = LandPermanent(card=tgt_land.card, controller=('b' if player is gs.bug else 'o'), tapped=True)
+                        opponent.lands.append(new_land)
+                        log_fn(f"  Flickerwisp blinks {tgt_land.card.name} (re-enters tapped)")
+                if tag == 'recruiter':
+                    found = next((c for c in player.library
+                                  if c.is_creature() and c.base_power <= 2), None)
+                    if found:
+                        player.library.remove(found); player.hand.append(found)
+                        log_fn(f"  Recruiter tutors {found.name} (CMC {found.cmc})")
+                if crea.tag == 'sfm':
+                    equip = next((c for c in player.library if c.tag in CR.EQUIPMENT_SET), None)
+                    if equip:
+                        player.library.remove(equip)
+                        player.hand.append(equip)
+                        log_fn(f"  Stoneforge Mystic tutors {equip.name}")
+            else:
+                player.add_to_grave(crea)
+            break  # one hard cast per turn (mana-limited)
 
     # SFM activated: put equipment into play, equip to a creature
     sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)
@@ -2231,21 +2230,21 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
 
-    # Cast manually if no Vial, OR if Vial can't deploy this gs.turn (wrong counter count)
-    vial_can_deploy = (vial_perm_b is not None and
-                       any(player.find_tag(t) and player.find_tag(t).cmc == gs.vial_counters
-                           for t in boros_tags))
-    if not vial_can_deploy:
-        for tag in boros_tags:
-            crea = player.find_tag(tag)
-            if crea and opp_can_cast(crea, total_mana, gs, caster=player):
-                player.remove_from_hand(crea)
-                if not _try_counter_any(player, opponent, gs, crea, log_entries):
-                    player.put_creature_in_play(crea)
-                    log_fn(f"{crea.name}")
-                else:
-                    player.add_to_grave(crea)
-                break
+    # Hard cast creatures with mana — Vial EOT deploy happens separately in bug_turn.
+    # Deploy up to 2 creatures per turn if mana allows (aggro wants to flood the board).
+    cast_count = 0
+    for tag in boros_tags:
+        if cast_count >= 2: break
+        crea = player.find_tag(tag)
+        if crea and opp_can_cast(crea, total_mana, gs, caster=player):
+            player.remove_from_hand(crea)
+            if not _try_counter_any(player, opponent, gs, crea, log_entries):
+                player.put_creature_in_play(crea)
+                total_mana -= crea.cmc
+                log_fn(f"{crea.name}")
+                cast_count += 1
+            else:
+                player.add_to_grave(crea)
 
     # STP removal — exile biggest BUG threat
     stp = player.find_tag('stp')
@@ -2289,30 +2288,17 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Lightning Bolt → {small.name}")
             update_goyf(gs)
 
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
-
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
+    # Boros combat: aggro deck — attack with everything that can swing.
+    # Only hold back Bowmasters (value engine) and 0-power creatures.
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
+    boros_desperate = player.life < 8
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
-        else:
-            attackers_this_turn.append(c)
+        if c.power == 0: continue  # 0-power creatures don't attack
+        if c.card.tag == 'bowm' and opp_has_blockers and not boros_desperate:
+            continue  # hold Bowmasters for ping value
+        attackers_this_turn.append(c)
 
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
