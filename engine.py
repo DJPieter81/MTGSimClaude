@@ -438,13 +438,16 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
         return False  # all caster's spells protected this turn
 
     # Only counter-heavy control decks use reactive counters
-    # Check opp has a real counter (not just tagged with free_cast but with backup)
+    # Check opp has a real counter
     opp_fow = next((c for c in o.hand if c.tag == 'fow'), None)
     opp_fon = next((c for c in o.hand if c.tag == 'fon'), None)
     opp_daze = next((c for c in o.hand if c.tag == 'daze'), None)
     opp_consign = next((c for c in o.hand if c.tag == 'consign'), None)
+    opp_cs = next((c for c in o.hand if c.tag == 'counter'), None)  # Counterspell
+    opp_fluster = next((c for c in o.hand if c.tag == 'fluster'), None)  # Flusterstorm
+    opp_pyro = next((c for c in o.hand if c.tag in ('pyro', 'reb')), None)  # Pyroblast/REB
 
-    if not any([opp_fow, opp_fon, opp_daze, opp_consign]):
+    if not any([opp_fow, opp_fon, opp_daze, opp_consign, opp_cs, opp_fluster, opp_pyro]):
         return False
 
     # Don't counter cantrips (let them resolve — opp saves counters for threats)
@@ -457,7 +460,7 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
     if spell_card.tag == 'ts':
         return False
 
-    total_counters = sum(1 for c in o.hand if c.tag in ('fow','fon','daze','consign'))
+    total_counters = sum(1 for c in o.hand if c.tag in ('fow','fon','daze','consign','counter','fluster','pyro','reb'))
     is_major_threat = (
         spell_card.tag == 'bowm' or  # always counter: generates Orc Army from opp draws
         spell_card.win_condition or spell_card.is_combo_piece or
@@ -486,6 +489,34 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
             o.remove_from_hand(blue_pitch); o.exile.append(blue_pitch)
             gs._last_counter_used = 'fow'
             ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+
+    # Try Counterspell (UU, hard counter — requires mana + hand depth for resource management)
+    # Only use if: major threat AND opp has 4+ cards (don't empty hand on counters)
+    if not ctr and opp_cs and is_major_threat and len(o.hand) >= 4:
+        opp_mana = o.available_mana_count()
+        opp_has_uu = sum(1 for l in o.lands if not l.tapped and 'U' in l.effective_produces()) >= 2
+        if opp_mana >= 2 and opp_has_uu:
+            o.remove_from_hand(opp_cs); o.add_to_grave(opp_cs)
+            gs._last_counter_used = 'counter'
+            ctr.append(f"Counterspell counters {spell_card.name}")
+
+    # Try Flusterstorm (U, counters instant/sorcery — only high-value targets)
+    if not ctr and opp_fluster and is_major_threat and len(o.hand) >= 3:
+        if spell_card.card_type in (CardType.INSTANT, CardType.SORCERY):
+            opp_has_u = any(not l.tapped and 'U' in l.effective_produces() for l in o.lands)
+            if opp_has_u:
+                o.remove_from_hand(opp_fluster); o.add_to_grave(opp_fluster)
+                gs._last_counter_used = 'fluster'
+                ctr.append(f"Flusterstorm counters {spell_card.name}")
+
+    # Try Pyroblast/REB (R, counters blue spells — Painter uses these)
+    if not ctr and opp_pyro:
+        if 'U' in getattr(spell_card, 'colors', set()):
+            opp_has_r = any(not l.tapped and 'R' in l.effective_produces() for l in o.lands)
+            if opp_has_r:
+                o.remove_from_hand(opp_pyro); o.add_to_grave(opp_pyro)
+                gs._last_counter_used = 'pyro'
+                ctr.append(f"{opp_pyro.name} counters {spell_card.name} (blue spell)")
 
     # Try Consign (3 mana, hard counter)
     if not ctr and opp_consign:
@@ -2274,8 +2305,8 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             break
         total_mana -= 1  # cost 1R each
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
-        # Burn face if: BUG life ≤ 9 (kill range), or no threatening blocker
-        go_face = opponent.life <= 9 or not any(c.toughness <= 3 for c in opponent.creatures)
+        # Burn face if: BUG life ≤ 12 (3-bolt kill range), or no threatening blocker
+        go_face = opponent.life <= 12 or not any(c.toughness <= 3 for c in opponent.creatures)
         small = next((c for c in sorted(opponent.creatures, key=lambda x: x.toughness)
                       if c.toughness <= 3), None)
         if go_face or not small:
