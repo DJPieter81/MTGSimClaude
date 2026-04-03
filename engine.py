@@ -456,11 +456,15 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
     # Allosaurus Shepherd: green spells can't be countered by BUG while Shepherd is in play
     if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card,'colors',set()):
         return False
-    # Don't counter Thoughtseize (sorcery, targets opp -- already resolved/handled)
-    if spell_card.tag == 'ts':
-        return False
 
     total_counters = sum(1 for c in o.hand if c.tag in ('fow','fon','daze','consign','counter','fluster','pyro','reb'))
+
+    # Counter Thoughtseize only if we have key threats to protect AND 2+ counters
+    if spell_card.tag == 'ts':
+        has_key_card = any(c.win_condition or c.is_combo_piece or c.tag in ('wst','mentor','dd','sat')
+                          for c in o.hand)
+        if not (has_key_card and total_counters >= 2):
+            return False
     # Control decks (UWx) should NOT FoW cheap creatures — card disadvantage.
     # Only counter threats that removal can't handle or that win the game.
     has_removal = any(c.tag == 'stp' for c in o.hand)  # can we answer it with STP instead?
@@ -2286,14 +2290,21 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             else:
                 player.add_to_grave(crea)
 
-    # STP removal — exile biggest BUG threat
-    stp = player.find_tag('stp')
-    if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
-        target = max(opponent.creatures, key=lambda c: c.card.base_power)
-        player.remove_from_hand(stp); player.add_to_grave(stp)
-        opponent.remove_creature(target)
-        log_fn(f"Swords to Plowshares exiles {target.card.name}")
-        update_goyf(gs)
+    # STP removal — exile ALL BUG threats aggressively (Boros is a racing deck)
+    for _ in range(4):  # up to 4 STPs
+        stp = player.find_tag('stp')
+        if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
+            target = max(opponent.creatures, key=lambda c: c.power)
+            if target.power >= 1:
+                player.remove_from_hand(stp); player.add_to_grave(stp)
+                total_mana -= 1
+                opponent.remove_creature(target)
+                log_fn(f"Swords to Plowshares exiles {target.card.name}")
+                update_goyf(gs)
+            else:
+                break
+        else:
+            break
 
     # Chalice of the Void — Boros sometimes runs it to shut off BUG's CMC1 package
     ch = player.find_tag('chalice')
@@ -2428,16 +2439,18 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(karn)
         if not _try_counter_any(player, opponent, gs, karn, log_entries):
             player.put_artifact_in_play(karn)
-            # Karn's static: opponent's artifacts lose activated abilities (Null Rod effect on BUG)
-            # +1: wish for any artifact from outside the game (sideboard)
-            # We model this as fetching a Trinisphere or Bridge if not already on board
-            log_fn("Karn, the Great Creator (static: opp artifacts lose activated abilities)", True)
-            if not gs.trinisphere_active:
-                log_fn("  Karn +1: wishes for Trinisphere from sideboard", True)
-                gs.trinisphere_active = True
-            elif not gs.bridge_on_board:
+            # Karn's static: opponent's artifacts lose activated abilities
+            # +1: wish for any artifact — prioritize Bridge (stops attacks) > Trini > Chalice
+            log_fn("Karn, the Great Creator (static: opp artifacts lose abilities)", True)
+            if not gs.bridge_on_board and opponent.creatures:
                 log_fn("  Karn +1: wishes for Ensnaring Bridge from sideboard", True)
                 gs.bridge_on_board = True
+            elif not gs.trinisphere_active:
+                log_fn("  Karn +1: wishes for Trinisphere from sideboard", True)
+                gs.trinisphere_active = True
+            elif gs.chalice_x is None:
+                log_fn("  Karn +1: wishes for Chalice of the Void (on 1) from sideboard", True)
+                gs.chalice_x = 1
         else:
             player.add_to_grave(karn)
 
@@ -3815,7 +3828,18 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(bowm)
 
-    # Lightning Bolt — value-targeted
+    # STP — exile biggest BUG threat
+    stp = player.find_tag('stp')
+    if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
+        target = max(opponent.creatures, key=lambda c: c.power)
+        if target.power >= 2:
+            player.remove_from_hand(stp); player.add_to_grave(stp)
+            total_mana -= 1
+            opponent.remove_creature(target)
+            log_fn(f"Swords to Plowshares exiles {target.card.name}")
+            update_goyf(gs)
+
+    # Lightning Bolt — creature removal first, face only at ≤ 9 (Mardu is midrange, not pure burn)
     bolt = player.find_tag('bolt')
     if bolt and opp_can_cast(bolt, total_mana, gs, caster=player):
         def bolt_priority(c):
@@ -3826,10 +3850,9 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             return 99
         candidates = [c for c in opponent.creatures if bolt_priority(c) < 99]
         target = min(candidates, key=bolt_priority) if candidates else None
-        go_face = (target is None and
-                   len(player.creatures) > len(opponent.creatures) and
-                   opponent.life <= 9)
+        go_face = (target is None and opponent.life <= 9)
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
+        total_mana -= 1
         if target:
             opponent.remove_creature(target)
             log_fn(f"Lightning Bolt → kills {target.card.name}", True); update_goyf(gs)
@@ -3837,9 +3860,6 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.life -= 3
             log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
             gs.check_life_totals()
-        else:
-            player.hand.append(bolt)
-            if bolt in player.graveyard: player.graveyard.remove(bolt)
 
     # Combat — Bowmasters holds back
     opp_has_blockers = len(opponent.creatures) > 0
