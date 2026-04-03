@@ -3129,26 +3129,41 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     def spend(card):
         mana_ref[0] -= card.cmc
 
-    # ── Reactive: use FoW/Daze on opponent's threats this turn ──
-    # (Simulated as: opponent tried to cast something — UWx responds)
-    # This is handled by _try_counter_any when opponent casts; here we check
-    # if UWx has reactive removal for already-in-play opponent threats.
+    # Helper: Mentor token generation on noncreature spell cast
+    def mentor_trigger():
+        if any(c.card.tag == 'mentor' for c in player.creatures):
+            from rules import Card, CardType
+            token = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
+                         mana_cost={}, colors=set(), tag='monk_token',
+                         base_power=1, base_toughness=1, gy_type='creature')
+            player.put_creature_in_play(token)
+            log_fn("  Mentor trigger → 1/1 Monk token")
 
     # ── STP — instant removal, highest removal priority ──
-    stp = player.find_tag('stp')
-    if stp and opponent.creatures and mana_ref[0] >= 1:
-        target = max(opponent.creatures, key=lambda c: c.power)
-        if target.power >= 1:   # only exile real threats
-            player.remove_from_hand(stp); player.add_to_grave(stp)
-            life_gain = MTGRules.stp_life_gain(target)
-            opponent.remove_creature(target, to_exile=True)
-            opponent.life += life_gain
-            spend(stp)
-            log_fn(f"Swords to Plowshares → exiles {target.card.name}, opp gains {life_gain} life")
-            update_goyf(gs)
+    # Fire up to 2 STPs if available (removal-dense hand)
+    for _ in range(2):
+        stp = player.find_tag('stp')
+        if stp and opponent.creatures and mana_ref[0] >= 1:
+            target = max(opponent.creatures, key=lambda c: c.power)
+            if target.power >= 1:
+                player.remove_from_hand(stp); player.add_to_grave(stp)
+                life_gain = MTGRules.stp_life_gain(target)
+                opponent.remove_creature(target, to_exile=True)
+                opponent.life += life_gain
+                spend(stp)
+                log_fn(f"Swords to Plowshares → exiles {target.card.name}, opp gains {life_gain} life")
+                update_goyf(gs)
+                mentor_trigger()
+            else:
+                break
+        else:
+            break
 
-    # ── Terminus — wrath when opp has 2+ creatures ──
-    if len(opponent.creatures) >= 2:
+    # ── Terminus — wrath when opp has 2+ creatures AND we don't have Mentor on board ──
+    mentor_on_board = any(c.card.tag == 'mentor' for c in player.creatures)
+    opp_threat = sum(c.power for c in opponent.creatures)
+    # Only Terminus if: opp has 2+ creatures, AND (no Mentor on board OR opp is lethal)
+    if len(opponent.creatures) >= 2 and (not mentor_on_board or opp_threat >= player.life):
         term = player.find_tag('terminus')
         if term and random.random() < 0.70:
             player.remove_from_hand(term); player.add_to_grave(term)
@@ -3208,53 +3223,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             else:
                 player.add_to_grave(snap)
 
-    # ── Cantrips — card selection (generates Mentor tokens) ──
-    if mana_ref[0] >= 1:
-        can_c = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
-        if can_c:
-            player.remove_from_hand(can_c); player.add_to_grave(can_c); spend(can_c)
-            draws = MTGRules.brainstorm_draws() if can_c.tag == 'bs' else 1
-            log_fn(f"{can_c.name} ({draws} draw{'s' if draws>1 else ''})")
-            player.draw(draws)
-            bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.bug else 'b')
-            # Mentor token: each noncreature spell creates a 1/1 Monk
-            if any(c.card.tag == 'mentor' for c in player.creatures):
-                from rules import Card, CardType
-                token = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
-                             mana_cost={}, colors=set(), tag='monk_token',
-                             base_power=1, base_toughness=1, gy_type='creature')
-                player.put_creature_in_play(token)
-                log_fn("  Mentor trigger → 1/1 Monk token")
-
-    # ── Second cantrip if mana available (Mentor wants spell density) ──
-    if mana_ref[0] >= 1:
-        can_c2 = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
-        if can_c2:
-            player.remove_from_hand(can_c2); player.add_to_grave(can_c2); spend(can_c2)
-            draws = MTGRules.brainstorm_draws() if can_c2.tag == 'bs' else 1
-            log_fn(f"{can_c2.name} ({draws} draw{'s' if draws>1 else ''})")
-            player.draw(draws)
-            bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.bug else 'b')
-            if any(c.card.tag == 'mentor' for c in player.creatures):
-                from rules import Card, CardType
-                token = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
-                             mana_cost={}, colors=set(), tag='monk_token',
-                             base_power=1, base_toughness=1, gy_type='creature')
-                player.put_creature_in_play(token)
-                log_fn("  Mentor trigger → 1/1 Monk token")
-
-    # ── Narset — lock piece, lower priority than Mentor ──
-    narset = player.find_tag('narset')
-    narset_on_board = any(p.card.tag == 'narset' for p in player.planeswalkers)
-    if narset and not narset_on_board and can_cast(narset):
-        player.remove_from_hand(narset)
-        if not _try_counter_any(player, opponent, gs, narset, log_entries):
-            player.put_planeswalker_in_play(narset); spend(narset)
-            log_fn("★ Narset, Parter of Veils — opponent can only draw one card per turn", True)
-        else:
-            player.add_to_grave(narset)
-
-    # ── Back to Basics ──
+    # ── Back to Basics — deploy BEFORE cantrips (lock BUG out of mana early) ──
     b2b = player.find_tag('b2b')
     if b2b and not gs.b2b_on_board and can_cast(b2b):
         player.remove_from_hand(b2b)
@@ -3262,8 +3231,33 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             player.put_enchantment_in_play(b2b); spend(b2b)
             gs.set_b2b(True)
             log_fn("★ Back to Basics — nonbasic lands don't untap", True)
+            mentor_trigger()
         else:
             player.add_to_grave(b2b)
+
+    # ── Narset — lock piece, deploy before cantrips to restrict BUG draws ──
+    narset = player.find_tag('narset')
+    narset_on_board = any(p.card.tag == 'narset' for p in player.planeswalkers)
+    if narset and not narset_on_board and can_cast(narset):
+        player.remove_from_hand(narset)
+        if not _try_counter_any(player, opponent, gs, narset, log_entries):
+            player.put_planeswalker_in_play(narset); spend(narset)
+            log_fn("★ Narset, Parter of Veils — opponent can only draw one card per turn", True)
+            mentor_trigger()
+        else:
+            player.add_to_grave(narset)
+
+    # ── Cantrips — cast up to 3 per turn for Mentor tokens + card selection ──
+    for _ in range(3):
+        if mana_ref[0] < 1: break
+        can_c = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
+        if not can_c: break
+        player.remove_from_hand(can_c); player.add_to_grave(can_c); spend(can_c)
+        draws = MTGRules.brainstorm_draws() if can_c.tag == 'bs' else 1
+        log_fn(f"{can_c.name} ({draws} draw{'s' if draws>1 else ''})")
+        player.draw(draws)
+        bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.bug else 'b')
+        mentor_trigger()
 
     # ── Combat ──
     bug_max_t = max((c.toughness for c in opponent.creatures), default=0)
