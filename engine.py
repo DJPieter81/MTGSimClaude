@@ -2265,9 +2265,9 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(crea)
 
-    # Wasteland — destroy BUG's nonbasic lands
+    # Wasteland — only when 4+ lands (need mana for Braids CMC4 / Grief CMC5)
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
-    if wl:
+    if wl and len(player.lands) >= 4:
         targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
         if targets:
             target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
@@ -2637,9 +2637,9 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
                     log_fn(f"TKS exiles {ex.name}", True)
         else: player.add_to_grave(tks)
 
-    # Wasteland — destroy BUG's nonbasic lands
+    # Wasteland — only when 3+ lands (Eldrazi needs mana for CMC 3-4 threats)
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
-    if wl:
+    if wl and len(player.lands) >= 3:
         targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
         if targets:
             target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
@@ -2650,7 +2650,7 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Wasteland → destroys {target.card.name}")
             update_goyf(gs)
 
-    # Combat — Eldrazi attacks aggressively (big creatures)
+    # Combat — Eldrazi attacks aggressively
     attackers_this_turn = _select_attackers(player, opponent, hold_tags=())
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
