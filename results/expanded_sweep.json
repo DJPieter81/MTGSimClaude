@@ -156,10 +156,21 @@
       "depths": 0.0,
       "burn": 0.0,
       "dimir_flash": 0.6,
-      "ur_aggro": 0.0
+      "ur_aggro": 0.0,
+      "mardu": 2.5,
+      "storm": 0.0,
+      "eldrazi": 9.8,
+      "reanimator": 0.3,
+      "doomsday": 0.3,
+      "painter": 18.1,
+      "dnt": 2.9,
+      "mono_black": 0.2,
+      "infect": 0.0,
+      "goblins": 0.1,
+      "tes": 9.9
     }
   },
-  "last_updated": "2026-04-04T11:35:34",
+  "last_updated": "2026-04-04T11:39:08",
   "games_per_matchup": 5000,
   "field": {
     "dimir": 0.08988764044943817,
