@@ -498,14 +498,14 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
         spell_card.win_condition or spell_card.is_combo_piece or
         spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
     )
-    # Bowmasters: always major for mirror/flash decks (army + ping engine)
+    # Mirror/flash: Bowmasters + Nethergoyf are key threats worth FoWing
     is_mirror_or_flash = matchup in ('dimir', 'dimir_b', 'dimir_flash')
-    if spell_card.tag == 'bowm' and is_mirror_or_flash and total_counters >= 2:
+    if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
         is_major_threat = True
     # Control decks (UWx — runs STP) should NOT FoW cheap creatures — STP them later
     if spell_card.cmc <= 2 and has_removal and not spell_card.win_condition:
         is_major_threat = False
-    is_minor_threat = spell_card.tag in ('tamiyo', 'nether', 'borrow')
+    is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
     if is_minor_threat and total_counters <= 2: return False
     if not (is_major_threat or is_minor_threat): return False
 
@@ -2415,9 +2415,21 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         opponent.life -= init_damage
         log_fn(f"Initiative (Undercity room {init_count}) — {init_damage} damage to BUG ({opponent.life})", True)
         gs.check_life_totals()
-    # Oracle: activated ability, no mana cost, once per Karakas per gs.turn.
-    # DnT targets BUG's highest-value legendary: Murktide > Tamiyo > any other legendary.
-    # Bouncing forces BUG to re-spend mana next gs.turn (Murktide needs 7+ delve each time).
+
+    # Wasteland — destroy BUG's nonbasic lands (Underground Sea)
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl:
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"Wasteland → destroys {target.card.name}")
+            update_goyf(gs)
+
+    # Karakas — bounce BUG's legendary creatures
     legendary_targets = ('murk', 'tamiyo', 'wst')
     for karakas in [l for l in player.lands if l.card.tag == 'karakas' and not l.tapped]:
         bug_legend = next((c for c in sorted(opponent.creatures,
