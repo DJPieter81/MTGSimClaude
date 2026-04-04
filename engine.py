@@ -2158,8 +2158,35 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
         target = max(opponent.creatures, key=lambda c: c.card.base_power)
         player.remove_from_hand(stp); player.add_to_grave(stp)
-        opponent.remove_creature(target)
-        log_fn(f"Swords to Plowshares exiles {target.card.name}")
+        life_gain = MTGRules.stp_life_gain(target)
+        opponent.remove_creature(target, to_exile=True)
+        opponent.life += life_gain
+        log_fn(f"Swords to Plowshares exiles {target.card.name} (+{life_gain} life)")
+        update_goyf(gs)
+
+    # Wasteland — destroy BUG's nonbasic lands when DnT has board presence
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl and len(player.creatures) >= 2:  # only waste when ahead on board
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"Wasteland → destroys {target.card.name}")
+            update_goyf(gs)
+
+    # Karakas — bounce only Murktide (the biggest threat DnT can't block)
+    for karakas in [l for l in player.lands if l.card.tag == 'karakas' and not l.tapped]:
+        murktide = next((c for c in opponent.creatures if c.card.tag == 'murk'), None)
+        if murktide:
+            karakas.tapped = True
+            opponent.creatures.remove(murktide)
+            opponent.hand.append(murktide.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"★ Karakas → returns {murktide.card.name} to BUG's hand", True)
+            break
 
     # UWx combat: total-power evaluation
     bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
