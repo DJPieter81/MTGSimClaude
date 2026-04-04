@@ -29,6 +29,30 @@ from config import CardRoles as CR, MatchupCategory as MC, InteractionParams as 
 # Helpers
 # ─────────────────────────────────────────────
 
+# Shared token prototype — avoids repeated Card() construction in hot loops
+_MONK_TOKEN = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
+                   mana_cost={}, colors=set(), tag='monk_token',
+                   base_power=1, base_toughness=1, gy_type='creature')
+
+_ORC_ARMY_PROTO = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
+                       mana_cost={}, colors=set(), tag='orc_army',
+                       base_power=0, base_toughness=0, gy_type='creature')
+
+
+def _select_attackers(player, opponent, hold_tags=('bowm', 'tamiyo'), desperate_life=8):
+    """Shared attacker selection for aggro/midrange strategies.
+    Returns list of creatures to attack with. Holds back value engines and 0-power."""
+    opp_has_blockers = len(opponent.creatures) > 0
+    desperate = player.life < desperate_life
+    attackers = []
+    for c in player.creatures:
+        if c.summoning_sick: continue
+        if c.power == 0: continue
+        if c.card.tag in hold_tags and opp_has_blockers and not desperate:
+            continue
+        attackers.append(c)
+    return attackers
+
 
 def _deduct(budget: list, cmc: int, card) -> bool:
     """Spend mana from budget. Returns True (cost always 0 for free spells)."""
@@ -437,14 +461,21 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
     if getattr(gs, 'veil_active', False):
         return False  # all caster's spells protected this turn
 
-    # Only counter-heavy control decks use reactive counters
-    # Check opp has a real counter (not just tagged with free_cast but with backup)
-    opp_fow = next((c for c in o.hand if c.tag == 'fow'), None)
-    opp_fon = next((c for c in o.hand if c.tag == 'fon'), None)
-    opp_daze = next((c for c in o.hand if c.tag == 'daze'), None)
-    opp_consign = next((c for c in o.hand if c.tag == 'consign'), None)
+    # Single-pass scan of opponent hand for all counter types
+    _COUNTER_TAGS = {'fow', 'fon', 'daze', 'consign', 'counter', 'fluster', 'pyro', 'reb'}
+    counters_by_tag = {}
+    for c in o.hand:
+        if c.tag in _COUNTER_TAGS and c.tag not in counters_by_tag:
+            counters_by_tag[c.tag] = c
+    opp_fow = counters_by_tag.get('fow')
+    opp_fon = counters_by_tag.get('fon')
+    opp_daze = counters_by_tag.get('daze')
+    opp_consign = counters_by_tag.get('consign')
+    opp_cs = counters_by_tag.get('counter')
+    opp_fluster = counters_by_tag.get('fluster')
+    opp_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
 
-    if not any([opp_fow, opp_fon, opp_daze, opp_consign]):
+    if not counters_by_tag:
         return False
 
     # Don't counter cantrips (let them resolve — opp saves counters for threats)
@@ -453,18 +484,29 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
     # Allosaurus Shepherd: green spells can't be countered by BUG while Shepherd is in play
     if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card,'colors',set()):
         return False
-    # Don't counter Thoughtseize (sorcery, targets opp -- already resolved/handled)
-    if spell_card.tag == 'ts':
-        return False
 
-    total_counters = sum(1 for c in o.hand if c.tag in ('fow','fon','daze','consign'))
+    total_counters = sum(1 for c in o.hand if c.tag in _COUNTER_TAGS)
+
+    # Counter Thoughtseize only if we have key threats to protect AND 2+ counters
+    if spell_card.tag == 'ts':
+        has_key_card = any(c.win_condition or c.is_combo_piece or c.tag in ('wst','mentor','dd','sat')
+                          for c in o.hand)
+        if not (has_key_card and total_counters >= 2):
+            return False
+    has_removal = any(c.tag == 'stp' for c in o.hand)
     is_major_threat = (
-        spell_card.tag == 'bowm' or  # always counter: generates Orc Army from opp draws
         spell_card.win_condition or spell_card.is_combo_piece or
-        spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 3
+        spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
     )
-    is_minor_threat = spell_card.tag in ('tamiyo', 'nether', 'borrow')
-    if is_minor_threat and total_counters <= 1: return False
+    # Mirror/flash: Bowmasters + Nethergoyf are key threats worth FoWing
+    is_mirror_or_flash = matchup in ('dimir', 'dimir_b', 'dimir_flash')
+    if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
+        is_major_threat = True
+    # Control decks (UWx — runs STP) should NOT FoW cheap creatures — STP them later
+    if spell_card.cmc <= 2 and has_removal and not spell_card.win_condition:
+        is_major_threat = False
+    is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
+    if is_minor_threat and total_counters <= 2: return False
     if not (is_major_threat or is_minor_threat): return False
 
     ctr = []
@@ -486,6 +528,34 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
             o.remove_from_hand(blue_pitch); o.exile.append(blue_pitch)
             gs._last_counter_used = 'fow'
             ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+
+    # Try Counterspell (UU, hard counter — requires mana + hand depth for resource management)
+    # Only use if: major threat AND opp has 4+ cards (don't empty hand on counters)
+    if not ctr and opp_cs and is_major_threat and len(o.hand) >= 4:
+        opp_mana = o.available_mana_count()
+        opp_has_uu = sum(1 for l in o.lands if not l.tapped and 'U' in l.effective_produces()) >= 2
+        if opp_mana >= 2 and opp_has_uu:
+            o.remove_from_hand(opp_cs); o.add_to_grave(opp_cs)
+            gs._last_counter_used = 'counter'
+            ctr.append(f"Counterspell counters {spell_card.name}")
+
+    # Try Flusterstorm (U, counters instant/sorcery — only high-value targets)
+    if not ctr and opp_fluster and is_major_threat and len(o.hand) >= 3:
+        if spell_card.card_type in (CardType.INSTANT, CardType.SORCERY):
+            opp_has_u = any(not l.tapped and 'U' in l.effective_produces() for l in o.lands)
+            if opp_has_u:
+                o.remove_from_hand(opp_fluster); o.add_to_grave(opp_fluster)
+                gs._last_counter_used = 'fluster'
+                ctr.append(f"Flusterstorm counters {spell_card.name}")
+
+    # Try Pyroblast/REB (R, counters blue spells — Painter uses these)
+    if not ctr and opp_pyro:
+        if 'U' in getattr(spell_card, 'colors', set()):
+            opp_has_r = any(not l.tapped and 'R' in l.effective_produces() for l in o.lands)
+            if opp_has_r:
+                o.remove_from_hand(opp_pyro); o.add_to_grave(opp_pyro)
+                gs._last_counter_used = 'pyro'
+                ctr.append(f"{opp_pyro.name} counters {spell_card.name} (blue spell)")
 
     # Try Consign (3 mana, hard counter)
     if not ctr and opp_consign:
@@ -1894,6 +1964,12 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
     fon  = next((c for c in b.hand if c.tag == 'fon'), None)
     daze = next((c for c in b.hand if c.tag == 'daze'), None)
 
+    # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
+    # FoW/FoN can't be cast for free under Trinisphere
+    if gs.trinisphere_active:
+        fow = None  # can't pitch-cast FoW under Trinisphere without 3 mana
+        fon = None
+
     if not any([fow, fon, daze]):
         return False
 
@@ -2016,8 +2092,8 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
 
-    # Manual cast: only when Vial is NOT in play (Vial deploys via EOT hook in bug_turn)
-    # This prevents the hand from emptying before the EOT Vial window fires
+    # Hard cast creatures — only when Vial is NOT on board (Vial handles deployment).
+    # DnT preserves hand for Vial EOT deploy + combat ambush (instant speed).
     if not vial_perm:
         for tag in vial_tags:
             crea = player.find_tag(tag)
@@ -2025,6 +2101,7 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.remove_from_hand(crea)
                 if not _try_counter_any(player, opponent, gs, crea, log_entries):
                     player.put_creature_in_play(crea)
+                    total_mana -= crea.cmc
                     log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
                     if tag == 'skyclave' and opponent.creatures:
                         target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
@@ -2036,7 +2113,6 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                         opponent.remove_creature(target)
                         log_fn(f"  Solitude exiles {target.card.name}")
                     if tag == 'flickerwisp':
-                        # Blink biggest BUG creature — misses combat, re-enters sick
                         tgt = max(opponent.creatures, key=lambda c: c.power, default=None)
                         if tgt:
                             opponent.remove_creature(tgt)
@@ -2053,7 +2129,6 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                             opponent.lands.append(new_land)
                             log_fn(f"  Flickerwisp blinks {tgt_land.card.name} (re-enters tapped)")
                     if tag == 'recruiter':
-                        # Oracle: tutor any creature with power 2 or less
                         found = next((c for c in player.library
                                       if c.is_creature() and c.base_power <= 2), None)
                         if found:
@@ -2067,6 +2142,7 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                             log_fn(f"  Stoneforge Mystic tutors {equip.name}")
                 else:
                     player.add_to_grave(crea)
+                break  # one hard cast per turn (mana-limited)
 
     # SFM activated: put equipment into play, equip to a creature
     sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)
@@ -2088,8 +2164,35 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
         target = max(opponent.creatures, key=lambda c: c.card.base_power)
         player.remove_from_hand(stp); player.add_to_grave(stp)
-        opponent.remove_creature(target)
-        log_fn(f"Swords to Plowshares exiles {target.card.name}")
+        life_gain = MTGRules.stp_life_gain(target)
+        opponent.remove_creature(target, to_exile=True)
+        opponent.life += life_gain
+        log_fn(f"Swords to Plowshares exiles {target.card.name} (+{life_gain} life)")
+        update_goyf(gs)
+
+    # Wasteland — destroy BUG's nonbasic lands when DnT has board presence
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl and len(player.creatures) >= 2:  # only waste when ahead on board
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"Wasteland → destroys {target.card.name}")
+            update_goyf(gs)
+
+    # Karakas — bounce only Murktide (the biggest threat DnT can't block)
+    for karakas in [l for l in player.lands if l.card.tag == 'karakas' and not l.tapped]:
+        murktide = next((c for c in opponent.creatures if c.card.tag == 'murk'), None)
+        if murktide:
+            karakas.tapped = True
+            opponent.creatures.remove(murktide)
+            opponent.hand.append(murktide.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"★ Karakas → returns {murktide.card.name} to BUG's hand", True)
+            break
 
     # UWx combat: total-power evaluation
     bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
@@ -2161,31 +2264,22 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
         else:
             player.add_to_grave(crea)
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
 
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
-    opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
-        else:
-            attackers_this_turn.append(c)
+    # Wasteland — only when 4+ lands (need mana for Braids CMC4 / Grief CMC5)
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl and len(player.lands) >= 4:
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"Wasteland → destroys {target.card.name}")
+            update_goyf(gs)
 
+    # Combat
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=('bowm',))
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
@@ -2231,29 +2325,35 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
 
-    # Cast manually if no Vial, OR if Vial can't deploy this gs.turn (wrong counter count)
-    vial_can_deploy = (vial_perm_b is not None and
-                       any(player.find_tag(t) and player.find_tag(t).cmc == gs.vial_counters
-                           for t in boros_tags))
-    if not vial_can_deploy:
-        for tag in boros_tags:
-            crea = player.find_tag(tag)
-            if crea and opp_can_cast(crea, total_mana, gs, caster=player):
-                player.remove_from_hand(crea)
-                if not _try_counter_any(player, opponent, gs, crea, log_entries):
-                    player.put_creature_in_play(crea)
-                    log_fn(f"{crea.name}")
-                else:
-                    player.add_to_grave(crea)
-                break
+    # Hard cast ALL affordable creatures — Boros wants maximum board pressure.
+    # Deploy up to 3 per turn (aggro floods the board to overwhelm BUG's removal).
+    cast_count = 0
+    for tag in boros_tags:
+        if cast_count >= 3 or total_mana < 1: break
+        crea = player.find_tag(tag)
+        if crea and opp_can_cast(crea, total_mana, gs, caster=player):
+            player.remove_from_hand(crea)
+            if not _try_counter_any(player, opponent, gs, crea, log_entries):
+                player.put_creature_in_play(crea)
+                total_mana -= crea.cmc
+                log_fn(f"{crea.name}")
+                cast_count += 1
+            else:
+                player.add_to_grave(crea)
 
-    # STP removal — exile biggest BUG threat
-    stp = player.find_tag('stp')
-    if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
-        target = max(opponent.creatures, key=lambda c: c.card.base_power)
+    # STP removal — exile BUG threats aggressively, grant life (CR 106)
+    for _ in range(4):
+        stp = player.find_tag('stp')
+        if not (stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player)):
+            break
+        target = max(opponent.creatures, key=lambda c: c.power)
+        if target.power < 1: break
         player.remove_from_hand(stp); player.add_to_grave(stp)
-        opponent.remove_creature(target)
-        log_fn(f"Swords to Plowshares exiles {target.card.name}")
+        total_mana -= 1
+        life_gain = MTGRules.stp_life_gain(target)
+        opponent.remove_creature(target, to_exile=True)
+        opponent.life += life_gain
+        log_fn(f"Swords to Plowshares exiles {target.card.name} (+{life_gain} life)")
         update_goyf(gs)
 
     # Chalice of the Void — Boros sometimes runs it to shut off BUG's CMC1 package
@@ -2275,8 +2375,8 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             break
         total_mana -= 1  # cost 1R each
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
-        # Burn face if: BUG life ≤ 9 (kill range), or no threatening blocker
-        go_face = opponent.life <= 9 or not any(c.toughness <= 3 for c in opponent.creatures)
+        # Burn face if: BUG life ≤ 12 (3-bolt kill range), or no threatening blocker
+        go_face = opponent.life <= 12 or not any(c.toughness <= 3 for c in opponent.creatures)
         small = next((c for c in sorted(opponent.creatures, key=lambda x: x.toughness)
                       if c.toughness <= 3), None)
         if go_face or not small:
@@ -2289,37 +2389,38 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Lightning Bolt → {small.name}")
             update_goyf(gs)
 
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
-
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
-    opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
-        else:
-            attackers_this_turn.append(c)
-
+    # Hold Eidolon back only if BUG has blockers that would kill it (2/2)
+    eidolon_safe = not any(c.power >= 2 for c in opponent.creatures)
+    hold = ('bowm',) if eidolon_safe else ('bowm', 'eidolon')
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
-    # Karakas — {T}: return target legendary creature to its owner's hand.
-    # Oracle: activated ability, no mana cost, once per Karakas per gs.turn.
-    # DnT targets BUG's highest-value legendary: Murktide > Tamiyo > any other legendary.
-    # Bouncing forces BUG to re-spend mana next gs.turn (Murktide needs 7+ delve each time).
+    # Initiative — Seasoned Dungeoneer takes Initiative on ETB/attack.
+    # Each turn with Initiative: venture into Undercity dungeon room.
+    # Simplified: deal escalating damage (1 first trigger, then 2 per subsequent).
+    has_initiative = any(c.card.tag == 'dungeoneer' for c in player.creatures)
+    if has_initiative:
+        init_count = getattr(gs, '_initiative_count', 0) + 1
+        gs._initiative_count = init_count
+        init_damage = min(init_count, 3)  # cap at 3 per turn (Undercity rooms)
+        opponent.life -= init_damage
+        log_fn(f"Initiative (Undercity room {init_count}) — {init_damage} damage to BUG ({opponent.life})", True)
+        gs.check_life_totals()
+
+    # Wasteland — destroy BUG's nonbasic lands (Underground Sea)
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl:
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"Wasteland → destroys {target.card.name}")
+            update_goyf(gs)
+
+    # Karakas — bounce BUG's legendary creatures
     legendary_targets = ('murk', 'tamiyo', 'wst')
     for karakas in [l for l in player.lands if l.card.tag == 'karakas' and not l.tapped]:
         bug_legend = next((c for c in sorted(opponent.creatures,
@@ -2366,53 +2467,62 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     6. Null Rod (shuts off fetch lands)
     """
 
-    # ── 1. Trinisphere — highest priority lock piece ──
-    # Costs 3 generic; Ancient Tomb / City of Traitors gives CC each
-    tri = player.find_tag('trini')
-    if tri and not gs.trinisphere_active:
-        tomb_ok = any(l.card.tag == 'tomb' and not l.tapped for l in player.lands)
-        cot_ok  = any(l.card.tag == 'cot'  and not l.tapped for l in player.lands)
-        can_pay = (tomb_ok or cot_ok) and total_mana >= 3
-        if can_pay or total_mana >= 3:
-            player.remove_from_hand(tri)
-            if not _try_counter_any(player, opponent, gs, tri, log_entries):
-                player.put_artifact_in_play(tri)
-                gs.trinisphere_active = True
-                log_fn("Trinisphere — all spells cost minimum 3", True)
-            else:
-                player.add_to_grave(tri)
-
-    # ── 2. Chalice of the Void on 1 ──
+    # ── 1. Chalice of the Void on 1 — T1 priority with Ancient Tomb ──
+    # Chalice on 1 costs 2 mana (exactly Tomb output) and shuts off most BUG interaction.
+    # Deploy BEFORE Trinisphere — Chalice is castable T1 with Tomb, Trini needs 3 mana.
     ch = player.find_tag('chalice')
-    if ch and gs.chalice_x is None:
+    if ch and gs.chalice_x is None and total_mana >= 2:
         player.remove_from_hand(ch)
         if not _try_counter_any(player, opponent, gs, ch, log_entries):
             player.put_artifact_in_play(ch)
+            total_mana -= 2
             _resolve_lock(gs, ch, log_fn)
         else:
             player.add_to_grave(ch)
+
+    # ── 2. Trinisphere — second lock piece ──
+    tri = player.find_tag('trini')
+    if tri and not gs.trinisphere_active and total_mana >= 3:
+        player.remove_from_hand(tri)
+        if not _try_counter_any(player, opponent, gs, tri, log_entries):
+            player.put_artifact_in_play(tri)
+            total_mana -= 3
+            gs.trinisphere_active = True
+            log_fn("Trinisphere — all spells cost minimum 3", True)
+        else:
+            player.add_to_grave(tri)
 
     # FoV reactive: destroy Trinisphere + Chalice + Bridge
     # Trinisphere was previously missing from target list — BUG never answered T1 Trini
     if gs.chalice_x is not None or gs.bridge_on_board or gs.trinisphere_active:
         _bug_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
 
-    # ── 3. Karn, the Great Creator ──
+    # ── 3. Karn, the Great Creator — recurring +1 each turn ──
+    karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
+    def _karn_wish():
+        """Karn +1: wish for the most impactful missing lock piece."""
+        if not gs.bridge_on_board and opponent.creatures:
+            log_fn("  Karn +1: wishes for Ensnaring Bridge", True)
+            gs.bridge_on_board = True
+        elif not gs.trinisphere_active:
+            log_fn("  Karn +1: wishes for Trinisphere", True)
+            gs.trinisphere_active = True
+        elif gs.chalice_x is None:
+            log_fn("  Karn +1: wishes for Chalice (on 1)", True)
+            gs.chalice_x = 1
+
+    # Karn already on board — tick +1 and wish each turn
+    if karn_on_board:
+        _karn_wish()
+
+    # Deploy Karn from hand if not yet on board
     karn = player.find_tag('karn')
-    if karn and total_mana >= 4 and not any(p.card.tag == 'karn' for p in player.artifacts):
+    if karn and total_mana >= 4 and not karn_on_board:
         player.remove_from_hand(karn)
         if not _try_counter_any(player, opponent, gs, karn, log_entries):
             player.put_artifact_in_play(karn)
-            # Karn's static: opponent's artifacts lose activated abilities (Null Rod effect on BUG)
-            # +1: wish for any artifact from outside the game (sideboard)
-            # We model this as fetching a Trinisphere or Bridge if not already on board
-            log_fn("Karn, the Great Creator (static: opp artifacts lose activated abilities)", True)
-            if not gs.trinisphere_active:
-                log_fn("  Karn +1: wishes for Trinisphere from sideboard", True)
-                gs.trinisphere_active = True
-            elif not gs.bridge_on_board:
-                log_fn("  Karn +1: wishes for Ensnaring Bridge from sideboard", True)
-                gs.bridge_on_board = True
+            log_fn("Karn, the Great Creator (static: opp artifacts lose abilities)", True)
+            _karn_wish()
         else:
             player.add_to_grave(karn)
 
@@ -2454,31 +2564,21 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(nr)
 
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
+    # Bridge hand-dump: reduce hand to 0-1 to block most creatures.
+    # Keep 1 card if it's a useful lock piece, otherwise dump to 0.
+    if gs.bridge_on_board and len(player.hand) > 1:
+        useful_tags = {'chalice', 'trini', 'bridge', 'karn', 'tks', 'nullrod'}
+        while len(player.hand) > 1:
+            non_useful = next((c for c in player.hand if c.tag not in useful_tags), None)
+            if non_useful:
+                player.hand.remove(non_useful)
+                player.add_to_grave(non_useful)
+            else:
+                break
+        log_fn(f"Hand dump for Bridge — hand now {len(player.hand)}")
 
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
-    opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
-        else:
-            attackers_this_turn.append(c)
-
+    # Combat — Prison attacks with TKS and creatures if available
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=())
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
@@ -2536,31 +2636,22 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
                     ex = random.choice(nonlands); opponent.hand.remove(ex); opponent.exile.append(ex)
                     log_fn(f"TKS exiles {ex.name}", True)
         else: player.add_to_grave(tks)
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
 
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
-    opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
-        else:
-            attackers_this_turn.append(c)
+    # Wasteland — only when 3+ lands (Eldrazi needs mana for CMC 3-4 threats)
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl and len(player.lands) >= 3:
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"Wasteland → destroys {target.card.name}")
+            update_goyf(gs)
 
+    # Combat — Eldrazi attacks aggressively
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=())
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
@@ -2827,7 +2918,8 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
     # Veil of Summer costs {G} — also needs a green source
     vos_castable = has_green
     # Oops costs {1}{G} = 2 mana; fire as soon as we can assemble it
-    if oops and total_mana >= 2 and has_green:
+    # Leyline of the Void exiles all cards that would go to GY — Oops fizzles entirely
+    if oops and total_mana >= 2 and has_green and not gs.leyline_active:
         vos = player.find_tag('vos') if vos_castable else None
         if vos:
             player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True  # protect all spells this turn
@@ -3034,9 +3126,10 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     wst_on_board = next((p for p in player.creatures if p.card.tag == 'wst'), None)
     if wst_card and not wst_on_board and opp_can_cast(wst_card, total_mana, gs, caster=player):
         x = max(0, min(total_mana - 2, 4))  # pay UU + X generic
-        # Only deploy if X≥2 (value play) OR opp has no other threats and needs a body
+        # Deploy at X≥1 (2/2 flier w/ vigilance is strong) or X=0 with no board
+        # Earlier WST = more fetch triggers = more cards + bigger body
         has_board = len(player.creatures) > 0
-        deploy = (x >= 2) or (x >= 0 and not has_board and total_mana >= 2)
+        deploy = (x >= 1) or (x >= 0 and not has_board and total_mana >= 2)
         if deploy:
             player.remove_from_hand(wst_card)
             if not _try_counter_any(player, opponent, gs, wst_card, log_entries):
@@ -3142,16 +3235,16 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     def spend(card):
         mana_ref[0] -= card.cmc
 
-    # ── Reactive: use FoW/Daze on opponent's threats this turn ──
-    # (Simulated as: opponent tried to cast something — UWx responds)
-    # This is handled by _try_counter_any when opponent casts; here we check
-    # if UWx has reactive removal for already-in-play opponent threats.
+    def mentor_trigger():
+        if any(c.card.tag == 'mentor' for c in player.creatures):
+            player.put_creature_in_play(_MONK_TOKEN)
+            log_fn("  Mentor trigger → 1/1 Monk token")
 
-    # ── STP — instant removal, highest removal priority ──
+    # ── STP — instant removal, fire 1 proactively (save rest for BUG's turn) ──
     stp = player.find_tag('stp')
     if stp and opponent.creatures and mana_ref[0] >= 1:
         target = max(opponent.creatures, key=lambda c: c.power)
-        if target.power >= 1:   # only exile real threats
+        if target.power >= 2:   # only exile real threats (2+ power)
             player.remove_from_hand(stp); player.add_to_grave(stp)
             life_gain = MTGRules.stp_life_gain(target)
             opponent.remove_creature(target, to_exile=True)
@@ -3159,11 +3252,15 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             spend(stp)
             log_fn(f"Swords to Plowshares → exiles {target.card.name}, opp gains {life_gain} life")
             update_goyf(gs)
+            mentor_trigger()
 
-    # ── Terminus — wrath when opp has 2+ creatures ──
-    if len(opponent.creatures) >= 2:
+    # ── Terminus — wrath when opp has 2+ creatures AND we don't have Mentor on board ──
+    mentor_on_board = any(c.card.tag == 'mentor' for c in player.creatures)
+    opp_threat = sum(c.power for c in opponent.creatures)
+    # Only Terminus if: opp has 2+ creatures, AND (no Mentor on board OR opp is lethal)
+    if len(opponent.creatures) >= 2 and (not mentor_on_board or opp_threat >= player.life):
         term = player.find_tag('terminus')
-        if term and random.random() < 0.70:
+        if term and random.random() < 0.80:
             player.remove_from_hand(term); player.add_to_grave(term)
             for c in list(opponent.creatures):
                 opponent.exile.append(c.card); opponent.revolt_this_turn = True
@@ -3221,28 +3318,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             else:
                 player.add_to_grave(snap)
 
-    # ── Cantrips — card selection ──
-    if mana_ref[0] >= 1:
-        can_c = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
-        if can_c:
-            player.remove_from_hand(can_c); player.add_to_grave(can_c); spend(can_c)
-            draws = MTGRules.brainstorm_draws() if can_c.tag == 'bs' else 1
-            log_fn(f"{can_c.name} ({draws} draw{'s' if draws>1 else ''})")
-            player.draw(draws)
-            bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.bug else 'b')
-
-    # ── Narset — lock piece, lower priority than Mentor ──
-    narset = player.find_tag('narset')
-    narset_on_board = any(p.card.tag == 'narset' for p in player.planeswalkers)
-    if narset and not narset_on_board and can_cast(narset):
-        player.remove_from_hand(narset)
-        if not _try_counter_any(player, opponent, gs, narset, log_entries):
-            player.put_planeswalker_in_play(narset); spend(narset)
-            log_fn("★ Narset, Parter of Veils — opponent can only draw one card per turn", True)
-        else:
-            player.add_to_grave(narset)
-
-    # ── Back to Basics ──
+    # ── Back to Basics — deploy BEFORE cantrips (lock BUG out of mana early) ──
     b2b = player.find_tag('b2b')
     if b2b and not gs.b2b_on_board and can_cast(b2b):
         player.remove_from_hand(b2b)
@@ -3250,8 +3326,33 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             player.put_enchantment_in_play(b2b); spend(b2b)
             gs.set_b2b(True)
             log_fn("★ Back to Basics — nonbasic lands don't untap", True)
+            mentor_trigger()
         else:
             player.add_to_grave(b2b)
+
+    # ── Narset — lock piece, deploy before cantrips to restrict BUG draws ──
+    narset = player.find_tag('narset')
+    narset_on_board = any(p.card.tag == 'narset' for p in player.planeswalkers)
+    if narset and not narset_on_board and can_cast(narset):
+        player.remove_from_hand(narset)
+        if not _try_counter_any(player, opponent, gs, narset, log_entries):
+            player.put_planeswalker_in_play(narset); spend(narset)
+            log_fn("★ Narset, Parter of Veils — opponent can only draw one card per turn", True)
+            mentor_trigger()
+        else:
+            player.add_to_grave(narset)
+
+    # ── Cantrips — cast up to 2 per turn (hold mana for reactive counters) ──
+    for _ in range(2):
+        if mana_ref[0] < 1: break
+        can_c = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
+        if not can_c: break
+        player.remove_from_hand(can_c); player.add_to_grave(can_c); spend(can_c)
+        draws = MTGRules.brainstorm_draws() if can_c.tag == 'bs' else 1
+        log_fn(f"{can_c.name} ({draws} draw{'s' if draws>1 else ''})")
+        player.draw(draws)
+        bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.bug else 'b')
+        mentor_trigger()
 
     # ── Combat ──
     bug_max_t = max((c.toughness for c in opponent.creatures), default=0)
@@ -3393,18 +3494,18 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     # it can fetch a ritual or kill spell
     itutor_proxy = player.find_tag('itutor') and sim_mana >= 2
     tendrils = player.find_tag('tendrils')
-    # Storm should only go off when safe: opp tapped out OR Veil active this turn
-    # Check if opponent has mana up (untapped lands) — if so, hold unless desperate
+    # Storm should only go off when safe: Veil active, opp has no FoW, or desperate
     opp_mana_up = sum(1 for l in opponent.lands if not l.tapped)
     veil_protecting = getattr(gs, 'veil_active', False)
     storm_desperate = player.life <= 4  # opponent about to kill us
-    safe_to_combo = veil_protecting or opp_mana_up == 0 or storm_desperate or gs.turn >= 2
-    # Storm should only go off when safe: opp tapped out OR Veil active this turn
-    # Check if opponent has mana up (untapped lands) — if so, hold unless desperate
-    opp_mana_up = sum(1 for l in opponent.lands if not l.tapped)
-    veil_protecting = getattr(gs, 'veil_active', False)
-    storm_desperate = player.life <= 4  # opponent about to kill us
-    safe_to_combo = veil_protecting or opp_mana_up == 0 or storm_desperate or gs.turn >= 2
+    # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
+    opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
+    opp_blue_pitch = sum(1 for c in opponent.hand if 'U' in getattr(c, 'colors', set())) >= 2  # FoW itself + pitch
+    opp_has_free_counter = opp_fow and opp_blue_pitch
+    # Safe if: Veil protects, opp has no free counter, desperate, or late game (must race BUG clock)
+    storm_late = gs.turn >= 4  # can't wait forever — BUG's creatures will kill us
+    safe_to_combo = (veil_protecting or storm_desperate or storm_late or
+                     not opp_has_free_counter)
     itutor   = player.find_tag('itutor')
     led      = player.find_tag('led')
     adnaus   = player.find_tag('adnauseam')
@@ -3776,7 +3877,18 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(bowm)
 
-    # Lightning Bolt — value-targeted
+    # STP — exile big BUG threats only (Murktide, Kaito — hard to re-deploy)
+    stp = player.find_tag('stp')
+    if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
+        target = max(opponent.creatures, key=lambda c: c.power)
+        if target.power >= 3:  # only exile big threats, not cheap 1-2 power creatures
+            player.remove_from_hand(stp); player.add_to_grave(stp)
+            total_mana -= 1
+            opponent.remove_creature(target)
+            log_fn(f"Swords to Plowshares exiles {target.card.name}")
+            update_goyf(gs)
+
+    # Lightning Bolt — creature removal first, face only at ≤ 9 (Mardu is midrange, not pure burn)
     bolt = player.find_tag('bolt')
     if bolt and opp_can_cast(bolt, total_mana, gs, caster=player):
         def bolt_priority(c):
@@ -3787,10 +3899,9 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             return 99
         candidates = [c for c in opponent.creatures if bolt_priority(c) < 99]
         target = min(candidates, key=bolt_priority) if candidates else None
-        go_face = (target is None and
-                   len(player.creatures) > len(opponent.creatures) and
-                   opponent.life <= 9)
+        go_face = (target is None and opponent.life <= 9)
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
+        total_mana -= 1
         if target:
             opponent.remove_creature(target)
             log_fn(f"Lightning Bolt → kills {target.card.name}", True); update_goyf(gs)
@@ -3798,9 +3909,6 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.life -= 3
             log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
             gs.check_life_totals()
-        else:
-            player.hand.append(bolt)
-            if bolt in player.graveyard: player.graveyard.remove(bolt)
 
     # Combat — Bowmasters holds back
     opp_has_blockers = len(opponent.creatures) > 0

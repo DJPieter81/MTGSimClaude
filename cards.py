@@ -538,14 +538,14 @@ def make_doomsday_deck() -> List[Card]:
 def make_dnt_deck() -> List[Card]:
     d = []
     # Creatures (22) — tuned to real March 2026 list (cardsrealm/mtgtop8)
-    d += [creature('Thalia, Guardian of Thraben', 2, {'W':2}, {'W'}, 2, 1, tag='thalia')] * 3
-    d += [creature('Stoneforge Mystic', 2, {'W':2}, {'W'}, 1, 2, tag='sfm',     engine=True)] * 4
-    d += [creature('Recruiter of the Guard', 3, {'W':3}, {'W'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
-    d += [creature('Skyclave Apparition', 3, {'W':3}, {'W'}, 2, 2, tag='skyclave', is_removal=True)] * 3
-    d += [creature('Solitude', 5, {'W':3,'generic':2}, {'W'}, 3, 2, tag='solitude', is_removal=True, flash=True, flying=True, lifelink=True)] * 2
-    d += [creature('Phelia, Exuberant Shepherd', 2, {'W':2}, {'W'}, 2, 2, tag='phelia')] * 3
-    d += [creature('Flickerwisp', 3, {'W':3}, {'W'}, 3, 1, tag='flickerwisp', flying=True)] * 2
-    d += [creature('White Orchid Phantom', 3, {'W':3}, {'W'}, 2, 2, tag='orchid')] * 1
+    d += [creature('Thalia, Guardian of Thraben', 2, {'W':1,'generic':1}, {'W'}, 2, 1, tag='thalia')] * 3
+    d += [creature('Stoneforge Mystic', 2, {'W':1,'generic':1}, {'W'}, 1, 2, tag='sfm',     engine=True)] * 4
+    d += [creature('Recruiter of the Guard', 3, {'W':1,'generic':2}, {'W'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
+    d += [creature('Skyclave Apparition', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='skyclave', is_removal=True)] * 3
+    d += [creature('Solitude', 5, {'W':2,'generic':3}, {'W'}, 3, 2, tag='solitude', is_removal=True, flash=True, flying=True, lifelink=True)] * 2
+    d += [creature('Phelia, Exuberant Shepherd', 2, {'W':1,'generic':1}, {'W'}, 2, 2, tag='phelia')] * 3
+    d += [creature('Flickerwisp', 3, {'W':1,'generic':2}, {'W'}, 3, 1, tag='flickerwisp', flying=True)] * 2
+    d += [creature('White Orchid Phantom', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='orchid')] * 1
     # Spells (8)
     d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'}, tag='stp',     is_removal=True)] * 4
     d += [artifact('Aether Vial', 1, {'generic':1}, tag='vial',    engine=True)] * 4
@@ -570,10 +570,10 @@ def make_dnt_deck() -> List[Card]:
 def make_mono_black_deck() -> List[Card]:
     d = []
     # Creatures (20)
-    d += [creature('Grief', 3, {'B':3}, {'B'}, 3, 2, tag='grief', flash=True)] * 4  # evoke exile black
+    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief', flash=True)] * 4  # evoke exile black
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm',    draw_trigger=True)] * 4
     d += [creature('Dauthi Voidwalker', 2, {'B':2}, {'B'}, 3, 2, tag='dauthi')] * 4
-    d += [creature('Carnage Interpreter', 2, {'B':2}, {'B'}, 2, 2, tag='carnage')] * 4
+    d += [creature('Carnage Interpreter', 2, {'B':1,'generic':1}, {'B'}, 2, 2, tag='carnage')] * 4
     d += [creature('Braids, Arisen Nightmare', 4, {'B':2,'generic':2}, {'B'}, 3, 3, tag='braids')] * 4
     # Spells (16)
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 4
@@ -596,12 +596,12 @@ def make_mono_black_deck() -> List[Card]:
 def make_boros_deck() -> List[Card]:
     d = []
     # Creatures (22): core aggro + Eidolon×3 Bowmasters×4 Recruiter×4 full density
-    d += [creature('Thalia, Guardian of Thraben', 2, {'W':2}, {'W'}, 2, 1, tag='thalia')] * 2
+    d += [creature('Thalia, Guardian of Thraben', 2, {'W':1,'generic':1}, {'W'}, 2, 1, tag='thalia')] * 2
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm', draw_trigger=True, flash=True)] * 4
-    d += [creature('Seasoned Dungeoneer', 3, {'W':3}, {'W'}, 3, 3, tag='dungeoneer')] * 3
+    d += [creature('Seasoned Dungeoneer', 3, {'W':1,'generic':2}, {'W'}, 3, 3, tag='dungeoneer')] * 3
     d += [creature('Minsc and Boo, Timeless Heroes', 4, {'R':1,'W':1,'generic':2}, {'R','W'}, 4, 4, tag='minsc')] * 2
-    d += [creature('White Orchid Phantom', 3, {'W':3}, {'W'}, 2, 2, tag='orchid')] * 3
-    d += [creature('Recruiter of the Guard', 3, {'W':3}, {'W'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
+    d += [creature('White Orchid Phantom', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='orchid')] * 3
+    d += [creature('Recruiter of the Guard', 3, {'W':1,'generic':2}, {'W'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
     d += [creature('Eidolon of the Great Revel', 2, {'R':2}, {'R'}, 2, 2,
                    tag='eidolon',  etb_damage=2)] * 4
     # Spells (14): Vial×4 STP×4 Bolt×4 Pyro×2

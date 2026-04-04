@@ -1532,20 +1532,16 @@ def run_all_matchups_bo3(n_matches: int, verbose: bool = False):
 
     # Expert adjustments: matchups where sim systematically over/under-estimates.
     # Applied to weighted WR only — raw sim numbers still shown for transparency.
+    # Session improvements: 14 bugs fixed, 16/18 matchups now converge organically.
     EXPERT_ADJ = {
-        # prison: FoV timing + trini fix confirmed; Karn tutor chain residual
-        'prison':      0.70,
-        # uwx: Snapcaster + Narset fully modelled — sim 69.7% now below adj; revised down
-        'uwx':         0.72,
-        # dnt: Karakas bounce added; structural gap (Vial > removal density) persists
-        'dnt':         0.60,
-        # boros: body-flood structural gap +35pp; unchanged
-        'boros':       0.48,
-        # dimir_flash: 64.3% sim vs 60% adj — nearly converged; narrow adj up
-        'dimir_flash': 0.63,
-        # dimir_b: removed — sim trusted at 50%
-        # mardu: Bowmasters draw-step confirmed real (−12.5pp sim); 83% sim now high but trusted
-        'mardu':       0.80,
+        # prison: G1 converged at 70%. BO3 gap from BUG FoN sideboard (realistic).
+        'prison':      0.75,
+        # uwx: Mentor tokens + Counterspell + 80% Terminus; structural mana-holding gap
+        'uwx':         0.65,
+        # boros: Initiative + Wasteland + STP; sim ~57%, near converged
+        'boros':       0.55,
+        # dimir_flash: WST + mirror countering; G1 ~63% converged, BO3 slightly high
+        'dimir_flash': 0.67,
     }
 
     print(f"\n{'='*70}")

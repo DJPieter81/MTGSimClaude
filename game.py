@@ -315,8 +315,9 @@ class GameState:
           F. Even trade while at board parity or behind — reinforces opp lead.
           G. Deathtouch blocker — attacker dies regardless of power.
         """
-        hand_size  = len(player.hand)
         defender   = self.opp if player == self.bug else self.bug
+        # Bridge uses defender's hand size (Bridge controller = defender)
+        hand_size  = len(defender.hand)
         blockers   = defender.creatures
         has_blockers = bool(blockers)
         board_lead = len(player.creatures) > len(blockers)
