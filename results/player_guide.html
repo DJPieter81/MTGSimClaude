@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUG Tempo — Legacy Player Guide</title>
+<style>
+:root{--bg:#0d1117;--s:#161b22;--s2:#1c2129;--bd:#30363d;--t:#e6edf3;--m:#8b949e;--a:#58a6ff;--g:#3fb950;--gl:#7ee787;--y:#d29922;--o:#db6d28;--r:#f85149;--U:#4a9bd9;--B:#9b7ec8;--R:#e05d44;--W:#e3b341;--G:#3fb950}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',-apple-system,sans-serif;background:var(--bg);color:var(--t);line-height:1.6}
+.c{max-width:1200px;margin:0 auto;padding:20px}
+h1{font-size:2rem;margin-bottom:4px}
+h2{font-size:1.35rem;margin:32px 0 14px;color:var(--a);border-bottom:1px solid var(--bd);padding-bottom:8px}
+h3{font-size:1rem;margin:16px 0 6px;color:var(--m)}
+.sub{color:var(--m);font-size:.88rem;margin-bottom:20px}
+.hero{background:linear-gradient(135deg,#1a2744,#0d1117);border:1px solid var(--bd);border-radius:12px;padding:28px;margin-bottom:28px}
+.hs{display:flex;gap:20px;margin-top:16px;flex-wrap:wrap}
+.sc{background:var(--s);border:1px solid var(--bd);border-radius:8px;padding:14px 20px;min-width:120px;text-align:center}
+.sv{font-size:1.8rem;font-weight:700;color:var(--a)}
+.sl{font-size:.75rem;color:var(--m);text-transform:uppercase;letter-spacing:1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.card{background:var(--s);border:1px solid var(--bd);border-radius:8px;padding:14px}
+.card h3{margin-top:0;color:var(--a);font-size:.92rem}
+.cl{display:flex;justify-content:space-between;padding:3px 0;font-size:.88rem}
+.cn{color:var(--m);min-width:20px}
+.cm{color:var(--m);font-size:.82rem}
+.mu{color:var(--U)}.mb{color:var(--B)}.mr{color:var(--R)}.mw{color:var(--W)}.mg{color:var(--G)}
+table{width:100%;border-collapse:collapse;margin:14px 0}
+th{text-align:left;padding:8px 10px;background:var(--s);color:var(--m);font-size:.78rem;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid var(--bd)}
+td{padding:8px 10px;border-bottom:1px solid var(--bd)}
+tr:hover{background:rgba(88,166,255,.04)}
+.ti{display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;border-radius:6px;font-weight:700;font-size:.78rem;margin-right:6px}
+.tA{background:#1a4d2e;color:var(--g)}.tB{background:#2d3a1e;color:var(--gl)}.tC{background:#3d2e1a;color:var(--y)}.tD{background:#3d251a;color:var(--o)}.tF{background:#3d1a1a;color:var(--r)}
+.wb{height:7px;border-radius:4px;background:var(--bd);min-width:100px;position:relative;margin-top:3px}
+.wf{height:100%;border-radius:4px;position:absolute;left:0;top:0}
+.wt{font-weight:600;font-variant-numeric:tabular-nums}
+.sbc{background:var(--s);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.sbl{font-weight:600;margin-bottom:4px;font-size:.95rem}
+.si{color:var(--g);font-size:.84rem}.so{color:var(--r);font-size:.84rem}
+.sk{color:var(--m);font-size:.82rem;margin-top:4px;font-style:italic}
+.tip{background:var(--s2);border-left:3px solid var(--a);padding:10px 14px;margin:8px 0;border-radius:0 6px 6px 0;font-size:.88rem}
+.tip b{color:var(--a)}
+.change-plus{color:var(--g);font-size:.82rem}.change-minus{color:var(--r);font-size:.82rem}
+.mc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{background:var(--s);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:.78rem}
+.chip .pct{color:var(--a);font-weight:600;margin-right:3px}
+.qr{background:var(--s);border:1px solid var(--bd);border-radius:8px;padding:16px;font-family:monospace;font-size:.82rem;line-height:1.8;white-space:pre;overflow-x:auto}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--bd);color:var(--m);font-size:.78rem;text-align:center}
+@media(max-width:600px){.hs{flex-direction:column}.sc{min-width:auto}}
+</style>
+</head>
+<body>
+<div class="c">
+<div class="hero">
+<h1>BUG Tempo — Legacy Player Guide</h1>
+<div class="sub">Sim-optimized build &middot; Monte Carlo tested (24 variants) &middot; 9,000 BO3 matches &middot; 102 rules tests</div>
+<div class="hs">
+<div class="sc"><div class="sv">69.8%</div><div class="sl">Weighted WR</div></div>
+<div class="sc"><div class="sv">5.6–2.4</div><div class="sl">Expected Record</div></div>
+<div class="sc"><div class="sv">Top 8</div><div class="sl">Expected Finish</div></div>
+<div class="sc"><div class="sv">9 free</div><div class="sl">Interaction Pieces</div></div>
+<div class="sc"><div class="sv">17</div><div class="sl">Creatures</div></div>
+</div>
+</div>
+
+<h2>Quick Reference</h2>
+<div class="qr">CREATURES (17)          INTERACTION (12)         CANTRIPS (8)        LANDS (19)
+4 Tamiyo        {U}    4 Force of Will  {3UU}   4 Brainstorm {U}    4 Polluted Delta
+4 Nethergoyf    {1B}   1 Force of Neg.  {1UU}   3 Ponder     {U}    4 Underground Sea
+4 Bowmasters    {1B}   4 Daze           {1U}    1 Bauble     {0}    4 Wasteland
+3 Kaito         {1UB}  3 Thoughtseize   {B}                         1 Undercity Sewers
+2 Murktide      {6U}   3 Fatal Push     {B}                         1 Marsh Flats
+                       1 Snuff Out      {3B}                        1 Misty Rainforest
+                                                                    1 Scalding Tarn
+                                                                    1 Flooded Strand
+                                                                    1 Island  1 Swamp</div>
+
+<h2>Main Deck (60)</h2>
+<div class="sub">Changes from Oceansoul92 original marked with arrows</div>
+<div class="grid">
+<div class="card"><h3>Creatures (17)</h3>
+<div class="cl"><span><span class="cn">4</span> Tamiyo, Inquisitive Student</span><span class="cm"><span class="mu">{U}</span> 0/3 flip walker</span></div>
+<div class="cl"><span><span class="cn">4</span> Nethergoyf <span class="change-plus">&uarr;</span></span><span class="cm"><span class="mb">{1B}</span> */1+* GY types</span></div>
+<div class="cl"><span><span class="cn">4</span> Orcish Bowmasters</span><span class="cm"><span class="mb">{1B}</span> 1/1 flash, ping</span></div>
+<div class="cl"><span><span class="cn">3</span> Kaito, Bane of Nightmares <span class="change-plus">&uarr;</span></span><span class="cm"><span class="mu">{1</span><span class="mb">U</span><span class="mu">B}</span> 3/4 hexproof</span></div>
+<div class="cl"><span><span class="cn">2</span> Murktide Regent <span class="change-minus">&darr;</span></span><span class="cm"><span class="mu">{6U}</span> 8/8 flying delve</span></div>
+</div>
+<div class="card"><h3>Interaction (12)</h3>
+<div class="cl"><span><span class="cn">4</span> Force of Will</span><span class="cm"><span class="mu">{3UU}</span> free counter</span></div>
+<div class="cl"><span><span class="cn">1</span> Force of Negation <span class="change-plus">NEW</span></span><span class="cm"><span class="mu">{1UU}</span> free on opp turn</span></div>
+<div class="cl"><span><span class="cn">4</span> Daze <span class="change-plus">&uarr;</span></span><span class="cm"><span class="mu">{1U}</span> free T1-3</span></div>
+<div class="cl"><span><span class="cn">3</span> Thoughtseize <span class="change-minus">&darr;</span></span><span class="cm"><span class="mb">{B}</span> strip best card</span></div>
+<div class="cl"><span><span class="cn">3</span> Fatal Push</span><span class="cm"><span class="mb">{B}</span> CMC &le;2/4 removal</span></div>
+<div class="cl"><span><span class="cn">1</span> Snuff Out</span><span class="cm"><span class="mb">{3B}</span> free if Swamp</span></div>
+</div>
+<div class="card"><h3>Cantrips (8)</h3>
+<div class="cl"><span><span class="cn">4</span> Brainstorm</span><span class="cm"><span class="mu">{U}</span> draw 3, put 2 back</span></div>
+<div class="cl"><span><span class="cn">3</span> Ponder</span><span class="cm"><span class="mu">{U}</span> top 3, shuffle/keep</span></div>
+<div class="cl"><span><span class="cn">1</span> Mishra's Bauble <span class="change-minus">&darr;</span></span><span class="cm">{0} delayed draw</span></div>
+</div>
+<div class="card"><h3>Lands (19)</h3>
+<div class="cl"><span><span class="cn">4</span> Polluted Delta</span><span class="cm">fetch I/Sw</span></div>
+<div class="cl"><span><span class="cn">1</span> Marsh Flats</span><span class="cm">fetch Sw/Pl</span></div>
+<div class="cl"><span><span class="cn">1</span> Misty Rainforest</span><span class="cm">fetch I/Fo</span></div>
+<div class="cl"><span><span class="cn">1</span> Scalding Tarn</span><span class="cm">fetch I/Mo</span></div>
+<div class="cl"><span><span class="cn">1</span> Flooded Strand</span><span class="cm">fetch I/Pl</span></div>
+<div class="cl"><span><span class="cn">4</span> Underground Sea</span><span class="cm"><span class="mu">U</span>/<span class="mb">B</span> dual</span></div>
+<div class="cl"><span><span class="cn">1</span> Undercity Sewers</span><span class="cm"><span class="mu">U</span>/<span class="mb">B</span></span></div>
+<div class="cl"><span><span class="cn">4</span> Wasteland</span><span class="cm">destroy nonbasic</span></div>
+<div class="cl"><span><span class="cn">1</span> Island &nbsp; <span class="cn">1</span> Swamp</span><span class="cm">basics</span></div>
+</div>
+</div>
+
+<h2>Sideboard (15)</h2>
+<div class="grid">
+<div class="card"><h3>Creatures (3)</h3>
+<div class="cl"><span><span class="cn">3</span> Barrowgoyf</span><span class="cm"><span class="mb">{2B}</span> deathtouch, lifelink</span></div>
+</div>
+<div class="card"><h3>Counters (7)</h3>
+<div class="cl"><span><span class="cn">3</span> Force of Negation</span><span class="cm"><span class="mu">{1UU}</span> free on opp turn</span></div>
+<div class="cl"><span><span class="cn">2</span> Hydroblast</span><span class="cm"><span class="mu">{U}</span> counter/destroy red</span></div>
+<div class="cl"><span><span class="cn">1</span> Flusterstorm</span><span class="cm"><span class="mu">{U}</span> beats Veil</span></div>
+<div class="cl"><span><span class="cn">1</span> Mindbreak Trap</span><span class="cm"><span class="mu">{2UU}</span> free if 3+ spells</span></div>
+</div>
+<div class="card"><h3>Removal (4)</h3>
+<div class="cl"><span><span class="cn">2</span> Massacre</span><span class="cm"><span class="mb">{2BB}</span> free vs Plains</span></div>
+<div class="cl"><span><span class="cn">1</span> Toxic Deluge</span><span class="cm"><span class="mb">{2B}</span> -X/-X sweeper</span></div>
+<div class="cl"><span><span class="cn">1</span> Snuff Out</span><span class="cm"><span class="mb">{3B}</span> free if Swamp</span></div>
+</div>
+<div class="card"><h3>GY Hate (1)</h3>
+<div class="cl"><span><span class="cn">1</span> Nihil Spellbomb</span><span class="cm">{0} exile GY, draw</span></div>
+</div>
+</div>
+
+<h2>Matchup Breakdown</h2>
+<table>
+<thead><tr><th></th><th>Matchup</th><th>Meta</th><th>Match WR</th><th>G1</th><th>G2-3</th></tr></thead>
+<tbody>
+<tr><td><span class="ti tA">A</span></td><td>Lands</td><td>5%</td><td><span class="wt" style="color:var(--g)">93.0%</span><div class="wb"><div class="wf" style="width:93%;background:var(--g)"></div></div></td><td>83.8%</td><td>83.6%</td></tr>
+<tr><td><span class="ti tA">A</span></td><td>UR Aggro</td><td>3%</td><td><span class="wt" style="color:var(--g)">91.2%</span><div class="wb"><div class="wf" style="width:91.2%;background:var(--g)"></div></div></td><td>81.2%</td><td>82.8%</td></tr>
+<tr><td><span class="ti tA">A</span></td><td>Eldrazi</td><td>3%</td><td><span class="wt" style="color:var(--g)">91.4%</span><div class="wb"><div class="wf" style="width:91.4%;background:var(--g)"></div></div></td><td>79.6%</td><td>82.1%</td></tr>
+<tr><td><span class="ti tA">A</span></td><td>Mardu</td><td>3%</td><td><span class="wt" style="color:var(--g)">89.2%</span><div class="wb"><div class="wf" style="width:89.2%;background:var(--g)"></div></div></td><td>79.4%</td><td>80.6%</td></tr>
+<tr><td><span class="ti tA">A</span></td><td>Prison</td><td>5%</td><td><span class="wt" style="color:var(--g)">87.0%</span><div class="wb"><div class="wf" style="width:87%;background:var(--g)"></div></div></td><td>80.0%</td><td>75.0%</td></tr>
+<tr><td><span class="ti tA">A</span></td><td>Show and Tell</td><td>7%</td><td><span class="wt" style="color:var(--g)">81.4%</span><div class="wb"><div class="wf" style="width:81.4%;background:var(--g)"></div></div></td><td>73.6%</td><td>72.2%</td></tr>
+<tr><td><span class="ti tB">B</span></td><td>Dimir Flash</td><td>3%</td><td><span class="wt" style="color:var(--gl)">79.0%</span><div class="wb"><div class="wf" style="width:79%;background:var(--gl)"></div></div></td><td>68.8%</td><td>71.6%</td></tr>
+<tr><td><span class="ti tB">B</span></td><td>Mono Black</td><td>3%</td><td><span class="wt" style="color:var(--gl)">75.6%</span><div class="wb"><div class="wf" style="width:75.6%;background:var(--gl)"></div></div></td><td>71.0%</td><td>66.3%</td></tr>
+<tr><td><span class="ti tB">B</span></td><td>Dimir Tempo A</td><td>9%</td><td><span class="wt" style="color:var(--gl)">74.6%</span><div class="wb"><div class="wf" style="width:74.6%;background:var(--gl)"></div></div></td><td>63.0%</td><td>68.7%</td></tr>
+<tr><td><span class="ti tB">B</span></td><td>Death and Taxes</td><td>3%</td><td><span class="wt" style="color:var(--gl)">71.8%</span><div class="wb"><div class="wf" style="width:71.8%;background:var(--gl)"></div></div></td><td>67.0%</td><td>64.3%</td></tr>
+<tr><td><span class="ti tB">B</span></td><td>Painter</td><td>4%</td><td><span class="wt" style="color:var(--gl)">70.6%</span><div class="wb"><div class="wf" style="width:70.6%;background:var(--gl)"></div></div></td><td>65.0%</td><td>64.4%</td></tr>
+<tr><td><span class="ti tB">B</span></td><td>UWx Control</td><td>4%</td><td><span class="wt" style="color:var(--gl)">70.4%</span><div class="wb"><div class="wf" style="width:70.4%;background:var(--gl)"></div></div></td><td>61.6%</td><td>65.6%</td></tr>
+<tr><td><span class="ti tB">B</span></td><td>Boros Aggro</td><td>2%</td><td><span class="wt" style="color:var(--gl)">69.0%</span><div class="wb"><div class="wf" style="width:69%;background:var(--gl)"></div></div></td><td>63.0%</td><td>62.9%</td></tr>
+<tr><td><span class="ti tB">B</span></td><td>Dimir Tempo B</td><td>6%</td><td><span class="wt" style="color:var(--gl)">66.4%</span><div class="wb"><div class="wf" style="width:66.4%;background:var(--gl)"></div></div></td><td>64.4%</td><td>58.4%</td></tr>
+<tr><td><span class="ti tC">C</span></td><td>Doomsday</td><td>3%</td><td><span class="wt" style="color:var(--y)">56.8%</span><div class="wb"><div class="wf" style="width:56.8%;background:var(--y)"></div></div></td><td>51.6%</td><td>56.1%</td></tr>
+<tr><td><span class="ti tC">C</span></td><td>Reanimator</td><td>2%</td><td><span class="wt" style="color:var(--y)">56.0%</span><div class="wb"><div class="wf" style="width:56%;background:var(--y)"></div></div></td><td>57.0%</td><td>52.4%</td></tr>
+<tr><td><span class="ti tD">D</span></td><td>Storm</td><td>3%</td><td><span class="wt" style="color:var(--o)">37.6%</span><div class="wb"><div class="wf" style="width:37.6%;background:var(--o)"></div></div></td><td>41.2%</td><td>40.8%</td></tr>
+<tr><td><span class="ti tF">F</span></td><td>Oops All Spells</td><td>6%</td><td><span class="wt" style="color:var(--r)">29.8%</span><div class="wb"><div class="wf" style="width:29.8%;background:var(--r)"></div></div></td><td>37.8%</td><td>34.3%</td></tr>
+</tbody></table>
+
+<h2>Key Plays &amp; Sequencing</h2>
+
+<h3>Mulligan Rules</h3>
+<div class="grid3">
+<div class="tip"><b>KEEP:</b> 2 lands + 1 threat + 1 disruption (FoW/Daze/TS). This is the bread-and-butter hand.</div>
+<div class="tip"><b>KEEP:</b> 1 land + fetch + Daze + threat. Daze returns the land; you still have mana T2.</div>
+<div class="tip"><b>MULLIGAN:</b> 0-1 land with no cantrip. All-interaction no-threat hands. No blue source hands.</div>
+<div class="tip"><b>vs COMBO:</b> Mulligan aggressively for Force of Will. A 5-card hand with FoW beats a 7 without it.</div>
+<div class="tip"><b>vs AGGRO:</b> Keep removal-heavy hands. Push + Goyf + 2 lands is a keep even without FoW.</div>
+</div>
+
+<h3>Turn 1 Priority Order</h3>
+<div class="grid3">
+<div class="tip"><b>T1 Thoughtseize</b> — Strip their best card before they untap. Best T1 play in most matchups.</div>
+<div class="tip"><b>T1 Fetch + Pass</b> — Hold Daze mana, represent interaction. Best vs combo/Vial decks.</div>
+<div class="tip"><b>T1 Tamiyo</b> — Only with FoW backup. She dies to Bolt, Push, and Bowmasters pings.</div>
+<div class="tip"><b>NEVER T1 Brainstorm</b> — No shuffle effect available = the card is wasted. Wait for a fetch.</div>
+</div>
+
+<h3>Critical Sequencing</h3>
+<div class="grid3">
+<div class="tip"><b>Brainstorm → Fetch</b> — Put 2 bad cards back on top, then shuffle them away with the fetch. This is the most important 2-card combo in Legacy.</div>
+<div class="tip"><b>FoW their T1 play</b> — Counter Aether Vial, Chalice of the Void, Dark Ritual, Show and Tell. These are the cards that win games before you untap.</div>
+<div class="tip"><b>Flash Bowmasters on draw step</b> — Cast on their upkeep/draw for immediate ping + Orc Army token. Every subsequent draw triggers more pings.</div>
+<div class="tip"><b>Wasteland before they fetch</b> — Destroy their dual land before they can crack a fetch for a replacement. Timing matters.</div>
+<div class="tip"><b>Daze is best T1-T3</b> — Opponent is mana-constrained and can't pay {1}. After T4, they'll pay through it.</div>
+<div class="tip"><b>Kaito survives everything</b> — Hexproof dodges STP, Terminus tucks (but Kaito comes back), Push needs revolt for CMC 3. The stickiest threat in the deck.</div>
+</div>
+
+<h3>Combat Tips</h3>
+<div class="grid3">
+<div class="tip"><b>Murktide</b> flies over everything — the finisher vs creature decks (DnT, Boros, Eldrazi).</div>
+<div class="tip"><b>Nethergoyf</b> grows as the game goes on. Typically 3/4 by T3, 4/5 by T5. Your most reliable attacker.</div>
+<div class="tip"><b>Never attack with Bowmasters</b> into a board where it would die — the draw-step ping value is worth more than 1 combat damage.</div>
+<div class="tip"><b>Tamiyo flips</b> after drawing your 3rd card in a turn. Brainstorm alone triggers this (draw 3).</div>
+</div>
+
+<h2>Metagame Distribution</h2>
+<div class="sub">Legacy metagame shares — mtgtop8.com, March 2026</div>
+<div class="mc">
+<div class="chip"><span class="pct">9%</span> Dimir A</div>
+<div class="chip"><span class="pct">7%</span> Show &amp; Tell</div>
+<div class="chip"><span class="pct">6%</span> Dimir B</div>
+<div class="chip"><span class="pct">6%</span> Oops</div>
+<div class="chip"><span class="pct">5%</span> Lands</div>
+<div class="chip"><span class="pct">5%</span> Prison</div>
+<div class="chip"><span class="pct">4%</span> UWx</div>
+<div class="chip"><span class="pct">4%</span> Painter</div>
+<div class="chip"><span class="pct">3%</span> Dimir Flash</div>
+<div class="chip"><span class="pct">3%</span> UR Aggro</div>
+<div class="chip"><span class="pct">3%</span> Mardu</div>
+<div class="chip"><span class="pct">3%</span> Storm</div>
+<div class="chip"><span class="pct">3%</span> Eldrazi</div>
+<div class="chip"><span class="pct">3%</span> Doomsday</div>
+<div class="chip"><span class="pct">3%</span> DnT</div>
+<div class="chip"><span class="pct">3%</span> Mono Black</div>
+<div class="chip"><span class="pct">2%</span> Reanimator</div>
+<div class="chip"><span class="pct">2%</span> Boros</div>
+</div>
+
+<h2>Sideboard Plans by Tier</h2>
+
+<h3 style="color:var(--g)">Tier A Matchups (80%+ WR) — Favorable</h3>
+
+<div class="sbc"><div class="sbl">vs Show and Tell (81.4%)</div>
+<div class="si">IN: +2 FoN, +1 Snuff Out, +1 Toxic Deluge, +1 Nihil Spellbomb</div>
+<div class="so">OUT: -3 Fatal Push, -2 Daze</div>
+<div class="sk">Push/Daze blank — no cheap creatures. FoN counters Show for free. Snuff kills Emrakul/Griselbrand. Deluge sweeps Sneak Attack tokens.</div></div>
+
+<div class="sbc"><div class="sbl">vs Lands (93.0%)</div>
+<div class="si">IN: +2 FoN, +1 Nihil Spellbomb</div>
+<div class="so">OUT: -3 Fatal Push</div>
+<div class="sk">Push dead (no creatures until Marit Lage). FoN counters Crop Rotation / Life from the Loam for free. Nihil exiles their GY loop.</div></div>
+
+<div class="sbc"><div class="sbl">vs Eldrazi (91.4%)</div>
+<div class="si">IN: +1 FoN, +1 Toxic Deluge, +1 Snuff Out</div>
+<div class="so">OUT: -3 Thoughtseize</div>
+<div class="sk">TS blank vs topdecked Eldrazi. FoN counters Chalice. Snuff kills TKS/Smasher for free.</div></div>
+
+<div class="sbc"><div class="sbl">vs UR Aggro (91.2%), Mardu (89.2%)</div>
+<div class="si">IN: +2 Hydroblast, +1 Toxic Deluge</div>
+<div class="so">OUT: -1 Daze, -2 Thoughtseize</div>
+<div class="sk">Hydroblast kills Murktide, DRC, Ragavan. Deluge sweeps token/creature floods. TS too painful vs aggro.</div></div>
+
+<div class="sbc"><div class="sbl">vs Prison (87.0%)</div>
+<div class="si">IN: +2 FoN, +1 Barrowgoyf</div>
+<div class="so">OUT: -2 Brainstorm, -1 Daze</div>
+<div class="sk">FoN counters lock pieces for free on their turn. Barrowgoyf grinds through Bridge (deathtouch). Daze weak vs Tomb/City mana.</div></div>
+
+<h3 style="color:var(--gl)">Tier B Matchups (65-80% WR) — Favored</h3>
+
+<div class="sbc"><div class="sbl">vs Dimir Tempo A — mirror (74.6%)</div>
+<div class="si">IN: +2 Hydroblast, +1 Barrowgoyf</div>
+<div class="so">OUT: -2 Brainstorm, -1 Daze</div>
+<div class="sk">Hydroblast kills their Murktide and Tamiyo. Barrowgoyf blocks everything with deathtouch + lifelink. Win the Bowmasters war.</div></div>
+
+<div class="sbc"><div class="sbl">vs Dimir Tempo B — Barrowgoyf mirror (66.4%)</div>
+<div class="si">IN: +1 Barrowgoyf, +1 Toxic Deluge</div>
+<div class="so">OUT: -1 Daze, -1 Thoughtseize</div>
+<div class="sk">Deluge sweeps their deathtouch blockers. Our Barrowgoyf trades with theirs.</div></div>
+
+<div class="sbc"><div class="sbl">vs Death and Taxes (71.8%)</div>
+<div class="sk" style="font-style:normal">No sideboard changes — main deck is well-positioned. FoW their Vial T1. Push Thalia. Fly over with Murktide. Wasteland their Karakas.</div></div>
+
+<div class="sbc"><div class="sbl">vs UWx Control (70.4%)</div>
+<div class="si">IN: +2 FoN, +1 Hydroblast</div>
+<div class="so">OUT: -2 Thoughtseize, -1 Daze</div>
+<div class="sk">FoN free on their turn — counters Terminus, Mentor, Narset. Hydroblast hits their blue threats. TS weak vs topdecks in long games.</div></div>
+
+<div class="sbc"><div class="sbl">vs Painter (70.6%)</div>
+<div class="si">IN: +2 FoN, +1 Hydroblast</div>
+<div class="so">OUT: -2 Brainstorm, -1 Daze</div>
+<div class="sk">FoN counters Blood Moon and Grindstone for free. Hydroblast answers red threats. Daze weak vs Ancient Tomb mana.</div></div>
+
+<div class="sbc"><div class="sbl">vs Boros Aggro (69.0%), Mono Black (75.6%)</div>
+<div class="sk" style="font-style:normal">No sideboard changes. Counter Eidolon, Wasteland their lands, race with Nethergoyf. Vs Mono Black: race Dauthi Voidwalker, Wasteland their Swamps.</div></div>
+
+<h3 style="color:var(--y)">Tier C/D Matchups (37-57% WR) — Unfavorable</h3>
+
+<div class="sbc"><div class="sbl">vs Doomsday (56.8%)</div>
+<div class="si">IN: +3 FoN, +1 Nihil Spellbomb</div>
+<div class="so">OUT: -3 Fatal Push, -1 Daze</div>
+<div class="sk">Push dead (no creatures). FoN counters Doomsday and Thassa's Oracle for free. Nihil disrupts the pile. Deploy a fast clock.</div></div>
+
+<div class="sbc"><div class="sbl">vs Reanimator (56.0%)</div>
+<div class="si">IN: +2 FoN, +1 Barrowgoyf, +1 Nihil Spellbomb</div>
+<div class="so">OUT: -2 Brainstorm, -1 Daze, -1 Snuff Out</div>
+<div class="sk">Nihil exiles their Griselbrand/Archon targets. FoN counters Reanimate/Exhume for free. Barrowgoyf grinds if game goes long. Daze weak vs Dark Ritual mana.</div></div>
+
+<div class="sbc"><div class="sbl">vs Storm (37.6%)</div>
+<div class="si">IN: +2 FoN, +1 Flusterstorm, +1 Mindbreak Trap</div>
+<div class="so">OUT: -4 Brainstorm</div>
+<div class="sk">Flusterstorm and Mindbreak Trap beat Veil of Summer (neither targets blue/black). Brainstorm too slow — need counters NOW. Mulligan for FoW.</div></div>
+
+<div class="sbc"><div class="sbl">vs Oops All Spells (29.8%)</div>
+<div class="si">IN: +3 FoN, +1 Nihil Spellbomb</div>
+<div class="so">OUT: -4 Brainstorm</div>
+<div class="sk">Maximize free counters — Oops wins T1-2. Nihil exiles their GY to fizzle. Brainstorm too slow. Mulligan aggressively for any Force.</div></div>
+
+<h2>Optimization History</h2>
+<div class="card" style="max-width:700px">
+<h3>Monte Carlo Variant Testing (4 Rounds, 24 Variants)</h3>
+<div class="cl"><span>Round 1: +1 Nethergoyf, +1 Kaito, -1 Borrower, -1 Murktide</span><span class="change-plus">+3.5pp</span></div>
+<div class="cl"><span>Round 2: -1 Mishra's Bauble, +1 Daze (4th copy)</span><span class="change-plus">+3.6pp</span></div>
+<div class="cl"><span>Round 3: -1 Thoughtseize, +1 Force of Negation (main)</span><span class="change-plus">+2.1pp</span></div>
+<div class="cl"><span>Round 4: All 6 variants tested negative</span><span style="color:var(--a)">OPTIMAL</span></div>
+<div class="cl" style="margin-top:8px;border-top:1px solid var(--bd);padding-top:8px"><span><b>Total improvement over original list</b></span><span class="change-plus" style="font-size:1rem"><b>+7-8pp WR</b></span></div>
+</div>
+
+<footer>
+BUG Tempo Legacy Player Guide &middot; MTGSimClaude v2 &middot; April 2026<br>
+25 commits &middot; 20 engine bugs fixed &middot; 102 rules tests &middot; 9,000 BO3 matches &middot; 24 deck variants tested
+</footer>
+
+</div>
+</body>
+</html>

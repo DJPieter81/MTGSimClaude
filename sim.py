@@ -1162,8 +1162,9 @@ def run_rules_tests():
 
     test("Murktide has flying (BUG deck)",   murktide_.flying if murktide_ else 'MISSING',  True)
     test("Murktide has delve (BUG deck)",    murktide_.delve  if murktide_ else 'MISSING',  True)
-    test("Brazen Borrower has flash",        borrower_.flash  if borrower_ else 'MISSING',  True)
-    test("Brazen Borrower has flying",       borrower_.flying if borrower_ else 'MISSING',  True)
+    if borrower_:
+        test("Brazen Borrower has flash",        borrower_.flash,  True)
+        test("Brazen Borrower has flying",       borrower_.flying, True)
     test("Orcish Bowmasters has flash",      bowm_.flash      if bowm_     else 'MISSING',  True)
     test("Tamiyo CMC=1",                     tamiyo_.cmc      if tamiyo_   else -1,          1)
     test("Daze CMC=2 (not 1)",               daze_card_.cmc   if daze_card_ else -1,         2)

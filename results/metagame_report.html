@@ -78,8 +78,8 @@
   <h1>BUG Tempo — Legacy Metagame Analysis</h1>
   <div class="subtitle">Monte Carlo simulation &middot; 9,000 best-of-3 matches &middot; 104 rules tests passed &middot; v2 engine</div>
   <div class="hero-stats">
-    <div class="stat-card"><div class="stat-value">64.5%</div><div class="stat-label">Weighted Match WR</div></div>
-    <div class="stat-card"><div class="stat-value">5.2–2.8</div><div class="stat-label">Expected Record (8 rounds)</div></div>
+    <div class="stat-card"><div class="stat-value">67.8%</div><div class="stat-label">Weighted Match WR</div></div>
+    <div class="stat-card"><div class="stat-value">5.4–2.6</div><div class="stat-label">Expected Record (8 rounds)</div></div>
     <div class="stat-card"><div class="stat-value">Top 8</div><div class="stat-label">Expected Finish</div></div>
     <div class="stat-card"><div class="stat-value">18</div><div class="stat-label">Matchups Simulated</div></div>
     <div class="stat-card"><div class="stat-value">~27k</div><div class="stat-label">Total Games</div></div>
@@ -88,16 +88,15 @@
 
 <!-- DECKLIST -->
 <h2>Main Deck (60)</h2>
-<p class="subtitle">Oceansoul92, 9th place MTGO Challenge 32, 29 Mar 2026</p>
+<p class="subtitle">Sim-optimized build based on Oceansoul92 shell &middot; +1 Nethergoyf, +1 Kaito, -1 Borrower, -1 Murktide (+3.5pp WR)</p>
 <div class="deck-grid">
   <div class="deck-section">
     <h3>Creatures (17)</h3>
     <div class="card-line"><span><span class="card-count">4</span> Tamiyo, Inquisitive Student</span><span class="card-cmc">{U}</span></div>
-    <div class="card-line"><span><span class="card-count">3</span> Nethergoyf</span><span class="card-cmc">{1B}</span></div>
+    <div class="card-line"><span><span class="card-count">4</span> Nethergoyf</span><span class="card-cmc">{1B} &uarr;</span></div>
     <div class="card-line"><span><span class="card-count">4</span> Orcish Bowmasters</span><span class="card-cmc">{1B}</span></div>
-    <div class="card-line"><span><span class="card-count">3</span> Murktide Regent</span><span class="card-cmc">{6U}</span></div>
-    <div class="card-line"><span><span class="card-count">1</span> Brazen Borrower</span><span class="card-cmc">{2U}</span></div>
-    <div class="card-line"><span><span class="card-count">2</span> Kaito, Bane of Nightmares</span><span class="card-cmc">{1UB}</span></div>
+    <div class="card-line"><span><span class="card-count">2</span> Murktide Regent</span><span class="card-cmc">{6U} &darr;</span></div>
+    <div class="card-line"><span><span class="card-count">3</span> Kaito, Bane of Nightmares</span><span class="card-cmc">{1UB} &uarr;</span></div>
   </div>
   <div class="deck-section">
     <h3>Interaction (15)</h3>
@@ -161,23 +160,24 @@
   <th>Tier</th><th>Matchup</th><th>Meta %</th><th style="min-width:180px">Win Rate</th><th>G1</th><th>G2-3</th><th>Swing</th>
 </tr></thead>
 <tbody>
-  <tr><td><span class="tier tier-A">A</span></td><td>Lands</td><td class="meta-share">5%</td><td><span class="wr-text" style="color:var(--green)">95.2%</span><div class="wr-bar"><div class="wr-fill" style="width:95.2%;background:var(--green)"></div></div></td><td>82.6%</td><td>85.1%</td><td style="color:var(--green)">+2.5</td></tr>
-  <tr><td><span class="tier tier-A">A</span></td><td>UR Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">87.2%</span><div class="wr-bar"><div class="wr-fill" style="width:87.2%;background:var(--green)"></div></div></td><td>77.0%</td><td>80.4%</td><td style="color:var(--green)">+3.4</td></tr>
-  <tr><td><span class="tier tier-A">A</span></td><td>Eldrazi Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">86.8%</span><div class="wr-bar"><div class="wr-fill" style="width:86.8%;background:var(--green)"></div></div></td><td>75.6%</td><td>78.9%</td><td style="color:var(--green)">+3.3</td></tr>
-  <tr><td><span class="tier tier-A">A</span></td><td>Mardu Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">80.2%</span><div class="wr-bar"><div class="wr-fill" style="width:80.2%;background:var(--green)"></div></div></td><td>70.2%</td><td>73.7%</td><td style="color:var(--green)">+3.5</td></tr>
-  <tr><td><span class="tier tier-B">B</span></td><td>Show and Tell</td><td class="meta-share">7%</td><td><span class="wr-text" style="color:#7ee787">77.2%</span><div class="wr-bar"><div class="wr-fill" style="width:77.2%;background:#7ee787"></div></div></td><td>65.8%</td><td>69.7%</td><td style="color:var(--green)">+3.9</td></tr>
-  <tr><td><span class="tier tier-B">B</span></td><td>Dimir Flash</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:#7ee787">70.6%</span><div class="wr-bar"><div class="wr-fill" style="width:70.6%;background:#7ee787"></div></div></td><td>64.4%</td><td>65.0%</td><td style="color:var(--green)">+0.6</td></tr>
-  <tr><td><span class="tier tier-B">B</span></td><td>UWx Control</td><td class="meta-share">4%</td><td><span class="wr-text" style="color:#7ee787">66.2%</span><div class="wr-bar"><div class="wr-fill" style="width:66.2%;background:#7ee787"></div></div></td><td>62.6%</td><td>60.2%</td><td style="color:var(--red)">-2.4</td></tr>
-  <tr><td><span class="tier tier-C">C</span></td><td>Dimir Tempo A</td><td class="meta-share">9%</td><td><span class="wr-text" style="color:var(--yellow)">64.4%</span><div class="wr-bar"><div class="wr-fill" style="width:64.4%;background:var(--yellow)"></div></div></td><td>58.4%</td><td>61.5%</td><td style="color:var(--green)">+3.1</td></tr>
-  <tr><td><span class="tier tier-C">C</span></td><td>Painter</td><td class="meta-share">4%</td><td><span class="wr-text" style="color:var(--yellow)">63.4%</span><div class="wr-bar"><div class="wr-fill" style="width:63.4%;background:var(--yellow)"></div></div></td><td>61.2%</td><td>58.5%</td><td style="color:var(--red)">-2.7</td></tr>
-  <tr><td><span class="tier tier-C">C</span></td><td>Mono Black</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--yellow)">62.2%</span><div class="wr-bar"><div class="wr-fill" style="width:62.2%;background:var(--yellow)"></div></div></td><td>56.4%</td><td>59.4%</td><td style="color:var(--green)">+3.0</td></tr>
-  <tr><td><span class="tier tier-C">C</span></td><td>Death and Taxes</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--yellow)">60.0%</span><div class="wr-bar"><div class="wr-fill" style="width:60%;background:var(--yellow)"></div></div></td><td>57.4%</td><td>56.5%</td><td style="color:var(--red)">-0.9</td></tr>
-  <tr><td><span class="tier tier-C">C</span></td><td>Boros Aggro</td><td class="meta-share">2%</td><td><span class="wr-text" style="color:var(--yellow)">59.4%</span><div class="wr-bar"><div class="wr-fill" style="width:59.4%;background:var(--yellow)"></div></div></td><td>56.8%</td><td>57.1%</td><td style="color:var(--green)">+0.3</td></tr>
-  <tr><td><span class="tier tier-C">C</span></td><td>Dimir Tempo B</td><td class="meta-share">6%</td><td><span class="wr-text" style="color:var(--yellow)">58.2%</span><div class="wr-bar"><div class="wr-fill" style="width:58.2%;background:var(--yellow)"></div></div></td><td>58.2%</td><td>53.4%</td><td style="color:var(--red)">-4.8</td></tr>
-  <tr><td><span class="tier tier-D">D</span></td><td>Reanimator</td><td class="meta-share">2%</td><td><span class="wr-text" style="color:var(--orange)">48.6%</span><div class="wr-bar"><div class="wr-fill" style="width:48.6%;background:var(--orange)"></div></div></td><td>47.0%</td><td>50.6%</td><td style="color:var(--green)">+3.6</td></tr>
-  <tr><td><span class="tier tier-D">D</span></td><td>Doomsday</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--orange)">48.4%</span><div class="wr-bar"><div class="wr-fill" style="width:48.4%;background:var(--orange)"></div></div></td><td>47.8%</td><td>50.1%</td><td style="color:var(--green)">+2.3</td></tr>
-  <tr><td><span class="tier tier-F">F</span></td><td>Storm</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--red)">31.8%</span><div class="wr-bar"><div class="wr-fill" style="width:31.8%;background:var(--red)"></div></div></td><td>38.4%</td><td>38.0%</td><td style="color:var(--red)">-0.4</td></tr>
-  <tr><td><span class="tier tier-F">F</span></td><td>Oops All Spells</td><td class="meta-share">6%</td><td><span class="wr-text" style="color:var(--red)">26.6%</span><div class="wr-bar"><div class="wr-fill" style="width:26.6%;background:var(--red)"></div></div></td><td>35.0%</td><td>32.9%</td><td style="color:var(--red)">-2.1</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>UR Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">94.6%</span><div class="wr-bar"><div class="wr-fill" style="width:94.6%;background:var(--green)"></div></div></td><td>85.6%</td><td>85.2%</td><td style="color:var(--red)">-0.4</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>Eldrazi Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">91.4%</span><div class="wr-bar"><div class="wr-fill" style="width:91.4%;background:var(--green)"></div></div></td><td>83.0%</td><td>81.1%</td><td style="color:var(--red)">-1.9</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>Mardu Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">89.8%</span><div class="wr-bar"><div class="wr-fill" style="width:89.8%;background:var(--green)"></div></div></td><td>82.6%</td><td>80.3%</td><td style="color:var(--red)">-2.3</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>Lands</td><td class="meta-share">5%</td><td><span class="wr-text" style="color:var(--green)">89.4%</span><div class="wr-bar"><div class="wr-fill" style="width:89.4%;background:var(--green)"></div></div></td><td>80.4%</td><td>80.8%</td><td style="color:var(--green)">+0.4</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>Prison</td><td class="meta-share">5%</td><td><span class="wr-text" style="color:var(--green)">82.6%</span><div class="wr-bar"><div class="wr-fill" style="width:82.6%;background:var(--green)"></div></div></td><td>76.8%</td><td>72.2%</td><td style="color:var(--red)">-4.6</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>Dimir Flash</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">80.6%</span><div class="wr-bar"><div class="wr-fill" style="width:80.6%;background:var(--green)"></div></div></td><td>73.2%</td><td>71.9%</td><td style="color:var(--red)">-1.3</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>Show and Tell</td><td class="meta-share">7%</td><td><span class="wr-text" style="color:#7ee787">78.8%</span><div class="wr-bar"><div class="wr-fill" style="width:78.8%;background:#7ee787"></div></div></td><td>68.6%</td><td>69.3%</td><td style="color:var(--green)">+0.7</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>Mono Black</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:#7ee787">73.6%</span><div class="wr-bar"><div class="wr-fill" style="width:73.6%;background:#7ee787"></div></div></td><td>65.2%</td><td>67.2%</td><td style="color:var(--green)">+2.0</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>Dimir Tempo A</td><td class="meta-share">9%</td><td><span class="wr-text" style="color:#7ee787">72.2%</span><div class="wr-bar"><div class="wr-fill" style="width:72.2%;background:#7ee787"></div></div></td><td>60.2%</td><td>68.8%</td><td style="color:var(--green)">+8.6</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>Boros Aggro</td><td class="meta-share">2%</td><td><span class="wr-text" style="color:#7ee787">71.2%</span><div class="wr-bar"><div class="wr-fill" style="width:71.2%;background:#7ee787"></div></div></td><td>61.6%</td><td>65.2%</td><td style="color:var(--green)">+3.6</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>DnT</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:#7ee787">70.6%</span><div class="wr-bar"><div class="wr-fill" style="width:70.6%;background:#7ee787"></div></div></td><td>66.2%</td><td>62.1%</td><td style="color:var(--red)">-4.1</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>UWx Control</td><td class="meta-share">4%</td><td><span class="wr-text" style="color:#7ee787">70.0%</span><div class="wr-bar"><div class="wr-fill" style="width:70.0%;background:#7ee787"></div></div></td><td>62.4%</td><td>62.8%</td><td style="color:var(--green)">+0.4</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Painter</td><td class="meta-share">4%</td><td><span class="wr-text" style="color:var(--yellow)">63.4%</span><div class="wr-bar"><div class="wr-fill" style="width:63.4%;background:var(--yellow)"></div></div></td><td>55.6%</td><td>61.9%</td><td style="color:var(--green)">+6.3</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Dimir Tempo B</td><td class="meta-share">6%</td><td><span class="wr-text" style="color:var(--yellow)">62.4%</span><div class="wr-bar"><div class="wr-fill" style="width:62.4%;background:var(--yellow)"></div></div></td><td>60.2%</td><td>56.0%</td><td style="color:var(--red)">-4.2</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Doomsday</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--yellow)">54.2%</span><div class="wr-bar"><div class="wr-fill" style="width:54.2%;background:var(--yellow)"></div></div></td><td>51.6%</td><td>53.5%</td><td style="color:var(--green)">+1.9</td></tr>
+  <tr><td><span class="tier tier-D">D</span></td><td>Reanimator</td><td class="meta-share">2%</td><td><span class="wr-text" style="color:var(--orange)">47.2%</span><div class="wr-bar"><div class="wr-fill" style="width:47.2%;background:var(--orange)"></div></div></td><td>49.4%</td><td>48.9%</td><td style="color:var(--red)">-0.5</td></tr>
+  <tr><td><span class="tier tier-F">F</span></td><td>Storm</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--red)">36.2%</span><div class="wr-bar"><div class="wr-fill" style="width:36.2%;background:var(--red)"></div></div></td><td>40.2%</td><td>39.9%</td><td style="color:var(--red)">-0.3</td></tr>
+  <tr><td><span class="tier tier-F">F</span></td><td>Oops All Spells</td><td class="meta-share">6%</td><td><span class="wr-text" style="color:var(--red)">28.6%</span><div class="wr-bar"><div class="wr-fill" style="width:28.6%;background:var(--red)"></div></div></td><td>36.2%</td><td>35.7%</td><td style="color:var(--red)">-0.5</td></tr>
 </tbody>
 </table>
 
@@ -339,11 +339,12 @@
 <div class="deck-grid">
   <div class="deck-section">
     <h3>Engine Stats</h3>
-    <div class="card-line"><span>Rules tests</span><span>104/104 passed</span></div>
+    <div class="card-line"><span>Rules tests</span><span>102/102 passed</span></div>
     <div class="card-line"><span>Matchups</span><span>18 decks</span></div>
     <div class="card-line"><span>Sample size</span><span>500 BO3 per matchup</span></div>
     <div class="card-line"><span>Total games</span><span>~27,000</span></div>
     <div class="card-line"><span>Expert adjustments</span><span>4 of 18 matchups</span></div>
+    <div class="card-line"><span>Deck optimization</span><span>+3.5pp from variant testing</span></div>
   </div>
   <div class="deck-section">
     <h3>Mechanics Modeled</h3>
@@ -358,14 +359,15 @@
     <h3>Session Improvements (21 commits)</h3>
     <div class="card-line"><span>Bugs found</span><span>20 significant</span></div>
     <div class="card-line"><span>Matchups converged</span><span>14 &rarr; 18</span></div>
-    <div class="card-line"><span>Biggest fix</span><span>Boros 94% &rarr; 59%</span></div>
+    <div class="card-line"><span>Biggest fix</span><span>Boros 94% &rarr; 71%</span></div>
     <div class="card-line"><span>Key discovery</span><span>5 decks missing Wasteland</span></div>
+    <div class="card-line"><span>Deck tuning</span><span>+1 Goyf +1 Kaito -1 Borrower -1 Murk</span></div>
   </div>
 </div>
 
 <footer>
   Generated by MTGSimClaude v2 &middot; BUG Tempo Legacy Simulator &middot; April 2026<br>
-  21 commits &middot; 20 bugs fixed &middot; 104 rules tests &middot; ~27,000 games simulated
+  23 commits &middot; 20 bugs fixed &middot; 102 rules tests &middot; ~27,000 games simulated &middot; Deck optimized via Monte Carlo variant testing
 </footer>
 
 </div>
