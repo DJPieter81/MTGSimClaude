@@ -493,18 +493,17 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
                           for c in o.hand)
         if not (has_key_card and total_counters >= 2):
             return False
-    # Control decks (UWx) should NOT FoW cheap creatures — card disadvantage.
-    # Only counter threats that removal can't handle or that win the game.
-    has_removal = any(c.tag == 'stp' for c in o.hand)  # can we answer it with STP instead?
+    has_removal = any(c.tag == 'stp' for c in o.hand)
     is_major_threat = (
         spell_card.win_condition or spell_card.is_combo_piece or
         spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
     )
-    # Bowmasters: only counter if critical (no removal AND 3+ counters AND no creatures to block)
-    if spell_card.tag == 'bowm' and not has_removal and total_counters >= 3 and not o.creatures:
+    # Bowmasters: always major for mirror/flash decks (army + ping engine)
+    is_mirror_or_flash = matchup in ('dimir', 'dimir_b', 'dimir_flash')
+    if spell_card.tag == 'bowm' and is_mirror_or_flash and total_counters >= 2:
         is_major_threat = True
-    # CMC 2 creatures (Bowmasters, Nethergoyf) should NEVER be FoW'd by control — STP them later
-    if spell_card.cmc <= 2 and not spell_card.win_condition and not spell_card.is_combo_piece:
+    # Control decks (UWx — runs STP) should NOT FoW cheap creatures — STP them later
+    if spell_card.cmc <= 2 and has_removal and not spell_card.win_condition:
         is_major_threat = False
     is_minor_threat = spell_card.tag in ('tamiyo', 'nether', 'borrow')
     if is_minor_threat and total_counters <= 2: return False
@@ -2366,8 +2365,10 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Lightning Bolt → {small.name}")
             update_goyf(gs)
 
-    attackers_this_turn = _select_attackers(player, opponent,
-                                            hold_tags=('bowm', 'eidolon'))
+    # Hold Eidolon back only if BUG has blockers that would kill it (2/2)
+    eidolon_safe = not any(c.power >= 2 for c in opponent.creatures)
+    hold = ('bowm',) if eidolon_safe else ('bowm', 'eidolon')
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
     # Karakas — {T}: return target legendary creature to its owner's hand.
@@ -3232,7 +3233,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     # Only Terminus if: opp has 2+ creatures, AND (no Mentor on board OR opp is lethal)
     if len(opponent.creatures) >= 2 and (not mentor_on_board or opp_threat >= player.life):
         term = player.find_tag('terminus')
-        if term and random.random() < 0.70:
+        if term and random.random() < 0.80:
             player.remove_from_hand(term); player.add_to_grave(term)
             for c in list(opponent.creatures):
                 opponent.exile.append(c.card); opponent.revolt_this_turn = True
