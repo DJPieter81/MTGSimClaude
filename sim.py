@@ -1534,14 +1534,14 @@ def run_all_matchups_bo3(n_matches: int, verbose: bool = False):
     # Applied to weighted WR only — raw sim numbers still shown for transparency.
     # Session improvements: 14 bugs fixed, 16/18 matchups now converge organically.
     EXPERT_ADJ = {
-        # prison: Bridge hand-dump + Karn recurring + Trini blocks FoW; residual gap ~10pp
-        'prison':      0.70,
-        # uwx: Mentor tokens + Counterspell + 80% Terminus; sim ~58%, structural mana-holding gap
+        # prison: G1 converged at 70%. BO3 gap from BUG FoN sideboard (realistic).
+        'prison':      0.75,
+        # uwx: Mentor tokens + Counterspell + 80% Terminus; structural mana-holding gap
         'uwx':         0.65,
-        # boros: Initiative + Wasteland + STP + 3-creature deploy; sim ~65%, body-flood residual
+        # boros: Initiative + Wasteland + STP; sim ~57%, near converged
         'boros':       0.55,
-        # dimir_flash: WST earlier deploy + mirror countering; sim ~75%, structural gap ~12pp
-        'dimir_flash': 0.65,
+        # dimir_flash: WST + mirror countering; G1 ~63% converged, BO3 slightly high
+        'dimir_flash': 0.67,
     }
 
     print(f"\n{'='*70}")

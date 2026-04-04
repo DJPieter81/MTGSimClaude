@@ -2264,31 +2264,22 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
         else:
             player.add_to_grave(crea)
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
 
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
-    opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
-        else:
-            attackers_this_turn.append(c)
+    # Wasteland — destroy BUG's nonbasic lands
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl:
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"Wasteland → destroys {target.card.name}")
+            update_goyf(gs)
 
+    # Combat
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=('bowm',))
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
@@ -2645,31 +2636,22 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
                     ex = random.choice(nonlands); opponent.hand.remove(ex); opponent.exile.append(ex)
                     log_fn(f"TKS exiles {ex.name}", True)
         else: player.add_to_grave(tks)
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
 
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
-    opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
-        else:
-            attackers_this_turn.append(c)
+    # Wasteland — destroy BUG's nonbasic lands
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl:
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            opponent.revolt_this_turn = True
+            log_fn(f"Wasteland → destroys {target.card.name}")
+            update_goyf(gs)
 
+    # Combat — Eldrazi attacks aggressively (big creatures)
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=())
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
