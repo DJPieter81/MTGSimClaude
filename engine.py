@@ -29,6 +29,30 @@ from config import CardRoles as CR, MatchupCategory as MC, InteractionParams as 
 # Helpers
 # ─────────────────────────────────────────────
 
+# Shared token prototype — avoids repeated Card() construction in hot loops
+_MONK_TOKEN = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
+                   mana_cost={}, colors=set(), tag='monk_token',
+                   base_power=1, base_toughness=1, gy_type='creature')
+
+_ORC_ARMY_PROTO = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
+                       mana_cost={}, colors=set(), tag='orc_army',
+                       base_power=0, base_toughness=0, gy_type='creature')
+
+
+def _select_attackers(player, opponent, hold_tags=('bowm', 'tamiyo'), desperate_life=8):
+    """Shared attacker selection for aggro/midrange strategies.
+    Returns list of creatures to attack with. Holds back value engines and 0-power."""
+    opp_has_blockers = len(opponent.creatures) > 0
+    desperate = player.life < desperate_life
+    attackers = []
+    for c in player.creatures:
+        if c.summoning_sick: continue
+        if c.power == 0: continue
+        if c.card.tag in hold_tags and opp_has_blockers and not desperate:
+            continue
+        attackers.append(c)
+    return attackers
+
 
 def _deduct(budget: list, cmc: int, card) -> bool:
     """Spend mana from budget. Returns True (cost always 0 for free spells)."""
@@ -437,17 +461,21 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
     if getattr(gs, 'veil_active', False):
         return False  # all caster's spells protected this turn
 
-    # Only counter-heavy control decks use reactive counters
-    # Check opp has a real counter
-    opp_fow = next((c for c in o.hand if c.tag == 'fow'), None)
-    opp_fon = next((c for c in o.hand if c.tag == 'fon'), None)
-    opp_daze = next((c for c in o.hand if c.tag == 'daze'), None)
-    opp_consign = next((c for c in o.hand if c.tag == 'consign'), None)
-    opp_cs = next((c for c in o.hand if c.tag == 'counter'), None)  # Counterspell
-    opp_fluster = next((c for c in o.hand if c.tag == 'fluster'), None)  # Flusterstorm
-    opp_pyro = next((c for c in o.hand if c.tag in ('pyro', 'reb')), None)  # Pyroblast/REB
+    # Single-pass scan of opponent hand for all counter types
+    _COUNTER_TAGS = {'fow', 'fon', 'daze', 'consign', 'counter', 'fluster', 'pyro', 'reb'}
+    counters_by_tag = {}
+    for c in o.hand:
+        if c.tag in _COUNTER_TAGS and c.tag not in counters_by_tag:
+            counters_by_tag[c.tag] = c
+    opp_fow = counters_by_tag.get('fow')
+    opp_fon = counters_by_tag.get('fon')
+    opp_daze = counters_by_tag.get('daze')
+    opp_consign = counters_by_tag.get('consign')
+    opp_cs = counters_by_tag.get('counter')
+    opp_fluster = counters_by_tag.get('fluster')
+    opp_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
 
-    if not any([opp_fow, opp_fon, opp_daze, opp_consign, opp_cs, opp_fluster, opp_pyro]):
+    if not counters_by_tag:
         return False
 
     # Don't counter cantrips (let them resolve — opp saves counters for threats)
@@ -457,7 +485,7 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
     if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card,'colors',set()):
         return False
 
-    total_counters = sum(1 for c in o.hand if c.tag in ('fow','fon','daze','consign','counter','fluster','pyro','reb'))
+    total_counters = sum(1 for c in o.hand if c.tag in _COUNTER_TAGS)
 
     # Counter Thoughtseize only if we have key threats to protect AND 2+ counters
     if spell_card.tag == 'ts':
@@ -2290,21 +2318,20 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             else:
                 player.add_to_grave(crea)
 
-    # STP removal — exile ALL BUG threats aggressively (Boros is a racing deck)
-    for _ in range(4):  # up to 4 STPs
+    # STP removal — exile BUG threats aggressively, grant life (CR 106)
+    for _ in range(4):
         stp = player.find_tag('stp')
-        if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
-            target = max(opponent.creatures, key=lambda c: c.power)
-            if target.power >= 1:
-                player.remove_from_hand(stp); player.add_to_grave(stp)
-                total_mana -= 1
-                opponent.remove_creature(target)
-                log_fn(f"Swords to Plowshares exiles {target.card.name}")
-                update_goyf(gs)
-            else:
-                break
-        else:
+        if not (stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player)):
             break
+        target = max(opponent.creatures, key=lambda c: c.power)
+        if target.power < 1: break
+        player.remove_from_hand(stp); player.add_to_grave(stp)
+        total_mana -= 1
+        life_gain = MTGRules.stp_life_gain(target)
+        opponent.remove_creature(target, to_exile=True)
+        opponent.life += life_gain
+        log_fn(f"Swords to Plowshares exiles {target.card.name} (+{life_gain} life)")
+        update_goyf(gs)
 
     # Chalice of the Void — Boros sometimes runs it to shut off BUG's CMC1 package
     ch = player.find_tag('chalice')
@@ -2339,19 +2366,8 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Lightning Bolt → {small.name}")
             update_goyf(gs)
 
-    # Boros combat: attack aggressively but protect value engines.
-    opp_has_blockers = len(opponent.creatures) > 0
-    boros_desperate = player.life < 8
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.power == 0: continue
-        if c.card.tag == 'bowm' and opp_has_blockers and not boros_desperate:
-            continue  # hold Bowmasters for ping value
-        if c.card.tag == 'eidolon' and not boros_desperate:
-            continue  # Eidolon is a damage engine — 2 life per BUG spell, don't trade it
-        attackers_this_turn.append(c)
-
+    attackers_this_turn = _select_attackers(player, opponent,
+                                            hold_tags=('bowm', 'eidolon'))
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
     # Karakas — {T}: return target legendary creature to its owner's hand.
@@ -3191,14 +3207,9 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     def spend(card):
         mana_ref[0] -= card.cmc
 
-    # Helper: Mentor token generation on noncreature spell cast
     def mentor_trigger():
         if any(c.card.tag == 'mentor' for c in player.creatures):
-            from rules import Card, CardType
-            token = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
-                         mana_cost={}, colors=set(), tag='monk_token',
-                         base_power=1, base_toughness=1, gy_type='creature')
-            player.put_creature_in_play(token)
+            player.put_creature_in_play(_MONK_TOKEN)
             log_fn("  Mentor trigger → 1/1 Monk token")
 
     # ── STP — instant removal, fire 1 proactively (save rest for BUG's turn) ──
