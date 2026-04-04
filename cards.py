@@ -114,23 +114,22 @@ def utility_land(name, produces, tag, is_basic=False, is_combo_piece=False, life
 
 def make_bug_deck() -> List[Card]:
     """
-    UB Tempo — Oceansoul92, 9th place, MTGO Challenge 32, 29 Mar 2026.
-    Source: mtgtop8.com/event?e=82693&d=828511&f=LE
+    UB Tempo — Sim-optimized build based on Oceansoul92 shell.
+    Original: MTGO Challenge 32, 29 Mar 2026.
+    Optimized: +1 Nethergoyf, +1 Kaito, -1 Borrower, -1 Murktide (+3.5pp WR).
 
-    Creatures (17): 4 Tamiyo, 3 Nethergoyf, 4 Bowmasters, 3 Murktide, 1 Borrower, 2 Kaito
+    Creatures (17): 4 Tamiyo, 4 Nethergoyf, 4 Bowmasters, 2 Murktide, 3 Kaito
     Interaction (11): 4 FoW, 4 TS, 3 Daze, 3 Push, 1 Snuff Out
     Cantrips (9): 4 Brainstorm, 3 Ponder, 2 Mishra's Bauble
     Lands (19): 4 Polluted Delta + 3 fetches, 4 Underground Sea, Sewers, 4 Wasteland, 2 basics
-    No FoN main — all 3 copies move to SB.
     """
     d = []
     # Creatures (17)
     d += [creature('Tamiyo, Inquisitive Student', 1, {'U':1}, {'U'}, 0, 3, tag='tamiyo')] * 4
-    d += [creature('Nethergoyf', 2, {'B':1,'generic':1}, {'B'}, 0, 1, tag='nether')] * 3
+    d += [creature('Nethergoyf', 2, {'B':1,'generic':1}, {'B'}, 0, 1, tag='nether')] * 4
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm', draw_trigger=True, flash=True)] * 4
-    d += [creature('Murktide Regent', 7, {'U':1,'generic':6}, {'U'}, 3, 3, tag='murk', delve=True, flying=True)] * 3
-    d += [creature('Brazen Borrower', 3, {'U':1,'generic':2}, {'U'}, 3, 1, tag='borrow', flash=True, flying=True)] * 1
-    d += [creature('Kaito, Bane of Nightmares', 3, {'U':1,'B':1,'generic':1}, {'U','B'}, 3, 4, tag='kaito',   engine=True)] * 2
+    d += [creature('Murktide Regent', 7, {'U':1,'generic':6}, {'U'}, 3, 3, tag='murk', delve=True, flying=True)] * 2
+    d += [creature('Kaito, Bane of Nightmares', 3, {'U':1,'B':1,'generic':1}, {'U','B'}, 3, 4, tag='kaito',   engine=True)] * 3
     # Interaction (11)
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 3
