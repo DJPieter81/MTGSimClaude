@@ -119,8 +119,8 @@ def make_bug_deck() -> List[Card]:
     Optimized: +1 Nethergoyf, +1 Kaito, -1 Borrower, -1 Murktide (+3.5pp WR).
 
     Creatures (17): 4 Tamiyo, 4 Nethergoyf, 4 Bowmasters, 2 Murktide, 3 Kaito
-    Interaction (11): 4 FoW, 4 TS, 3 Daze, 3 Push, 1 Snuff Out
-    Cantrips (9): 4 Brainstorm, 3 Ponder, 2 Mishra's Bauble
+    Interaction (12): 4 FoW, 4 TS, 4 Daze, 3 Push, 1 Snuff Out
+    Cantrips (8): 4 Brainstorm, 3 Ponder, 1 Mishra's Bauble
     Lands (19): 4 Polluted Delta + 3 fetches, 4 Underground Sea, Sewers, 4 Wasteland, 2 basics
     """
     d = []
@@ -130,16 +130,16 @@ def make_bug_deck() -> List[Card]:
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm', draw_trigger=True, flash=True)] * 4
     d += [creature('Murktide Regent', 7, {'U':1,'generic':6}, {'U'}, 3, 3, tag='murk', delve=True, flying=True)] * 2
     d += [creature('Kaito, Bane of Nightmares', 3, {'U':1,'B':1,'generic':1}, {'U','B'}, 3, 4, tag='kaito',   engine=True)] * 3
-    # Interaction (11)
+    # Interaction (12)
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 3
+    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 4
     d += [instant('Fatal Push', 1, {'B':1}, {'B'}, tag='push',    is_removal=True)] * 3
     d += [instant('Snuff Out', 4, {'B':1,'generic':3}, {'B'}, tag='snuffout', life_cost=4)] * 1
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 4
-    # Cantrips (9)
+    # Cantrips (8)
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 3
-    d += [artifact("Mishra's Bauble", 0, {}, tag='bauble', is_cantrip=True)] * 2
+    d += [artifact("Mishra's Bauble", 0, {}, tag='bauble', is_cantrip=True)] * 1
     # Lands (19)
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Marsh Flats', ['Swamp','Plains'])] * 1
