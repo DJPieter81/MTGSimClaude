@@ -1622,6 +1622,36 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
         player, opponent = gs.opp, gs.bug
         def _el(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
         _strategy_eight_cast(player, opponent, gs, om, _el, log_entries)
+    elif matchup == 'depths':
+        from decks.depths import _strategy_depths
+        player, opponent = gs.opp, gs.bug
+        def _dl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_depths(player, opponent, gs, om, _dl, log_entries)
+    elif matchup == 'burn':
+        from decks.burn import _strategy_burn
+        player, opponent = gs.opp, gs.bug
+        def _bl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_burn(player, opponent, gs, om, _bl, log_entries)
+    elif matchup == 'infect':
+        from decks.infect import _strategy_infect
+        player, opponent = gs.opp, gs.bug
+        def _il(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_infect(player, opponent, gs, om, _il, log_entries)
+    elif matchup == 'goblins':
+        from decks.goblins import _strategy_goblins
+        player, opponent = gs.opp, gs.bug
+        def _gl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_goblins(player, opponent, gs, om, _gl, log_entries)
+    elif matchup == 'belcher':
+        from decks.belcher import _strategy_belcher
+        player, opponent = gs.opp, gs.bug
+        def _bel(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_belcher(player, opponent, gs, om, _bel, log_entries)
+    elif matchup == 'ur_delver':
+        from decks.ur_delver import _strategy_ur_delver
+        player, opponent = gs.opp, gs.bug
+        def _udl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_ur_delver(player, opponent, gs, om, _udl, log_entries)
     elif matchup in ('bug', 'bug_sb'):  # BUG as antagonist — use dimir strategy (same archetype)
         _opp_dimir(gs, om, log, log_entries)
 

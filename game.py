@@ -719,6 +719,44 @@ def opp_keep(hand: List[Card], matchup: str = '') -> bool:
         lock = [c for c in nonlands if c.tag in ('chalice','bridge','trini')]
         thr  = [c for c in nonlands if c.is_creature()]
         return 2 <= lc <= 4 and (lock or thr)
+    # Belcher: needs fast mana + Charbelcher or tutor
+    if matchup == 'belcher':
+        tags = {c.tag for c in hand}
+        fast = sum(1 for c in nonlands if c.tag in ('petal','led','chrome_mox','esg','ssg','darkrit','rite'))
+        has_belcher = 'belcher' in tags or 'burning_wish' in tags
+        has_empty = 'empty' in tags
+        # Keep any hand with fast mana + win condition
+        if len(hand) <= 5: return fast >= 1 and (has_belcher or has_empty)
+        return fast >= 2 and (has_belcher or has_empty)
+    # Burn: keep almost any hand with 1-3 lands
+    if matchup == 'burn':
+        return 1 <= lc <= 3
+    # Infect: needs infect creature + pump spell or land
+    if matchup == 'infect':
+        tags = {c.tag for c in hand}
+        has_infect = any(t in tags for t in ('glistener','blighted','inkmoth'))
+        has_pump = any(t in tags for t in ('invigorate','mutagenic','berserk','vines','defense'))
+        if len(hand) <= 5: return has_infect and lc >= 1
+        return has_infect and lc >= 1 and (has_pump or any(c.is_cantrip for c in nonlands))
+    # Depths: needs a combo land or tutor for it
+    if matchup == 'depths':
+        tags = {c.tag for c in hand}
+        has_combo = ('depths' in tags and 'stage' in tags)
+        has_tutor = any(t in tags for t in ('crop','scrying','reclaimer','gsz','once'))
+        has_piece = 'depths' in tags or 'stage' in tags
+        if len(hand) <= 5: return lc >= 1 and (has_piece or has_tutor)
+        return lc >= 1 and (has_combo or (has_piece and has_tutor) or has_tutor)
+    # Goblins: needs land + Lackey/Vial or creatures
+    if matchup == 'goblins':
+        tags = {c.tag for c in hand}
+        has_t1 = 'lackey' in tags or 'vial' in tags
+        threats = sum(1 for c in nonlands if c.is_creature())
+        return 2 <= lc <= 4 and (has_t1 or threats >= 2)
+    # UR Delver: needs land + threat + cantrip/counter
+    if matchup == 'ur_delver':
+        threats = sum(1 for c in nonlands if c.is_creature())
+        cantrips = sum(1 for c in nonlands if c.tag in ('bs','ponder','pre'))
+        return 1 <= lc <= 3 and threats >= 1 and (cantrips >= 1 or len(hand) <= 5)
 
     # Fair decks: need 2 lands and meaningful action
     threats  = [c for c in nonlands if c.is_creature()]

@@ -38,7 +38,8 @@ class CardRoles:
                                   'led', 'entomb', 'gris', 'itutor', 'gsz',
                                   'tendrils', 'pact', 'sat', 'labman', 'oracle',
                                   'archon', 'atraxa', 'emrakul', 'belcher',
-                                  'necropotence', 'depths', 'marit'})
+                                  'necropotence', 'depths', 'marit', 'stage',
+                                  'muxus', 'lackey', 'glistener', 'blighted'})
 
     # ── Lock pieces (halt BUG's ability to function) ───────────────
     MASS_REMOVAL    = frozenset({'terminus', 'wrath', 'verdict', 'massacre',
@@ -123,17 +124,21 @@ class CardRoles:
 class MatchupCategory:
     """Named sets of matchup IDs by strategic category."""
 
-    COMBO       = frozenset({'storm', 'oops', 'doomsday', 'reanimator', 'show'})
+    COMBO       = frozenset({'storm', 'oops', 'doomsday', 'reanimator', 'show',
+                              'belcher', 'tes', 'infect', 'depths'})
     MIRROR      = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'uwx'})
-    TEMPO_MIRROR = frozenset({'dimir', 'dimir_b', 'dimir_flash'})  # only blue tempo mirrors for Bowmasters EOT hold
-    AGGRO       = frozenset({'boros', 'ur_aggro', 'mardu', 'mono_black', 'eldrazi'})
+    TEMPO_MIRROR = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'ur_delver'})
+    AGGRO       = frozenset({'boros', 'ur_aggro', 'mardu', 'mono_black', 'eldrazi',
+                              'burn', 'goblins', 'ur_delver'})
     PRISON      = frozenset({'prison', 'dnt', 'boros'})  # mana-denial / stax
     GY_COMBO    = frozenset({'reanimator', 'oops', 'doomsday'})
-    LAND_COMBO  = frozenset({'lands', 'show'})
-    VIAL_DECKS  = frozenset({'dnt', 'boros'})
+    LAND_COMBO  = frozenset({'lands', 'show', 'depths'})
+    VIAL_DECKS  = frozenset({'dnt', 'boros', 'goblins'})
     DIMIR_ONLY  = frozenset({'dimir', 'dimir_b'})  # matchups routed to _opp_dimir
     BOWM_DECKS  = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'ur_aggro',
-                              'mardu', 'mono_black', 'uwx'})  # opp runs Bowmasters
+                              'mardu', 'mono_black', 'uwx', 'ur_delver'})
+    FAST_COMBO  = frozenset({'oops', 'belcher', 'tes', 'infect'})  # T1-2 kills
+    TRIBAL      = frozenset({'goblins', 'elves'})  # creature-swarm decks
 
     # Utility predicates
     @staticmethod
@@ -242,6 +247,12 @@ class ThreatConfig:
         # Mass removal — HIGH threat (wipes BUG's entire board)
         'terminus': 3, 'wrath': 3, 'verdict': 3,
         'massacre': 3, 'damnation': 3, 'anger': 3,
+
+        # New archetypes — combo pieces
+        'belcher': MUST, 'stage': MUST, 'glistener': MUST, 'blighted': MUST,
+        'muxus': MUST, 'lackey': HIGH, 'guide': HIGH, 'swiftspear': HIGH,
+        'reclaimer': HIGH, 'invigorate': HIGH, 'berserk': HIGH,
+        'fireblast': MEDIUM, 'spike': MEDIUM, 'delver': HIGH,
 
         # Low — cantrips / rituals / misc
         'bs':  LOW, 'ponder': LOW, 'preordain': LOW, 'consider': LOW,
