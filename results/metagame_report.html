@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUG Tempo — Legacy Metagame Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --yellow: #d29922; --orange: #db6d28; --red: #f85149;
+    --blue-dark: #1a2332; --gold: #e3b341;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 2rem; margin-bottom: 4px; }
+  h2 { font-size: 1.4rem; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 1.1rem; margin: 20px 0 8px; color: var(--muted); }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+  .hero { background: linear-gradient(135deg, #1a2744 0%, #0d1117 100%); border: 1px solid var(--border); border-radius: 12px; padding: 32px; margin-bottom: 32px; }
+  .hero-stats { display: flex; gap: 32px; margin-top: 20px; flex-wrap: wrap; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 24px; min-width: 140px; text-align: center; }
+  .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Matchup table */
+  .matchup-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .matchup-table th { text-align: left; padding: 10px 12px; background: var(--surface); color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); }
+  .matchup-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .matchup-table tr:hover { background: rgba(88,166,255,0.04); }
+  .tier { display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px; }
+  .tier-A { background: #1a4d2e; color: var(--green); }
+  .tier-B { background: #2d3a1e; color: #7ee787; }
+  .tier-C { background: #3d2e1a; color: var(--yellow); }
+  .tier-D { background: #3d251a; color: var(--orange); }
+  .tier-F { background: #3d1a1a; color: var(--red); }
+  .wr-bar { height: 8px; border-radius: 4px; background: var(--border); position: relative; min-width: 120px; }
+  .wr-fill { height: 100%; border-radius: 4px; position: absolute; left: 0; top: 0; }
+  .wr-text { font-weight: 600; font-variant-numeric: tabular-nums; min-width: 50px; display: inline-block; }
+  .meta-share { color: var(--muted); font-size: 0.85rem; }
+
+  /* Decklist */
+  .deck-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .deck-section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .deck-section h3 { margin-top: 0; color: var(--accent); font-size: 0.95rem; }
+  .card-line { display: flex; justify-content: space-between; padding: 3px 0; font-size: 0.9rem; }
+  .card-count { color: var(--muted); min-width: 24px; }
+  .card-cmc { color: var(--muted); font-size: 0.8rem; }
+
+  /* Strategy cards */
+  .strat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; }
+  .strat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .strat-card .matchup-name { font-weight: 600; }
+  .strat-card .strat-text { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+
+  /* SB guide */
+  .sb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .sb-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .sb-in { color: var(--green); font-size: 0.85rem; }
+  .sb-out { color: var(--red); font-size: 0.85rem; }
+  .sb-label { font-weight: 600; margin-bottom: 6px; }
+
+  /* Meta pie */
+  .meta-breakdown { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .meta-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; }
+  .meta-chip .pct { color: var(--accent); font-weight: 600; margin-right: 4px; }
+
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; text-align: center; }
+  @media (max-width: 600px) { .hero-stats { flex-direction: column; } .stat-card { min-width: auto; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HERO -->
+<div class="hero">
+  <h1>BUG Tempo — Legacy Metagame Analysis</h1>
+  <div class="subtitle">Monte Carlo simulation &middot; 9,000 best-of-3 matches &middot; 104 rules tests passed &middot; v2 engine</div>
+  <div class="hero-stats">
+    <div class="stat-card"><div class="stat-value">64.5%</div><div class="stat-label">Weighted Match WR</div></div>
+    <div class="stat-card"><div class="stat-value">5.2–2.8</div><div class="stat-label">Expected Record (8 rounds)</div></div>
+    <div class="stat-card"><div class="stat-value">Top 8</div><div class="stat-label">Expected Finish</div></div>
+    <div class="stat-card"><div class="stat-value">18</div><div class="stat-label">Matchups Simulated</div></div>
+    <div class="stat-card"><div class="stat-value">~27k</div><div class="stat-label">Total Games</div></div>
+  </div>
+</div>
+
+<!-- DECKLIST -->
+<h2>Main Deck (60)</h2>
+<p class="subtitle">Oceansoul92, 9th place MTGO Challenge 32, 29 Mar 2026</p>
+<div class="deck-grid">
+  <div class="deck-section">
+    <h3>Creatures (17)</h3>
+    <div class="card-line"><span><span class="card-count">4</span> Tamiyo, Inquisitive Student</span><span class="card-cmc">{U}</span></div>
+    <div class="card-line"><span><span class="card-count">3</span> Nethergoyf</span><span class="card-cmc">{1B}</span></div>
+    <div class="card-line"><span><span class="card-count">4</span> Orcish Bowmasters</span><span class="card-cmc">{1B}</span></div>
+    <div class="card-line"><span><span class="card-count">3</span> Murktide Regent</span><span class="card-cmc">{6U}</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Brazen Borrower</span><span class="card-cmc">{2U}</span></div>
+    <div class="card-line"><span><span class="card-count">2</span> Kaito, Bane of Nightmares</span><span class="card-cmc">{1UB}</span></div>
+  </div>
+  <div class="deck-section">
+    <h3>Interaction (15)</h3>
+    <div class="card-line"><span><span class="card-count">4</span> Force of Will</span><span class="card-cmc">{3UU}</span></div>
+    <div class="card-line"><span><span class="card-count">4</span> Thoughtseize</span><span class="card-cmc">{B}</span></div>
+    <div class="card-line"><span><span class="card-count">3</span> Daze</span><span class="card-cmc">{1U}</span></div>
+    <div class="card-line"><span><span class="card-count">3</span> Fatal Push</span><span class="card-cmc">{B}</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Snuff Out</span><span class="card-cmc">{3B}</span></div>
+  </div>
+  <div class="deck-section">
+    <h3>Cantrips (9)</h3>
+    <div class="card-line"><span><span class="card-count">4</span> Brainstorm</span><span class="card-cmc">{U}</span></div>
+    <div class="card-line"><span><span class="card-count">3</span> Ponder</span><span class="card-cmc">{U}</span></div>
+    <div class="card-line"><span><span class="card-count">2</span> Mishra's Bauble</span><span class="card-cmc">{0}</span></div>
+  </div>
+  <div class="deck-section">
+    <h3>Lands (19)</h3>
+    <div class="card-line"><span><span class="card-count">4</span> Polluted Delta</span><span class="card-cmc">fetch</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Marsh Flats</span><span class="card-cmc">fetch</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Misty Rainforest</span><span class="card-cmc">fetch</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Scalding Tarn</span><span class="card-cmc">fetch</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Flooded Strand</span><span class="card-cmc">fetch</span></div>
+    <div class="card-line"><span><span class="card-count">4</span> Underground Sea</span><span class="card-cmc">U/B dual</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Undercity Sewers</span><span class="card-cmc">U/B</span></div>
+    <div class="card-line"><span><span class="card-count">4</span> Wasteland</span><span class="card-cmc">utility</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Island</span><span class="card-cmc">basic</span></div>
+    <div class="card-line"><span><span class="card-count">1</span> Swamp</span><span class="card-cmc">basic</span></div>
+  </div>
+</div>
+
+<!-- MATCHUP TABLE -->
+<h2>Matchup Breakdown</h2>
+<table class="matchup-table">
+<thead><tr>
+  <th>Tier</th><th>Matchup</th><th>Meta %</th><th style="min-width:180px">Win Rate</th><th>G1</th><th>G2-3</th><th>Swing</th>
+</tr></thead>
+<tbody>
+  <tr><td><span class="tier tier-A">A</span></td><td>Lands</td><td class="meta-share">5%</td><td><span class="wr-text" style="color:var(--green)">95.2%</span><div class="wr-bar"><div class="wr-fill" style="width:95.2%;background:var(--green)"></div></div></td><td>82.6%</td><td>85.1%</td><td style="color:var(--green)">+2.5</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>UR Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">87.2%</span><div class="wr-bar"><div class="wr-fill" style="width:87.2%;background:var(--green)"></div></div></td><td>77.0%</td><td>80.4%</td><td style="color:var(--green)">+3.4</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>Eldrazi Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">86.8%</span><div class="wr-bar"><div class="wr-fill" style="width:86.8%;background:var(--green)"></div></div></td><td>75.6%</td><td>78.9%</td><td style="color:var(--green)">+3.3</td></tr>
+  <tr><td><span class="tier tier-A">A</span></td><td>Mardu Aggro</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--green)">80.2%</span><div class="wr-bar"><div class="wr-fill" style="width:80.2%;background:var(--green)"></div></div></td><td>70.2%</td><td>73.7%</td><td style="color:var(--green)">+3.5</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>Show and Tell</td><td class="meta-share">7%</td><td><span class="wr-text" style="color:#7ee787">77.2%</span><div class="wr-bar"><div class="wr-fill" style="width:77.2%;background:#7ee787"></div></div></td><td>65.8%</td><td>69.7%</td><td style="color:var(--green)">+3.9</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>Dimir Flash</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:#7ee787">70.6%</span><div class="wr-bar"><div class="wr-fill" style="width:70.6%;background:#7ee787"></div></div></td><td>64.4%</td><td>65.0%</td><td style="color:var(--green)">+0.6</td></tr>
+  <tr><td><span class="tier tier-B">B</span></td><td>UWx Control</td><td class="meta-share">4%</td><td><span class="wr-text" style="color:#7ee787">66.2%</span><div class="wr-bar"><div class="wr-fill" style="width:66.2%;background:#7ee787"></div></div></td><td>62.6%</td><td>60.2%</td><td style="color:var(--red)">-2.4</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Dimir Tempo A</td><td class="meta-share">9%</td><td><span class="wr-text" style="color:var(--yellow)">64.4%</span><div class="wr-bar"><div class="wr-fill" style="width:64.4%;background:var(--yellow)"></div></div></td><td>58.4%</td><td>61.5%</td><td style="color:var(--green)">+3.1</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Painter</td><td class="meta-share">4%</td><td><span class="wr-text" style="color:var(--yellow)">63.4%</span><div class="wr-bar"><div class="wr-fill" style="width:63.4%;background:var(--yellow)"></div></div></td><td>61.2%</td><td>58.5%</td><td style="color:var(--red)">-2.7</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Mono Black</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--yellow)">62.2%</span><div class="wr-bar"><div class="wr-fill" style="width:62.2%;background:var(--yellow)"></div></div></td><td>56.4%</td><td>59.4%</td><td style="color:var(--green)">+3.0</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Death and Taxes</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--yellow)">60.0%</span><div class="wr-bar"><div class="wr-fill" style="width:60%;background:var(--yellow)"></div></div></td><td>57.4%</td><td>56.5%</td><td style="color:var(--red)">-0.9</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Boros Aggro</td><td class="meta-share">2%</td><td><span class="wr-text" style="color:var(--yellow)">59.4%</span><div class="wr-bar"><div class="wr-fill" style="width:59.4%;background:var(--yellow)"></div></div></td><td>56.8%</td><td>57.1%</td><td style="color:var(--green)">+0.3</td></tr>
+  <tr><td><span class="tier tier-C">C</span></td><td>Dimir Tempo B</td><td class="meta-share">6%</td><td><span class="wr-text" style="color:var(--yellow)">58.2%</span><div class="wr-bar"><div class="wr-fill" style="width:58.2%;background:var(--yellow)"></div></div></td><td>58.2%</td><td>53.4%</td><td style="color:var(--red)">-4.8</td></tr>
+  <tr><td><span class="tier tier-D">D</span></td><td>Reanimator</td><td class="meta-share">2%</td><td><span class="wr-text" style="color:var(--orange)">48.6%</span><div class="wr-bar"><div class="wr-fill" style="width:48.6%;background:var(--orange)"></div></div></td><td>47.0%</td><td>50.6%</td><td style="color:var(--green)">+3.6</td></tr>
+  <tr><td><span class="tier tier-D">D</span></td><td>Doomsday</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--orange)">48.4%</span><div class="wr-bar"><div class="wr-fill" style="width:48.4%;background:var(--orange)"></div></div></td><td>47.8%</td><td>50.1%</td><td style="color:var(--green)">+2.3</td></tr>
+  <tr><td><span class="tier tier-F">F</span></td><td>Storm</td><td class="meta-share">3%</td><td><span class="wr-text" style="color:var(--red)">31.8%</span><div class="wr-bar"><div class="wr-fill" style="width:31.8%;background:var(--red)"></div></div></td><td>38.4%</td><td>38.0%</td><td style="color:var(--red)">-0.4</td></tr>
+  <tr><td><span class="tier tier-F">F</span></td><td>Oops All Spells</td><td class="meta-share">6%</td><td><span class="wr-text" style="color:var(--red)">26.6%</span><div class="wr-bar"><div class="wr-fill" style="width:26.6%;background:var(--red)"></div></div></td><td>35.0%</td><td>32.9%</td><td style="color:var(--red)">-2.1</td></tr>
+</tbody>
+</table>
+
+<!-- MATCHUP STRATEGY -->
+<h2>Matchup Strategy Guide</h2>
+<div class="strat-grid">
+  <div class="strat-card"><span class="matchup-name">vs Combo (Storm/Oops/Doomsday)</span><div class="strat-text">Mulligan aggressively for Force of Will. T1 Thoughtseize their combo piece or protection (Veil of Summer). Deploy clock ASAP — every turn they don't combo is a turn you deal damage. Hold Daze mana open T1-3.</div></div>
+  <div class="strat-card"><span class="matchup-name">vs Reanimator</span><div class="strat-text">FoW the Reanimate/Exhume, not the discard. Thoughtseize their Griselbrand/Archon. If they resolve a fatty, race with Murktide (flying ignores ground blockers). Surgical post-board is key.</div></div>
+  <div class="strat-card"><span class="matchup-name">vs Show and Tell</span><div class="strat-text">Counter Show and Tell itself (not the cantrips). Thoughtseize Emrakul or Omniscience. Deploy threats fast — Show needs time to assemble. FoN comes in from sideboard for free counters.</div></div>
+  <div class="strat-card"><span class="matchup-name">vs Mirror (Dimir variants)</span><div class="strat-text">Win the Bowmasters war — whoever resolves theirs first controls the draw step. Murktide is the trump card (flies over everything). Wasteland their Underground Sea to cut colors. Protect your threats with Daze.</div></div>
+  <div class="strat-card"><span class="matchup-name">vs DnT / Boros</span><div class="strat-text">FoW their Aether Vial T1 — this is the most important counter of the game. Push Thalia immediately. Fly over with Murktide (they have no flyers). Wasteland their Karakas/Port. Don't walk into Eidolon — sequence 1-mana spells first.</div></div>
+  <div class="strat-card"><span class="matchup-name">vs UWx Control</span><div class="strat-text">Resolve Murktide as early as possible — UWx has few answers to an 8/8 flyer. Wasteland their dual lands. Play around Terminus (don't overcommit to board). Thoughtseize their Mentor before it generates tokens.</div></div>
+  <div class="strat-card"><span class="matchup-name">vs Prison</span><div class="strat-text">FoW Chalice on 1 (blocks your entire 1-mana package). If Trinisphere resolves, you can't FoW for free anymore. Deploy creatures T1-2 before locks land. Abrupt Decay answers Chalice/Bridge post-board.</div></div>
+  <div class="strat-card"><span class="matchup-name">vs Painter</span><div class="strat-text">FoW the Painter's Servant (enables instant kill with Grindstone). Watch for Blood Moon — it turns your duals into Mountains. Push the Grindstone. Pyroblast from their side counters your blue spells.</div></div>
+</div>
+
+<!-- SIDEBOARD GUIDE -->
+<h2>Sideboard Guide</h2>
+<div class="sb-grid">
+  <div class="sb-card">
+    <div class="sb-label">vs Combo (Storm / Oops / Doomsday / Reanimator)</div>
+    <div class="sb-in">IN: +3 Force of Negation, +2 Surgical Extraction</div>
+    <div class="sb-out">OUT: -3 Fatal Push, -1 Snuff Out, -1 Brainstorm</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-label">vs Control (UWx)</div>
+    <div class="sb-in">IN: +2 Force of Negation, +1 Barrowgoyf</div>
+    <div class="sb-out">OUT: -2 Fatal Push, -1 Snuff Out</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-label">vs Aggro / Creature (Boros / DnT / Mardu)</div>
+    <div class="sb-in">IN: +1 Barrowgoyf, +1 Snuff Out</div>
+    <div class="sb-out">OUT: -1 Daze, -1 Brainstorm</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-label">vs Prison / Artifacts</div>
+    <div class="sb-in">IN: +2 Force of Negation, +1 Barrowgoyf</div>
+    <div class="sb-out">OUT: -1 Daze, -2 Brainstorm</div>
+  </div>
+</div>
+
+<!-- KEY CARD ROLES -->
+<h2>Key Card Roles</h2>
+<div class="deck-grid">
+  <div class="deck-section">
+    <h3>Threats</h3>
+    <div class="card-line"><span>Murktide Regent</span><span class="card-cmc">8/8 flyer, delve</span></div>
+    <div class="card-line"><span>Nethergoyf</span><span class="card-cmc">*/1+* grows with GY</span></div>
+    <div class="card-line"><span>Orcish Bowmasters</span><span class="card-cmc">Flash, ping on draws</span></div>
+    <div class="card-line"><span>Kaito, Bane of Nightmares</span><span class="card-cmc">3/4 hexproof</span></div>
+    <div class="card-line"><span>Tamiyo, Inquisitive Student</span><span class="card-cmc">0/3 flip walker</span></div>
+  </div>
+  <div class="deck-section">
+    <h3>Disruption</h3>
+    <div class="card-line"><span>Force of Will</span><span class="card-cmc">Free counter (pitch blue)</span></div>
+    <div class="card-line"><span>Daze</span><span class="card-cmc">Free counter (bounce Island)</span></div>
+    <div class="card-line"><span>Thoughtseize</span><span class="card-cmc">Strip best card T1</span></div>
+    <div class="card-line"><span>Fatal Push</span><span class="card-cmc">CMC 2/4 removal</span></div>
+    <div class="card-line"><span>Wasteland</span><span class="card-cmc">Destroy nonbasic land</span></div>
+  </div>
+  <div class="deck-section">
+    <h3>Card Selection</h3>
+    <div class="card-line"><span>Brainstorm</span><span class="card-cmc">Draw 3, put back 2</span></div>
+    <div class="card-line"><span>Ponder</span><span class="card-cmc">Look at top 3, draw 1</span></div>
+    <div class="card-line"><span>Mishra's Bauble</span><span class="card-cmc">Free delayed draw</span></div>
+  </div>
+</div>
+
+<!-- METAGAME BREAKDOWN -->
+<h2>Legacy Metagame Breakdown</h2>
+<p class="subtitle">Source: mtgtop8.com, March 2026</p>
+<div class="meta-breakdown">
+  <div class="meta-chip"><span class="pct">9%</span> Dimir Tempo A</div>
+  <div class="meta-chip"><span class="pct">7%</span> Show and Tell</div>
+  <div class="meta-chip"><span class="pct">6%</span> Dimir Tempo B</div>
+  <div class="meta-chip"><span class="pct">6%</span> Oops All Spells</div>
+  <div class="meta-chip"><span class="pct">5%</span> Lands</div>
+  <div class="meta-chip"><span class="pct">5%</span> Artifacts Prison</div>
+  <div class="meta-chip"><span class="pct">4%</span> UWx Control</div>
+  <div class="meta-chip"><span class="pct">4%</span> Painter</div>
+  <div class="meta-chip"><span class="pct">3%</span> Dimir Flash</div>
+  <div class="meta-chip"><span class="pct">3%</span> UR Aggro</div>
+  <div class="meta-chip"><span class="pct">3%</span> Mardu Aggro</div>
+  <div class="meta-chip"><span class="pct">3%</span> Storm</div>
+  <div class="meta-chip"><span class="pct">3%</span> Eldrazi</div>
+  <div class="meta-chip"><span class="pct">3%</span> Doomsday</div>
+  <div class="meta-chip"><span class="pct">3%</span> Death and Taxes</div>
+  <div class="meta-chip"><span class="pct">3%</span> Mono Black</div>
+  <div class="meta-chip"><span class="pct">2%</span> Reanimator</div>
+  <div class="meta-chip"><span class="pct">2%</span> Boros Aggro</div>
+</div>
+
+<!-- SIMULATION INFO -->
+<h2>Simulation Engine</h2>
+<div class="deck-grid">
+  <div class="deck-section">
+    <h3>Engine Stats</h3>
+    <div class="card-line"><span>Rules tests</span><span>104/104 passed</span></div>
+    <div class="card-line"><span>Matchups</span><span>18 decks</span></div>
+    <div class="card-line"><span>Sample size</span><span>500 BO3 per matchup</span></div>
+    <div class="card-line"><span>Total games</span><span>~27,000</span></div>
+    <div class="card-line"><span>Expert adjustments</span><span>4 of 18 matchups</span></div>
+  </div>
+  <div class="deck-section">
+    <h3>Mechanics Modeled</h3>
+    <div class="card-line"><span>Mana system</span><span>Color + generic</span></div>
+    <div class="card-line"><span>Combat</span><span>Flying, deathtouch, trample</span></div>
+    <div class="card-line"><span>Free spells</span><span>FoW, FoN, Daze, Snuff Out</span></div>
+    <div class="card-line"><span>Lock pieces</span><span>Chalice, Bridge, Trinisphere</span></div>
+    <div class="card-line"><span>Triggers</span><span>Bowmasters, Eidolon, Initiative</span></div>
+    <div class="card-line"><span>Land denial</span><span>Wasteland, Port, B2B, Moon</span></div>
+  </div>
+  <div class="deck-section">
+    <h3>Session Improvements (21 commits)</h3>
+    <div class="card-line"><span>Bugs found</span><span>20 significant</span></div>
+    <div class="card-line"><span>Matchups converged</span><span>14 &rarr; 18</span></div>
+    <div class="card-line"><span>Biggest fix</span><span>Boros 94% &rarr; 59%</span></div>
+    <div class="card-line"><span>Key discovery</span><span>5 decks missing Wasteland</span></div>
+  </div>
+</div>
+
+<footer>
+  Generated by MTGSimClaude v2 &middot; BUG Tempo Legacy Simulator &middot; April 2026<br>
+  21 commits &middot; 20 bugs fixed &middot; 104 rules tests &middot; ~27,000 games simulated
+</footer>
+
+</div>
+</body>
+</html>
