@@ -2334,11 +2334,11 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
 
-    # Hard cast creatures with mana — Vial EOT deploy happens separately in bug_turn.
-    # Deploy up to 2 creatures per turn if mana allows (aggro wants to flood the board).
+    # Hard cast ALL affordable creatures — Boros wants maximum board pressure.
+    # Deploy up to 3 per turn (aggro floods the board to overwhelm BUG's removal).
     cast_count = 0
     for tag in boros_tags:
-        if cast_count >= 2: break
+        if cast_count >= 3 or total_mana < 1: break
         crea = player.find_tag(tag)
         if crea and opp_can_cast(crea, total_mana, gs, caster=player):
             player.remove_from_hand(crea)
@@ -2561,12 +2561,17 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(nr)
 
-    # Bridge hand-dump: empty hand to maximize Bridge's blocking effect.
+    # Bridge hand-dump: reduce hand to 0-1 to block most creatures.
+    # Keep 1 card if it's a useful lock piece, otherwise dump to 0.
     if gs.bridge_on_board and len(player.hand) > 1:
+        useful_tags = {'chalice', 'trini', 'bridge', 'karn', 'tks', 'nullrod'}
         while len(player.hand) > 1:
-            worst = next((c for c in player.hand if c.is_land()), player.hand[-1])
-            player.hand.remove(worst)
-            player.add_to_grave(worst)
+            non_useful = next((c for c in player.hand if c.tag not in useful_tags), None)
+            if non_useful:
+                player.hand.remove(non_useful)
+                player.add_to_grave(non_useful)
+            else:
+                break
         log_fn(f"Hand dump for Bridge — hand now {len(player.hand)}")
 
     # Combat — Prison attacks with TKS and creatures if available
