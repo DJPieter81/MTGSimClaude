@@ -145,32 +145,16 @@
   },
   "partial": {
     "tes": {
-      "dimir": 0.4,
+      "dimir": 0.3,
       "show": 0.6,
       "dimir_b": 0.3,
       "ur_delver": 0.0,
-      "lands": 3.2,
-      "oops": 0.1,
-      "uwx": 0.3,
-      "prison": 39.0,
-      "depths": 0.0,
-      "burn": 0.0,
-      "dimir_flash": 0.6,
-      "ur_aggro": 0.0,
-      "mardu": 2.5,
-      "storm": 0.0,
-      "eldrazi": 9.8,
-      "reanimator": 0.3,
-      "doomsday": 0.3,
-      "painter": 18.1,
-      "dnt": 2.9,
-      "mono_black": 0.2,
-      "infect": 0.0,
-      "goblins": 0.1,
-      "tes": 9.9
+      "lands": 3.1,
+      "oops": 0.2,
+      "uwx": 0.1
     }
   },
-  "last_updated": "2026-04-04T11:39:08",
+  "last_updated": "2026-04-04T13:14:31",
   "games_per_matchup": 5000,
   "field": {
     "dimir": 0.08988764044943817,
