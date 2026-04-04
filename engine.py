@@ -1964,6 +1964,12 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
     fon  = next((c for c in b.hand if c.tag == 'fon'), None)
     daze = next((c for c in b.hand if c.tag == 'daze'), None)
 
+    # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
+    # FoW/FoN can't be cast for free under Trinisphere
+    if gs.trinisphere_active:
+        fow = None  # can't pitch-cast FoW under Trinisphere without 3 mana
+        fon = None
+
     if not any([fow, fon, daze]):
         return False
 
@@ -2398,7 +2404,17 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
     attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
-    # Karakas — {T}: return target legendary creature to its owner's hand.
+    # Initiative — Seasoned Dungeoneer takes Initiative on ETB/attack.
+    # Each turn with Initiative: venture into Undercity dungeon room.
+    # Simplified: deal escalating damage (1 first trigger, then 2 per subsequent).
+    has_initiative = any(c.card.tag == 'dungeoneer' for c in player.creatures)
+    if has_initiative:
+        init_count = getattr(gs, '_initiative_count', 0) + 1
+        gs._initiative_count = init_count
+        init_damage = min(init_count, 3)  # cap at 3 per turn (Undercity rooms)
+        opponent.life -= init_damage
+        log_fn(f"Initiative (Undercity room {init_count}) — {init_damage} damage to BUG ({opponent.life})", True)
+        gs.check_life_totals()
     # Oracle: activated ability, no mana cost, once per Karakas per gs.turn.
     # DnT targets BUG's highest-value legendary: Murktide > Tamiyo > any other legendary.
     # Bouncing forces BUG to re-spend mana next gs.turn (Murktide needs 7+ delve each time).
