@@ -10,26 +10,32 @@ Each deck module is self-contained:
 Registration via register_decks() — safe, additive, no engine.py changes.
 """
 
+# Module → (deck_key, make_fn_name, strategy_fn_name)
+_DECK_MODULES = {
+    'eight_cast': ('eight_cast', 'make_eight_cast_deck', '_strategy_eight_cast'),
+    'tes':        ('tes',        'make_tes_deck',        '_strategy_tes'),
+    'depths':     ('depths',     'make_depths_deck',     '_strategy_depths'),
+    'burn':       ('burn',       'make_burn_deck',       '_strategy_burn'),
+    'infect':     ('infect',     'make_infect_deck',     '_strategy_infect'),
+    'goblins':    ('goblins',    'make_goblins_deck',    '_strategy_goblins'),
+    'belcher':    ('belcher',    'make_belcher_deck',    '_strategy_belcher'),
+    'ur_delver':  ('ur_delver',  'make_ur_delver_deck',  '_strategy_ur_delver'),
+}
+
+
 def register_decks():
     """Import all deck modules and register into DECKS/STRATEGIES."""
     from cards import DECKS
     from sim import STRATEGIES
-    
+
     modules = []
-    try:
-        from decks import eight_cast
-        DECKS['eight_cast'] = eight_cast.make_eight_cast_deck
-        STRATEGIES['eight_cast'] = eight_cast._strategy_eight_cast
-        modules.append('eight_cast')
-    except Exception as e:
-        print(f"eight_cast not ready: {e}")
-    
-    try:
-        from decks import tes
-        DECKS['tes'] = tes.make_tes_deck
-        STRATEGIES['tes'] = tes._strategy_tes
-        modules.append('tes')
-    except Exception as e:
-        print(f"tes not ready: {e}")
-    
+    for mod_name, (key, make_fn, strat_fn) in _DECK_MODULES.items():
+        try:
+            mod = __import__(f'decks.{mod_name}', fromlist=[make_fn, strat_fn])
+            DECKS[key] = getattr(mod, make_fn)
+            STRATEGIES[key] = getattr(mod, strat_fn)
+            modules.append(key)
+        except Exception as e:
+            print(f"{key} not ready: {e}")
+
     return modules

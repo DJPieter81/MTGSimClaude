@@ -1965,29 +1965,33 @@ DECKS = {
     'dimir_flash': make_dimir_flash_deck,
 }
 
-# Live meta shares — mtgtop8.com last 2 weeks, 591 decks (fetched 2026-03-29)
+# Live meta shares — mtgtop8.com last 2 weeks, expanded (fetched 2026-04-04)
 MATCHUP_META = {
-    'dimir':     {'name': 'Dimir Tempo A (Nethergoyf)',
-                 'share': 0.09},
-    'dimir_b':   {'name': 'Dimir Tempo B (Barrowgoyf)',
-                 'share': 0.06},
-    'dimir_flash':{'name': 'Dimir Flash (Wan Shi Tong)',
-                 'share': 0.03},
-    'ur_aggro':  {'name': 'UR Aggro',         'share': 0.03},
-    'mardu':     {'name': 'Mardu Aggro',      'share': 0.03},
-    'show':      {'name': 'Show and Tell',    'share': 0.07},
-    'lands':     {'name': 'Lands',            'share': 0.05},
-    'storm':     {'name': 'Storm',            'share': 0.03},
-    'oops':      {'name': 'Oops All Spells',  'share': 0.06},
-    'eldrazi':   {'name': 'Eldrazi Aggro',    'share': 0.03},
-    'reanimator':{'name': 'Reanimator',       'share': 0.02},
-    'doomsday':  {'name': 'Doomsday',         'share': 0.03},
-    'uwx':       {'name': 'UWx Control',      'share': 0.04},
-    'painter':   {'name': 'Painter',          'share': 0.04},
-    'prison':    {'name': 'Artifacts Prison', 'share': 0.05},
-    'dnt':       {'name': 'Death and Taxes',   'share': 0.03},
-    'mono_black':{'name': 'Mono Black Aggro',  'share': 0.03},
-    'boros':     {'name': 'Boros Aggro',       'share': 0.02},
+    'dimir':      {'name': 'Dimir Tempo A (Nethergoyf)', 'share': 0.08},
+    'dimir_b':    {'name': 'Dimir Tempo B (Barrowgoyf)', 'share': 0.05},
+    'dimir_flash':{'name': 'Dimir Flash (Wan Shi Tong)',  'share': 0.03},
+    'ur_aggro':   {'name': 'UR Aggro',            'share': 0.03},
+    'ur_delver':  {'name': 'UR Delver',            'share': 0.04},
+    'mardu':      {'name': 'Mardu Aggro',          'share': 0.03},
+    'show':       {'name': 'Show and Tell',        'share': 0.06},
+    'lands':      {'name': 'Lands',                'share': 0.04},
+    'storm':      {'name': 'Storm (ANT)',          'share': 0.03},
+    'tes':        {'name': 'The Epic Storm',       'share': 0.02},
+    'oops':       {'name': 'Oops All Spells',      'share': 0.04},
+    'eldrazi':    {'name': 'Eldrazi Aggro',        'share': 0.03},
+    'reanimator': {'name': 'Reanimator',           'share': 0.03},
+    'doomsday':   {'name': 'Doomsday',             'share': 0.03},
+    'uwx':        {'name': 'UWx Control',          'share': 0.04},
+    'painter':    {'name': 'Painter',              'share': 0.03},
+    'prison':     {'name': 'Artifacts Prison',     'share': 0.04},
+    'dnt':        {'name': 'Death and Taxes',      'share': 0.03},
+    'mono_black': {'name': 'Mono Black Aggro',     'share': 0.03},
+    'boros':      {'name': 'Boros Aggro',          'share': 0.02},
+    'depths':     {'name': 'Dark Depths',          'share': 0.04},
+    'burn':       {'name': 'Burn',                 'share': 0.04},
+    'infect':     {'name': 'Infect',               'share': 0.03},
+    'goblins':    {'name': 'Goblins',              'share': 0.03},
+    'belcher':    {'name': 'Goblin Charbelcher',   'share': 0.02},
 }
 
 
@@ -2020,12 +2024,20 @@ DECKS = {
 }
 
 # Register plugin decks into DECKS
-try:
-    from decks.eight_cast import make_eight_cast_deck as _ec_deck
-    DECKS['eight_cast'] = _ec_deck
-except ImportError: pass
-try:
-    from decks.tes import make_tes_deck as _tes_deck
-    DECKS['tes'] = _tes_deck
-except ImportError: pass
+_PLUGIN_DECKS = {
+    'eight_cast': ('decks.eight_cast', 'make_eight_cast_deck'),
+    'tes':        ('decks.tes',        'make_tes_deck'),
+    'depths':     ('decks.depths',     'make_depths_deck'),
+    'burn':       ('decks.burn',       'make_burn_deck'),
+    'infect':     ('decks.infect',     'make_infect_deck'),
+    'goblins':    ('decks.goblins',    'make_goblins_deck'),
+    'belcher':    ('decks.belcher',    'make_belcher_deck'),
+    'ur_delver':  ('decks.ur_delver',  'make_ur_delver_deck'),
+}
+for _key, (_mod, _fn) in _PLUGIN_DECKS.items():
+    try:
+        _m = __import__(_mod, fromlist=[_fn])
+        DECKS[_key] = getattr(_m, _fn)
+    except (ImportError, AttributeError):
+        pass
 
