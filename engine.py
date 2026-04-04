@@ -2561,31 +2561,16 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(nr)
 
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
+    # Bridge hand-dump: empty hand to maximize Bridge's blocking effect.
+    if gs.bridge_on_board and len(player.hand) > 1:
+        while len(player.hand) > 1:
+            worst = next((c for c in player.hand if c.is_land()), player.hand[-1])
+            player.hand.remove(worst)
+            player.add_to_grave(worst)
+        log_fn(f"Hand dump for Bridge — hand now {len(player.hand)}")
 
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
-    opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
-        else:
-            attackers_this_turn.append(c)
-
+    # Combat — Prison attacks with TKS and creatures if available
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=())
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
