@@ -20,6 +20,14 @@ _DECK_MODULES = {
     'goblins':    ('goblins',    'make_goblins_deck',    '_strategy_goblins'),
     'belcher':    ('belcher',    'make_belcher_deck',    '_strategy_belcher'),
     'ur_delver':  ('ur_delver',  'make_ur_delver_deck',  '_strategy_ur_delver'),
+    'sneak_a':    ('sneak_a',    'make_sneak_a_deck',    '_strategy_sneak_a'),
+    'sneak_b':    ('sneak_b',    'make_sneak_b_deck',    '_strategy_sneak_b'),
+    'affinity':   ('affinity',   'make_affinity_deck',   '_strategy_affinity'),
+    'ur_tempo':   ('ur_tempo',   'make_ur_tempo_deck',   '_strategy_ur_tempo'),
+    'dimir_c':    ('dimir_c',    'make_dimir_c_deck',    '_strategy_dimir_c'),
+    'dimir_d':    ('dimir_d',    'make_dimir_d_deck',    '_strategy_dimir_d'),
+    'cephalid':   ('cephalid',   'make_cephalid_deck',   '_strategy_cephalid'),
+    'cloudpost':  ('cloudpost',  'make_cloudpost_deck',  '_strategy_cloudpost'),
 }
 
 

@@ -1992,6 +1992,14 @@ MATCHUP_META = {
     'infect':     {'name': 'Infect',               'share': 0.03},
     'goblins':    {'name': 'Goblins',              'share': 0.03},
     'belcher':    {'name': 'Goblin Charbelcher',   'share': 0.02},
+    'sneak_a':    {'name': 'Sneak & Show A (rerere)',     'share': 0.03},
+    'sneak_b':    {'name': 'Sneak & Show B (JPA93)',      'share': 0.03},
+    'affinity':   {'name': 'Affinity (8-Cast variant)',   'share': 0.03},
+    'ur_tempo':   {'name': 'UR Tempo (Cori-Steel)',       'share': 0.03},
+    'dimir_c':    {'name': 'Dimir Tempo C (Barrowgoyf)',  'share': 0.03},
+    'dimir_d':    {'name': 'Dimir Tempo D (Kaito)',       'share': 0.03},
+    'cephalid':   {'name': 'Cephalid Breakfast',          'share': 0.02},
+    'cloudpost':  {'name': 'Cloudpost (12-Post)',         'share': 0.02},
 }
 
 
@@ -2033,6 +2041,14 @@ _PLUGIN_DECKS = {
     'goblins':    ('decks.goblins',    'make_goblins_deck'),
     'belcher':    ('decks.belcher',    'make_belcher_deck'),
     'ur_delver':  ('decks.ur_delver',  'make_ur_delver_deck'),
+    'sneak_a':    ('decks.sneak_a',    'make_sneak_a_deck'),
+    'sneak_b':    ('decks.sneak_b',    'make_sneak_b_deck'),
+    'affinity':   ('decks.affinity',   'make_affinity_deck'),
+    'ur_tempo':   ('decks.ur_tempo',   'make_ur_tempo_deck'),
+    'dimir_c':    ('decks.dimir_c',    'make_dimir_c_deck'),
+    'dimir_d':    ('decks.dimir_d',    'make_dimir_d_deck'),
+    'cephalid':   ('decks.cephalid',   'make_cephalid_deck'),
+    'cloudpost':  ('decks.cloudpost',  'make_cloudpost_deck'),
 }
 for _key, (_mod, _fn) in _PLUGIN_DECKS.items():
     try:
