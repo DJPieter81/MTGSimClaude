@@ -195,9 +195,8 @@ def cmd_matchup(deck1, deck2, n_games, seed=None):
 
 
 def cmd_field(deck, n_games, seed=None):
-    """Run one deck vs all others."""
+    """Run one deck vs all others (parallelized at matchup level)."""
     from cards import DECKS
-    from sim import run_game
     if seed is not None:
         random.seed(seed)
 
@@ -207,18 +206,20 @@ def cmd_field(deck, n_games, seed=None):
     print(f"  {deck.upper()} vs THE FIELD — {n_games} games each")
     print(f"{'=' * 60}\n")
 
+    from parallel import parallel_field
+    raw = parallel_field(deck, opponents, n_games)
+
     total_wins = 0
     total_games = 0
     rows = []
 
-    for opp in opponents:
-        results = [run_game(deck, opp) for _ in range(n_games)]
-        wins = sum(1 for r in results if r.winner == 'p1')
-        wr = wins / n_games
-        avg_len = sum(r.game_length for r in results) / n_games
-        rows.append((opp, wins, n_games - wins, wr, avg_len))
+    for d1, opp, wins, losses, kill_turns, lengths in raw:
+        n = wins + losses
+        wr = wins / n if n > 0 else 0
+        avg_len = sum(lengths) / len(lengths) if lengths else 0
+        rows.append((opp, wins, losses, wr, avg_len))
         total_wins += wins
-        total_games += n_games
+        total_games += n
 
     rows.sort(key=lambda x: -x[3])
     print(f"  {'Opponent':<20s} {'W-L':>7s} {'WR':>6s} {'AvgT':>5s}")
@@ -231,15 +232,35 @@ def cmd_field(deck, n_games, seed=None):
 
 
 def cmd_matrix(decks, n_games, top_tier, seed=None):
-    """Run NxN meta matrix."""
-    from sim import run_meta_matrix
+    """Run NxN meta matrix (parallelized at matchup level)."""
+    from cards import DECKS, MATCHUP_META
     if seed is not None:
         random.seed(seed)
 
-    if decks:
-        matrix = run_meta_matrix(decks=decks, n_games=n_games)
-    else:
-        matrix = run_meta_matrix(top_tier=top_tier, n_games=n_games)
+    # Resolve deck list (same logic as run_meta_matrix)
+    if not decks:
+        if top_tier > 0:
+            def _get_share(k):
+                meta = MATCHUP_META.get(k, {})
+                if isinstance(meta, dict) and 'share' in meta:
+                    return meta['share']
+                return 0.0
+            ranked = sorted(
+                ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
+                key=lambda x: -x[1])
+            pool = [k for k, _ in ranked[:max(top_tier * 2, 10)]]
+            if 'bug' not in pool: pool.append('bug')
+            chosen = ['bug'] if 'bug' in pool else []
+            others = [k for k in pool if k not in chosen]
+            random.shuffle(others)
+            chosen += others[:top_tier - len(chosen)]
+            decks = sorted(chosen)
+            print(f"Top-tier selection ({top_tier}): {', '.join(decks)}")
+        else:
+            decks = sorted(DECKS.keys())
+
+    from parallel import parallel_meta_matrix
+    matrix = parallel_meta_matrix(decks, n_games)
 
     print()
     all_decks = sorted(set(d for pair in matrix for d in pair))
