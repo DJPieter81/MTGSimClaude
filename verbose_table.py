@@ -275,7 +275,252 @@ def run_table_game(matchup, seed=None):
     print()
 
 
+def run_game_data(matchup, seed=None):
+    """Run a game and return structured data for markdown/html rendering."""
+    if seed is not None:
+        random.seed(seed)
+
+    bug_hand, bug_lib, bug_mulls = london_mulligan(DECKS['bug'], bug_keep)
+    opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
+    bug_goes_first = random.random() < 0.5
+
+    gs = GameState(
+        bug=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
+        opp=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
+        bug_goes_first=bug_goes_first)
+    gs.matchup = matchup
+
+    meta_name = matchup.replace('_', ' ').title()
+    bug_open = fmt_hand(gs.bug)
+    opp_open = fmt_hand(gs.opp)
+
+    turns = []
+    display_turn = 0
+
+    for rnd in range(1, 16):
+        if gs.game_over:
+            break
+        gs.turn = rnd
+
+        def do_one(label):
+            nonlocal display_turn
+            display_turn += 1
+            player = gs.bug if label == 'BUG' else gs.opp
+            opponent = gs.opp if label == 'BUG' else gs.bug
+            hand_before = fmt_hand(player)
+            life_before = player.life
+
+            if label == 'BUG':
+                raw_lines = bug_turn(gs, rnd)
+            else:
+                raw_lines = opp_turn(gs, rnd, matchup)
+
+            plays = []
+            for line in raw_lines:
+                line = line.strip()
+                if not line:
+                    continue
+                plays.append({'text': ab_line(line), 'reason': reason(line),
+                              'raw': line})
+
+            turns.append({
+                'num': display_turn, 'label': label,
+                'life': player.life, 'life_before': life_before,
+                'opp_life': opponent.life,
+                'hand_before': hand_before,
+                'creatures': fmt_creatures(player),
+                'lands': fmt_lands_short(player),
+                'plays': plays,
+            })
+            return gs.game_over
+
+        if bug_goes_first:
+            if do_one('BUG'): break
+            if do_one('OPP'): break
+        else:
+            if do_one('OPP'): break
+            if do_one('BUG'): break
+
+    winner = 'BUG' if gs.winner == 'bug' else 'OPP'
+    return {
+        'matchup': matchup, 'meta_name': meta_name, 'seed': seed,
+        'bug_goes_first': bug_goes_first,
+        'bug_mulls': bug_mulls, 'opp_mulls': opp_mulls,
+        'bug_open': bug_open, 'opp_open': opp_open,
+        'turns': turns, 'display_turn': display_turn,
+        'winner': winner, 'win_reason': gs.win_reason or '',
+        'bug_life': gs.bug.life, 'opp_life': gs.opp.life,
+        'bug_board': fmt_creatures(gs.bug),
+        'opp_board': fmt_creatures(gs.opp),
+    }
+
+
+def markdown_game(game, game_num=None, series_score=None):
+    """Render a single game as detailed markdown tables."""
+    g = game
+    lines = []
+
+    # Game header
+    header = f"### GAME {game_num}" if game_num else f"### {g['meta_name']}"
+    if series_score:
+        header += f" — {series_score}"
+    lines.append(header)
+    lines.append("")
+    play_draw = "BUG on the play" if g['bug_goes_first'] else "BUG on the draw"
+    lines.append(f"*{play_draw}, seed {g['seed']}*")
+    lines.append("")
+
+    # Opening hands
+    lines.append(f"| | BUG | OPP ({g['meta_name']}) |")
+    lines.append(f"|---|---|---|")
+    lines.append(f"| **Opening Hand** | {g['bug_open']} | {g['opp_open']} |")
+    lines.append("")
+
+    # Turn table
+    lines.append(f"| Turn | Who | Life | Key Plays | Reasoning |")
+    lines.append(f"|------|-----|------|-----------|-----------|")
+
+    for t in g['turns']:
+        delta = t['life'] - t['life_before']
+        life_str = str(t['life'])
+        if delta != 0:
+            life_str += f" ({delta:+d})"
+
+        # Collect key plays and reasons
+        key_plays = []
+        reasons = []
+        for p in t['plays']:
+            text = p['text']
+            r = p['reason']
+            # Skip mundane draw-for-turn unless it's a notable topdeck
+            if r == 'draw for turn' and not any(k in text.lower() for k in
+                    ('emrakul', 'snt', 'sneak', 'fow', 'omni', 'atraxa')):
+                continue
+            # Bold key plays
+            is_key = any(k in text.lower() for k in
+                         ('strips', 'destroys', 'flash bowm', 'fow counters',
+                          'daze counters', 'snt ->', 'sneak attack ->',
+                          'emrakul attacks', 'omniscience', 'combo', 'attack:',
+                          'countered!', 'tamiyo flips', 'murktide', 'cast kaito',
+                          'cast goyf'))
+            display = f"**{text}**" if is_key else text
+            key_plays.append(display)
+            if r and r != 'COUNTERED!':
+                reasons.append(f"*{r}*")
+
+        if not key_plays:
+            key_plays = ["(develop)"]
+
+        plays_str = ', '.join(key_plays[:3])  # limit to 3 most important
+        if len(key_plays) > 3:
+            plays_str += f" +{len(key_plays)-3} more"
+        reason_str = ' / '.join(reasons[:2]) if reasons else ''
+
+        lines.append(f"| T{t['num']} | {t['label']} | {life_str} | {plays_str} | {reason_str} |")
+
+    lines.append("")
+
+    # Board + result
+    lines.append(f"**Board:** BUG: {g['bug_board']} | OPP: {g['opp_board']}")
+    wcls = "**" if g['winner'] == 'BUG' else "**"
+    lines.append(f"**Result:** {g['winner']} wins T{g['display_turn']} — {g['win_reason']}")
+    lines.append("")
+
+    return '\n'.join(lines)
+
+
+def markdown_bo3(matchup, seeds):
+    """Generate a full Bo3 markdown report with detailed tables.
+
+    Usage:
+        from verbose_table import markdown_bo3
+        print(markdown_bo3('sneak_a', [51, 56, 55]))
+    """
+    games = [run_game_data(matchup, s) for s in seeds]
+    meta_name = games[0]['meta_name']
+
+    bug_score = 0
+    opp_score = 0
+    lines = []
+
+    lines.append(f"## Best of 3: BUG Tempo vs {meta_name}")
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+
+    for i, g in enumerate(games):
+        if i == 0:
+            score_str = "0-0"
+        else:
+            score_str = f"BUG {bug_score} - {opp_score} OPP"
+
+        gnum = i + 1
+        game_md = markdown_game(g, game_num=gnum, series_score=score_str)
+        lines.append(game_md)
+        lines.append("---")
+        lines.append("")
+
+        if g['winner'] == 'BUG':
+            bug_score += 1
+        else:
+            opp_score += 1
+
+    # Series summary
+    series_winner = 'BUG' if bug_score > opp_score else 'OPP'
+    lines.append(f"## Series Summary")
+    lines.append("")
+    lines.append(f"| Game | Winner | How | Key Moment |")
+    lines.append(f"|------|--------|-----|------------|")
+    for i, g in enumerate(games):
+        # Find the key moment
+        key = ''
+        for t in g['turns']:
+            for p in t['plays']:
+                if any(k in p['text'].lower() for k in ('snt ->', 'emrakul attacks',
+                       'omniscience', 'combo', 'strips', 'fow counters')):
+                    key = p['text']
+        if not key:
+            key = g['win_reason']
+        lines.append(f"| {i+1} | **{g['winner']}** | T{g['display_turn']} {g['win_reason'][:30]} | {key[:50]} |")
+
+    lines.append("")
+    lines.append(f"**{series_winner} wins the series {bug_score}-{opp_score}**")
+    lines.append("")
+
+    return '\n'.join(lines)
+
+
+def find_no_mull_seeds(matchup, count=10, start=1, end=500):
+    """Find seeds where neither player mulligans.
+
+    Usage:
+        from verbose_table import find_no_mull_seeds
+        seeds = find_no_mull_seeds('sneak_a')
+    """
+    results = []
+    for seed in range(start, end):
+        random.seed(seed)
+        _, _, bm = london_mulligan(DECKS['bug'], bug_keep)
+        _, _, om = london_mulligan(DECKS[matchup], opp_keep, matchup)
+        if bm == 0 and om == 0:
+            results.append(seed)
+            if len(results) >= count:
+                break
+    return results
+
+
 if __name__ == '__main__':
     matchup = sys.argv[1] if len(sys.argv) > 1 else 'sneak_a'
-    seed = int(sys.argv[2]) if len(sys.argv) > 2 else None
-    run_table_game(matchup, seed)
+
+    if '--bo3' in sys.argv:
+        idx = sys.argv.index('--bo3')
+        seeds = [int(s) for s in sys.argv[idx+1:idx+4]]
+        print(markdown_bo3(matchup, seeds))
+    elif '--md' in sys.argv:
+        # Single game markdown
+        seed = int(sys.argv[sys.argv.index('--md') + 1]) if len(sys.argv) > sys.argv.index('--md') + 1 else None
+        g = run_game_data(matchup, seed)
+        print(markdown_game(g))
+    else:
+        seed = int(sys.argv[2]) if len(sys.argv) > 2 else None
+        run_table_game(matchup, seed)
