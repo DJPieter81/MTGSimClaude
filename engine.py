@@ -160,20 +160,6 @@ def bowmasters_triggers(n_draws: int, gs: GameState, log_list: List[str],
     gs.check_life_totals()
 
 
-def _try_counter(gs: GameState, spell_obj: StackObject, log_list: List[str],
-                 is_opponents_turn: bool = True) -> bool:
-    """BUG attempts to counter a spell on the stack."""
-    if gs.spell_blocked_by_chalice(spell_obj.cmc):
-        log_list.append(f"  {spell_obj.name} countered by Chalice={gs.chalice_x}")
-        return True
-    ctr = []
-    if MTGRules.best_counter(spell_obj, gs.p1.hand, gs.p1.lands, ctr,
-                              is_opponents_turn=is_opponents_turn):
-        for m in ctr: log_list.append(f"  ★ {m}")
-        log_list.append(f"  {spell_obj.name} countered!")
-        return True
-    return False
-
 
 # ─────────────────────────────────────────────
 # Combat helper — C2 + L4
@@ -446,54 +432,67 @@ def _select_fow_pitch(hand, exclude_card):
     return min(candidates, key=pitch_value) if candidates else None
 
 
-
-def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
+def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: list) -> bool:
     """
-    Opponent tries to counter a BUG spell reactively (on BUG's turn).
-    Only UWx and similar control decks use this -- others have too few counters.
-    Uses opp's FoW/FoN/Daze/Consign from the opponent hand.
-    Priority mirrors BUG's: counter high-value threats, not cantrips.
-    """
-    o, b = gs.p2, gs.p1
-    matchup = gs.matchup if hasattr(gs, 'matchup') else ''
+    Symmetric counter — defender tries to counter caster's spell.
+    Works for either player slot (p1 or p2).
 
-    # Veil of Summer: "Spells you control can't be countered this turn." (CR 702.86)
+    Merges _opp_reactive_counter + _opp_try_counter into one function:
+    - Full counter suite: FoW, FoN, Counterspell, Flusterstorm, Pyroblast, Consign, Daze
+    - Threat assessment: major/minor classification, control deck awareness
+    - Trinisphere check, Veil of Summer, Shepherd protection
+    - Daze pay-through probability based on matchup type
+    """
+    import random
+    matchup = getattr(gs, 'matchup', '')
+
+    # ── Protection checks ──
     if getattr(gs, 'veil_active', False):
-        return False  # all caster's spells protected this turn
+        return False
+    if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card, 'colors', set()):
+        return False
 
-    # Single-pass scan of opponent hand for all counter types
+    # ── Scan defender's hand for all counter types ──
     _COUNTER_TAGS = {'fow', 'fon', 'daze', 'consign', 'counter', 'fluster', 'pyro', 'reb'}
     counters_by_tag = {}
-    for c in o.hand:
+    for c in defender.hand:
         if c.tag in _COUNTER_TAGS and c.tag not in counters_by_tag:
             counters_by_tag[c.tag] = c
-    opp_fow = counters_by_tag.get('fow')
-    opp_fon = counters_by_tag.get('fon')
-    opp_daze = counters_by_tag.get('daze')
-    opp_consign = counters_by_tag.get('consign')
-    opp_cs = counters_by_tag.get('counter')
-    opp_fluster = counters_by_tag.get('fluster')
-    opp_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
 
     if not counters_by_tag:
         return False
 
-    # Don't counter cantrips (let them resolve — opp saves counters for threats)
+    d_fow = counters_by_tag.get('fow')
+    d_fon = counters_by_tag.get('fon')
+    d_daze = counters_by_tag.get('daze')
+    d_consign = counters_by_tag.get('consign')
+    d_cs = counters_by_tag.get('counter')
+    d_fluster = counters_by_tag.get('fluster')
+    d_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
+
+    # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
+    if gs.trinisphere_active:
+        d_fow = None
+        d_fon = None
+
+    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro]):
+        return False
+
+    # ── Don't counter cantrips — save counters for threats ──
     if spell_card.tag in ('bs', 'ponder', 'bauble'):
         return False
-    # Allosaurus Shepherd: green spells can't be countered by BUG while Shepherd is in play
-    if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card,'colors',set()):
-        return False
 
-    total_counters = sum(1 for c in o.hand if c.tag in _COUNTER_TAGS)
+    total_counters = sum(1 for c in defender.hand if c.tag in _COUNTER_TAGS)
 
-    # Counter Thoughtseize only if we have key threats to protect AND 2+ counters
+    # ── Thoughtseize: only counter if defender has key threats to protect AND 2+ counters ──
     if spell_card.tag == 'ts':
-        has_key_card = any(c.win_condition or c.is_combo_piece or c.tag in ('wst','mentor','dd','sat')
-                          for c in o.hand)
+        has_key_card = any(c.win_condition or c.is_combo_piece or c.tag in ('wst', 'mentor', 'dd', 'sat')
+                          for c in defender.hand)
         if not (has_key_card and total_counters >= 2):
             return False
-    has_removal = any(c.tag == 'stp' for c in o.hand)
+
+    # ── Threat assessment ──
+    has_removal = any(c.tag == 'stp' for c in defender.hand)
     is_major_threat = (
         spell_card.win_condition or spell_card.is_combo_piece or
         spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
@@ -503,99 +502,94 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
     is_mirror_or_flash = is_in_category(matchup, 'mirror') or is_in_category(matchup, 'dimir_only')
     if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
         is_major_threat = True
-    # Control decks (UWx — runs STP) should NOT FoW cheap creatures — STP them later
+    # Control decks (runs STP) should NOT FoW cheap creatures — STP them later
     if spell_card.cmc <= 2 and has_removal and not spell_card.win_condition:
         is_major_threat = False
+
     is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
-    if is_minor_threat and total_counters <= 2: return False
-    if not (is_major_threat or is_minor_threat): return False
+    if is_minor_threat and total_counters <= 2:
+        return False
+    if not (is_major_threat or is_minor_threat):
+        return False
+
+    # ── Determine defender label for log messages ──
+    d_label = 'P1' if defender is gs.p1 else 'OPP'
 
     ctr = []
 
-    # Try FoN first (free on opponent's turn = BUG's turn; free if blue card to pitch)
-    if opp_fon and 'U' in getattr(opp_fon, 'colors', set()):
-        blue_pitch = _select_fow_pitch(o.hand, opp_fon)
+    # ── FoN first (free on opponent's turn = caster's turn; needs blue pitch) ──
+    if d_fon and 'U' in getattr(d_fon, 'colors', set()):
+        blue_pitch = _select_fow_pitch(defender.hand, d_fon)
         if blue_pitch:
-            o.remove_from_hand(opp_fon); o.add_to_grave(opp_fon)
-            o.remove_from_hand(blue_pitch); o.exile.append(blue_pitch)
+            defender.remove_from_hand(d_fon); defender.add_to_grave(d_fon)
+            defender.remove_from_hand(blue_pitch); defender.exile.append(blue_pitch)
             gs._last_counter_used = 'fon'
             ctr.append(f"Force of Negation counters {spell_card.name} (exiles {blue_pitch.name})")
 
-    # Try FoW (free if pitch blue card)
-    if not ctr and opp_fow:
-        blue_pitch = _select_fow_pitch(o.hand, opp_fow)
+    # ── FoW (free if pitch blue card) ──
+    if not ctr and d_fow:
+        blue_pitch = _select_fow_pitch(defender.hand, d_fow)
         if blue_pitch:
-            o.remove_from_hand(opp_fow); o.add_to_grave(opp_fow)
-            o.remove_from_hand(blue_pitch); o.exile.append(blue_pitch)
+            defender.remove_from_hand(d_fow); defender.add_to_grave(d_fow)
+            defender.remove_from_hand(blue_pitch); defender.exile.append(blue_pitch)
             gs._last_counter_used = 'fow'
             ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
 
-    # Try Counterspell (UU, hard counter — requires mana + hand depth for resource management)
-    # Only use if: major threat AND opp has 4+ cards (don't empty hand on counters)
-    if not ctr and opp_cs and is_major_threat and len(o.hand) >= 4:
-        opp_mana = o.available_mana_count()
-        opp_has_uu = sum(1 for l in o.lands if not l.tapped and 'U' in l.effective_produces()) >= 2
-        if opp_mana >= 2 and opp_has_uu:
-            o.remove_from_hand(opp_cs); o.add_to_grave(opp_cs)
+    # ── Counterspell (UU, requires mana + hand depth ≥ 4) ──
+    if not ctr and d_cs and is_major_threat and len(defender.hand) >= 4:
+        d_mana = defender.available_mana_count()
+        d_has_uu = sum(1 for l in defender.lands if not l.tapped and 'U' in l.effective_produces()) >= 2
+        if d_mana >= 2 and d_has_uu:
+            defender.remove_from_hand(d_cs); defender.add_to_grave(d_cs)
             gs._last_counter_used = 'counter'
             ctr.append(f"Counterspell counters {spell_card.name}")
 
-    # Try Flusterstorm (U, counters instant/sorcery — only high-value targets)
-    if not ctr and opp_fluster and is_major_threat and len(o.hand) >= 3:
+    # ── Flusterstorm (U, instant/sorcery only, requires mana + hand ≥ 3) ──
+    if not ctr and d_fluster and is_major_threat and len(defender.hand) >= 3:
         if spell_card.card_type in (CardType.INSTANT, CardType.SORCERY):
-            opp_has_u = any(not l.tapped and 'U' in l.effective_produces() for l in o.lands)
-            if opp_has_u:
-                o.remove_from_hand(opp_fluster); o.add_to_grave(opp_fluster)
+            d_has_u = any(not l.tapped and 'U' in l.effective_produces() for l in defender.lands)
+            if d_has_u:
+                defender.remove_from_hand(d_fluster); defender.add_to_grave(d_fluster)
                 gs._last_counter_used = 'fluster'
                 ctr.append(f"Flusterstorm counters {spell_card.name}")
 
-    # Try Pyroblast/REB (R, counters blue spells — Painter uses these)
-    if not ctr and opp_pyro:
+    # ── Pyroblast/REB (R, blue spells only) ──
+    if not ctr and d_pyro:
         if 'U' in getattr(spell_card, 'colors', set()):
-            opp_has_r = any(not l.tapped and 'R' in l.effective_produces() for l in o.lands)
-            if opp_has_r:
-                o.remove_from_hand(opp_pyro); o.add_to_grave(opp_pyro)
+            d_has_r = any(not l.tapped and 'R' in l.effective_produces() for l in defender.lands)
+            if d_has_r:
+                defender.remove_from_hand(d_pyro); defender.add_to_grave(d_pyro)
                 gs._last_counter_used = 'pyro'
-                ctr.append(f"{opp_pyro.name} counters {spell_card.name} (blue spell)")
+                ctr.append(f"{d_pyro.name} counters {spell_card.name} (blue spell)")
 
-    # Try Consign (3 mana, hard counter)
-    if not ctr and opp_consign:
-        opp_mana = o.available_mana_count()
-        if opp_mana >= 3:
-            o.remove_from_hand(opp_consign); o.add_to_grave(opp_consign)
+    # ── Consign to Memory (3 mana, hard counter) ──
+    if not ctr and d_consign:
+        d_mana = defender.available_mana_count()
+        if d_mana >= 3:
+            defender.remove_from_hand(d_consign); defender.add_to_grave(d_consign)
             ctr.append(f"Consign to Memory counters {spell_card.name}")
 
-    # Try Daze (return Island to hand; counter unless caster pays {1})
-    # CR 701.5: Daze says "unless its controller pays {1}" — caster CAN pay {1} to let it resolve.
-    # Model: protagonist pays through Daze if they have spare mana (cmc + 1 affordable).
-    # Proxy using gs.turn and matchup: early turns caster is mana-constrained; later turns they pay.
-    if not ctr and opp_daze and is_major_threat:
-        blue_land = next((l for l in o.lands if not l.tapped and 'U' in l.effective_produces()), None)
+    # ── Daze (return Island; caster may pay {1} to prevent) ──
+    if not ctr and d_daze and is_major_threat:
+        blue_land = next((l for l in defender.lands if not l.tapped and 'U' in l.effective_produces()), None)
         if blue_land:
-            # Check if the caster can afford to pay {1} extra (pay through Daze)
-            # Proxy: if it's turn 3+ AND the spell is CMC 1-2, caster likely has spare mana
-            matchup = getattr(gs, 'matchup', '')
-            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator', 'tes', 'belcher')
-            is_combo = matchup in combo_decks
-            # Combo pays through Daze more readily (rituals give extra mana)
-            # Fair decks pay through on T3+ with enough lands
-            pay_threshold = 0.55 if is_combo else 0.30  # probability caster pays {1}
+            is_combo = is_in_category(matchup, 'combo') or is_in_category(matchup, 'fast_combo')
+            pay_threshold = 0.55 if is_combo else 0.30
             can_pay = (spell_card.cmc >= 1 and
                        (gs.turn >= 3 or is_combo) and
                        random.random() < pay_threshold)
             if can_pay:
-                # Caster pays {1}: Daze fizzles, spell resolves, Island not returned
                 log_list.append(f"  Daze attempted on {spell_card.name} — caster pays {{1}}, spell resolves")
             else:
-                o.lands.remove(blue_land)
-                o.hand.append(blue_land.card)
-                o.remove_from_hand(opp_daze); o.add_to_grave(opp_daze)
+                defender.lands.remove(blue_land)
+                defender.hand.append(blue_land.card)
+                defender.remove_from_hand(d_daze); defender.add_to_grave(d_daze)
                 gs._last_counter_used = 'daze'
                 ctr.append(f"Daze counters {spell_card.name} — {blue_land.name} returned")
 
     if ctr:
         for m in ctr:
-            log_list.append(f"  ★ OPP {m}")
+            log_list.append(f"  ★ {d_label} {m}")
         log_list.append(f"  {spell_card.name} countered!")
         return True
     return False
@@ -846,7 +840,7 @@ def bug_turn(gs: GameState, turn: int):
             if not hold_for_mirror_eot and not hold_for_interaction:
                 _deduct(b_budget, effective_cmc(bowm), bowm)
                 b.remove_from_hand(bowm)
-                if _opp_reactive_counter(gs, bowm, log_entries):
+                if try_reactive_counter(gs, b, o, bowm, log_entries):
                     b.add_to_grave(bowm)
                 else:
                     perm = b.put_creature_in_play(bowm)
@@ -1277,7 +1271,7 @@ def bug_turn(gs: GameState, turn: int):
             if b_budget[0] >= effective_cmc(tam) and can_afford(b, tam.mana_cost):
                 spend(tam)
                 b.remove_from_hand(tam)
-                if _opp_reactive_counter(gs, tam, log_entries):
+                if try_reactive_counter(gs, b, o, tam, log_entries):
                     b.add_to_grave(tam)
                 else:
                     perm = b.put_creature_in_play(tam)
@@ -1292,7 +1286,7 @@ def bug_turn(gs: GameState, turn: int):
         if b_budget[0] >= effective_cmc(goyf) and can_afford(b, goyf.mana_cost):
             spend(goyf)
             b.remove_from_hand(goyf)
-            if _opp_reactive_counter(gs, goyf, log_entries):
+            if try_reactive_counter(gs, b, o, goyf, log_entries):
                 b.add_to_grave(goyf)
             else:
                 perm = b.put_creature_in_play(goyf)
@@ -1313,7 +1307,7 @@ def bug_turn(gs: GameState, turn: int):
         if no_threats_on_board and b_budget[0] >= effective_cmc(borrow_threat) and can_afford(b, borrow_threat.mana_cost):
             spend(borrow_threat)
             b.remove_from_hand(borrow_threat)
-            if _opp_reactive_counter(gs, borrow_threat, log_entries):
+            if try_reactive_counter(gs, b, o, borrow_threat, log_entries):
                 b.add_to_grave(borrow_threat)
             else:
                 b.put_creature_in_play(borrow_threat)
@@ -1327,7 +1321,7 @@ def bug_turn(gs: GameState, turn: int):
         if b_budget[0] >= effective_cmc(murk) and can_afford(b, murk.mana_cost):
             spend(murk)
             b.remove_from_hand(murk)
-            if _opp_reactive_counter(gs, murk, log_entries):
+            if try_reactive_counter(gs, b, o, murk, log_entries):
                 b.add_to_grave(murk)
             else:
                 exiled = min(spell_count, 6)
@@ -1356,7 +1350,7 @@ def bug_turn(gs: GameState, turn: int):
         if can_cast and ok_to_deploy() and not (hold_mana and threats_this_turn[0] >= 1):
             spend(kaito)
             b.remove_from_hand(kaito)
-            if _opp_reactive_counter(gs, kaito, log_entries):
+            if try_reactive_counter(gs, b, o, kaito, log_entries):
                 b.add_to_grave(kaito)
             else:
                 perm = b.put_creature_in_play(kaito)
@@ -1978,123 +1972,13 @@ def elves_turn(gs: GameState, turn: int):
     return protagonist_turn(gs, turn, 'elves')
 
 
-def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
-    """
-    BUG (gs.p1) tries to counter an antagonist spell reactively.
-    Called when the protagonist is NOT BUG — e.g. Elves, Dimir, Storm as protagonist.
-    Mirrors _opp_reactive_counter but uses gs.p1 hand for counters.
-    """
-    b = gs.p1
-    matchup = getattr(gs, 'matchup', '')
-
-    # Veil of Summer protection
-    if getattr(gs, 'veil_active', False):
-        return False
-
-    fow  = next((c for c in b.hand if c.tag == 'fow'), None)
-    fon  = next((c for c in b.hand if c.tag == 'fon'), None)
-    daze = next((c for c in b.hand if c.tag == 'daze'), None)
-
-    # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
-    # FoW/FoN can't be cast for free under Trinisphere
-    if gs.trinisphere_active:
-        fow = None  # can't pitch-cast FoW under Trinisphere without 3 mana
-        fon = None
-
-    if not any([fow, fon, daze]):
-        return False
-
-    # Don't counter cantrips or cheap setup
-    if spell_card.tag in ('bs', 'ponder', 'bauble'):
-        return False
-    if spell_card.tag == 'ts':
-        return False
-
-    # Use interaction model to decide FoW priority (no hardcoded matchup lists)
-    from interaction_model import get_or_infer_interaction, compute_fow_priority
-    _int = get_or_infer_interaction(matchup)
-    if not compute_fow_priority(_int, spell_card):
-        return False  # interaction model says don't counter this spell
-
-    # Shepherd: green spells uncounterable
-    if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card, 'colors', set()):
-        return False
-
-    total_counters = sum(1 for c in b.hand if c.tag in ('fow', 'fon', 'daze'))
-    is_major = (spell_card.win_condition or spell_card.is_combo_piece or
-                spell_card.tag in ('bowm', 'murk', 'kaito') or spell_card.cmc >= 3)
-    is_minor = spell_card.tag in ('tamiyo', 'nether', 'borrow')
-
-    if is_minor and total_counters <= 1: return False
-    if not (is_major or is_minor): return False
-
-    ctr = []
-
-    # FoN first (free on protagonist's turn = BUG's reactive window)
-    if fon and not ctr:
-        blue_pitch = _select_fow_pitch(b.hand, fon)
-        if blue_pitch:
-            b.remove_from_hand(fon); b.add_to_grave(fon)
-            b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
-            ctr.append(f"Force of Negation counters {spell_card.name} (exiles {blue_pitch.name})")
-
-    # FoW — counter rate: P(BUG commits FoW) based on spell importance
-    # Win conditions/combo pieces: ~P(4 FoW in ~10 cards seen) ≈ 50%
-    # Other spells: lower commitment (BUG saves FoW for bigger threats)
-    if fow and not ctr:
-        blue_pitch = _select_fow_pitch(b.hand, fow)
-        if blue_pitch:
-            import random
-            from interaction_model import _prob_at_least_one
-            # P(BUG has FoW ready) = hypergeometric(4 copies, cards_seen)
-            # cards_seen approximated from turn number
-            cards_seen = 7 + gs.turn * 1.5
-            fow_prob = _prob_at_least_one(4, int(cards_seen))
-            # BUG only commits FoW to important spells
-            if spell_card.win_condition or spell_card.is_combo_piece:
-                commit_rate = fow_prob
-            else:
-                commit_rate = fow_prob * 0.5  # save for bigger threats
-            if random.random() < commit_rate:
-                b.remove_from_hand(fow); b.add_to_grave(fow)
-                b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
-                ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
-
-    # Daze — opponent pays {1} to counter: depends on whether they have spare mana
-    # Combo decks often tap out (high pay chance); fair decks hold up mana (low pay)
-    if daze and not ctr and is_major:
-        blue_land = next((l for l in b.lands if not l.tapped and 'U' in l.effective_produces()), None)
-        if blue_land:
-            from deck_registry import is_in_category
-            is_combo = is_in_category(matchup, 'combo') or is_in_category(matchup, 'fast_combo')
-            pay_prob = 0.55 if is_combo else 0.30
-            import random
-            if gs.turn >= 3 and random.random() < pay_prob:
-                log_list.append(f"  Daze attempted on {spell_card.name} — caster pays {{1}}, spell resolves")
-            else:
-                b.lands.remove(blue_land)
-                b.hand.append(blue_land.card)
-                b.remove_from_hand(daze); b.add_to_grave(daze)
-                ctr.append(f"Daze counters {spell_card.name} — {blue_land.name} returned")
-
-    if ctr:
-        for m in ctr:
-            log_list.append(f"  ★ OPP {m}")
-        log_list.append(f"  {spell_card.name} countered!")
-        return True
-    return False
-
-
 def _try_counter_any(player, opponent, gs: GameState, spell_card, log_list: list) -> bool:
     """
     Unified counter attempt — works regardless of which role the deck plays.
-    player is gs.p1  → protagonist casting spell, opponent (gs.p2) tries to counter.
-    player is gs.p2  → antagonist casting spell, BUG (gs.p1) tries to counter.
+    player is casting, opponent (defender) tries to counter.
     """
-    if player is gs.p1:
-        return _opp_reactive_counter(gs, spell_card, log_list)
-    else:
-        return _opp_try_counter(gs, spell_card, log_list)
+    defender = gs.p2 if player is gs.p1 else gs.p1
+    return try_reactive_counter(gs, player, defender, spell_card, log_list)
 
 
 def combat_declare(player, opponent, gs, log_entries, attackers):
