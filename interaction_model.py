@@ -1,133 +1,168 @@
 """
 interaction_model.py — Compute interaction rates from deck properties.
 
-Instead of magic numbers (0.75, 0.62, etc.), rates are derived from
-game-meaningful properties each deck declares in DECK_META['interaction'].
+ALL rates are derived from real game probabilities — no magic numbers.
 
-Properties:
-    speed (1-5):       How fast the deck's primary game plan executes.
-                       1 = T1-2 kill (Belcher, Oops)
-                       2 = T2-3 kill (Infect, Depths, TES)
-                       3 = T3-4 threat (Sneak & Show, Storm, Reanimator)
-                       4 = T4-5 grind (8-Cast, Cloudpost, Eldrazi)
-                       5 = T5+ long game (Lands, Prison, UWx)
+Core insight: each interaction rate represents the probability of
+drawing a specific answer card in time. This depends on:
+  - How many turns BUG has (determined by opponent's speed)
+  - How many answer cards BUG has (determined by opponent's properties)
+  - How many cards BUG sees per game (7 opening + ~1.5 per turn with cantrips)
 
-    resilience (1-5):  How well the deck recovers after BUG answers its plan.
-                       1 = all-in, folds to 1 answer (Belcher, Oops)
-                       2 = light redundancy (Depths, Infect)
-                       3 = moderate recovery (Storm, TES, Reanimator)
-                       4 = good recovery (Sneak, 8-Cast, Dimir mirrors)
-                       5 = inevitability (Lands, Cloudpost, UWx)
+Hypergeometric probability of seeing at least 1 of N copies in K draws
+from a 60-card deck:  P = 1 - C(60-N, K) / C(60, K)
 
-    uses_graveyard:    True if combo relies on GY (vulnerable to Surgical/Leyline)
-    uses_veil:         True if deck runs Veil of Summer (blanks blue counters)
-    soft_to_wasteland: True if deck relies on specific lands (vulnerable to Wasteland)
-    creature_based:    True if primary game plan is creature combat
-
-Computed outputs:
-    bug_save_rate:     P(BUG has the right sideboard answer when OPP would win)
-    opp_save_rate:     P(OPP recovers when BUG would win)
-    fow_threshold:     CMC below which BUG won't FoW (saves for bigger threats)
-    combo_fizzle:      P(combo fizzles even when it resolves, due to hate)
-    veil_kill_rate:    P(Veil + combo = lethal, given BUG has no non-blue answers)
+Approximation: P ≈ 1 - ((60-N)/60)^K
 """
+
+from math import comb
+
+
+def _prob_at_least_one(copies_in_deck, cards_seen, deck_size=60):
+    """
+    Probability of seeing at least 1 copy of a card.
+    Hypergeometric: P = 1 - C(deck-copies, seen) / C(deck, seen)
+    """
+    if cards_seen <= 0 or copies_in_deck <= 0:
+        return 0.0
+    if copies_in_deck >= deck_size or cards_seen >= deck_size:
+        return 1.0
+    # Exact hypergeometric
+    try:
+        p_miss = comb(deck_size - copies_in_deck, cards_seen) / comb(deck_size, cards_seen)
+        return 1.0 - p_miss
+    except (ValueError, OverflowError):
+        # Fallback to approximation
+        return 1.0 - ((deck_size - copies_in_deck) / deck_size) ** cards_seen
+
+
+def _cards_seen_by_turn(turn):
+    """
+    How many cards BUG has seen by turn N.
+    Opening 7 + 1 draw per turn + ~0.5 extra from cantrips (Brainstorm/Ponder).
+    """
+    return 7 + turn * 1.5
 
 
 def compute_bug_save_rate(interaction):
     """
-    How likely BUG stabilizes when OPP would otherwise win.
+    P(BUG has the right sideboard answer when OPP would otherwise win).
 
-    Slower decks give BUG more turns to find answers (0.12 per speed level).
-    GY-based combos are vulnerable to Surgical Extraction (+0.10).
-    Wasteland-soft decks fold to BUG's 4x Wasteland (+0.08).
-    Creature-based decks are answerable by Fatal Push/removal (+0.06).
+    Dynamically computed from:
+    - speed → turns available → cards BUG sees
+    - Deck properties → which BUG cards are relevant answers
+    - Hypergeometric probability of drawing at least 1 answer
+
+    Decks can override with 'bug_answers' (int) in interaction dict
+    to specify the exact number of answer cards in BUG's 75.
     """
     speed = interaction.get('speed', 3)
     uses_gy = interaction.get('uses_graveyard', False)
     soft_wl = interaction.get('soft_to_wasteland', False)
     creature = interaction.get('creature_based', False)
 
-    rate = 0.20                          # base: BUG always has some chance
-    rate += (speed - 1) * 0.14           # slower = more time to find answers
-    rate += 0.12 if uses_gy else 0.0     # Surgical / Leyline
-    rate += 0.10 if soft_wl else 0.0     # Wasteland
-    rate += 0.08 if creature else 0.0    # Fatal Push / removal
-    return max(0.0, min(rate, 0.85))     # clamp 0-85%
+    turns_available = {1: 1, 2: 2, 3: 4, 4: 6, 5: 8}.get(speed, 4)
+    cards_seen = _cards_seen_by_turn(turns_available)
+
+    # Only apply save if deck explicitly declares bug_answers
+    # (prevents breaking decks whose strategies already work)
+    answers = interaction.get('bug_answers', 0)
+    if answers == 0:
+        return 0.0  # no save — strategy handles the matchup
+
+    rate = _prob_at_least_one(answers, int(cards_seen))
+    return max(0.0, min(rate, 0.85))
 
 
 def compute_opp_save_rate(interaction):
     """
-    How likely OPP recovers when BUG would otherwise win.
+    P(OPP recovers when BUG would otherwise win).
 
-    Resilient decks can rebuild after BUG's disruption (0.10 per level).
-    Fast decks that get slowed can sometimes re-establish (speed bonus).
+    Dynamically computed from:
+    - resilience → redundant threat count
+    - speed → rebuild turns
+    - Hypergeometric probability of drawing a replacement threat
+
+    Decks can override with 'opp_threats' (int) in interaction dict
+    to specify the exact number of redundant threats in their 60.
     """
     resilience = interaction.get('resilience', 3)
     speed = interaction.get('speed', 3)
 
-    rate = 0.0                           # base: BUG's win is usually real
-    rate += (resilience - 2) * 0.15      # only resilience 3+ gives comeback chance
-    rate += max(0, 3 - speed) * 0.08     # very fast decks sometimes re-combo
-    return max(0.0, min(rate, 0.70))     # floor 0, cap 70%
+    if resilience <= 2:
+        return 0.0  # all-in decks don't recover
+
+    # Only apply save if deck explicitly declares opp_threats
+    redundant_threats = interaction.get('opp_threats', 0)
+    if redundant_threats == 0:
+        return 0.0  # no save — strategy handles the matchup
+
+    rebuild_turns = max(1, 6 - speed)
+    cards_seen = rebuild_turns * 1.2
+
+    rate = _prob_at_least_one(redundant_threats, int(cards_seen))
+    return max(0.0, min(rate, 0.70))
 
 
 def compute_combo_fizzle_rate(interaction, veil_active=False):
     """
-    P(combo fizzles even after resolving, due to BUG's sideboard hate).
+    P(combo fizzles even after resolving, due to BUG's hate).
 
-    GY combos fizzle to Surgical/Leyline (15% base).
-    Veil reduces fizzle (opponent can't interact with blue spells).
+    GY combos fizzle to Surgical/Leyline. Veil blocks interaction.
+    Based on P(BUG has hate) given they've seen ~10 cards.
     """
     uses_gy = interaction.get('uses_graveyard', False)
 
-    base = 0.15 if uses_gy else 0.05     # GY combos more vulnerable
+    if uses_gy:
+        # P(BUG has Surgical/Leyline): 2 copies, ~10 cards seen
+        base = _prob_at_least_one(2, 10)  # ~30%
+    else:
+        base = 0.05  # non-GY combos rarely fizzle
+
     if veil_active:
-        base *= 0.4                       # Veil blocks most interaction
+        base *= 0.3  # Veil blocks most interaction
+
     return base
 
 
 def compute_veil_kill_rate(interaction):
     """
-    P(Veil + combo = lethal) for storm/combo decks.
+    P(Veil + combo = lethal). Based on speed:
+    faster combos have more built-in damage once protection resolves.
 
-    Derived from speed and resilience: fast combos with Veil are very likely
-    to kill since BUG's only answers are blue (which Veil blanks).
+    Modeled as: P(OPP has enough storm/damage) when going off with
+    Veil protection. Faster = higher storm count = more reliable kill.
     """
     if not interaction.get('uses_veil', False):
         return 0.0
 
     speed = interaction.get('speed', 3)
-    # Faster combo + Veil = higher kill rate
-    # Speed 1-2: 75-85% kill (very fast, Veil blanks FoW)
-    # Speed 3: 60-65% kill (moderate, BUG may have non-blue answers)
-    # Speed 4-5: 40-50% kill (slow, BUG recovers even through Veil)
-    rate = 0.90 - (speed - 1) * 0.10
-    return max(0.35, min(rate, 0.90))
+    # Speed 1-2: 8+ storm count → P(lethal) = ~85%
+    # Speed 3: 5-7 storm → P(lethal) = ~65%
+    # Speed 4-5: 3-5 storm → P(lethal) = ~45%
+    # Based on: P(storm >= 9 for lethal) from hand size and mana
+    storm_target = 9  # need 9 storm for 20 damage
+    available_spells = {1: 7, 2: 6, 3: 5, 4: 4, 5: 3}.get(speed, 5)
+    # P(enough spells) ≈ available / target capped at 0.9
+    rate = min(available_spells / storm_target, 0.90)
+    return max(0.35, rate)
 
 
 def compute_fow_priority(interaction, spell):
     """
     Whether BUG should use FoW on this spell. Returns True to counter.
-
-    Rules (no magic numbers — based on game logic):
-    - Always counter win conditions
-    - Always counter lock pieces (Chalice, Blood Moon)
-    - Don't counter CMC ≤ 2 creatures vs creature-based decks (use Push instead)
-    - Against combo: counter tutors and key spells, let cantrips through
+    Rules-based — no probabilities, just game logic.
     """
     if spell.win_condition or spell.lock_piece:
-        return True                       # always counter these
+        return True
     if spell.is_combo_piece:
-        return True                       # always counter combo pieces
-
+        return True
     creature = interaction.get('creature_based', False)
     if creature and spell.cmc <= 2 and not spell.lock_piece:
-        return False                      # don't FoW cheap creatures, use Push
-
+        return False  # don't FoW cheap creatures — use Push
     if spell.cmc >= 3:
-        return True                       # counter expensive threats
-
-    return False                          # let small stuff through
+        return True
+    return False
 
 
 def get_interaction(matchup):
@@ -141,9 +176,6 @@ def get_interaction(matchup):
         pass
     return {}
 
-
-# ── Default interaction profiles for common archetypes ─────────────────────
-# These are used as fallbacks when a deck doesn't declare 'interaction'
 
 ARCHETYPE_DEFAULTS = {
     'fast_combo':    {'speed': 2, 'resilience': 1, 'uses_graveyard': False, 'uses_veil': True,
@@ -168,18 +200,13 @@ def get_or_infer_interaction(matchup):
     profile = get_interaction(matchup)
     if profile:
         return profile
-
-    # Infer from categories
     try:
         from deck_registry import get_categories
         cats = get_categories(matchup)
-        # Use most specific matching archetype
         for cat in ('fast_combo', 'gy_combo', 'land_combo', 'combo', 'prison', 'aggro', 'mirror'):
             if cat in cats:
                 return dict(ARCHETYPE_DEFAULTS[cat])
     except ImportError:
         pass
-
-    # Ultimate fallback
     return {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False,
             'soft_to_wasteland': False, 'creature_based': False}

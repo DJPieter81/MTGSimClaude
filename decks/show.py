@@ -43,6 +43,6 @@ DECK_META = {
     'strategy':   _strategy_show,
     'keep':       _keep_show,
     'categories': {'combo', 'land_combo'},
-    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
+    'interaction': {'speed': 3, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False, 'opp_threats': 10},
     'meta_share': 0.06,
 }
