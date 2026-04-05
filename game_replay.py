@@ -1,0 +1,407 @@
+"""
+game_replay.py — Generate interactive HTML game replay.
+
+Usage: python3 game_replay.py [matchup] [seed]
+  e.g. python3 game_replay.py sneak_a 2
+"""
+
+import sys, random, html, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from cards import DECKS
+from game import PlayerState, GameState, london_mulligan, bug_keep, opp_keep
+from engine import bug_turn, opp_turn
+
+ABBREV = {
+    'Tamiyo, Inquisitive Student': 'Tamiyo', 'Orcish Bowmasters': 'Bowmasters',
+    'Murktide Regent': 'Murktide', 'Force of Will': 'FoW', 'Force of Negation': 'FoN',
+    'Underground Sea': 'USea', 'Polluted Delta': 'PDelta', 'Misty Rainforest': 'MRain',
+    'Flooded Strand': 'FStrand', 'Marsh Flats': 'MFlats', 'Scalding Tarn': 'STarn',
+    'Kaito, Bane of Nightmares': 'Kaito', "Dragon's Rage Channeler": 'DRC',
+    'Nethergoyf': 'Goyf', "Mishra's Bauble": 'Bauble', 'Lightning Bolt': 'Bolt',
+    'Emrakul, the Aeons Torn': 'Emrakul', 'Atraxa, Grand Unifier': 'Atraxa',
+    'Show and Tell': 'SnT', 'Sneak Attack': 'Sneak', 'Lotus Petal': 'Petal',
+    'Volcanic Island': 'Volc', 'Ancient Tomb': 'Tomb', 'Thundering Falls': 'TFalls',
+    'Omniscience': 'Omni', 'Stock Up': 'Stock', 'Sink into Stupor': 'Sink',
+    'Simian Spirit Guide': 'SSG', 'Cephalid Illusionist': 'Illusionist',
+    'Nomads en-Kor': 'Nomads', "Thassa's Oracle": 'Oracle',
+    'Karn, the Great Creator': 'Karn', 'The One Ring': 'Ring',
+    'Ugin, Eye of the Storms': 'Ugin', 'Ulamog, the Ceaseless Hunger': 'Ulamog',
+    'Patchwork Automaton': 'Automaton', 'Thought Monitor': 'Monitor',
+    'Kappa Cannoneer': 'Cannoneer', 'Cori-Steel Cutter': 'Cutter',
+    'Brazen Borrower': 'Borrower', 'Undercity Sewers': 'Sewers',
+    'Fatal Push': 'Push', 'Snuff Out': 'Snuff', 'Wasteland': 'Waste',
+    'Crop Rotation': 'Crop', 'Expedition Map': 'Map', 'Disruptor Flute': 'Flute',
+    'Pithing Needle': 'Needle', "Kozilek's Command": 'KozCmd',
+    "Urza's Saga": 'Saga', "Urza's Tower": 'Tower', "Urza's Mine": 'Mine',
+    "Urza's Power Plant": 'Plant', 'Planar Nexus': 'Nexus',
+    'Cloudpost': 'CPost', 'Glimmerpost': 'GPost', 'City of Traitors': 'City',
+    'Orim\'s Chant': 'Chant', 'Swords to Plowshares': 'StP',
+    'Voice of Victory': 'Voice', 'Unholy Heat': 'Heat', 'Dread Return': 'Dread',
+    'Narcomoeba': 'Narco', 'Flusterstorm': 'Fluster', 'Archon of Cruelty': 'Archon',
+    'Mox Opal': 'Opal', "Urza's Bauble": 'UBauble', 'Pinnacle Emissary': 'Emissary',
+    'Emry, Lurker of the Loch': 'Emry', 'Shadowspear': 'Spear',
+    'Lavaspur Boots': 'Boots', 'Krang, Master Mind': 'Krang',
+    'Seat of the Synod': 'Seat', 'Otawara, Soaring City': 'Otawara',
+    'Boseiju, Who Endures': 'Boseiju', 'Bojuka Bog': 'Bog',
+}
+
+def ab(name): return ABBREV.get(name, name)
+def ab_line(line):
+    for f, s in ABBREV.items(): line = line.replace(f, s)
+    return line
+
+def fmt_hand(player): return [ab(c.name) for c in player.hand]
+def fmt_creatures(player):
+    r = []
+    for c in player.creatures:
+        n = ab(c.card.name)
+        if len(n)>14: n=n[:12]+'..'
+        r.append({'name':n,'power':c.power,'toughness':c.toughness,'sick':c.summoning_sick})
+    return r
+def fmt_lands(player): return [ab(l.card.name) for l in player.lands]
+
+def reason(line):
+    lo = line.lower()
+    if 'play+crack' in lo and '→' in lo: return "fix mana + shuffle"
+    if lo.startswith('play') and 'waste' in lo: return "threaten mana denial"
+    if lo.startswith('land:') or (lo.startswith('play ') and '→' not in lo): return "develop mana"
+    if 'wasteland' in lo and 'destroys' in lo: return "deny opponent mana"
+    if 'thoughtseize' in lo and 'strips' in lo: return "rip their best card"
+    if 'thoughtseize' in lo and 'life' in lo: return "pay 2 life to see hand + take best card"
+    if 'brainstorm' in lo and ('draw' in lo or '3 draws' in lo): return "dig 3 deep, put back 2 worst"
+    if 'ponder' in lo and ('draw' in lo or 'keeps' in lo): return "look at top 3, keep the best"
+    if 'stock' in lo and 'draw' in lo: return "instant-speed draw 2"
+    if 'puts back' in lo: return "hide bad cards on top"
+    if 'cast tamiyo' in lo: return "0/3 that flips to planeswalker"
+    if 'tamiyo flips' in lo: return "FLIP! Card-advantage engine online"
+    if 'flash bowmasters' in lo: return "punishes every draw: 1 ping + grows Army"
+    if 'goyf' in lo and 'cast' in lo: return "cheap threat, grows with GY"
+    if 'murktide' in lo and 'delve' in lo: return "5/5 flyer for ~2 mana via delve"
+    if 'cast kaito' in lo: return "hexproof threat + card advantage"
+    if 'push' in lo and ('kills' in lo or '→' in lo): return "1-mana removal"
+    if 'snuff out' in lo: return "free removal (pay 4 life)"
+    if 'bolt' in lo and ('→' in lo or 'damage' in lo): return "3 damage removal or burn"
+    if 'fow counters' in lo or 'force of will counters' in lo: return "FREE counter (exile blue card)"
+    if 'daze counters' in lo: return "free counter (bounce own land)"
+    if 'countered' in lo: return "COUNTERED!"
+    if 'show and tell' in lo and '->' in lo: return "COMBO! Cheat huge threat into play"
+    if 'sneak attack' in lo and '->' in lo: return "COMBO! Sneak creature in with haste"
+    if 'emrakul attacks' in lo: return "15 damage + annihilator = GG"
+    if 'omniscience' in lo and 'free' in lo: return "COMBO! Cast everything free = GG"
+    if 'atraxa etb' in lo: return "draw ~4 cards off ETB"
+    if 'petal' in lo and ('+1 mana' in lo or 'mana=' in lo): return "sacrifice for fast mana"
+    if 'bowmasters t' in lo and 'orc army' in lo: return "PING! Draw trigger fires"
+    if 'attack:' in lo and 'unblocked' in lo: return "swing for damage"
+    if 'attack:' in lo and 'blocked' in lo: return "attack (got blocked)"
+    if 'attack:' in lo: return "combat"
+    if 'cephalid' in lo and 'combo' in lo: return "COMBO! Mill library + Oracle wins"
+    if 'karn' in lo and 'lattice' in lo: return "LOCK! Opponent's lands shut off"
+    if 'crop rotation' in lo: return "sac land + tutor Cloudpost"
+    if 'ugin' in lo and 'exile' in lo: return "board wipe all colored creatures"
+    if lo.startswith('draw:'): return "draw for turn"
+    if 'bauble' in lo: return "free artifact, draws next turn"
+    return ""
+
+
+def generate_html(matchup, seed=None):
+    if seed is not None: random.seed(seed)
+
+    bug_hand, bug_lib, bug_mulls = london_mulligan(DECKS['bug'], bug_keep)
+    opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
+    bug_goes_first = random.random() < 0.5
+
+    gs = GameState(
+        bug=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
+        opp=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
+        bug_goes_first=bug_goes_first)
+    gs.matchup = matchup
+
+    meta_name = matchup.replace('_', ' ').title()
+    bug_open = fmt_hand(gs.bug)
+    opp_open = fmt_hand(gs.opp)
+
+    turns_data = []
+    display_turn = 0
+    life_bug = [20]
+    life_opp = [20]
+
+    for rnd in range(1, 16):
+        if gs.game_over: break
+        gs.turn = rnd
+
+        def do_one(label):
+            nonlocal display_turn
+            display_turn += 1
+            player = gs.bug if label == 'BUG' else gs.opp
+            opponent = gs.opp if label == 'BUG' else gs.bug
+            hand_before = fmt_hand(player)
+            life_before = player.life
+
+            if label == 'BUG':
+                raw = bug_turn(gs, rnd)
+            else:
+                raw = opp_turn(gs, rnd, matchup)
+
+            plays = []
+            for line in raw:
+                line = line.strip()
+                if not line: continue
+                disp = html.escape(ab_line(line))
+                r = reason(line)
+                is_key = '★' in line or 'combo' in line.lower() or 'lethal' in line.lower()
+                is_counter = 'countered' in line.lower()
+                plays.append({'text': disp, 'reason': r, 'key': is_key, 'counter': is_counter})
+
+            td = {
+                'num': display_turn, 'label': label,
+                'life': player.life, 'life_before': life_before,
+                'opp_life': opponent.life,
+                'hand_before': hand_before,
+                'hand_after': fmt_hand(player),
+                'creatures': fmt_creatures(player),
+                'lands': fmt_lands(player),
+                'plays': plays,
+            }
+            turns_data.append(td)
+            life_bug.append(gs.bug.life)
+            life_opp.append(gs.opp.life)
+            return gs.game_over
+
+        if bug_goes_first:
+            if do_one('BUG'): break
+            if do_one('OPP'): break
+        else:
+            if do_one('OPP'): break
+            if do_one('BUG'): break
+
+    winner = 'BUG' if gs.winner == 'bug' else 'OPP'
+    win_reason = gs.win_reason or ''
+
+    # Build HTML
+    h = []
+    h.append("""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Game Replay: BUG vs """ + html.escape(meta_name) + """</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:900px;margin:0 auto}
+.header{background:linear-gradient(135deg,#161b22,#1c2333);border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:20px}
+.header h1{font-size:1.6em;margin-bottom:8px;color:#f0f6fc}
+.header h1 .vs{color:#666}
+.header .bug-name{color:#58a6ff}
+.header .opp-name{color:#f85149}
+.header .meta{color:#8b949e;font-size:0.9em;margin-top:4px}
+.hands{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.hand-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}
+.hand-box h3{font-size:0.85em;color:#8b949e;margin-bottom:8px}
+.hand-box.bug{border-left:3px solid #58a6ff}
+.hand-box.opp{border-left:3px solid #f85149}
+.pill{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#e3b341}
+.pill.land{color:#7ee787}
+.pill.creature{color:#58a6ff}
+.pill.spell{color:#d2a8ff}
+.controls{display:flex;gap:8px;margin-bottom:16px}
+.controls button{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}
+.controls button:hover{background:#30363d}
+.life-chart{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:20px}
+.life-chart h3{font-size:0.85em;color:#8b949e;margin-bottom:12px}
+.life-chart svg{width:100%;height:80px}
+.turn{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}
+.turn.bug{border-left:3px solid #58a6ff}
+.turn.opp{border-left:3px solid #f85149}
+.turn.active{border-color:#e3b341}
+.turn-header{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.turn-header:hover{background:#1c2333}
+.turn-header .left{display:flex;align-items:center;gap:12px}
+.turn-header .tnum{font-weight:700;font-size:1.1em;min-width:36px}
+.turn-header .tnum.bug{color:#58a6ff}
+.turn-header .tnum.opp{color:#f85149}
+.turn-header .player{font-weight:600;font-size:0.9em;padding:2px 8px;border-radius:4px}
+.turn-header .player.bug{background:#0d2847;color:#58a6ff}
+.turn-header .player.opp{background:#3d1418;color:#f85149}
+.turn-header .life{font-size:0.9em;color:#8b949e}
+.turn-header .life b{color:#f0f6fc}
+.turn-header .arrow{color:#484f58;transition:transform 0.2s;font-size:0.8em}
+.turn.open .arrow{transform:rotate(90deg)}
+.turn-body{display:none;padding:0 16px 16px;border-top:1px solid #21262d}
+.turn.open .turn-body{display:block}
+.section-label{font-size:0.75em;text-transform:uppercase;letter-spacing:1px;color:#484f58;margin:12px 0 6px}
+.hand-pills{margin-bottom:4px}
+.play{padding:6px 0;display:flex;gap:8px;align-items:flex-start}
+.play .step{color:#484f58;font-size:0.85em;min-width:20px;text-align:right;padding-top:1px}
+.play .action{font-family:'Fira Code','Consolas',monospace;font-size:0.85em;color:#c9d1d9;flex:1}
+.play .action.key{color:#e3b341;font-weight:600}
+.play .action.counter{color:#f85149;text-decoration:line-through;opacity:0.7}
+.play .reasoning{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px}
+.board{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px}
+.creature-badge{background:#0d2847;border:1px solid #1f3d5c;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#58a6ff}
+.creature-badge .pt{color:#e3b341;font-weight:700;margin-left:4px}
+.creature-badge .sick{color:#f85149;font-size:0.7em}
+.land-list{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}
+.result{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}
+.result h2{font-size:1.8em;margin-bottom:8px}
+.result h2.bug-win{color:#58a6ff}
+.result h2.opp-win{color:#f85149}
+.result .reason{color:#8b949e;font-size:1em;margin-bottom:12px}
+.result .stats{color:#6e7681;font-size:0.9em}
+.kbd{font-size:0.75em;color:#6e7681;margin-left:auto}
+</style></head><body>
+""")
+
+    # Header
+    h.append(f'<div class="header">')
+    h.append(f'<h1><span class="bug-name">BUG Tempo</span> <span class="vs">vs</span> <span class="opp-name">{html.escape(meta_name)}</span></h1>')
+    play_str = 'ON THE PLAY' if bug_goes_first else 'ON THE DRAW'
+    h.append(f'<div class="meta">BUG is {play_str} &nbsp;|&nbsp; Seed: {seed}</div>')
+    h.append(f'<div class="hands">')
+    h.append(f'<div class="hand-box bug"><h3>BUG opening (mull {bug_mulls})</h3>')
+    for c in bug_open: h.append(f'<span class="pill">{html.escape(c)}</span>')
+    h.append(f'</div><div class="hand-box opp"><h3>OPP opening (mull {opp_mulls})</h3>')
+    for c in opp_open: h.append(f'<span class="pill">{html.escape(c)}</span>')
+    h.append(f'</div></div></div>')
+
+    # Life chart
+    max_turn = len(life_bug)
+    h.append(f'<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 {max_turn*40} 80">')
+    for i in range(1, len(life_bug)):
+        x = i * 40 - 20
+        bug_y = 75 - (life_bug[i] / 22 * 70)
+        opp_y = 75 - (life_opp[i] / 22 * 70)
+        if i > 1:
+            px = (i-1)*40-20
+            pby = 75 - (life_bug[i-1]/22*70)
+            poy = 75 - (life_opp[i-1]/22*70)
+            h.append(f'<line x1="{px}" y1="{pby}" x2="{x}" y2="{bug_y}" stroke="#58a6ff" stroke-width="2"/>')
+            h.append(f'<line x1="{px}" y1="{poy}" x2="{x}" y2="{opp_y}" stroke="#f85149" stroke-width="2"/>')
+        h.append(f'<circle cx="{x}" cy="{bug_y}" r="3" fill="#58a6ff"/>')
+        h.append(f'<circle cx="{x}" cy="{opp_y}" r="3" fill="#f85149"/>')
+        h.append(f'<text x="{x}" y="{bug_y-6}" text-anchor="middle" fill="#58a6ff" font-size="9">{life_bug[i]}</text>')
+        h.append(f'<text x="{x}" y="{opp_y+12}" text-anchor="middle" fill="#f85149" font-size="9">{life_opp[i]}</text>')
+    h.append(f'</svg></div>')
+
+    # Controls
+    h.append(f'<div class="controls">')
+    h.append(f'<button onclick="expandAll()">Expand All</button>')
+    h.append(f'<button onclick="collapseAll()">Collapse All</button>')
+    h.append(f'<span class="kbd">Arrow keys: ↑↓ navigate &nbsp; Enter: toggle</span>')
+    h.append(f'</div>')
+
+    # Turns
+    for i, td in enumerate(turns_data):
+        label = td['label']
+        cls = label.lower()
+        is_last = (i == len(turns_data) - 1)
+        open_cls = ' open' if is_last else ''
+        active = ' active' if is_last else ''
+
+        delta = td['life'] - td['life_before']
+        delta_str = f' ({delta:+d})' if delta != 0 else ''
+
+        h.append(f'<div class="turn {cls}{open_cls}{active}" data-idx="{i}">')
+        h.append(f'<div class="turn-header" onclick="toggle(this.parentElement)">')
+        h.append(f'<div class="left">')
+        h.append(f'<span class="tnum {cls}">T{td["num"]}</span>')
+        h.append(f'<span class="player {cls}">{label}</span>')
+        h.append(f'<span class="life">Life: <b>{td["life"]}{delta_str}</b> &nbsp;|&nbsp; Opp: {td["opp_life"]}</span>')
+        h.append(f'</div><span class="arrow">&#9654;</span></div>')
+
+        h.append(f'<div class="turn-body">')
+
+        # Hand before
+        h.append(f'<div class="section-label">Hand</div><div class="hand-pills">')
+        for c in td['hand_before']:
+            h.append(f'<span class="pill">{html.escape(c)}</span>')
+        h.append(f'</div>')
+
+        # Plays
+        h.append(f'<div class="section-label">Plays</div>')
+        for j, p in enumerate(td['plays']):
+            cls_p = ''
+            if p['key']: cls_p = ' key'
+            if p['counter']: cls_p = ' counter'
+            h.append(f'<div class="play"><span class="step">{j+1}.</span>')
+            h.append(f'<span class="action{cls_p}">{p["text"]}</span>')
+            if p['reason']:
+                h.append(f'<span class="reasoning">&larr; {html.escape(p["reason"])}</span>')
+            h.append(f'</div>')
+        if not td['plays']:
+            h.append(f'<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>')
+
+        # Board
+        h.append(f'<div class="section-label">Board</div><div class="board">')
+        if td['creatures']:
+            for c in td['creatures']:
+                sick = ' <span class="sick">(sick)</span>' if c['sick'] else ''
+                h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span>{sick}</span>')
+        h.append(f'</div>')
+        h.append(f'<div class="section-label">Lands ({len(td["lands"])})</div>')
+        h.append(f'<div class="land-list">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
+
+        h.append(f'</div></div>')
+
+    # Result
+    wcls = 'bug-win' if winner == 'BUG' else 'opp-win'
+    h.append(f'<div class="result">')
+    h.append(f'<h2 class="{wcls}">{winner} WINS</h2>')
+    h.append(f'<div class="reason">{html.escape(win_reason)}</div>')
+    h.append(f'<div class="stats">Final life: BUG {gs.bug.life} | OPP {gs.opp.life} &nbsp;|&nbsp; Game length: T{display_turn}</div>')
+    # Final boards
+    bc = fmt_creatures(gs.bug)
+    oc = fmt_creatures(gs.opp)
+    if bc:
+        h.append(f'<div class="stats" style="margin-top:8px">BUG board: ')
+        for c in bc: h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span></span> ')
+        h.append(f'</div>')
+    if oc:
+        h.append(f'<div class="stats" style="margin-top:4px">OPP board: ')
+        for c in oc: h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span></span> ')
+        h.append(f'</div>')
+    h.append(f'</div>')
+
+    # JS
+    h.append("""
+<script>
+let current = -1;
+const turns = document.querySelectorAll('.turn');
+
+function toggle(el) {
+  el.classList.toggle('open');
+}
+function expandAll() { turns.forEach(t => t.classList.add('open')); }
+function collapseAll() { turns.forEach(t => t.classList.remove('open')); }
+function focus(idx) {
+  if (idx < 0 || idx >= turns.length) return;
+  current = idx;
+  turns.forEach(t => t.classList.remove('active'));
+  turns[idx].classList.add('active');
+  turns[idx].scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); focus(current + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); focus(current - 1); }
+  else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (current >= 0 && current < turns.length) toggle(turns[current]);
+  }
+});
+
+// Start with last turn focused
+current = turns.length - 1;
+</script>
+</body></html>""")
+
+    return '\n'.join(h)
+
+
+if __name__ == '__main__':
+    matchup = sys.argv[1] if len(sys.argv) > 1 else 'sneak_a'
+    seed = int(sys.argv[2]) if len(sys.argv) > 2 else None
+
+    html_content = generate_html(matchup, seed)
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'game_replay.html')
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, 'w') as f:
+        f.write(html_content)
+    print(f"Game replay written to: {out_path}")
