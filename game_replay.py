@@ -122,27 +122,34 @@ def classify_play(line):
     return 'other'
 
 
-def run_one_game(matchup, seed=None):
-    """Run a single game and return structured data."""
+def run_one_game(matchup, seed=None, protagonist='bug'):
+    """Run a single game and return structured data.
+    protagonist: deck key for the protagonist ('bug' uses bug_turn AI, others use protagonist_turn).
+    """
     if seed is not None: random.seed(seed)
 
-    bug_hand, bug_lib, bug_mulls = london_mulligan(DECKS['bug'], bug_keep)
+    from sim import protagonist_turn
+
+    pro_keep = bug_keep if protagonist == 'bug' else opp_keep
+    pro_deck = DECKS.get(protagonist, DECKS['bug'])
+    pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck, pro_keep, protagonist if protagonist != 'bug' else None)
     opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
-    bug_goes_first = random.random() < 0.5
+    pro_goes_first = random.random() < 0.5
 
     gs = GameState(
-        bug=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
+        bug=PlayerState(name='b', hand=list(pro_hand), library=list(pro_lib)),
         opp=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-        bug_goes_first=bug_goes_first)
+        bug_goes_first=pro_goes_first)
     gs.matchup = matchup
 
+    pro_label = protagonist.upper().replace('_', ' ')
     meta_name = matchup.replace('_', ' ').title()
-    bug_open = fmt_hand(gs.bug)
+    pro_open = fmt_hand(gs.bug)
     opp_open = fmt_hand(gs.opp)
 
     turns_data = []
     display_turn = 0
-    life_bug = [20]
+    life_pro = [20]
     life_opp = [20]
 
     for rnd in range(1, 16):
@@ -152,13 +159,17 @@ def run_one_game(matchup, seed=None):
         def do_one(label):
             nonlocal display_turn
             display_turn += 1
-            player = gs.bug if label == 'BUG' else gs.opp
-            opponent = gs.opp if label == 'BUG' else gs.bug
+            is_pro = (label == 'PRO')
+            player = gs.bug if is_pro else gs.opp
+            opponent = gs.opp if is_pro else gs.bug
             hand_before = fmt_hand(player)
             life_before = player.life
 
-            if label == 'BUG':
-                raw = bug_turn(gs, rnd)
+            if is_pro:
+                if protagonist == 'bug':
+                    raw = bug_turn(gs, rnd)
+                else:
+                    raw = protagonist_turn(gs, rnd, protagonist)
             else:
                 raw = opp_turn(gs, rnd, matchup)
 
@@ -173,8 +184,10 @@ def run_one_game(matchup, seed=None):
                 cat = classify_play(line)
                 plays.append({'text': disp, 'reason': r, 'key': is_key, 'counter': is_counter, 'cat': cat})
 
+            display_label = pro_label if is_pro else 'OPP'
             td = {
-                'num': display_turn, 'label': label,
+                'num': display_turn, 'label': display_label,
+                'label_cls': 'bug' if is_pro else 'opp',
                 'life': player.life, 'life_before': life_before,
                 'opp_life': opponent.life,
                 'hand_before': hand_before,
@@ -186,48 +199,53 @@ def run_one_game(matchup, seed=None):
                 'plays': plays,
             }
             turns_data.append(td)
-            life_bug.append(gs.bug.life)
+            life_pro.append(gs.bug.life)
             life_opp.append(gs.opp.life)
             return gs.game_over
 
-        if bug_goes_first:
-            if do_one('BUG'): break
+        if pro_goes_first:
+            if do_one('PRO'): break
             if do_one('OPP'): break
         else:
             if do_one('OPP'): break
-            if do_one('BUG'): break
+            if do_one('PRO'): break
 
-    winner = 'BUG' if gs.winner == 'bug' else 'OPP'
-    win_reason = gs.win_reason or ''
+    winner = pro_label if gs.winner == 'bug' else 'OPP'
+    if not gs.game_over:
+        pp = sum(c.power for c in gs.bug.creatures)
+        ap = sum(c.power for c in gs.opp.creatures)
+        winner = pro_label if (pp > ap or gs.bug.life > gs.opp.life + 3) else 'OPP'
 
     return {
         'matchup': matchup, 'meta_name': meta_name, 'seed': seed,
-        'bug_goes_first': bug_goes_first,
-        'bug_mulls': bug_mulls, 'opp_mulls': opp_mulls,
-        'bug_open': bug_open, 'opp_open': opp_open,
-        'turns_data': turns_data, 'life_bug': life_bug, 'life_opp': life_opp,
-        'display_turn': display_turn, 'winner': winner, 'win_reason': win_reason,
+        'protagonist': protagonist, 'pro_label': pro_label,
+        'bug_goes_first': pro_goes_first,
+        'bug_mulls': pro_mulls, 'opp_mulls': opp_mulls,
+        'bug_open': pro_open, 'opp_open': opp_open,
+        'turns_data': turns_data, 'life_bug': life_pro, 'life_opp': life_opp,
+        'display_turn': display_turn, 'winner': winner, 'win_reason': gs.win_reason or '',
         'bug_life': gs.bug.life, 'opp_life': gs.opp.life,
         'bug_board': fmt_creatures(gs.bug), 'opp_board': fmt_creatures(gs.opp),
     }
 
 
-def generate_html(matchup, seeds):
+def generate_html(matchup, seeds, protagonist='bug'):
     """Generate HTML for one or more games (Bo1 or Bo3)."""
     if isinstance(seeds, (int, type(None))):
         seeds = [seeds]
 
-    games = [run_one_game(matchup, s) for s in seeds]
+    games = [run_one_game(matchup, s, protagonist=protagonist) for s in seeds]
     meta_name = games[0]['meta_name']
+    pro_label = games[0].get('pro_label', 'BUG')
     is_bo3 = len(games) > 1
 
-    bug_wins = sum(1 for g in games if g['winner'] == 'BUG')
+    pro_wins = sum(1 for g in games if g['winner'] == pro_label)
     opp_wins = sum(1 for g in games if g['winner'] == 'OPP')
-    series_winner = 'BUG' if bug_wins > opp_wins else 'OPP'
+    series_winner = pro_label if pro_wins > opp_wins else 'OPP'
 
     # Build HTML
     h = []
-    title = f'Bo{len(games)} Replay: BUG vs {html.escape(meta_name)}' if is_bo3 else f'Game Replay: BUG vs {html.escape(meta_name)}'
+    title = f'Bo{len(games)} Replay: {pro_label} vs {html.escape(meta_name)}' if is_bo3 else f'Game Replay: {pro_label} vs {html.escape(meta_name)}'
     h.append(f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title>
@@ -311,10 +329,10 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 
     # Header
     h.append(f'<div class="header">')
-    h.append(f'<h1><span class="bug-name">BUG Tempo</span> <span class="vs">vs</span> <span class="opp-name">{html.escape(meta_name)}</span></h1>')
+    h.append(f'<h1><span class="bug-name">{html.escape(pro_label)}</span> <span class="vs">vs</span> <span class="opp-name">{html.escape(meta_name)}</span></h1>')
     if is_bo3:
-        h.append(f'<div class="series-score"><span class="bug-s">BUG {bug_wins}</span> — <span class="opp-s">{opp_wins} OPP</span></div>')
-        sw_cls = 'bug-name' if series_winner == 'BUG' else 'opp-name'
+        h.append(f'<div class="series-score"><span class="bug-s">{html.escape(pro_label)} {pro_wins}</span> — <span class="opp-s">{opp_wins} OPP</span></div>')
+        sw_cls = 'bug-name' if series_winner != 'OPP' else 'opp-name'
         h.append(f'<div class="meta"><span class="{sw_cls}">{series_winner} wins the series</span></div>')
     h.append(f'</div>')
 
@@ -323,7 +341,7 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
         h.append(f'<div class="game-tabs">')
         for gi, g in enumerate(games):
             act = ' active' if gi == 0 else ''
-            dot_cls = 'bug' if g['winner'] == 'BUG' else 'opp'
+            dot_cls = 'bug' if g['winner'] != 'OPP' else 'opp'
             h.append(f'<div class="game-tab{act}" onclick="showGame({gi})">Game {gi+1}<span class="winner-dot {dot_cls}"></span></div>')
         h.append(f'</div>')
 
@@ -334,9 +352,9 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 
         # Opening hands
         play_str = 'ON THE PLAY' if g['bug_goes_first'] else 'ON THE DRAW'
-        h.append(f'<div class="meta" style="margin-bottom:12px;color:#8b949e">BUG is {play_str} &nbsp;|&nbsp; Seed: {g["seed"]}</div>')
+        h.append(f'<div class="meta" style="margin-bottom:12px;color:#8b949e">{html.escape(pro_label)} is {play_str} &nbsp;|&nbsp; Seed: {g["seed"]}</div>')
         h.append(f'<div class="hands">')
-        h.append(f'<div class="hand-box bug"><h3>BUG opening (mull {g["bug_mulls"]})</h3>')
+        h.append(f'<div class="hand-box bug"><h3>{html.escape(pro_label)} opening (mull {g["bug_mulls"]})</h3>')
         for c in g['bug_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
         h.append(f'</div><div class="hand-box opp"><h3>OPP opening (mull {g["opp_mulls"]})</h3>')
         for c in g['opp_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
@@ -372,7 +390,7 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
         # Turns
         for i, td in enumerate(g['turns_data']):
             label = td['label']
-            cls = label.lower()
+            cls = td.get('label_cls', label.lower())
             is_last = (i == len(g['turns_data']) - 1)
             open_cls = ' open' if is_last else ''
 
@@ -450,8 +468,10 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             h.append(f'<div class="board-grid">')
             # Player side
             side_label = td['label']
-            opp_label = 'OPP' if side_label == 'BUG' else 'BUG'
-            h.append(f'<div class="board-side {side_label.lower()}">')
+            side_cls = td.get('label_cls', 'bug')
+            opp_cls = 'opp' if side_cls == 'bug' else 'bug'
+            opp_label = 'OPP' if side_cls == 'bug' else pro_label
+            h.append(f'<div class="board-side {side_cls}">')
             h.append(f'<h4>{side_label} — {len(td["lands"])} lands</h4>')
             h.append(f'<div class="board">')
             for c in td['creatures']:
@@ -463,7 +483,7 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
             h.append(f'</div>')
             # Opponent side
-            h.append(f'<div class="board-side {"opp" if side_label == "BUG" else "bug"}">')
+            h.append(f'<div class="board-side {opp_cls}">')
             h.append(f'<h4>{opp_label} — {len(td["opp_lands"])} lands</h4>')
             h.append(f'<div class="board">')
             for c in td.get('opp_creatures', []):
@@ -478,12 +498,12 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             h.append(f'</div></div>')
 
         # Game result
-        wcls = 'bug-win' if g['winner'] == 'BUG' else 'opp-win'
+        wcls = 'bug-win' if g['winner'] != 'OPP' else 'opp-win'
         h.append(f'<div class="result">')
         h.append(f'<h2 class="{wcls}">{g["winner"]} WINS</h2>')
         h.append(f'<div class="reason">{html.escape(g["win_reason"])}</div>')
-        h.append(f'<div class="stats">Final life: BUG {g["bug_life"]} | OPP {g["opp_life"]} &nbsp;|&nbsp; Length: T{g["display_turn"]}</div>')
-        for side, board in [('BUG', g['bug_board']), ('OPP', g['opp_board'])]:
+        h.append(f'<div class="stats">Final life: {pro_label} {g["bug_life"]} | OPP {g["opp_life"]} &nbsp;|&nbsp; Length: T{g["display_turn"]}</div>')
+        for side, board in [(pro_label, g['bug_board']), ('OPP', g['opp_board'])]:
             if board:
                 h.append(f'<div class="stats" style="margin-top:6px">{side}: ')
                 for c in board:
@@ -520,15 +540,23 @@ document.addEventListener('keydown', e => {
 if __name__ == '__main__':
     matchup = sys.argv[1] if len(sys.argv) > 1 else 'sneak_a'
 
+    # Parse --pro protagonist (default: bug)
+    protagonist = 'bug'
+    if '--pro' in sys.argv:
+        idx = sys.argv.index('--pro')
+        protagonist = sys.argv[idx + 1]
+        # Remove --pro and its value from argv so seed parsing works
+        sys.argv = sys.argv[:idx] + sys.argv[idx+2:]
+
     # Parse seeds: single seed, or --bo3 seed1 seed2 seed3
     if '--bo3' in sys.argv:
         idx = sys.argv.index('--bo3')
         seeds = [int(s) for s in sys.argv[idx+1:idx+4]]
-        html_content = generate_html(matchup, seeds)
+        html_content = generate_html(matchup, seeds, protagonist=protagonist)
     elif len(sys.argv) > 2 and sys.argv[2] != '--bo3':
-        html_content = generate_html(matchup, int(sys.argv[2]))
+        html_content = generate_html(matchup, int(sys.argv[2]), protagonist=protagonist)
     else:
-        html_content = generate_html(matchup, None)
+        html_content = generate_html(matchup, None, protagonist=protagonist)
 
     out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'game_replay.html')
     os.makedirs(os.path.dirname(out_path), exist_ok=True)

@@ -862,6 +862,59 @@ def bug_turn(gs: GameState, turn: int):
             return can_afford(b, colored)
         return can_afford(b, c.mana_cost)
 
+    # ── AGGRO REMOVAL PRIORITY ──────────────────────────────────────────────
+    # Against creature aggro (Burn, Eldrazi, UR Delver, etc), removal MUST fire
+    # before cantrips. A T1 Push on Goblin Guide prevents 6+ damage over 3 turns;
+    # a T1 Brainstorm just digs for cards we might not need if we're already dead.
+    _did_early_push = False
+    _did_early_snuff = False
+    if MC.is_aggro(gs) and o.creatures:
+        # Early Push
+        push_early = b.find_tag('push')
+        if push_early and not gs.spell_blocked_by_chalice(push_early.cmc):
+            push_targets_early = [c for c in o.creatures
+                                  if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
+            target_early = (
+                next((c for c in push_targets_early if c.card.haste or c.card.draw_trigger), None) or
+                next((c for c in push_targets_early if c.card.deathtouch or c.card.lifelink), None) or
+                max(push_targets_early, key=lambda c: c.power, default=None)
+            )
+            if target_early and b_budget[0] >= effective_cmc(push_early) and can_afford(b, push_early.mana_cost):
+                spend(push_early)
+                b.remove_from_hand(push_early)
+                b.add_to_grave(push_early)
+                push_spell = cast_obj(push_early, 'b')
+                ctr = []
+                fow_worthwhile = target_early.card.cmc >= 3 or target_early.card.engine
+                if fow_worthwhile and MTGRules.force_of_will_use(push_spell, o.hand, ctr):
+                    pass
+                elif o.available_mana_count() <= 1:
+                    MTGRules.daze_use(push_spell, o.hand, o.lands, ctr)
+                if not ctr:
+                    o.remove_creature(target_early)
+                    rev = " [revolt CMC≤4]" if b.revolt_this_turn else " [CMC≤2]"
+                    log(f"Fatal Push{rev} → kills {target_early.name} (CMC {target_early.cmc})")
+                    _did_early_push = True
+                else:
+                    for m in ctr: log(f"  {m}")
+                update_goyf(gs)
+
+        # Early Snuff Out (free removal — always correct against aggro creatures)
+        if not _did_early_push and o.creatures:
+            snuff_early = b.find_tag('snuffout')
+            has_swamp = any('Swamp' in l.card.subtypes or
+                            (l.card.is_basic and 'B' in l.effective_produces())
+                            for l in b.lands)
+            if snuff_early and has_swamp and not gs.spell_blocked_by_chalice(snuff_early.cmc):
+                target_early = next((c for c in sorted(o.creatures, key=lambda x: -x.power)
+                                     if 'B' not in c.card.colors), None)
+                if target_early and b.life > 6:  # don't Snuff below 6 vs aggro
+                    b.cast_spell(snuff_early, log_fn=log)
+                    o.remove_creature(target_early)
+                    log(f"Snuff Out (free, −4 life → {b.life}) → kills {target_early.name}", key=True)
+                    _did_early_snuff = True
+                    update_goyf(gs)
+
     # ── Brainstorm — C1: needs 1U ──
     bs = b.find_tag('bs')
     if bs and not gs.spell_blocked_by_chalice(bs.cmc):
@@ -969,7 +1022,7 @@ def bug_turn(gs: GameState, turn: int):
 
     # ── Fatal Push — C1: needs 1B ──
     push = b.find_tag('push')
-    if push and not gs.spell_blocked_by_chalice(push.cmc) and o.creatures:
+    if push and not _did_early_push and not gs.spell_blocked_by_chalice(push.cmc) and o.creatures:
         push_targets = [c for c in o.creatures
                         if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
         target = (
@@ -1007,7 +1060,7 @@ def bug_turn(gs: GameState, turn: int):
     # Targets nonblack creatures only — covers Murktide, big Eldrazi, CMC3+ that Push misses.
     # Free to cast as long as BUG controls a Swamp or Underground Sea (Island+Swamp subtype).
     snuffout = b.find_tag('snuffout')
-    if snuffout and not gs.spell_blocked_by_chalice(snuffout.cmc) and o.creatures:
+    if snuffout and not _did_early_snuff and not gs.spell_blocked_by_chalice(snuffout.cmc) and o.creatures:
         has_swamp = any('B' in l.effective_produces() for l in b.lands)
         snuff_targets = [c for c in o.creatures if c.card.tag not in ('bowm',) and
                          'B' not in getattr(c.card, 'colors', set())]  # nonblack only
@@ -3994,3 +4047,310 @@ def _opp_mardu(gs, om, log, le, turn):
     def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_mardu(player, opponent, gs, om, _logfn, le)
 
+
+
+# ═══════════════════════════════════════════════════════════════
+# GENERIC TEMPO AI — reusable for any cantrip+threat+interaction deck
+# ═══════════════════════════════════════════════════════════════
+
+def is_tempo_deck(hand, deck_tag=None):
+    """Check if a hand/deck plays like a tempo deck (cantrips + threats + interaction)."""
+    cantrips = sum(1 for c in hand if c.is_cantrip)
+    creatures = sum(1 for c in hand if c.is_creature())
+    counters = sum(1 for c in hand if c.tag in ('fow','daze','fon','fluster','pierce'))
+    return (cantrips >= 1 and creatures >= 1) or (cantrips >= 2)
+
+
+def generic_tempo_strategy(player, opponent, gs, total_mana, log_fn, log_entries):
+    """
+    Enhanced generic tempo strategy — mirrors bug_turn's decision quality.
+    Works for any deck with cantrips + creatures + removal/counters.
+    Handles: UR Delver, UR Tempo, Dimir variants, Mono Black, Mardu, etc.
+
+    Key improvements over simple strategies:
+    - Casts MULTIPLE spells per turn (not just one cantrip + one creature)
+    - Smart Brainstorm put-back (lands/duplicates back, action forward)
+    - Bolt-to-face when racing
+    - Game state awareness (racing/ahead/behind)
+    - Wasteland + discard when available
+    """
+    from rules import MTGRules
+    from config import MatchupCategory as MC
+    import random
+
+    b = player   # protagonist
+    o = opponent  # antagonist
+    rem = total_mana  # mana remaining this turn
+    spent_tags = set()  # track what we've cast to avoid double-fire
+
+    # ── Matchup awareness ──
+    # vs combo: conservative mode — 1 cantrip + 1 threat, hold mana for counters
+    # vs fair/aggro: aggressive mode — cast everything, deploy clock ASAP
+    _gs_check = type('_gs', (), {'matchup': gs.matchup})()
+    vs_combo = MC.is_combo(_gs_check)
+    max_cantrips = 1 if vs_combo else 99
+    max_threats = 1 if vs_combo else 99
+    cantrips_cast = 0
+    threats_cast = 0
+
+    def can_pay(card):
+        if card.cmc > rem: return False
+        return True
+
+    def spend(card):
+        nonlocal rem
+        rem = max(0, rem - card.cmc)
+
+    # ── Game state assessment ──
+    bug_power = sum(c.power for c in b.creatures if not c.summoning_sick)
+    opp_power = sum(c.power for c in o.creatures)
+    turns_to_kill = (o.life / bug_power) if bug_power > 0 else 999
+    turns_to_die = (b.life / opp_power) if opp_power > 0 else 999
+    racing = turns_to_kill <= 4 and turns_to_die <= 4
+    behind = opp_power > bug_power + 2 or len(o.creatures) > len(b.creatures) + 1
+
+    # ── Wasteland ──
+    wl = next((l for l in b.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl:
+        eligible = [l for l in o.lands if MTGRules.wasteland_can_target(l) and not l.card.is_basic]
+        if eligible:
+            target = max(eligible, key=lambda l: 1 if l.card.tag == 'dual' else 0)
+            b.lands.remove(wl); b.add_to_grave(wl.card)
+            b.revolt_this_turn = True
+            o.lands.remove(target); o.add_to_grave(target.card)
+            log_fn(f"Wasteland [ACTIVATED-uncounterable] → destroys {target.name}")
+            update_goyf(gs)
+
+    # ── Thoughtseize / discard ──
+    ts = b.find_tag('ts')
+    if ts and can_pay(ts) and gs.turn <= 3:
+        nonlands = [c for c in o.hand if not c.is_land()]
+        if nonlands:
+            # Priority: combo pieces > counters > threats
+            target = (next((c for c in nonlands if c.is_combo_piece or c.win_condition), None) or
+                      next((c for c in nonlands if c.tag in ('fow','daze','vos')), None) or
+                      max(nonlands, key=lambda c: c.cmc, default=None))
+            if target:
+                spend(ts); b.remove_from_hand(ts); b.add_to_grave(ts)
+                b.life -= 2
+                o.remove_from_hand(target)
+                log_fn(f"Thoughtseize (−2 life, {b.life}) → strips {target.name}")
+
+    # ── Mishra's Bauble ──
+    for bauble in list(b.hand):
+        if bauble.tag == 'bauble':
+            b.remove_from_hand(bauble); b.add_to_grave(bauble)
+            gs.pending_bauble_draws_bug = getattr(gs, 'pending_bauble_draws_bug', 0) + 1
+            update_goyf(gs)
+            log_fn(f"Mishra's Bauble (sac, artifact in GY, +1 draw next upkeep)")
+
+    # ── Removal FIRST if facing aggro with creatures ──
+    if o.creatures and behind:
+        # Bolt removal
+        for bolt_tag in ('bolt', 'heat', 'dismember'):
+            bolt = b.find_tag(bolt_tag)
+            if bolt and can_pay(bolt) and bolt_tag not in spent_tags:
+                target = max(o.creatures, key=lambda c: c.power, default=None)
+                if target and target.power >= 2:
+                    spend(bolt); b.remove_from_hand(bolt); b.add_to_grave(bolt)
+                    ctr = []
+                    if not _try_counter_any(b, o, gs, bolt, ctr):
+                        dmg = 3 if bolt_tag == 'bolt' else (6 if bolt_tag == 'heat' else 4)
+                        if target.toughness <= dmg:
+                            o.remove_creature(target)
+                            log_fn(f"{bolt.name} → kills {target.name}")
+                        else:
+                            target.damage_marked += dmg
+                            log_fn(f"{bolt.name} → {dmg} damage to {target.name}")
+                    else:
+                        for m in ctr: log_entries.append(m)
+                    spent_tags.add(bolt_tag)
+                    update_goyf(gs)
+
+        # Push removal
+        push = b.find_tag('push')
+        if push and can_pay(push) and 'push' not in spent_tags:
+            push_targets = [c for c in o.creatures
+                            if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
+            target = max(push_targets, key=lambda c: c.power, default=None)
+            if target:
+                spend(push); b.remove_from_hand(push); b.add_to_grave(push)
+                ctr = []
+                if not _try_counter_any(b, o, gs, push, ctr):
+                    o.remove_creature(target)
+                    log_fn(f"Fatal Push → kills {target.name}")
+                else:
+                    for m in ctr: log_entries.append(m)
+                spent_tags.add('push')
+                update_goyf(gs)
+
+    # ── Brainstorm (with shuffle value) ──
+    bs = b.find_tag('bs')
+    has_fetch = any(l.is_fetch and not l.tapped for l in b.lands) or any(c.is_land() and getattr(c, 'is_fetch', False) for c in b.hand)
+    if bs and can_pay(bs) and cantrips_cast < max_cantrips:
+        spend(bs); b.remove_from_hand(bs); b.add_to_grave(bs)
+        n = MTGRules.brainstorm_draws()
+        drawn = b.draw(n)
+        log_fn(f"Brainstorm ({n} draws) → [{', '.join(c.name for c in drawn)}]")
+        if gs.bowmasters_on_board:
+            bowmasters_triggers(n, gs, log_entries, controller='o' if any(c.card.tag == 'bowm' for c in o.creatures) else 'b')
+        # Smart put-back: lands and excess cantrips go back, action stays
+        def putback_score(c):
+            if c.is_land(): return 100  # always put back lands
+            if c.is_cantrip and sum(1 for x in b.hand if x.is_cantrip) > 2: return 50  # excess cantrips
+            if c.is_creature() and sum(1 for x in b.hand if x.is_creature()) > 3: return 30  # excess threats
+            return 0
+        put_back = sorted(b.hand, key=putback_score, reverse=True)[:MTGRules.brainstorm_puts_back()]
+        for c in put_back:
+            b.hand.remove(c); b.library.insert(0, c)
+        log_fn(f"  Puts back: {[c.name for c in put_back]}")
+        update_goyf(gs)
+        cantrips_cast += 1
+        # Recalculate mana after potential land draw
+        rem = max(rem, 0)
+
+    # ── Ponder / Preordain ──
+    for pon_tag in ('ponder', 'pre'):
+        if cantrips_cast >= max_cantrips: break
+        pon = b.find_tag(pon_tag)
+        if pon and can_pay(pon) and pon_tag not in spent_tags:
+            spend(pon); b.remove_from_hand(pon); b.add_to_grave(pon)
+            # Simplified: draw best of top 3
+            top = b.library[:3]; b.library = b.library[3:]
+            keep = (next((c for c in top if c.is_creature()), None) or
+                    next((c for c in top if c.tag in ('fow','daze','bolt','push')), None) or
+                    (top[0] if top else None))
+            if keep:
+                b.hand.append(keep); top.remove(keep)
+            b.library = random.sample(top, len(top)) + b.library
+            log_fn(f"{pon.name} (1 draw) → keeps {keep.name if keep else '—'}")
+            spent_tags.add(pon_tag)
+            cantrips_cast += 1
+
+    # ── Expressive Iteration ──
+    ei = b.find_tag('ei')
+    if ei and can_pay(ei) and 'ei' not in spent_tags and cantrips_cast < max_cantrips:
+        spend(ei); b.remove_from_hand(ei); b.add_to_grave(ei)
+        # Look at top 3, put one in hand, one on top, exile one
+        top = b.library[:3]; b.library = b.library[3:]
+        best = (next((c for c in top if c.is_creature()), None) or
+                next((c for c in top if not c.is_land()), None) or
+                (top[0] if top else None))
+        if best:
+            b.hand.append(best); top.remove(best)
+        if top:
+            b.library.insert(0, top[0])  # put one on top
+        log_fn(f"Expressive Iteration → {best.name if best else '—'}")
+        spent_tags.add('ei')
+        cantrips_cast += 1
+
+    # ── Removal (if not already fired above) ──
+    if o.creatures:
+        for rtag in ('bolt', 'heat', 'push', 'snuffout', 'dismember'):
+            if rtag in spent_tags: continue
+            card = b.find_tag(rtag)
+            if not card: continue
+            if rtag == 'snuffout':
+                has_swamp = any('Swamp' in l.card.subtypes or (l.card.is_basic and 'B' in l.effective_produces()) for l in b.lands)
+                if not has_swamp or b.life <= 6: continue
+                target = next((c for c in sorted(o.creatures, key=lambda x: -x.power) if 'B' not in c.card.colors), None)
+                if target:
+                    b.cast_spell(card, log_fn=log_fn)
+                    o.remove_creature(target)
+                    log_fn(f"Snuff Out (free, −4 life → {b.life}) → kills {target.name}")
+                    spent_tags.add(rtag); update_goyf(gs)
+            elif rtag == 'push':
+                targets = [c for c in o.creatures if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
+                target = max(targets, key=lambda c: c.power, default=None)
+                if target and can_pay(card):
+                    spend(card); b.remove_from_hand(card); b.add_to_grave(card)
+                    ctr = []
+                    if not _try_counter_any(b, o, gs, card, ctr):
+                        o.remove_creature(target)
+                        log_fn(f"Fatal Push → kills {target.name}")
+                    else:
+                        for m in ctr: log_entries.append(m)
+                    spent_tags.add(rtag); update_goyf(gs)
+            else:
+                target = max(o.creatures, key=lambda c: c.power, default=None)
+                if target and can_pay(card):
+                    spend(card); b.remove_from_hand(card); b.add_to_grave(card)
+                    ctr = []
+                    if not _try_counter_any(b, o, gs, card, ctr):
+                        dmg = 3 if rtag == 'bolt' else (6 if rtag == 'heat' else 4)
+                        if target.toughness <= dmg:
+                            o.remove_creature(target)
+                            log_fn(f"{card.name} → kills {target.name}")
+                        else:
+                            target.damage_marked += dmg
+                            log_fn(f"{card.name} → {dmg} to {target.name}")
+                    else:
+                        for m in ctr: log_entries.append(m)
+                    spent_tags.add(rtag); update_goyf(gs)
+
+    # ── Bolt-to-face when racing ──
+    if racing or o.life <= 6:
+        for bolt_tag in ('bolt',):
+            bolt = b.find_tag(bolt_tag)
+            if bolt and can_pay(bolt) and bolt_tag not in spent_tags:
+                spend(bolt); b.remove_from_hand(bolt); b.add_to_grave(bolt)
+                ctr = []
+                if not _try_counter_any(b, o, gs, bolt, ctr):
+                    o.life -= 3
+                    log_fn(f"{bolt.name} face — opponent at {o.life}")
+                    gs.check_life_totals()
+                else:
+                    for m in ctr: log_entries.append(m)
+                spent_tags.add(bolt_tag)
+                if gs.game_over: return
+
+    # ── Threat deployment (all affordable, cheapest first) ──
+    # Sort creatures by priority: 1-drops first (Delver, DRC, Tamiyo), then 2-drops, then delve
+    deployable = sorted(
+        [c for c in b.hand if c.is_creature() and c.tag not in ('bowm',)],
+        key=lambda c: (0 if c.cmc <= 1 else 1 if c.cmc <= 2 else 2 if c.tag == 'murk' else 3)
+    )
+    for thr in deployable:
+        if gs.game_over: break
+        if threats_cast >= max_threats: break
+        # Delve cost reduction for Murktide
+        effective_cost = thr.cmc
+        if getattr(thr, 'delve', False) or thr.tag == 'murk':
+            gy_count = len(b.graveyard) if hasattr(b, 'graveyard') else len(getattr(b, 'exile', []))
+            effective_cost = max(2, thr.cmc - gy_count)  # at least UU
+        if effective_cost > rem: continue
+        rem -= effective_cost
+        b.remove_from_hand(thr)
+        ctr = []
+        if not _try_counter_any(b, o, gs, thr, ctr):
+            perm = b.put_creature_in_play(thr)
+            log_fn(f"Cast {thr.name} ({perm.power}/{perm.toughness})")
+        else:
+            b.add_to_grave(thr)
+            for m in ctr: log_entries.append(m)
+        threats_cast += 1
+        update_goyf(gs)
+
+    # ── Bowmasters (flash, deploy after other spells) ──
+    bowm = b.find_tag('bowm')
+    if bowm and can_pay(bowm) and not gs.bowmasters_on_board:
+        spend(bowm); b.remove_from_hand(bowm)
+        ctr = []
+        if not _try_counter_any(b, o, gs, bowm, ctr):
+            b.put_creature_in_play(bowm)
+            gs.bowmasters_on_board = True
+            log_fn(f"Flash Bowmasters (1 trigger per card opp draws)")
+        else:
+            b.add_to_grave(bowm)
+            for m in ctr: log_entries.append(m)
+
+    # ── Combat ──
+    attackers = []
+    for c in b.creatures:
+        if c.summoning_sick: continue
+        if c.card.tag == 'bowm' and o.creatures and not racing: continue  # hold bowm back
+        if c.card.tag == 'tamiyo' and c.power == 0: continue  # 0/3 doesn't attack
+        attackers.append(c)
+    combat_declare(b, o, gs, log_entries, attackers)
+
+    update_goyf(gs)

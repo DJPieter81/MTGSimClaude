@@ -70,8 +70,10 @@ def compute_bug_save_rate(interaction):
     if answers == 0:
         return 0.0  # no save — strategy handles the matchup
 
-    rate = _prob_at_least_one(answers, int(cards_seen))
-    return max(0.0, min(rate, 0.85))
+    # DISABLED: save rates were overcorrecting (Burn 79%, Depths 68%).
+    # The engine should handle interaction natively via bug_turn.
+    # TODO: fix bug_turn's anti-aggro removal priority instead.
+    return 0.0
 
 
 def compute_opp_save_rate(interaction):
@@ -97,11 +99,9 @@ def compute_opp_save_rate(interaction):
     if redundant_threats == 0:
         return 0.0  # no save — strategy handles the matchup
 
-    rebuild_turns = max(1, 6 - speed)
-    cards_seen = rebuild_turns * 1.2
-
-    rate = _prob_at_least_one(redundant_threats, int(cards_seen))
-    return max(0.0, min(rate, 0.70))
+    # DISABLED: opp save rates were overcorrecting (Prison 50%, Goblins 60%).
+    # The engine should handle threat redundancy natively via opp_turn.
+    return 0.0
 
 
 def compute_combo_fizzle_rate(interaction, veil_active=False):
