@@ -490,11 +490,16 @@ def markdown_bo3(matchup, seeds):
     return '\n'.join(lines)
 
 
-def find_bo3_seeds(matchup, start=1, end=1000):
-    """Find 3 seeds for a good Bo3: no mulligans, mix of BUG/OPP wins.
+def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False):
+    """Find 3 seeds for a good Bo3: mix of BUG/OPP wins, variety in game length.
 
-    Picks games to form a 2-1 series with variety (different game lengths,
-    both players winning at least once).
+    Picks games to form a dramatic 2-1 series. Prefers longer, interactive
+    games over quick blowouts.
+
+    Args:
+        matchup: deck key (e.g. 'sneak_a')
+        start/end: seed range to search
+        require_no_mull: if True, only pick games where nobody mulligans
 
     Usage:
         from verbose_table import find_bo3_seeds
@@ -505,15 +510,13 @@ def find_bo3_seeds(matchup, start=1, end=1000):
 
     for seed in range(start, end):
         random.seed(seed)
-        _, _, bm = london_mulligan(DECKS['bug'], bug_keep)
-        _, _, om = london_mulligan(DECKS[matchup], opp_keep, matchup)
-        if bm != 0 or om != 0:
+        bh, bl, bm = london_mulligan(DECKS['bug'], bug_keep)
+        oh, ol, om = london_mulligan(DECKS[matchup], opp_keep, matchup)
+
+        if require_no_mull and (bm != 0 or om != 0):
             continue
 
         # Run the game
-        random.seed(seed)
-        bh, bl, _ = london_mulligan(DECKS['bug'], bug_keep)
-        oh, ol, _ = london_mulligan(DECKS[matchup], opp_keep, matchup)
         bf = random.random() < 0.5
         gs = GameState(
             bug=PlayerState(name='b', hand=list(bh), library=list(bl)),
@@ -539,30 +542,41 @@ def find_bo3_seeds(matchup, start=1, end=1000):
             continue
 
         w = 'BUG' if gs.winner == 'bug' else 'OPP'
-        entry = (seed, gs.turn, gs.win_reason or '')
+        game_len = gs.turn
+        entry = (seed, game_len, bm, om, gs.win_reason or '')
+
         if w == 'BUG':
             bug_wins.append(entry)
         else:
             opp_wins.append(entry)
 
         # Once we have enough of each, build a 2-1 series
-        if len(bug_wins) >= 2 and len(opp_wins) >= 2:
+        if len(bug_wins) >= 3 and len(opp_wins) >= 3:
             break
 
-    # Prefer 2-1 series with the underdog taking game 1 for drama
+    def pick_best(wins, count=2):
+        """Pick the most interesting games: prefer longer, interactive ones."""
+        # Sort by game length descending (longer = more interesting)
+        ranked = sorted(wins, key=lambda e: e[1], reverse=True)
+        return ranked[:count]
+
+    # Build a 2-1 series — loser wins game 1 for drama
     if len(opp_wins) >= 2 and len(bug_wins) >= 1:
-        # OPP wins 2-1: OPP, BUG, OPP
-        return [opp_wins[0][0], bug_wins[0][0], opp_wins[1][0]]
+        opp_picks = pick_best(opp_wins, 2)
+        bug_picks = pick_best(bug_wins, 1)
+        return [opp_picks[0][0], bug_picks[0][0], opp_picks[1][0]]
     elif len(bug_wins) >= 2 and len(opp_wins) >= 1:
-        # BUG wins 2-1: BUG, OPP, BUG
-        return [bug_wins[0][0], opp_wins[0][0], bug_wins[1][0]]
+        bug_picks = pick_best(bug_wins, 2)
+        opp_picks = pick_best(opp_wins, 1)
+        return [bug_picks[0][0], opp_picks[0][0], bug_picks[1][0]]
     elif len(bug_wins) >= 2:
-        return [bug_wins[0][0], bug_wins[1][0], bug_wins[0][0]]
+        picks = pick_best(bug_wins, 3)
+        return [p[0] for p in picks[:3]]
     elif len(opp_wins) >= 2:
-        return [opp_wins[0][0], opp_wins[1][0], opp_wins[0][0]]
+        picks = pick_best(opp_wins, 3)
+        return [p[0] for p in picks[:3]]
     else:
-        # Fallback: just use whatever we found
-        all_seeds = [s for s, _, _ in bug_wins + opp_wins]
+        all_seeds = [s for s, *_ in bug_wins + opp_wins]
         while len(all_seeds) < 3:
             all_seeds.append(all_seeds[-1] + 1)
         return all_seeds[:3]
