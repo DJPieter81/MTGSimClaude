@@ -1701,11 +1701,8 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
             log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(blocked_names))}")
 
     # Trinisphere: all spells cost at least 3. Reduce effective mana budget.
+    _trini_blocked = []
     if gs.trinisphere_active:
-        # Strategy sees om but individual spells need to cost >= 3.
-        # We can't easily adjust per-spell costs, but we can block cheap spells
-        # by removing CMC < 3 nonland cards from hand (they can't be cast for < 3).
-        _trini_blocked = []
         for card in list(o.hand):
             if not card.is_land() and card.cmc < 3 and card not in _chalice_blocked:
                 # Check if player can't afford the trinisphere tax (3 mana min)
