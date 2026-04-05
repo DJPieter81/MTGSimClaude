@@ -104,7 +104,8 @@ def reason(line):
     return ""
 
 
-def generate_html(matchup, seed=None):
+def run_one_game(matchup, seed=None):
+    """Run a single game and return structured data."""
     if seed is not None: random.seed(seed)
 
     bug_hand, bug_lib, bug_mulls = london_mulligan(DECKS['bug'], bug_keep)
@@ -178,217 +179,242 @@ def generate_html(matchup, seed=None):
     winner = 'BUG' if gs.winner == 'bug' else 'OPP'
     win_reason = gs.win_reason or ''
 
+    return {
+        'matchup': matchup, 'meta_name': meta_name, 'seed': seed,
+        'bug_goes_first': bug_goes_first,
+        'bug_mulls': bug_mulls, 'opp_mulls': opp_mulls,
+        'bug_open': bug_open, 'opp_open': opp_open,
+        'turns_data': turns_data, 'life_bug': life_bug, 'life_opp': life_opp,
+        'display_turn': display_turn, 'winner': winner, 'win_reason': win_reason,
+        'bug_life': gs.bug.life, 'opp_life': gs.opp.life,
+        'bug_board': fmt_creatures(gs.bug), 'opp_board': fmt_creatures(gs.opp),
+    }
+
+
+def generate_html(matchup, seeds):
+    """Generate HTML for one or more games (Bo1 or Bo3)."""
+    if isinstance(seeds, (int, type(None))):
+        seeds = [seeds]
+
+    games = [run_one_game(matchup, s) for s in seeds]
+    meta_name = games[0]['meta_name']
+    is_bo3 = len(games) > 1
+
+    bug_wins = sum(1 for g in games if g['winner'] == 'BUG')
+    opp_wins = sum(1 for g in games if g['winner'] == 'OPP')
+    series_winner = 'BUG' if bug_wins > opp_wins else 'OPP'
+
     # Build HTML
     h = []
-    h.append("""<!DOCTYPE html>
+    title = f'Bo{len(games)} Replay: BUG vs {html.escape(meta_name)}' if is_bo3 else f'Game Replay: BUG vs {html.escape(meta_name)}'
+    h.append(f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Game Replay: BUG vs """ + html.escape(meta_name) + """</title>
+<title>{title}</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:900px;margin:0 auto}
-.header{background:linear-gradient(135deg,#161b22,#1c2333);border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:20px}
-.header h1{font-size:1.6em;margin-bottom:8px;color:#f0f6fc}
-.header h1 .vs{color:#666}
-.header .bug-name{color:#58a6ff}
-.header .opp-name{color:#f85149}
-.header .meta{color:#8b949e;font-size:0.9em;margin-top:4px}
-.hands{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
-.hand-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}
-.hand-box h3{font-size:0.85em;color:#8b949e;margin-bottom:8px}
-.hand-box.bug{border-left:3px solid #58a6ff}
-.hand-box.opp{border-left:3px solid #f85149}
-.pill{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#e3b341}
-.pill.land{color:#7ee787}
-.pill.creature{color:#58a6ff}
-.pill.spell{color:#d2a8ff}
-.controls{display:flex;gap:8px;margin-bottom:16px}
-.controls button{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}
-.controls button:hover{background:#30363d}
-.life-chart{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:20px}
-.life-chart h3{font-size:0.85em;color:#8b949e;margin-bottom:12px}
-.life-chart svg{width:100%;height:80px}
-.turn{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}
-.turn.bug{border-left:3px solid #58a6ff}
-.turn.opp{border-left:3px solid #f85149}
-.turn.active{border-color:#e3b341}
-.turn-header{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
-.turn-header:hover{background:#1c2333}
-.turn-header .left{display:flex;align-items:center;gap:12px}
-.turn-header .tnum{font-weight:700;font-size:1.1em;min-width:36px}
-.turn-header .tnum.bug{color:#58a6ff}
-.turn-header .tnum.opp{color:#f85149}
-.turn-header .player{font-weight:600;font-size:0.9em;padding:2px 8px;border-radius:4px}
-.turn-header .player.bug{background:#0d2847;color:#58a6ff}
-.turn-header .player.opp{background:#3d1418;color:#f85149}
-.turn-header .life{font-size:0.9em;color:#8b949e}
-.turn-header .life b{color:#f0f6fc}
-.turn-header .arrow{color:#484f58;transition:transform 0.2s;font-size:0.8em}
-.turn.open .arrow{transform:rotate(90deg)}
-.turn-body{display:none;padding:0 16px 16px;border-top:1px solid #21262d}
-.turn.open .turn-body{display:block}
-.section-label{font-size:0.75em;text-transform:uppercase;letter-spacing:1px;color:#484f58;margin:12px 0 6px}
-.hand-pills{margin-bottom:4px}
-.play{padding:6px 0;display:flex;gap:8px;align-items:flex-start}
-.play .step{color:#484f58;font-size:0.85em;min-width:20px;text-align:right;padding-top:1px}
-.play .action{font-family:'Fira Code','Consolas',monospace;font-size:0.85em;color:#c9d1d9;flex:1}
-.play .action.key{color:#e3b341;font-weight:600}
-.play .action.counter{color:#f85149;text-decoration:line-through;opacity:0.7}
-.play .reasoning{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px}
-.board{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px}
-.creature-badge{background:#0d2847;border:1px solid #1f3d5c;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#58a6ff}
-.creature-badge .pt{color:#e3b341;font-weight:700;margin-left:4px}
-.creature-badge .sick{color:#f85149;font-size:0.7em}
-.land-list{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}
-.result{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}
-.result h2{font-size:1.8em;margin-bottom:8px}
-.result h2.bug-win{color:#58a6ff}
-.result h2.opp-win{color:#f85149}
-.result .reason{color:#8b949e;font-size:1em;margin-bottom:12px}
-.result .stats{color:#6e7681;font-size:0.9em}
-.kbd{font-size:0.75em;color:#6e7681;margin-left:auto}
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:900px;margin:0 auto}}
+.header{{background:linear-gradient(135deg,#161b22,#1c2333);border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:20px}}
+.header h1{{font-size:1.6em;margin-bottom:8px;color:#f0f6fc}}
+.header h1 .vs{{color:#666}}
+.header .bug-name{{color:#58a6ff}}
+.header .opp-name{{color:#f85149}}
+.header .meta{{color:#8b949e;font-size:0.9em;margin-top:4px}}
+.series-score{{font-size:1.3em;margin-top:8px;font-weight:700}}
+.series-score .bug-s{{color:#58a6ff}}.series-score .opp-s{{color:#f85149}}
+.game-tabs{{display:flex;gap:4px;margin-bottom:16px}}
+.game-tab{{background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;font-weight:600;font-size:0.95em}}
+.game-tab:hover{{background:#30363d}}
+.game-tab.active{{background:#161b22;color:#f0f6fc;border-bottom-color:#161b22}}
+.game-tab .winner-dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px}}
+.game-tab .winner-dot.bug{{background:#58a6ff}}.game-tab .winner-dot.opp{{background:#f85149}}
+.game-panel{{display:none}}.game-panel.active{{display:block}}
+.hands{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}}
+.hand-box{{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}}
+.hand-box h3{{font-size:0.85em;color:#8b949e;margin-bottom:8px}}
+.hand-box.bug{{border-left:3px solid #58a6ff}}.hand-box.opp{{border-left:3px solid #f85149}}
+.pill{{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#e3b341}}
+.controls{{display:flex;gap:8px;margin-bottom:16px}}
+.controls button{{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}}
+.controls button:hover{{background:#30363d}}
+.life-chart{{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:20px}}
+.life-chart h3{{font-size:0.85em;color:#8b949e;margin-bottom:12px}}
+.life-chart svg{{width:100%;height:80px}}
+.turn{{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}}
+.turn.bug{{border-left:3px solid #58a6ff}}.turn.opp{{border-left:3px solid #f85149}}
+.turn.active{{border-color:#e3b341}}
+.turn-header{{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}}
+.turn-header:hover{{background:#1c2333}}
+.turn-header .left{{display:flex;align-items:center;gap:12px}}
+.turn-header .tnum{{font-weight:700;font-size:1.1em;min-width:36px}}
+.turn-header .tnum.bug{{color:#58a6ff}}.turn-header .tnum.opp{{color:#f85149}}
+.turn-header .player{{font-weight:600;font-size:0.9em;padding:2px 8px;border-radius:4px}}
+.turn-header .player.bug{{background:#0d2847;color:#58a6ff}}.turn-header .player.opp{{background:#3d1418;color:#f85149}}
+.turn-header .life{{font-size:0.9em;color:#8b949e}}
+.turn-header .life b{{color:#f0f6fc}}
+.turn-header .arrow{{color:#484f58;transition:transform 0.2s;font-size:0.8em}}
+.turn.open .arrow{{transform:rotate(90deg)}}
+.turn-body{{display:none;padding:0 16px 16px;border-top:1px solid #21262d}}
+.turn.open .turn-body{{display:block}}
+.section-label{{font-size:0.75em;text-transform:uppercase;letter-spacing:1px;color:#484f58;margin:12px 0 6px}}
+.hand-pills{{margin-bottom:4px}}
+.play{{padding:6px 0;display:flex;gap:8px;align-items:flex-start}}
+.play .step{{color:#484f58;font-size:0.85em;min-width:20px;text-align:right;padding-top:1px}}
+.play .action{{font-family:'Fira Code','Consolas',monospace;font-size:0.85em;color:#c9d1d9;flex:1}}
+.play .action.key{{color:#e3b341;font-weight:600}}
+.play .action.counter{{color:#f85149;text-decoration:line-through;opacity:0.7}}
+.play .reasoning{{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px}}
+.board{{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}}
+.creature-badge{{background:#0d2847;border:1px solid #1f3d5c;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#58a6ff}}
+.creature-badge .pt{{color:#e3b341;font-weight:700;margin-left:4px}}
+.creature-badge .sick{{color:#f85149;font-size:0.7em}}
+.land-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}}
+.result{{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}}
+.result h2{{font-size:1.8em;margin-bottom:8px}}
+.result h2.bug-win{{color:#58a6ff}}.result h2.opp-win{{color:#f85149}}
+.result .reason{{color:#8b949e;font-size:1em;margin-bottom:12px}}
+.result .stats{{color:#6e7681;font-size:0.9em}}
+.kbd{{font-size:0.75em;color:#6e7681;margin-left:auto}}
 </style></head><body>
 """)
 
     # Header
     h.append(f'<div class="header">')
     h.append(f'<h1><span class="bug-name">BUG Tempo</span> <span class="vs">vs</span> <span class="opp-name">{html.escape(meta_name)}</span></h1>')
-    play_str = 'ON THE PLAY' if bug_goes_first else 'ON THE DRAW'
-    h.append(f'<div class="meta">BUG is {play_str} &nbsp;|&nbsp; Seed: {seed}</div>')
-    h.append(f'<div class="hands">')
-    h.append(f'<div class="hand-box bug"><h3>BUG opening (mull {bug_mulls})</h3>')
-    for c in bug_open: h.append(f'<span class="pill">{html.escape(c)}</span>')
-    h.append(f'</div><div class="hand-box opp"><h3>OPP opening (mull {opp_mulls})</h3>')
-    for c in opp_open: h.append(f'<span class="pill">{html.escape(c)}</span>')
-    h.append(f'</div></div></div>')
-
-    # Life chart
-    max_turn = len(life_bug)
-    h.append(f'<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 {max_turn*40} 80">')
-    for i in range(1, len(life_bug)):
-        x = i * 40 - 20
-        bug_y = 75 - (life_bug[i] / 22 * 70)
-        opp_y = 75 - (life_opp[i] / 22 * 70)
-        if i > 1:
-            px = (i-1)*40-20
-            pby = 75 - (life_bug[i-1]/22*70)
-            poy = 75 - (life_opp[i-1]/22*70)
-            h.append(f'<line x1="{px}" y1="{pby}" x2="{x}" y2="{bug_y}" stroke="#58a6ff" stroke-width="2"/>')
-            h.append(f'<line x1="{px}" y1="{poy}" x2="{x}" y2="{opp_y}" stroke="#f85149" stroke-width="2"/>')
-        h.append(f'<circle cx="{x}" cy="{bug_y}" r="3" fill="#58a6ff"/>')
-        h.append(f'<circle cx="{x}" cy="{opp_y}" r="3" fill="#f85149"/>')
-        h.append(f'<text x="{x}" y="{bug_y-6}" text-anchor="middle" fill="#58a6ff" font-size="9">{life_bug[i]}</text>')
-        h.append(f'<text x="{x}" y="{opp_y+12}" text-anchor="middle" fill="#f85149" font-size="9">{life_opp[i]}</text>')
-    h.append(f'</svg></div>')
-
-    # Controls
-    h.append(f'<div class="controls">')
-    h.append(f'<button onclick="expandAll()">Expand All</button>')
-    h.append(f'<button onclick="collapseAll()">Collapse All</button>')
-    h.append(f'<span class="kbd">Arrow keys: ↑↓ navigate &nbsp; Enter: toggle</span>')
+    if is_bo3:
+        h.append(f'<div class="series-score"><span class="bug-s">BUG {bug_wins}</span> — <span class="opp-s">{opp_wins} OPP</span></div>')
+        sw_cls = 'bug-name' if series_winner == 'BUG' else 'opp-name'
+        h.append(f'<div class="meta"><span class="{sw_cls}">{series_winner} wins the series</span></div>')
     h.append(f'</div>')
 
-    # Turns
-    for i, td in enumerate(turns_data):
-        label = td['label']
-        cls = label.lower()
-        is_last = (i == len(turns_data) - 1)
-        open_cls = ' open' if is_last else ''
-        active = ' active' if is_last else ''
-
-        delta = td['life'] - td['life_before']
-        delta_str = f' ({delta:+d})' if delta != 0 else ''
-
-        h.append(f'<div class="turn {cls}{open_cls}{active}" data-idx="{i}">')
-        h.append(f'<div class="turn-header" onclick="toggle(this.parentElement)">')
-        h.append(f'<div class="left">')
-        h.append(f'<span class="tnum {cls}">T{td["num"]}</span>')
-        h.append(f'<span class="player {cls}">{label}</span>')
-        h.append(f'<span class="life">Life: <b>{td["life"]}{delta_str}</b> &nbsp;|&nbsp; Opp: {td["opp_life"]}</span>')
-        h.append(f'</div><span class="arrow">&#9654;</span></div>')
-
-        h.append(f'<div class="turn-body">')
-
-        # Hand before
-        h.append(f'<div class="section-label">Hand</div><div class="hand-pills">')
-        for c in td['hand_before']:
-            h.append(f'<span class="pill">{html.escape(c)}</span>')
+    # Game tabs (if Bo3)
+    if is_bo3:
+        h.append(f'<div class="game-tabs">')
+        for gi, g in enumerate(games):
+            act = ' active' if gi == 0 else ''
+            dot_cls = 'bug' if g['winner'] == 'BUG' else 'opp'
+            h.append(f'<div class="game-tab{act}" onclick="showGame({gi})">Game {gi+1}<span class="winner-dot {dot_cls}"></span></div>')
         h.append(f'</div>')
 
-        # Plays
-        h.append(f'<div class="section-label">Plays</div>')
-        for j, p in enumerate(td['plays']):
-            cls_p = ''
-            if p['key']: cls_p = ' key'
-            if p['counter']: cls_p = ' counter'
-            h.append(f'<div class="play"><span class="step">{j+1}.</span>')
-            h.append(f'<span class="action{cls_p}">{p["text"]}</span>')
-            if p['reason']:
-                h.append(f'<span class="reasoning">&larr; {html.escape(p["reason"])}</span>')
-            h.append(f'</div>')
-        if not td['plays']:
-            h.append(f'<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>')
+    # Each game panel
+    for gi, g in enumerate(games):
+        act = ' active' if gi == 0 else ''
+        h.append(f'<div class="game-panel{act}" id="game-{gi}">')
 
-        # Board
-        h.append(f'<div class="section-label">Board</div><div class="board">')
-        if td['creatures']:
+        # Opening hands
+        play_str = 'ON THE PLAY' if g['bug_goes_first'] else 'ON THE DRAW'
+        h.append(f'<div class="meta" style="margin-bottom:12px;color:#8b949e">BUG is {play_str} &nbsp;|&nbsp; Seed: {g["seed"]}</div>')
+        h.append(f'<div class="hands">')
+        h.append(f'<div class="hand-box bug"><h3>BUG opening (mull {g["bug_mulls"]})</h3>')
+        for c in g['bug_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
+        h.append(f'</div><div class="hand-box opp"><h3>OPP opening (mull {g["opp_mulls"]})</h3>')
+        for c in g['opp_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
+        h.append(f'</div></div>')
+
+        # Life chart
+        lb, lo = g['life_bug'], g['life_opp']
+        mt = len(lb)
+        h.append(f'<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 {mt*40} 80">')
+        for i in range(1, len(lb)):
+            x = i * 40 - 20
+            by = max(5, 75 - (max(lb[i],0) / 22 * 70))
+            oy = max(5, 75 - (max(lo[i],0) / 22 * 70))
+            if i > 1:
+                px = (i-1)*40-20
+                pby = max(5, 75 - (max(lb[i-1],0)/22*70))
+                poy = max(5, 75 - (max(lo[i-1],0)/22*70))
+                h.append(f'<line x1="{px}" y1="{pby}" x2="{x}" y2="{by}" stroke="#58a6ff" stroke-width="2"/>')
+                h.append(f'<line x1="{px}" y1="{poy}" x2="{x}" y2="{oy}" stroke="#f85149" stroke-width="2"/>')
+            h.append(f'<circle cx="{x}" cy="{by}" r="3" fill="#58a6ff"/>')
+            h.append(f'<circle cx="{x}" cy="{oy}" r="3" fill="#f85149"/>')
+            h.append(f'<text x="{x}" y="{by-6}" text-anchor="middle" fill="#58a6ff" font-size="9">{lb[i]}</text>')
+            h.append(f'<text x="{x}" y="{oy+12}" text-anchor="middle" fill="#f85149" font-size="9">{lo[i]}</text>')
+        h.append(f'</svg></div>')
+
+        # Controls
+        h.append(f'<div class="controls">')
+        h.append(f'<button onclick="expandAll()">Expand All</button>')
+        h.append(f'<button onclick="collapseAll()">Collapse All</button>')
+        h.append(f'<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>')
+        h.append(f'</div>')
+
+        # Turns
+        for i, td in enumerate(g['turns_data']):
+            label = td['label']
+            cls = label.lower()
+            is_last = (i == len(g['turns_data']) - 1)
+            open_cls = ' open' if is_last else ''
+
+            delta = td['life'] - td['life_before']
+            delta_str = f' ({delta:+d})' if delta != 0 else ''
+
+            h.append(f'<div class="turn {cls}{open_cls}" data-idx="{i}">')
+            h.append(f'<div class="turn-header" onclick="toggle(this.parentElement)">')
+            h.append(f'<div class="left">')
+            h.append(f'<span class="tnum {cls}">T{td["num"]}</span>')
+            h.append(f'<span class="player {cls}">{label}</span>')
+            h.append(f'<span class="life">Life: <b>{td["life"]}{delta_str}</b> &nbsp;|&nbsp; Opp: {td["opp_life"]}</span>')
+            h.append(f'</div><span class="arrow">&#9654;</span></div>')
+
+            h.append(f'<div class="turn-body">')
+            h.append(f'<div class="section-label">Hand</div><div class="hand-pills">')
+            for c in td['hand_before']:
+                h.append(f'<span class="pill">{html.escape(c)}</span>')
+            h.append(f'</div>')
+
+            h.append(f'<div class="section-label">Plays</div>')
+            for j, p in enumerate(td['plays']):
+                cls_p = ' key' if p['key'] else (' counter' if p['counter'] else '')
+                h.append(f'<div class="play"><span class="step">{j+1}.</span>')
+                h.append(f'<span class="action{cls_p}">{p["text"]}</span>')
+                if p['reason']:
+                    h.append(f'<span class="reasoning">&larr; {html.escape(p["reason"])}</span>')
+                h.append(f'</div>')
+            if not td['plays']:
+                h.append(f'<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>')
+
+            h.append(f'<div class="section-label">Board</div><div class="board">')
             for c in td['creatures']:
                 sick = ' <span class="sick">(sick)</span>' if c['sick'] else ''
                 h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span>{sick}</span>')
-        h.append(f'</div>')
-        h.append(f'<div class="section-label">Lands ({len(td["lands"])})</div>')
-        h.append(f'<div class="land-list">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
+            h.append(f'</div>')
+            h.append(f'<div class="section-label">Lands ({len(td["lands"])})</div>')
+            h.append(f'<div class="land-list">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
+            h.append(f'</div></div>')
 
-        h.append(f'</div></div>')
-
-    # Result
-    wcls = 'bug-win' if winner == 'BUG' else 'opp-win'
-    h.append(f'<div class="result">')
-    h.append(f'<h2 class="{wcls}">{winner} WINS</h2>')
-    h.append(f'<div class="reason">{html.escape(win_reason)}</div>')
-    h.append(f'<div class="stats">Final life: BUG {gs.bug.life} | OPP {gs.opp.life} &nbsp;|&nbsp; Game length: T{display_turn}</div>')
-    # Final boards
-    bc = fmt_creatures(gs.bug)
-    oc = fmt_creatures(gs.opp)
-    if bc:
-        h.append(f'<div class="stats" style="margin-top:8px">BUG board: ')
-        for c in bc: h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span></span> ')
+        # Game result
+        wcls = 'bug-win' if g['winner'] == 'BUG' else 'opp-win'
+        h.append(f'<div class="result">')
+        h.append(f'<h2 class="{wcls}">{g["winner"]} WINS</h2>')
+        h.append(f'<div class="reason">{html.escape(g["win_reason"])}</div>')
+        h.append(f'<div class="stats">Final life: BUG {g["bug_life"]} | OPP {g["opp_life"]} &nbsp;|&nbsp; Length: T{g["display_turn"]}</div>')
+        for side, board in [('BUG', g['bug_board']), ('OPP', g['opp_board'])]:
+            if board:
+                h.append(f'<div class="stats" style="margin-top:6px">{side}: ')
+                for c in board:
+                    h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span></span> ')
+                h.append(f'</div>')
         h.append(f'</div>')
-    if oc:
-        h.append(f'<div class="stats" style="margin-top:4px">OPP board: ')
-        for c in oc: h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span></span> ')
-        h.append(f'</div>')
-    h.append(f'</div>')
+        h.append(f'</div>')  # game-panel
 
     # JS
     h.append("""
 <script>
-let current = -1;
-const turns = document.querySelectorAll('.turn');
-
-function toggle(el) {
-  el.classList.toggle('open');
+function toggle(el) { el.classList.toggle('open'); }
+function expandAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.add('open')); }
+function collapseAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.remove('open')); }
+function showGame(idx) {
+  document.querySelectorAll('.game-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.game-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
 }
-function expandAll() { turns.forEach(t => t.classList.add('open')); }
-function collapseAll() { turns.forEach(t => t.classList.remove('open')); }
-function focus(idx) {
-  if (idx < 0 || idx >= turns.length) return;
-  current = idx;
-  turns.forEach(t => t.classList.remove('active'));
-  turns[idx].classList.add('active');
-  turns[idx].scrollIntoView({behavior:'smooth', block:'center'});
-}
-
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowDown') { e.preventDefault(); focus(current + 1); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); focus(current - 1); }
-  else if (e.key === 'Enter') {
-    e.preventDefault();
-    if (current >= 0 && current < turns.length) toggle(turns[current]);
-  }
+  const active = document.querySelector('.game-panel.active');
+  if (!active) return;
+  const turns = active.querySelectorAll('.turn');
+  let cur = [...turns].findIndex(t => t.classList.contains('active'));
+  if (e.key === 'ArrowDown') { e.preventDefault(); if(cur<turns.length-1){turns.forEach(t=>t.classList.remove('active'));turns[cur+1].classList.add('active');turns[cur+1].scrollIntoView({behavior:'smooth',block:'center'});} }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); if(cur>0){turns.forEach(t=>t.classList.remove('active'));turns[cur-1].classList.add('active');turns[cur-1].scrollIntoView({behavior:'smooth',block:'center'});} }
+  else if (e.key === 'Enter' && cur>=0) { e.preventDefault(); toggle(turns[cur]); }
 });
-
-// Start with last turn focused
-current = turns.length - 1;
 </script>
 </body></html>""")
 
@@ -397,9 +423,17 @@ current = turns.length - 1;
 
 if __name__ == '__main__':
     matchup = sys.argv[1] if len(sys.argv) > 1 else 'sneak_a'
-    seed = int(sys.argv[2]) if len(sys.argv) > 2 else None
 
-    html_content = generate_html(matchup, seed)
+    # Parse seeds: single seed, or --bo3 seed1 seed2 seed3
+    if '--bo3' in sys.argv:
+        idx = sys.argv.index('--bo3')
+        seeds = [int(s) for s in sys.argv[idx+1:idx+4]]
+        html_content = generate_html(matchup, seeds)
+    elif len(sys.argv) > 2 and sys.argv[2] != '--bo3':
+        html_content = generate_html(matchup, int(sys.argv[2]))
+    else:
+        html_content = generate_html(matchup, None)
+
     out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results', 'game_replay.html')
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, 'w') as f:

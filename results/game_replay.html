@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Game Replay: BUG vs Sneak A</title>
+<title>Bo3 Replay: BUG vs Sneak A</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:900px;margin:0 auto}
@@ -10,15 +10,20 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 .header .bug-name{color:#58a6ff}
 .header .opp-name{color:#f85149}
 .header .meta{color:#8b949e;font-size:0.9em;margin-top:4px}
+.series-score{font-size:1.3em;margin-top:8px;font-weight:700}
+.series-score .bug-s{color:#58a6ff}.series-score .opp-s{color:#f85149}
+.game-tabs{display:flex;gap:4px;margin-bottom:16px}
+.game-tab{background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;font-weight:600;font-size:0.95em}
+.game-tab:hover{background:#30363d}
+.game-tab.active{background:#161b22;color:#f0f6fc;border-bottom-color:#161b22}
+.game-tab .winner-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px}
+.game-tab .winner-dot.bug{background:#58a6ff}.game-tab .winner-dot.opp{background:#f85149}
+.game-panel{display:none}.game-panel.active{display:block}
 .hands{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
 .hand-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}
 .hand-box h3{font-size:0.85em;color:#8b949e;margin-bottom:8px}
-.hand-box.bug{border-left:3px solid #58a6ff}
-.hand-box.opp{border-left:3px solid #f85149}
+.hand-box.bug{border-left:3px solid #58a6ff}.hand-box.opp{border-left:3px solid #f85149}
 .pill{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#e3b341}
-.pill.land{color:#7ee787}
-.pill.creature{color:#58a6ff}
-.pill.spell{color:#d2a8ff}
 .controls{display:flex;gap:8px;margin-bottom:16px}
 .controls button{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}
 .controls button:hover{background:#30363d}
@@ -26,18 +31,15 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 .life-chart h3{font-size:0.85em;color:#8b949e;margin-bottom:12px}
 .life-chart svg{width:100%;height:80px}
 .turn{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}
-.turn.bug{border-left:3px solid #58a6ff}
-.turn.opp{border-left:3px solid #f85149}
+.turn.bug{border-left:3px solid #58a6ff}.turn.opp{border-left:3px solid #f85149}
 .turn.active{border-color:#e3b341}
 .turn-header{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
 .turn-header:hover{background:#1c2333}
 .turn-header .left{display:flex;align-items:center;gap:12px}
 .turn-header .tnum{font-weight:700;font-size:1.1em;min-width:36px}
-.turn-header .tnum.bug{color:#58a6ff}
-.turn-header .tnum.opp{color:#f85149}
+.turn-header .tnum.bug{color:#58a6ff}.turn-header .tnum.opp{color:#f85149}
 .turn-header .player{font-weight:600;font-size:0.9em;padding:2px 8px;border-radius:4px}
-.turn-header .player.bug{background:#0d2847;color:#58a6ff}
-.turn-header .player.opp{background:#3d1418;color:#f85149}
+.turn-header .player.bug{background:#0d2847;color:#58a6ff}.turn-header .player.opp{background:#3d1418;color:#f85149}
 .turn-header .life{font-size:0.9em;color:#8b949e}
 .turn-header .life b{color:#f0f6fc}
 .turn-header .arrow{color:#484f58;transition:transform 0.2s;font-size:0.8em}
@@ -52,15 +54,14 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 .play .action.key{color:#e3b341;font-weight:600}
 .play .action.counter{color:#f85149;text-decoration:line-through;opacity:0.7}
 .play .reasoning{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px}
-.board{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px}
+.board{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .creature-badge{background:#0d2847;border:1px solid #1f3d5c;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#58a6ff}
 .creature-badge .pt{color:#e3b341;font-weight:700;margin-left:4px}
 .creature-badge .sick{color:#f85149;font-size:0.7em}
 .land-list{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}
 .result{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}
 .result h2{font-size:1.8em;margin-bottom:8px}
-.result h2.bug-win{color:#58a6ff}
-.result h2.opp-win{color:#f85149}
+.result h2.bug-win{color:#58a6ff}.result h2.opp-win{color:#f85149}
 .result .reason{color:#8b949e;font-size:1em;margin-bottom:12px}
 .result .stats{color:#6e7681;font-size:0.9em}
 .kbd{font-size:0.75em;color:#6e7681;margin-left:auto}
@@ -68,100 +69,91 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 
 <div class="header">
 <h1><span class="bug-name">BUG Tempo</span> <span class="vs">vs</span> <span class="opp-name">Sneak A</span></h1>
-<div class="meta">BUG is ON THE PLAY &nbsp;|&nbsp; Seed: 2</div>
+<div class="series-score"><span class="bug-s">BUG 1</span> — <span class="opp-s">2 OPP</span></div>
+<div class="meta"><span class="opp-name">OPP wins the series</span></div>
+</div>
+<div class="game-tabs">
+<div class="game-tab active" onclick="showGame(0)">Game 1<span class="winner-dot opp"></span></div>
+<div class="game-tab" onclick="showGame(1)">Game 2<span class="winner-dot bug"></span></div>
+<div class="game-tab" onclick="showGame(2)">Game 3<span class="winner-dot opp"></span></div>
+</div>
+<div class="game-panel active" id="game-0">
+<div class="meta" style="margin-bottom:12px;color:#8b949e">BUG is ON THE PLAY &nbsp;|&nbsp; Seed: 5</div>
 <div class="hands">
 <div class="hand-box bug"><h3>BUG opening (mull 0)</h3>
-<span class="pill">USea</span>
-<span class="pill">Thoughtseize</span>
 <span class="pill">PDelta</span>
-<span class="pill">Bowmasters</span>
-<span class="pill">Kaito</span>
+<span class="pill">Brainstorm</span>
 <span class="pill">Waste</span>
-<span class="pill">Goyf</span>
-</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
 <span class="pill">Ponder</span>
+<span class="pill">USea</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Bowmasters</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<span class="pill">Omni</span>
+<span class="pill">SnT</span>
+<span class="pill">SnT</span>
 <span class="pill">Tomb</span>
-<span class="pill">Tomb</span>
-<span class="pill">City</span>
-<span class="pill">Stock</span>
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
-</div></div></div>
-<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 400 80">
-<circle cx="20" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<span class="pill">Emrakul</span>
+<span class="pill">Ponder</span>
+<span class="pill">TFalls</span>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 280 80">
+<circle cx="20" cy="14.545454545454547" r="3" fill="#58a6ff"/>
 <circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
-<text x="20" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="20" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
 <text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
-<line x1="20" y1="20.909090909090914" x2="60" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="14.545454545454547" x2="60" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
 <line x1="20" y1="11.363636363636367" x2="60" y2="17.727272727272727" stroke="#f85149" stroke-width="2"/>
-<circle cx="60" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="14.545454545454547" r="3" fill="#58a6ff"/>
 <circle cx="60" cy="17.727272727272727" r="3" fill="#f85149"/>
-<text x="60" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="60" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
 <text x="60" y="29.727272727272727" text-anchor="middle" fill="#f85149" font-size="9">18</text>
-<line x1="60" y1="20.909090909090914" x2="100" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="14.545454545454547" x2="100" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
 <line x1="60" y1="17.727272727272727" x2="100" y2="17.727272727272727" stroke="#f85149" stroke-width="2"/>
 <circle cx="100" cy="20.909090909090914" r="3" fill="#58a6ff"/>
 <circle cx="100" cy="17.727272727272727" r="3" fill="#f85149"/>
 <text x="100" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
 <text x="100" y="29.727272727272727" text-anchor="middle" fill="#f85149" font-size="9">18</text>
 <line x1="100" y1="20.909090909090914" x2="140" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="100" y1="17.727272727272727" x2="140" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
+<line x1="100" y1="17.727272727272727" x2="140" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
 <circle cx="140" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="140" cy="30.454545454545453" r="3" fill="#f85149"/>
+<circle cx="140" cy="24.090909090909086" r="3" fill="#f85149"/>
 <text x="140" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="140" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
+<text x="140" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
 <line x1="140" y1="20.909090909090914" x2="180" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="140" y1="30.454545454545453" x2="180" y2="33.63636363636363" stroke="#f85149" stroke-width="2"/>
+<line x1="140" y1="24.090909090909086" x2="180" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
 <circle cx="180" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="180" cy="33.63636363636363" r="3" fill="#f85149"/>
+<circle cx="180" cy="24.090909090909086" r="3" fill="#f85149"/>
 <text x="180" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="180" y="45.63636363636363" text-anchor="middle" fill="#f85149" font-size="9">13</text>
-<line x1="180" y1="20.909090909090914" x2="220" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="180" y1="33.63636363636363" x2="220" y2="40.0" stroke="#f85149" stroke-width="2"/>
-<circle cx="220" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="220" cy="40.0" r="3" fill="#f85149"/>
-<text x="220" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="220" y="52.0" text-anchor="middle" fill="#f85149" font-size="9">11</text>
-<line x1="220" y1="20.909090909090914" x2="260" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="220" y1="40.0" x2="260" y2="52.72727272727273" stroke="#f85149" stroke-width="2"/>
-<circle cx="260" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="260" cy="52.72727272727273" r="3" fill="#f85149"/>
-<text x="260" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="260" y="64.72727272727272" text-anchor="middle" fill="#f85149" font-size="9">7</text>
-<line x1="260" y1="20.909090909090914" x2="300" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="260" y1="52.72727272727273" x2="300" y2="62.27272727272727" stroke="#f85149" stroke-width="2"/>
-<circle cx="300" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="300" cy="62.27272727272727" r="3" fill="#f85149"/>
-<text x="300" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="300" y="74.27272727272728" text-anchor="middle" fill="#f85149" font-size="9">4</text>
-<line x1="300" y1="20.909090909090914" x2="340" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="300" y1="62.27272727272727" x2="340" y2="75.0" stroke="#f85149" stroke-width="2"/>
-<circle cx="340" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="340" cy="75.0" r="3" fill="#f85149"/>
-<text x="340" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="340" y="87.0" text-anchor="middle" fill="#f85149" font-size="9">0</text>
+<text x="180" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="180" y1="20.909090909090914" x2="220" y2="75.0" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="24.090909090909086" x2="220" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="75.0" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="30.454545454545453" r="3" fill="#f85149"/>
+<text x="220" y="69.0" text-anchor="middle" fill="#58a6ff" font-size="9">-13</text>
+<text x="220" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
 </svg></div>
 <div class="controls">
 <button onclick="expandAll()">Expand All</button>
 <button onclick="collapseAll()">Collapse All</button>
-<span class="kbd">Arrow keys: ↑↓ navigate &nbsp; Enter: toggle</span>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>
 </div>
 <div class="turn bug" data-idx="0">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum bug">T1</span>
 <span class="player bug">BUG</span>
-<span class="life">Life: <b>17 (-3)</b> &nbsp;|&nbsp; Opp: 20</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 20</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">USea</span>
-<span class="pill">Thoughtseize</span>
 <span class="pill">PDelta</span>
-<span class="pill">Bowmasters</span>
-<span class="pill">Kaito</span>
+<span class="pill">Brainstorm</span>
 <span class="pill">Waste</span>
-<span class="pill">Goyf</span>
+<span class="pill">Ponder</span>
+<span class="pill">USea</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Bowmasters</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
@@ -169,12 +161,12 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="reasoning">&larr; fix mana + shuffle</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Thoughtseize (−2 life, 17)</span>
-<span class="reasoning">&larr; pay 2 life to see hand + take best card</span>
+<span class="action">Brainstorm (3 draws = 3 separate draw events) → [Waste, Daze, Thoughtseize]</span>
+<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Thoughtseize -&gt; strips Ponder</span>
-<span class="reasoning">&larr; rip their best card</span>
+<span class="action">Puts back: [&#x27;Waste&#x27;, &#x27;USea&#x27;]</span>
+<span class="reasoning">&larr; hide bad cards on top</span>
 </div>
 <div class="section-label">Board</div><div class="board">
 </div>
@@ -186,29 +178,26 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="left">
 <span class="tnum opp">T2</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>18 (-2)</b> &nbsp;|&nbsp; Opp: 17</span>
+<span class="life">Life: <b>18 (-2)</b> &nbsp;|&nbsp; Opp: 19</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Omni</span>
+<span class="pill">SnT</span>
+<span class="pill">SnT</span>
 <span class="pill">Tomb</span>
-<span class="pill">Tomb</span>
-<span class="pill">City</span>
-<span class="pill">Stock</span>
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
+<span class="pill">Emrakul</span>
+<span class="pill">Ponder</span>
+<span class="pill">TFalls</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
-<span class="action">Draw: Tomb</span>
+<span class="action">Draw: Sneak</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
 <span class="action">Land: Tomb (1 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
-</div>
-<div class="play"><span class="step">3.</span>
-<span class="action">Stock (draw 2, mana=0)</span>
-<span class="reasoning">&larr; instant-speed draw 2</span>
 </div>
 <div class="section-label">Board</div><div class="board">
 </div>
@@ -220,19 +209,103 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="left">
 <span class="tnum bug">T3</span>
 <span class="player bug">BUG</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 18</span>
+<span class="life">Life: <b>17 (-2)</b> &nbsp;|&nbsp; Opp: 18</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">USea</span>
+<span class="pill">Ponder</span>
 <span class="pill">Bowmasters</span>
-<span class="pill">Kaito</span>
+<span class="pill">Bowmasters</span>
 <span class="pill">Waste</span>
-<span class="pill">Goyf</span>
+<span class="pill">Daze</span>
+<span class="pill">Thoughtseize</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: USea</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Play USea (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Thoughtseize (−2 life, 17)</span>
+<span class="reasoning">&larr; pay 2 life to see hand + take best card</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Thoughtseize -&gt; strips Omni</span>
+<span class="reasoning">&larr; rip their best card</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action">Ponder (1 draw) → keeps Bowmasters</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (2)</div>
+<div class="land-list">USea, USea</div>
+</div></div>
+<div class="turn opp" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T4</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16 (-2)</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">SnT</span>
+<span class="pill">SnT</span>
+<span class="pill">Emrakul</span>
+<span class="pill">Ponder</span>
+<span class="pill">TFalls</span>
+<span class="pill">Sneak</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="action">Draw: FoW</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Land: TFalls (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action key">★ OPP Daze counters SnT — USea returned</span>
+<span class="reasoning">&larr; free counter (bounce own land)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action counter">SnT countered!</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action counter">SnT countered</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (2)</div>
+<div class="land-list">Tomb, TFalls</div>
+</div></div>
+<div class="turn bug" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T5</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 16</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Bowmasters</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Waste</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">USea</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Waste</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
@@ -249,50 +322,217 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="section-label">Lands (2)</div>
 <div class="land-list">USea, USea</div>
 </div></div>
-<div class="turn opp" data-idx="3">
+<div class="turn opp open" data-idx="5">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
-<span class="tnum opp">T4</span>
+<span class="tnum opp">T6</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>14 (-4)</b> &nbsp;|&nbsp; Opp: 17</span>
+<span class="life">Life: <b>14 (-2)</b> &nbsp;|&nbsp; Opp: -13</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Tomb</span>
-<span class="pill">City</span>
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
-<span class="pill">Tomb</span>
-<span class="pill">STarn</span>
-<span class="pill">Tomb</span>
+<span class="pill">SnT</span>
+<span class="pill">SnT</span>
+<span class="pill">Emrakul</span>
+<span class="pill">Ponder</span>
+<span class="pill">Sneak</span>
+<span class="pill">FoW</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
-<span class="action">Draw: Atraxa</span>
-<span class="reasoning">&larr; draw for turn</span>
+<span class="action">Draw: Stock</span>
+<span class="reasoning">&larr; instant-speed draw 2</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Land: Tomb (2 lands)</span>
-<span class="reasoning">&larr; develop mana</span>
+<span class="action">SnT -&gt; Emrakul (15/15 haste flying trample)!</span>
+<span class="reasoning">&larr; COMBO! Cheat huge threat into play</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Emrakul attacks for 15! Opponent at 2</span>
+<span class="reasoning">&larr; 15 damage + annihilator = GG</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Attack: Emrakul — 15 unblocked → b at -13</span>
+<span class="reasoning">&larr; swing for damage</span>
 </div>
 <div class="section-label">Board</div><div class="board">
+<span class="creature-badge">Emrakul<span class="pt">15/15</span></span>
 </div>
 <div class="section-label">Lands (2)</div>
-<div class="land-list">Tomb, Tomb</div>
+<div class="land-list">Tomb, TFalls</div>
 </div></div>
-<div class="turn bug" data-idx="4">
+<div class="result">
+<h2 class="opp-win">OPP WINS</h2>
+<div class="reason">BUG life reaches -13 on turn 3</div>
+<div class="stats">Final life: BUG -13 | OPP 14 &nbsp;|&nbsp; Length: T6</div>
+<div class="stats" style="margin-top:6px">BUG: 
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span> 
+</div>
+<div class="stats" style="margin-top:6px">OPP: 
+<span class="creature-badge">Emrakul<span class="pt">15/15</span></span> 
+</div>
+</div>
+</div>
+<div class="game-panel" id="game-1">
+<div class="meta" style="margin-bottom:12px;color:#8b949e">BUG is ON THE PLAY &nbsp;|&nbsp; Seed: 6</div>
+<div class="hands">
+<div class="hand-box bug"><h3>BUG opening (mull 0)</h3>
+<span class="pill">Daze</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Ponder</span>
+<span class="pill">STarn</span>
+<span class="pill">Island</span>
+<span class="pill">Goyf</span>
+<span class="pill">PDelta</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<span class="pill">Emrakul</span>
+<span class="pill">SnT</span>
+<span class="pill">TFalls</span>
+<span class="pill">Ponder</span>
+<span class="pill">Island</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">SnT</span>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 400 80">
+<circle cx="20" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="20" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="20" y1="14.545454545454547" x2="60" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="60" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="60" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="60" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="60" y1="14.545454545454547" x2="100" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="100" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="100" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="100" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="100" y1="17.727272727272727" x2="140" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="11.363636363636367" x2="140" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="140" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="140" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="140" y1="17.727272727272727" x2="180" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="140" y1="14.545454545454547" x2="180" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
+<circle cx="180" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="180" cy="20.909090909090914" r="3" fill="#f85149"/>
+<text x="180" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="180" y="32.909090909090914" text-anchor="middle" fill="#f85149" font-size="9">17</text>
+<line x1="180" y1="17.727272727272727" x2="220" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="20.909090909090914" x2="220" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="220" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="220" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="220" y1="17.727272727272727" x2="260" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="220" y1="24.090909090909086" x2="260" y2="43.18181818181819" stroke="#f85149" stroke-width="2"/>
+<circle cx="260" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="260" cy="43.18181818181819" r="3" fill="#f85149"/>
+<text x="260" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="260" y="55.18181818181819" text-anchor="middle" fill="#f85149" font-size="9">10</text>
+<line x1="260" y1="17.727272727272727" x2="300" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="260" y1="43.18181818181819" x2="300" y2="49.54545454545455" stroke="#f85149" stroke-width="2"/>
+<circle cx="300" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="300" cy="49.54545454545455" r="3" fill="#f85149"/>
+<text x="300" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="300" y="61.54545454545455" text-anchor="middle" fill="#f85149" font-size="9">8</text>
+<line x1="300" y1="17.727272727272727" x2="340" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="300" y1="49.54545454545455" x2="340" y2="75.0" stroke="#f85149" stroke-width="2"/>
+<circle cx="340" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="340" cy="75.0" r="3" fill="#f85149"/>
+<text x="340" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="340" y="87.0" text-anchor="middle" fill="#f85149" font-size="9">-2</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>
+</div>
+<div class="turn bug" data-idx="0">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
-<span class="tnum bug">T5</span>
+<span class="tnum bug">T1</span>
 <span class="player bug">BUG</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 13</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 20</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Kaito</span>
-<span class="pill">Waste</span>
+<span class="pill">Daze</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Ponder</span>
+<span class="pill">STarn</span>
+<span class="pill">Island</span>
 <span class="pill">Goyf</span>
-<span class="pill">FoW</span>
+<span class="pill">PDelta</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Play+crack STarn (−1 life, 19) → USea [untapped]</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Ponder (1 draw) → keeps Kaito</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (1)</div>
+<div class="land-list">USea</div>
+</div></div>
+<div class="turn opp" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T2</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 19</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Emrakul</span>
+<span class="pill">SnT</span>
+<span class="pill">TFalls</span>
+<span class="pill">Ponder</span>
+<span class="pill">Island</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">SnT</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Ponder</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Land: TFalls (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Ponder (draw 1, mana=0)</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (1)</div>
+<div class="land-list">TFalls</div>
+</div></div>
+<div class="turn bug" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T3</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>18 (-1)</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Island</span>
+<span class="pill">Goyf</span>
+<span class="pill">PDelta</span>
+<span class="pill">Kaito</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
@@ -300,111 +540,113 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Play Waste (3 lands)</span>
-<span class="reasoning">&larr; threaten mana denial</span>
+<span class="action">Play+crack PDelta (−1 life, 18) → USea [untapped]</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Waste [ACTIVATED-uncounterable] → destroys Tomb</span>
-<span class="reasoning">&larr; deny opponent mana</span>
+<span class="action">Flash Bowmasters (1 trigger per card opp draws)</span>
+<span class="reasoning">&larr; punishes every draw: 1 ping + grows Army</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="section-label">Lands (2)</div>
+<div class="land-list">USea, USea</div>
+</div></div>
+<div class="turn opp" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T4</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 18</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Emrakul</span>
+<span class="pill">SnT</span>
+<span class="pill">Island</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">SnT</span>
+<span class="pill">Ponder</span>
+<span class="pill">STarn</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Ponder</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Land: Island (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Brainstorm (draw 1, mana=1)</span>
+<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
 </div>
 <div class="play"><span class="step">4.</span>
+<span class="action">Bowmasters T1/1: o -1 life → 19, Orc Army 1/1</span>
+<span class="reasoning">&larr; PING! Draw trigger fires</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (2)</div>
+<div class="land-list">TFalls, Island</div>
+</div></div>
+<div class="turn bug" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T5</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>18</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Island</span>
+<span class="pill">Goyf</span>
+<span class="pill">Kaito</span>
+<span class="pill">Brainstorm</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: FoW</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Play Island (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
 <span class="action">Cast Goyf (CMC 2, sick, P/T 2/3)</span>
 <span class="reasoning">&larr; cheap threat, grows with GY</span>
 </div>
-<div class="play"><span class="step">5.</span>
-<span class="action">Attack: Bowmasters — 1 unblocked → o at 13</span>
+<div class="play"><span class="step">4.</span>
+<span class="action">Attack: Bowmasters, Orc Army — 2 unblocked → o at 17</span>
 <span class="reasoning">&larr; swing for damage</span>
 </div>
 <div class="section-label">Board</div><div class="board">
 <span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
+<span class="creature-badge">Orc Army<span class="pt">1/1</span></span>
 <span class="creature-badge">Goyf<span class="pt">2/3</span> <span class="sick">(sick)</span></span>
 </div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">USea, USea</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">USea, USea, Island</div>
 </div></div>
 <div class="turn opp" data-idx="5">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum opp">T6</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>11 (-2)</b> &nbsp;|&nbsp; Opp: 17</span>
+<span class="life">Life: <b>16 (-1)</b> &nbsp;|&nbsp; Opp: 18</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">City</span>
+<span class="pill">Emrakul</span>
+<span class="pill">SnT</span>
+<span class="pill">SnT</span>
+<span class="pill">Ponder</span>
 <span class="pill">STarn</span>
-<span class="pill">Daze</span>
-<span class="pill">Tomb</span>
-<span class="pill">STarn</span>
-<span class="pill">Tomb</span>
-<span class="pill">Atraxa</span>
-</div>
-<div class="section-label">Plays</div>
-<div class="play"><span class="step">1.</span>
-<span class="action">Draw: Sneak</span>
-<span class="reasoning">&larr; draw for turn</span>
-</div>
-<div class="play"><span class="step">2.</span>
-<span class="action">Land: City (2 lands)</span>
-<span class="reasoning">&larr; develop mana</span>
-</div>
-<div class="section-label">Board</div><div class="board">
-</div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">Tomb, City</div>
-</div></div>
-<div class="turn bug" data-idx="6">
-<div class="turn-header" onclick="toggle(this.parentElement)">
-<div class="left">
-<span class="tnum bug">T7</span>
-<span class="player bug">BUG</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 7</span>
-</div><span class="arrow">&#9654;</span></div>
-<div class="turn-body">
-<div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Kaito</span>
-<span class="pill">FoW</span>
-<span class="pill">Brainstorm</span>
-</div>
-<div class="section-label">Plays</div>
-<div class="play"><span class="step">1.</span>
-<span class="action">Draw: Thoughtseize</span>
-<span class="reasoning">&larr; draw for turn</span>
-</div>
-<div class="play"><span class="step">2.</span>
-<span class="action">Brainstorm (3 draws = 3 separate draw events) → [PDelta, Push, Ponder]</span>
-<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
-</div>
-<div class="play"><span class="step">3.</span>
-<span class="action">Puts back: [&#x27;PDelta&#x27;, &#x27;Ponder&#x27;]</span>
-<span class="reasoning">&larr; hide bad cards on top</span>
-</div>
-<div class="play"><span class="step">4.</span>
-<span class="action">Attack: Bowmasters, Goyf — 4 unblocked → o at 7</span>
-<span class="reasoning">&larr; swing for damage</span>
-</div>
-<div class="section-label">Board</div><div class="board">
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
-<span class="creature-badge">Goyf<span class="pt">3/4</span></span>
-</div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">USea, USea</div>
-</div></div>
-<div class="turn opp" data-idx="7">
-<div class="turn-header" onclick="toggle(this.parentElement)">
-<div class="left">
-<span class="tnum opp">T8</span>
-<span class="player opp">OPP</span>
-<span class="life">Life: <b>4 (-3)</b> &nbsp;|&nbsp; Opp: 17</span>
-</div><span class="arrow">&#9654;</span></div>
-<div class="turn-body">
-<div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
-<span class="pill">Tomb</span>
-<span class="pill">STarn</span>
-<span class="pill">Tomb</span>
-<span class="pill">Atraxa</span>
+<span class="pill">Ponder</span>
 <span class="pill">Sneak</span>
 </div>
 <div class="section-label">Plays</div>
@@ -413,85 +655,705 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Play+crack STarn (−1 life, 6) → Volc</span>
+<span class="action">Play+crack STarn (−1 life, 16) → Volc</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action key">★ OPP FoW counters SnT (exiles Brainstorm)</span>
+<span class="reasoning">&larr; FREE counter (exile blue card)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action counter">SnT countered!</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action counter">SnT countered</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">TFalls, Island, Volc</div>
+</div></div>
+<div class="turn bug" data-idx="6">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T7</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>18</b> &nbsp;|&nbsp; Opp: 10</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Kaito</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Bauble</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Bauble (sac → draw on next upkeep, artifact in GY)</span>
+<span class="reasoning">&larr; free artifact, draws next turn</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Cast Kaito (3/4 hexproof) → Surveil 2, draw 1 [FoW]</span>
+<span class="reasoning">&larr; hexproof threat + card advantage</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Attack: Bowmasters, Orc Army, Goyf — 6 unblocked → o at 10</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
+<span class="creature-badge">Orc Army<span class="pt">1/1</span></span>
+<span class="creature-badge">Goyf<span class="pt">4/5</span></span>
+<span class="creature-badge">Kaito<span class="pt">3/4</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">USea, USea, Island</div>
+</div></div>
+<div class="turn opp" data-idx="7">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T8</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>8 (-2)</b> &nbsp;|&nbsp; Opp: 18</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Emrakul</span>
+<span class="pill">SnT</span>
+<span class="pill">SnT</span>
+<span class="pill">Ponder</span>
+<span class="pill">Ponder</span>
+<span class="pill">Sneak</span>
+<span class="pill">MRain</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Daze</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Play+crack MRain (−1 life, 9) → Volc</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Ponder (draw 1, mana=3)</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Bowmasters T1/1: o -1 life → 8, Orc Army 2/2</span>
+<span class="reasoning">&larr; PING! Draw trigger fires</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action key">★ OPP FoW counters SnT (exiles Daze)</span>
+<span class="reasoning">&larr; FREE counter (exile blue card)</span>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="action counter">SnT countered!</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">7.</span>
+<span class="action counter">SnT countered</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (4)</div>
+<div class="land-list">TFalls, Island, Volc, Volc</div>
+</div></div>
+<div class="turn bug open" data-idx="8">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T9</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>18</b> &nbsp;|&nbsp; Opp: -2</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Bauble (upkeep draw) → Thoughtseize</span>
+<span class="reasoning">&larr; free artifact, draws next turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Draw: Goyf</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Cast Goyf (CMC 2, sick, P/T 4/5)</span>
+<span class="reasoning">&larr; cheap threat, grows with GY</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Attack: Bowmasters, Orc Army, Goyf, Kaito — 10 unblocked → o at -2</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
+<span class="creature-badge">Orc Army<span class="pt">2/2</span></span>
+<span class="creature-badge">Goyf<span class="pt">4/5</span></span>
+<span class="creature-badge">Kaito<span class="pt">3/4</span></span>
+<span class="creature-badge">Goyf<span class="pt">4/5</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">USea, USea, Island</div>
+</div></div>
+<div class="result">
+<h2 class="bug-win">BUG WINS</h2>
+<div class="reason">Opp life reaches -2 on turn 5</div>
+<div class="stats">Final life: BUG 18 | OPP -2 &nbsp;|&nbsp; Length: T9</div>
+<div class="stats" style="margin-top:6px">BUG: 
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span> 
+<span class="creature-badge">Orc Army<span class="pt">2/2</span></span> 
+<span class="creature-badge">Goyf<span class="pt">4/5</span></span> 
+<span class="creature-badge">Kaito<span class="pt">3/4</span></span> 
+<span class="creature-badge">Goyf<span class="pt">4/5</span></span> 
+</div>
+</div>
+</div>
+<div class="game-panel" id="game-2">
+<div class="meta" style="margin-bottom:12px;color:#8b949e">BUG is ON THE PLAY &nbsp;|&nbsp; Seed: 7</div>
+<div class="hands">
+<div class="hand-box bug"><h3>BUG opening (mull 0)</h3>
+<span class="pill">Murktide</span>
+<span class="pill">MFlats</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Bauble</span>
+<span class="pill">USea</span>
+<span class="pill">Sewers</span>
+<span class="pill">Thoughtseize</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<span class="pill">MRain</span>
+<span class="pill">STarn</span>
+<span class="pill">Stock</span>
+<span class="pill">MRain</span>
+<span class="pill">Tomb</span>
+<span class="pill">Omni</span>
+<span class="pill">Petal</span>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 520 80">
+<circle cx="20" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="20" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="20" y1="20.909090909090914" x2="60" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="11.363636363636367" x2="60" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="60" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="60" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="60" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="60" y1="20.909090909090914" x2="100" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="14.545454545454547" x2="100" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="100" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="100" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="100" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="100" y1="20.909090909090914" x2="140" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="14.545454545454547" x2="140" y2="17.727272727272727" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="17.727272727272727" r="3" fill="#f85149"/>
+<text x="140" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="140" y="29.727272727272727" text-anchor="middle" fill="#f85149" font-size="9">18</text>
+<line x1="140" y1="20.909090909090914" x2="180" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="140" y1="17.727272727272727" x2="180" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
+<circle cx="180" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="180" cy="20.909090909090914" r="3" fill="#f85149"/>
+<text x="180" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="180" y="32.909090909090914" text-anchor="middle" fill="#f85149" font-size="9">17</text>
+<line x1="180" y1="20.909090909090914" x2="220" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="20.909090909090914" x2="220" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="220" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="220" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="220" y1="20.909090909090914" x2="260" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="220" y1="24.090909090909086" x2="260" y2="27.272727272727273" stroke="#f85149" stroke-width="2"/>
+<circle cx="260" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="260" cy="27.272727272727273" r="3" fill="#f85149"/>
+<text x="260" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="260" y="39.27272727272727" text-anchor="middle" fill="#f85149" font-size="9">15</text>
+<line x1="260" y1="20.909090909090914" x2="300" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="260" y1="27.272727272727273" x2="300" y2="33.63636363636363" stroke="#f85149" stroke-width="2"/>
+<circle cx="300" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="300" cy="33.63636363636363" r="3" fill="#f85149"/>
+<text x="300" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="300" y="45.63636363636363" text-anchor="middle" fill="#f85149" font-size="9">13</text>
+<line x1="300" y1="20.909090909090914" x2="340" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="300" y1="33.63636363636363" x2="340" y2="36.81818181818182" stroke="#f85149" stroke-width="2"/>
+<circle cx="340" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="340" cy="36.81818181818182" r="3" fill="#f85149"/>
+<text x="340" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="340" y="48.81818181818182" text-anchor="middle" fill="#f85149" font-size="9">12</text>
+<line x1="340" y1="20.909090909090914" x2="380" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="340" y1="36.81818181818182" x2="380" y2="43.18181818181819" stroke="#f85149" stroke-width="2"/>
+<circle cx="380" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="380" cy="43.18181818181819" r="3" fill="#f85149"/>
+<text x="380" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="380" y="55.18181818181819" text-anchor="middle" fill="#f85149" font-size="9">10</text>
+<line x1="380" y1="20.909090909090914" x2="420" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="380" y1="43.18181818181819" x2="420" y2="46.36363636363636" stroke="#f85149" stroke-width="2"/>
+<circle cx="420" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="420" cy="46.36363636363636" r="3" fill="#f85149"/>
+<text x="420" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="420" y="58.36363636363636" text-anchor="middle" fill="#f85149" font-size="9">9</text>
+<line x1="420" y1="20.909090909090914" x2="460" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="420" y1="46.36363636363636" x2="460" y2="59.09090909090909" stroke="#f85149" stroke-width="2"/>
+<circle cx="460" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="460" cy="59.09090909090909" r="3" fill="#f85149"/>
+<text x="460" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="460" y="71.0909090909091" text-anchor="middle" fill="#f85149" font-size="9">5</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>
+</div>
+<div class="turn bug" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T1</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>17 (-3)</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Murktide</span>
+<span class="pill">MFlats</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Bauble</span>
+<span class="pill">USea</span>
+<span class="pill">Sewers</span>
+<span class="pill">Thoughtseize</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Play+crack MFlats (−1 life, 19) → USea [untapped]</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Bauble (sac → draw on next upkeep, artifact in GY)</span>
+<span class="reasoning">&larr; free artifact, draws next turn</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Thoughtseize (−2 life, 17)</span>
+<span class="reasoning">&larr; pay 2 life to see hand + take best card</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Thoughtseize -&gt; strips Omni</span>
+<span class="reasoning">&larr; rip their best card</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (1)</div>
+<div class="land-list">USea</div>
+</div></div>
+<div class="turn opp" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T2</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">MRain</span>
+<span class="pill">STarn</span>
+<span class="pill">Stock</span>
+<span class="pill">MRain</span>
+<span class="pill">Tomb</span>
+<span class="pill">Petal</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Volc</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Play+crack MRain (−1 life, 19) → Volc</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Stock (draw 2, mana=0)</span>
+<span class="reasoning">&larr; instant-speed draw 2</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (1)</div>
+<div class="land-list">Volc</div>
+</div></div>
+<div class="turn bug" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T3</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 19</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Murktide</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">USea</span>
+<span class="pill">Sewers</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Bauble (upkeep draw) → Kaito</span>
+<span class="reasoning">&larr; free artifact, draws next turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Draw: Tamiyo</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Play USea (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Flash Bowmasters (1 trigger per card opp draws)</span>
+<span class="reasoning">&larr; punishes every draw: 1 ping + grows Army</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="section-label">Lands (2)</div>
+<div class="land-list">USea, USea</div>
+</div></div>
+<div class="turn opp" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T4</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>18 (-1)</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">STarn</span>
+<span class="pill">MRain</span>
+<span class="pill">Tomb</span>
+<span class="pill">Petal</span>
+<span class="pill">Volc</span>
+<span class="pill">Sneak</span>
+<span class="pill">Tomb</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Tomb</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Play+crack STarn (−1 life, 18) → Island</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (2)</div>
+<div class="land-list">Volc, Island</div>
+</div></div>
+<div class="turn bug" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T5</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Murktide</span>
+<span class="pill">Sewers</span>
+<span class="pill">Kaito</span>
+<span class="pill">Tamiyo</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: FoW</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Play Sewers (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Cast Tamiyo (CMC 1, summoning sick)</span>
+<span class="reasoning">&larr; 0/3 that flips to planeswalker</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Attack: Bowmasters — 1 unblocked → o at 17</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
+<span class="creature-badge">Tamiyo<span class="pt">0/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">USea, USea, Sewers</div>
+</div></div>
+<div class="turn opp" data-idx="5">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T6</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16 (-1)</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">MRain</span>
+<span class="pill">Tomb</span>
+<span class="pill">Petal</span>
+<span class="pill">Volc</span>
+<span class="pill">Sneak</span>
+<span class="pill">Tomb</span>
+<span class="pill">Tomb</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Daze</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Play+crack MRain (−1 life, 16) → Island</span>
 <span class="reasoning">&larr; fix mana + shuffle</span>
 </div>
 <div class="section-label">Board</div><div class="board">
 </div>
 <div class="section-label">Lands (3)</div>
-<div class="land-list">Tomb, City, Volc</div>
+<div class="land-list">Volc, Island, Island</div>
 </div></div>
-<div class="turn bug open active" data-idx="8">
+<div class="turn bug" data-idx="6">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
-<span class="tnum bug">T9</span>
+<span class="tnum bug">T7</span>
 <span class="player bug">BUG</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 0</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 15</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Murktide</span>
 <span class="pill">Kaito</span>
 <span class="pill">FoW</span>
-<span class="pill">Thoughtseize</span>
-<span class="pill">Push</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
-<span class="action">Draw: Ponder</span>
-<span class="reasoning">&larr; look at top 3, keep the best</span>
+<span class="action">Draw: Daze</span>
+<span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Ponder (1 draw) → keeps Bowmasters</span>
-<span class="reasoning">&larr; look at top 3, keep the best</span>
+<span class="action key">★ OPP Daze counters Kaito — Volc returned</span>
+<span class="reasoning">&larr; free counter (bounce own land)</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Attack: Bowmasters, Goyf — 4 unblocked → o at 0</span>
+<span class="action counter">Kaito countered!</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Attack: Bowmasters, Tamiyo — 1 unblocked → o at 15</span>
 <span class="reasoning">&larr; swing for damage</span>
 </div>
 <div class="section-label">Board</div><div class="board">
 <span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
-<span class="creature-badge">Goyf<span class="pt">3/4</span></span>
+<span class="creature-badge">Tamiyo<span class="pt">0/3</span></span>
 </div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">USea, USea</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">USea, USea, Sewers</div>
+</div></div>
+<div class="turn opp" data-idx="7">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T8</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>13 (-2)</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Tomb</span>
+<span class="pill">Petal</span>
+<span class="pill">Volc</span>
+<span class="pill">Sneak</span>
+<span class="pill">Tomb</span>
+<span class="pill">Tomb</span>
+<span class="pill">Volc</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Daze</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Land: Tomb (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">Island, Island, Tomb</div>
+</div></div>
+<div class="turn bug" data-idx="8">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T9</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 12</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Murktide</span>
+<span class="pill">FoW</span>
+<span class="pill">Daze</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Bowmasters</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Attack: Bowmasters, Tamiyo — 1 unblocked → o at 12</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
+<span class="creature-badge">Tamiyo<span class="pt">0/3</span></span>
+</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">USea, USea, Sewers</div>
+</div></div>
+<div class="turn opp" data-idx="9">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T10</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>10 (-2)</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Petal</span>
+<span class="pill">Volc</span>
+<span class="pill">Sneak</span>
+<span class="pill">Tomb</span>
+<span class="pill">Tomb</span>
+<span class="pill">Volc</span>
+<span class="pill">Daze</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: SnT</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Land: Volc (4 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Petal (+1 mana=7)</span>
+<span class="reasoning">&larr; sacrifice for fast mana</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action key">★ OPP FoW counters SnT (exiles Daze)</span>
+<span class="reasoning">&larr; FREE counter (exile blue card)</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action counter">SnT countered!</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="action counter">SnT countered</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (4)</div>
+<div class="land-list">Island, Island, Tomb, Volc</div>
+</div></div>
+<div class="turn bug" data-idx="10">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T11</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 9</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Murktide</span>
+<span class="pill">Bowmasters</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Bowmasters</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Attack: Bowmasters, Tamiyo — 1 unblocked → o at 9</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
+<span class="creature-badge">Tamiyo<span class="pt">0/3</span></span>
+</div>
+<div class="section-label">Lands (3)</div>
+<div class="land-list">USea, USea, Sewers</div>
+</div></div>
+<div class="turn opp open" data-idx="11">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T12</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>5 (-4)</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Sneak</span>
+<span class="pill">Tomb</span>
+<span class="pill">Tomb</span>
+<span class="pill">Volc</span>
+<span class="pill">Daze</span>
+<span class="pill">SnT</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="action">Draw: Sneak</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Land: Tomb (5 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">SnT -&gt; Sneak! (activate for R)</span>
+<span class="reasoning">&larr; COMBO! Cheat huge threat into play</span>
+</div>
+<div class="section-label">Board</div><div class="board">
+</div>
+<div class="section-label">Lands (5)</div>
+<div class="land-list">Island, Island, Tomb, Volc, Tomb</div>
 </div></div>
 <div class="result">
-<h2 class="bug-win">BUG WINS</h2>
-<div class="reason">Opp life reaches 0 on turn 5</div>
-<div class="stats">Final life: BUG 17 | OPP 0 &nbsp;|&nbsp; Game length: T9</div>
-<div class="stats" style="margin-top:8px">BUG board: 
+<h2 class="opp-win">OPP WINS</h2>
+<div class="reason">Sneak &amp; Show: Sneak Attack in play</div>
+<div class="stats">Final life: BUG 17 | OPP 5 &nbsp;|&nbsp; Length: T12</div>
+<div class="stats" style="margin-top:6px">BUG: 
 <span class="creature-badge">Bowmasters<span class="pt">1/1</span></span> 
-<span class="creature-badge">Goyf<span class="pt">3/4</span></span> 
+<span class="creature-badge">Tamiyo<span class="pt">0/3</span></span> 
+</div>
 </div>
 </div>
 
 <script>
-let current = -1;
-const turns = document.querySelectorAll('.turn');
-
-function toggle(el) {
-  el.classList.toggle('open');
+function toggle(el) { el.classList.toggle('open'); }
+function expandAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.add('open')); }
+function collapseAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.remove('open')); }
+function showGame(idx) {
+  document.querySelectorAll('.game-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.game-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
 }
-function expandAll() { turns.forEach(t => t.classList.add('open')); }
-function collapseAll() { turns.forEach(t => t.classList.remove('open')); }
-function focus(idx) {
-  if (idx < 0 || idx >= turns.length) return;
-  current = idx;
-  turns.forEach(t => t.classList.remove('active'));
-  turns[idx].classList.add('active');
-  turns[idx].scrollIntoView({behavior:'smooth', block:'center'});
-}
-
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowDown') { e.preventDefault(); focus(current + 1); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); focus(current - 1); }
-  else if (e.key === 'Enter') {
-    e.preventDefault();
-    if (current >= 0 && current < turns.length) toggle(turns[current]);
-  }
+  const active = document.querySelector('.game-panel.active');
+  if (!active) return;
+  const turns = active.querySelectorAll('.turn');
+  let cur = [...turns].findIndex(t => t.classList.contains('active'));
+  if (e.key === 'ArrowDown') { e.preventDefault(); if(cur<turns.length-1){turns.forEach(t=>t.classList.remove('active'));turns[cur+1].classList.add('active');turns[cur+1].scrollIntoView({behavior:'smooth',block:'center'});} }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); if(cur>0){turns.forEach(t=>t.classList.remove('active'));turns[cur-1].classList.add('active');turns[cur-1].scrollIntoView({behavior:'smooth',block:'center'});} }
+  else if (e.key === 'Enter' && cur>=0) { e.preventDefault(); toggle(turns[cur]); }
 });
-
-// Start with last turn focused
-current = turns.length - 1;
 </script>
 </body></html>
