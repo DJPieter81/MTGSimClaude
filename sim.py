@@ -1658,6 +1658,10 @@ def main():
     parser.add_argument('--test', action='store_true')
     parser.add_argument('--bo3', action='store_true',
                         help='Run best-of-3 matches with sideboarding')
+    parser.add_argument('--hypothesis', action='store_true',
+                        help='Run hypothesis tests on sweep data (results/overnight_sweep.json)')
+    parser.add_argument('--hypothesis-live', nargs=2, metavar=('ANT', 'N'),
+                        help='Run live hypothesis test: antagonist n_matches')
     args = parser.parse_args()
 
     if args.seed is not None:
@@ -1671,6 +1675,18 @@ def main():
         except KeyboardInterrupt: sys.exit(1)
 
     if args.test:
+        return
+
+    if args.hypothesis:
+        from hypothesis_testing import analyze_sweep, meta_ev_ci
+        analyze_sweep('results/overnight_sweep.json', 'bug')
+        meta_ev_ci('results/overnight_sweep.json', 'bug')
+        return
+
+    if args.hypothesis_live:
+        from hypothesis_testing import run_live_test
+        ant, n = args.hypothesis_live
+        run_live_test('bug', ant, int(n))
         return
 
     if args.bo3:
