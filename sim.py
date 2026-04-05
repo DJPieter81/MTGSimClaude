@@ -119,13 +119,28 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     if not gs.game_over:
         bug_power = sum(c.power for c in gs.bug.creatures)
         opp_power = sum(c.power for c in gs.opp.creatures)
-        if bug_power > opp_power or gs.bug.life > gs.opp.life + 3:
+        bug_creatures = len(gs.bug.creatures)
+        opp_creatures = len(gs.opp.creatures)
+        bug_lands = len(gs.bug.lands)
+        opp_lands = len(gs.opp.lands)
+        life_edge = gs.bug.life - gs.opp.life
+
+        # Score board position: creatures, power, lands, life
+        bug_score = bug_power * 2 + bug_creatures * 3 + bug_lands + max(0, life_edge)
+        opp_score = opp_power * 2 + opp_creatures * 3 + opp_lands + max(0, -life_edge)
+
+        if bug_score > opp_score:
             gs.winner = 'bug'
             gs.win_reason = f"Board/life advantage after T{gs.turn}"
             gs.kill_turn = gs.turn
-        else:
+        elif opp_score > bug_score:
             gs.winner = 'opp'
             gs.win_reason = f"Opp board/life advantage after T{gs.turn}"
+        else:
+            # True tie: higher life wins, else BUG (home advantage)
+            gs.winner = 'bug' if gs.bug.life >= gs.opp.life else 'opp'
+            gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
+        gs.kill_turn = gs.turn
 
     return GameResult(
         winner=gs.winner,

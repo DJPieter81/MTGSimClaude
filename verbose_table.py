@@ -264,6 +264,21 @@ def run_table_game(matchup, seed=None):
             if do_one('OPP'): break
             if do_one('BUG'): break
 
+    # ── Timeout heuristic ──
+    if not gs.game_over:
+        bug_power = sum(c.power for c in gs.bug.creatures)
+        opp_power = sum(c.power for c in gs.opp.creatures)
+        bug_score = (bug_power * 2 + len(gs.bug.creatures) * 3
+                     + len(gs.bug.lands) + max(0, gs.bug.life - gs.opp.life))
+        opp_score = (opp_power * 2 + len(gs.opp.creatures) * 3
+                     + len(gs.opp.lands) + max(0, gs.opp.life - gs.bug.life))
+        if bug_score >= opp_score:
+            gs.winner = 'bug'
+            gs.win_reason = f"Board/life advantage after T{display_turn}"
+        else:
+            gs.winner = 'opp'
+            gs.win_reason = f"Opp board/life advantage after T{display_turn}"
+
     # ── Result ──
     winner = 'BUG' if gs.winner == 'bug' else 'OPP'
     print(f"  ══════════════════════════════════════════════════════════════════")
@@ -340,6 +355,21 @@ def run_game_data(matchup, seed=None):
         else:
             if do_one('OPP'): break
             if do_one('BUG'): break
+
+    # Timeout heuristic — if game didn't end, score board position
+    if not gs.game_over:
+        bug_power = sum(c.power for c in gs.bug.creatures)
+        opp_power = sum(c.power for c in gs.opp.creatures)
+        bug_score = (bug_power * 2 + len(gs.bug.creatures) * 3
+                     + len(gs.bug.lands) + max(0, gs.bug.life - gs.opp.life))
+        opp_score = (opp_power * 2 + len(gs.opp.creatures) * 3
+                     + len(gs.opp.lands) + max(0, gs.opp.life - gs.bug.life))
+        if bug_score >= opp_score:
+            gs.winner = 'bug'
+            gs.win_reason = f"Board/life advantage after T{display_turn}"
+        else:
+            gs.winner = 'opp'
+            gs.win_reason = f"Opp board/life advantage after T{display_turn}"
 
     winner = 'BUG' if gs.winner == 'bug' else 'OPP'
     return {
