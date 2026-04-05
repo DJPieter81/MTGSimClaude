@@ -11,11 +11,8 @@ from cards import make_mardu_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_mardu
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_mardu(gs, total_mana, _log, log_entries, gs.turn)
+    from engine import _strategy_mardu as _engine_strategy_mardu
+    _engine_strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

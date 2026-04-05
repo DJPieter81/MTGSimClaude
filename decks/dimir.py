@@ -11,11 +11,8 @@ from cards import make_dimir_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_dimir
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_dimir(gs, total_mana, _log, log_entries)
+    from engine import _strategy_dimir as _engine_strategy_dimir
+    _engine_strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

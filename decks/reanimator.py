@@ -11,11 +11,8 @@ from cards import make_reanimator_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_reanimator
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_reanimator(gs, total_mana, _log, log_entries, gs.turn)
+    from engine import _strategy_reanimator as _engine_strategy_reanimator
+    _engine_strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

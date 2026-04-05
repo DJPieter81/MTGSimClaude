@@ -11,11 +11,8 @@ from cards import make_ur_aggro_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_ur_aggro
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_ur_aggro(gs, total_mana, _log, log_entries)
+    from engine import _strategy_ur_aggro as _engine_strategy_ur_aggro
+    _engine_strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

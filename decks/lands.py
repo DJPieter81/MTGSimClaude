@@ -11,11 +11,8 @@ from cards import make_lands_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_lands
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_lands(gs, total_mana, _log, log_entries, gs.turn)
+    from engine import _strategy_lands as _engine_strategy_lands
+    _engine_strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

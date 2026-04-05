@@ -11,11 +11,8 @@ from cards import make_uwx_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_uwx
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_uwx(gs, total_mana, _log, log_entries)
+    from engine import _strategy_uwx as _engine_strategy_uwx
+    _engine_strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────
