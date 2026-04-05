@@ -85,14 +85,62 @@ def cmd_deck(deck_key):
             cmc = f" CMC{card.cmc}" if not card.is_land() else ""
             print(f"    {count}x {name}{cmc}{tags}")
 
+    # Strategy source
     has_strat = bool(get_strategy(deck_key) or STRATEGIES.get(deck_key))
-    print(f"\n  Strategy: {'registered' if has_strat else 'MISSING'}")
+    strat_fn = get_strategy(deck_key) or STRATEGIES.get(deck_key)
+    if strat_fn:
+        strat_name = strat_fn.__name__ if hasattr(strat_fn, '__name__') else str(strat_fn)
+        strat_loc = f"{strat_fn.__module__}" if hasattr(strat_fn, '__module__') else '?'
+        print(f"\n  Strategy: {strat_name} (in {strat_loc})")
+    else:
+        print(f"\n  Strategy: MISSING")
 
-    # Gameplan
-    from gameplan import GAMEPLANS
-    plan = GAMEPLANS.get(deck_key)
-    if plan:
-        print(f"  Gameplan: {plan.get('archetype', '?')} — {plan.get('primary_goal', '?')}")
+    # Archetype categories
+    from config import MatchupCategory as MC
+    categories = []
+    for cat_name in ['COMBO', 'FAST_COMBO', 'AGGRO', 'PRISON', 'MIRROR', 'TEMPO_MIRROR',
+                     'GY_COMBO', 'LAND_COMBO', 'VIAL_DECKS', 'TRIBAL', 'BOWM_DECKS']:
+        cat_set = getattr(MC, cat_name, set())
+        if deck_key in cat_set:
+            categories.append(cat_name.lower())
+    if categories:
+        print(f"  Archetype: {', '.join(categories)}")
+    else:
+        print(f"  Archetype: fair/unclassified")
+
+    # Interaction profile
+    from interaction_model import get_or_infer_interaction
+    profile = get_or_infer_interaction(deck_key)
+    if profile:
+        print(f"\n  Interaction profile:")
+        print(f"    Speed:       {profile.get('speed', '?')}/5 (1=fastest)")
+        print(f"    Resilience:  {profile.get('resilience', '?')}/5 (1=fragile)")
+        flags = []
+        if profile.get('uses_graveyard'): flags.append('graveyard-dependent')
+        if profile.get('uses_veil'): flags.append('Veil of Summer')
+        if profile.get('soft_to_wasteland'): flags.append('soft to Wasteland')
+        if profile.get('creature_based'): flags.append('creature-based')
+        if flags:
+            print(f"    Traits:      {', '.join(flags)}")
+
+    # Key card stats
+    print(f"\n  Key stats:")
+    n_cantrips = sum(1 for c in cards if c.is_cantrip)
+    n_creatures = sum(1 for c in cards if c.is_creature())
+    n_counters = sum(1 for c in cards if c.tag in ('fow', 'fon', 'daze', 'fluster', 'counter', 'pierce'))
+    n_removal = sum(1 for c in cards if c.tag in ('push', 'stp', 'bolt', 'snuffout', 'dismember'))
+    n_rituals = sum(1 for c in cards if getattr(c, 'mana_ritual', False) or c.tag in ('darkrit', 'cabalrit'))
+    n_combo = sum(1 for c in cards if c.win_condition or c.is_combo_piece)
+    avg_cmc = sum(c.cmc for c in cards if not c.is_land()) / max(1, sum(1 for c in cards if not c.is_land()))
+    stats = []
+    if n_cantrips: stats.append(f"{n_cantrips} cantrips")
+    if n_creatures: stats.append(f"{n_creatures} creatures")
+    if n_counters: stats.append(f"{n_counters} counters")
+    if n_removal: stats.append(f"{n_removal} removal")
+    if n_rituals: stats.append(f"{n_rituals} rituals")
+    if n_combo: stats.append(f"{n_combo} combo pieces")
+    print(f"    {', '.join(stats)}")
+    print(f"    Avg CMC (nonland): {avg_cmc:.2f}")
 
 
 def cmd_matchup(deck1, deck2, n_games, seed=None):
