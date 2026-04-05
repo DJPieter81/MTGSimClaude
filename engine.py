@@ -1984,12 +1984,6 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
 
 
 
-def elves_turn(gs: GameState, turn: int):
-    """Protagonist Elves turn — delegates to protagonist_turn via STRATEGIES registry."""
-    from sim import protagonist_turn
-    return protagonist_turn(gs, turn, 'elves')
-
-
 def _try_counter_any(player, opponent, gs: GameState, spell_card, log_list: list) -> bool:
     """
     Unified counter attempt — works regardless of which role the deck plays.

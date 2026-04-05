@@ -16,13 +16,11 @@ import sys
 from dataclasses import dataclass
 from typing import List, Optional
 
-from rules import MTGRules, StackType
+from rules import MTGRules, StackType, Card
 from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
                    instant, sorcery, artifact, creature)
-from rules import Card
-from typing import List
 from game import GameState, PlayerState, london_mulligan, bug_keep, opp_keep
-from engine import bug_turn, opp_turn, play_turn, update_goyf, elves_turn
+from engine import bug_turn, opp_turn, play_turn, update_goyf
 
 
 @dataclass

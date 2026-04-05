@@ -239,20 +239,6 @@ class GameState:
     # Kept for Storm/Oops spell-count tracking
     pending_bauble_draws: int = 0
 
-    # ── Compatibility shims — allow gs.bug / gs.opp / gs.bug_goes_first ──
-    @property
-    def bug(self): return self.p1
-    @bug.setter
-    def bug(self, value): self.p1 = value
-    @property
-    def opp(self): return self.p2
-    @opp.setter
-    def opp(self, value): self.p2 = value
-    @property
-    def bug_goes_first(self): return self.p1_goes_first
-    @bug_goes_first.setter
-    def bug_goes_first(self, value): self.p1_goes_first = value
-
     # ── Computed properties — always derived from board state, never manually synced ──
 
     @property
@@ -276,7 +262,6 @@ class GameState:
     @property
     def shepherd_in_play(self) -> bool:
         """True iff Allosaurus Shepherd is in play anywhere — green spells uncounterable."""
-        return any(c.card.tag == 'shepherd' for c in self.p2.creatures)
         return any(c.card.tag == 'shepherd' for c in self.p1.creatures + self.p2.creatures)
     @shepherd_in_play.setter
     def shepherd_in_play(self, value):
@@ -522,18 +507,6 @@ class GameState:
             if self.b2b_on_board:
                 perm.b2b_active = True
 
-
-# ── Wrap GameState.__init__ to accept legacy kwargs (bug=, opp=, bug_goes_first=) ──
-_gs_orig_init = GameState.__init__
-def _gs_compat_init(self, *args, **kwargs):
-    if 'bug' in kwargs and 'p1' not in kwargs:
-        kwargs['p1'] = kwargs.pop('bug')
-    if 'opp' in kwargs and 'p2' not in kwargs:
-        kwargs['p2'] = kwargs.pop('opp')
-    if 'bug_goes_first' in kwargs and 'p1_goes_first' not in kwargs:
-        kwargs['p1_goes_first'] = kwargs.pop('bug_goes_first')
-    _gs_orig_init(self, *args, **kwargs)
-GameState.__init__ = _gs_compat_init
 
 # ─────────────────────────────────────────────
 # Mulligan  CR 103.5 — London format
