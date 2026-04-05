@@ -662,21 +662,36 @@ def protagonist_turn(gs, turn, matchup):
     else:
         gs.opp_goal = None
 
-    # ── Strategy dispatch ──
-    # The generic_tempo_strategy was tested but performs WORSE than the simple
-    # deck strategy (70.3% → 66-68%). The simple strategy's one-spell-per-turn
-    # approach naturally conserves mana for reactive counters (FoW/Daze fire
-    # during opp_turn), which is the correct tempo play pattern.
-    # Use generic_tempo_strategy only when explicitly requested via the deck's
-    # interaction profile (future: set 'use_tempo_ai': True in DECK_META).
-    from engine import generic_tempo_strategy, is_tempo_deck
+    # ── Lock piece enforcement ──
+    _chalice_blocked = []
+    if gs.chalice_x is not None:
+        for card in list(b.hand):
+            if not card.is_land() and card.cmc == gs.chalice_x:
+                _chalice_blocked.append(card)
+                b.hand.remove(card)
+        if _chalice_blocked:
+            log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(c.name for c in _chalice_blocked))}")
+    _trini_blocked = []
+    if gs.trinisphere_active:
+        for card in list(b.hand):
+            if not card.is_land() and card.cmc < 3 and card not in _chalice_blocked:
+                if total_mana < 3:
+                    _trini_blocked.append(card)
+                    b.hand.remove(card)
+        if _trini_blocked:
+            log(f"Trinisphere — cheap spells blocked (need 3 mana, have {total_mana})")
 
+    # ── Strategy dispatch ──
     from deck_registry import get_strategy
     strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
     if strategy_fn:
         strategy_fn(b, o, gs, total_mana, log, log_entries)
     else:
         log(f"No strategy for {matchup} — passing")
+
+    # Restore blocked cards
+    b.hand.extend(_chalice_blocked)
+    b.hand.extend(_trini_blocked)
 
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
     combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
