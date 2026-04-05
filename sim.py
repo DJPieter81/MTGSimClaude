@@ -449,12 +449,15 @@ STRATEGIES = {
 
 def protagonist_turn(gs, turn, matchup):
     """
-    Generic protagonist turn for any deck in STRATEGIES.
-    Handles draw / land drop / mana, then calls the deck's strategy function.
+    Generic protagonist turn for any deck as protagonist.
+    Mirrors opp_turn's flow but operates on gs.bug as the active player.
     gs.bug = protagonist deck, gs.opp = antagonist.
+
+    The strategy functions (from deck registry) hardcode player=gs.opp,
+    so we temporarily swap gs.bug ↔ gs.opp around the strategy call,
+    then swap back and fix up any winner flags.
     """
-    from engine import bowmasters_triggers, update_goyf
-    from rules import LandPermanent
+    from engine import bowmasters_triggers, update_goyf, opp_turn as _real_opp_turn
 
     b = gs.bug
     o = gs.opp
@@ -464,69 +467,142 @@ def protagonist_turn(gs, turn, matchup):
         gs.log_event('b', 'main', msg, key)
         log_entries.append(msg)
 
-    # ── Cleanup ──
+    # ── Cleanup — CR 510.2 ──
     for player in [b, o]:
-        for c in player.creatures: c.damage_marked = 0
-    for c in b.creatures: c.tapped = False; c.summoning_sick = False
-    for l in b.lands:     l.tapped = False
-    gs.opp_spells_cast_this_turn = 0
-    gs.veil_active = False
-    b.spells_cast_this_turn = 0  # reset for Storm/TES storm count
+        for c in player.creatures:
+            c.damage_marked = 0
 
-    # ── Draw ──
+    # ── Untap ──
+    b.untap_all()
+    b.revolt_this_turn = False
+    b.clear_summoning_sickness()
+
+    # ── Draw (first player on play skips T1 draw) ──
     if not (turn == 1 and gs.bug_goes_first):
         drawn = b.draw(1, is_draw_step=True)
         if drawn:
             log(f"Draw: {drawn[0].name}")
+            # Bowmasters on opponent's board triggers on protagonist's draws
             bowmasters_triggers(1, gs, log_entries, controller='o')
 
+    # ── Pending Bauble draws from previous turn ──
+    pending = getattr(gs, 'pending_bauble_draws_bug', 0)
+    if pending > 0:
+        drawn = b.draw(pending)
+        for d in drawn:
+            log(f"Bauble (upkeep draw) → {d.name}")
+        bowmasters_triggers(pending, gs, log_entries, controller='o')
+        gs.pending_bauble_draws_bug = 0
+
     # ── Land drop ──
-    # Land drop: prefer non-fetch to avoid wasting the crack
-    # But if only fetch available, play and crack it for mana immediately.
+    # Prioritise mana-producing lands (duals, basics) over utility lands (Wasteland)
+    from rules import LandPermanent
     def _pick_land():
-        # 8-Cast: prefer Ancient Tomb/City T1 when Chalice in hand (need 2 mana T1)
-        if matchup == 'eight_cast':
-            has_chalice = any(c.tag == 'chalice' for c in b.hand)
-            if has_chalice:
-                fast = b.find_any(lambda c: c.is_land() and c.tag in ('ancient_tomb','city'))
-                if fast: return fast
-        non_fetch = b.find_any(lambda c: c.is_land() and not getattr(c,'is_fetch',False))
-        if non_fetch: return non_fetch
-        return b.find_any(lambda c: c.is_land())
+        lands_in_hand = [c for c in b.hand if c.is_land()]
+        if not lands_in_hand:
+            return None
+        # Priority: fetch > dual > basic > utility (Wasteland etc)
+        def land_priority(c):
+            if getattr(c, 'is_fetch', False): return 2  # fetches find colored mana
+            tag = getattr(c, 'tag', '')
+            if tag == 'dual': return 1
+            if c.is_basic: return 1
+            if tag in ('sewers',): return 1  # surveil land
+            if tag in ('ancient_tomb', 'city'): return 0  # fast mana lands first for 8-Cast etc
+            if tag == 'wl': return 5  # Wasteland = play last (no colored mana)
+            return 3
+        return min(lands_in_hand, key=land_priority)
+
     land = _pick_land()
     if land and not getattr(b, 'land_played_this_turn', False):
         b.hand.remove(land)
         lp = LandPermanent(card=land, controller='b')
         b.lands.append(lp)
         b.land_played_this_turn = True
+        gs.apply_continuous_effects(lp)
         if lp.is_fetch:
             fetched = b.use_fetch(lp)
-            log(f"Play+crack {land.name} → {fetched.name if fetched else '?'}")
+            if fetched:
+                gs.apply_continuous_effects(fetched)
+                log(f"Play+crack {land.name} (−1 life, {b.life}) → {fetched.name}")
+            else:
+                log(f"Play+crack {land.name} → ?")
         else:
-            log(f"Land: {land.name}")
+            log(f"Land: {land.name} ({len(b.lands)} lands)")
 
-    # ── Mana calculation ──
+    # ── Mana calculation (mirrors opp_turn) ──
     total_mana = b.available_mana_count()
-    # Cradle mana (any deck running Gaea's Cradle benefits)
+    # Lotus Petal in hand
+    total_mana += sum(1 for c in b.hand if c.tag == 'petal')
+    # Treasure tokens
+    bug_treasure = getattr(gs, 'bug_treasure', 0)
+    if bug_treasure > 0:
+        total_mana += bug_treasure
+        gs.bug_treasure = 0
+    # Ancient Tomb: produces 2C (1 already counted, add 1 bonus), costs 2 life
+    tomb_count = sum(1 for l in b.lands if l.card.tag == 'tomb' and not l.tapped)
+    if tomb_count > 0:
+        total_mana += tomb_count  # bonus mana
+        b.life -= tomb_count * 2
+    # Gaea's Cradle: tap for G equal to creature count
     for l in b.lands:
         if l.card.tag == 'cradle' and not l.tapped:
             total_mana += len(b.creatures)
             l.tapped = True
 
-    # 8-Cast: Ancient Tomb / City of Traitors each produce 2 mana not 1
-    # protagonist_turn already tapped the land, so add 1 bonus per fast land played
-    if matchup == 'eight_cast':
-        total_mana += sum(1 for l in b.lands
-                          if l.tapped and l.card.tag in ('ancient_tomb','city')
-                          and l.effective_produces())
-
-    # ── Strategy (from registry, fallback to STRATEGIES dict) ──
-    from deck_registry import get_strategy
-    strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
-    if strategy_fn:
-        strategy_fn(b, o, gs, total_mana, log, log_entries)
+    # ── Gameplan layer ──
+    from gameplan import GAMEPLANS, assess, active_goal
+    plan = GAMEPLANS.get(matchup)
+    if plan:
+        # Assess from protagonist's perspective (swap briefly for assess)
+        gs.bug, gs.opp = o, b
+        ba = assess(gs, turn)
+        gs.opp_goal = active_goal(plan, ba)
+        gs.bug, gs.opp = b, o
     else:
-        log(f"No strategy for {matchup} — passing")
+        gs.opp_goal = None
+
+    # ── Strategy dispatch ──
+    # Strategy functions from deck registry hardcode player=gs.opp, opponent=gs.bug.
+    # We temporarily swap gs.bug ↔ gs.opp so the strategy operates on the correct player.
+    # Engine STRATEGIES dict functions correctly accept (player, opponent) args and don't
+    # need the swap — try those first.
+    engine_fn = STRATEGIES.get(matchup)
+    if engine_fn:
+        # Engine version: correctly parameterised, call directly
+        engine_fn(b, o, gs, total_mana, log, log_entries)
+    else:
+        # Deck registry version: hardcodes gs.opp as player — swap around the call
+        from deck_registry import get_strategy
+        registry_fn = get_strategy(matchup)
+        if registry_fn:
+            # Swap gs slots
+            gs.bug, gs.opp = o, b
+            orig_first = gs.bug_goes_first
+            gs.bug_goes_first = not orig_first
+            orig_matchup = gs.matchup
+            gs.matchup = matchup
+            winner_before = gs.winner
+
+            def _swapped_log(msg, key=False):
+                gs.log_event('o', 'main', msg, key)
+                log_entries.append(msg)
+
+            registry_fn(b, o, gs, total_mana, _swapped_log, log_entries)
+
+            # Swap back
+            gs.bug, gs.opp = b, o
+            gs.bug_goes_first = orig_first
+            gs.matchup = orig_matchup
+
+            # Fix winner if set during swapped call
+            if gs.winner != winner_before:
+                if gs.winner == 'opp':
+                    gs.winner = 'bug'
+                elif gs.winner == 'bug':
+                    gs.winner = 'opp'
+        else:
+            log(f"No strategy for {matchup} — passing")
 
     update_goyf(gs)
     b.land_played_this_turn = False
