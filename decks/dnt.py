@@ -11,11 +11,8 @@ from cards import make_dnt_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_dnt
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_dnt(gs, total_mana, _log, log_entries, gs.turn)
+    from engine import _strategy_dnt as _engine_strategy_dnt
+    _engine_strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

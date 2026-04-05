@@ -11,11 +11,8 @@ from cards import make_show_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_show
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_show(gs, total_mana, _log, log_entries)
+    from engine import _strategy_show as _engine_strategy_show
+    _engine_strategy_show(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

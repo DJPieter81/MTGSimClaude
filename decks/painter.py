@@ -11,11 +11,8 @@ from cards import make_painter_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_painter
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_painter(gs, total_mana, _log, log_entries)
+    from engine import _strategy_painter as _engine_strategy_painter
+    _engine_strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

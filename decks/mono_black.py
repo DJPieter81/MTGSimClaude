@@ -11,11 +11,8 @@ from cards import make_mono_black_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_mono_black
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_mono_black(gs, total_mana, _log, log_entries, gs.turn)
+    from engine import _strategy_mono_black as _engine_strategy_mono_black
+    _engine_strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

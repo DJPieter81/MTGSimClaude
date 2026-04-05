@@ -11,11 +11,8 @@ from cards import make_doomsday_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_doomsday
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_doomsday(gs, total_mana, _log, log_entries, gs.turn)
+    from engine import _strategy_doomsday as _engine_strategy_doomsday
+    _engine_strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

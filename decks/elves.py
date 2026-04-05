@@ -11,11 +11,8 @@ from cards import make_elves_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_elves(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_elves
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_elves(gs, total_mana, _log, log_entries, gs.turn)
+    from engine import _strategy_elves as _engine_strategy_elves
+    _engine_strategy_elves(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

@@ -11,11 +11,8 @@ from cards import make_oops_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_oops
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_oops(gs, total_mana, _log, log_entries)
+    from engine import _strategy_oops as _engine_strategy_oops
+    _engine_strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

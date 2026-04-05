@@ -11,11 +11,8 @@ from cards import make_boros_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_boros
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_boros(gs, total_mana, _log, log_entries, gs.turn)
+    from engine import _strategy_boros as _engine_strategy_boros
+    _engine_strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

@@ -11,11 +11,8 @@ from cards import make_prison_deck
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
 
 def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
-    from engine import _opp_prison
-    def _log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
-        log_entries.append(msg)
-    _opp_prison(gs, total_mana, _log, log_entries)
+    from engine import _strategy_prison as _engine_strategy_prison
+    _engine_strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────
