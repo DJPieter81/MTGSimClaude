@@ -265,18 +265,41 @@ def run_symmetric_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
     }
 
 
-def run_meta_matrix(decks: list = None, n_games: int = 100) -> dict:
+def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -> dict:
     """
     Run every deck vs every deck and return a matrix of win rates.
     Returns dict of {(deck1, deck2): p1_win_rate}.
 
+    Args:
+        decks: explicit list of deck keys. Overrides top_tier.
+        n_games: games per matchup pair.
+        top_tier: if > 0 and decks is None, pick this many random decks
+                  from the highest meta-share decks (always includes 'bug').
+
     Usage:
         matrix = run_meta_matrix(['bug', 'dimir', 'ur_delver', 'storm'], n_games=200)
-        for (d1, d2), wr in sorted(matrix.items()):
-            print(f'{d1:15s} vs {d2:15s}: {wr:.1%}')
+        matrix = run_meta_matrix(top_tier=5, n_games=100)  # 5 random top-meta decks
     """
     if decks is None:
-        decks = sorted(DECKS.keys())
+        if top_tier > 0:
+            # Sort decks by meta share descending, pick top_tier randomly
+            ranked = sorted(
+                ((k, v.get('share', 0.01) if isinstance(v, dict) and 'share' in v else 0.01)
+                 for k, v in MATCHUP_META.items() if k in DECKS),
+                key=lambda x: -x[1]
+            )
+            # Always include 'bug' as reference deck
+            pool = [k for k, _ in ranked[:max(top_tier * 2, 10)]]
+            if 'bug' not in pool:
+                pool.append('bug')
+            chosen = ['bug'] if 'bug' in pool else []
+            others = [k for k in pool if k not in chosen]
+            random.shuffle(others)
+            chosen += others[:top_tier - len(chosen)]
+            decks = sorted(chosen)
+            print(f"Top-tier selection ({top_tier}): {', '.join(decks)}")
+        else:
+            decks = sorted(DECKS.keys())
 
     matrix = {}
     total = len(decks) * (len(decks) - 1)
