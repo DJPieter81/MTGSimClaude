@@ -1612,78 +1612,18 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     elif matchup == 'mono_black':  _opp_mono_black(gs, om, log, log_entries, turn)
     elif matchup == 'boros':       _opp_boros(gs, om, log, log_entries, turn)
     elif matchup == 'elves':       _opp_elves(gs, om, log, log_entries, turn)
-    elif matchup == 'tes':
-        from decks.tes import _strategy_tes
-        player, opponent = gs.opp, gs.bug
-        def _tl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_tes(player, opponent, gs, om, _tl, log_entries)
-    elif matchup == 'eight_cast':
-        from decks.eight_cast import _strategy_eight_cast
-        player, opponent = gs.opp, gs.bug
-        def _el(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_eight_cast(player, opponent, gs, om, _el, log_entries)
-    elif matchup == 'depths':
-        from decks.depths import _strategy_depths
-        player, opponent = gs.opp, gs.bug
-        def _dl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_depths(player, opponent, gs, om, _dl, log_entries)
-    elif matchup == 'burn':
-        from decks.burn import _strategy_burn
-        player, opponent = gs.opp, gs.bug
-        def _bl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_burn(player, opponent, gs, om, _bl, log_entries)
-    elif matchup == 'infect':
-        from decks.infect import _strategy_infect
-        player, opponent = gs.opp, gs.bug
-        def _il(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_infect(player, opponent, gs, om, _il, log_entries)
-    elif matchup == 'goblins':
-        from decks.goblins import _strategy_goblins
-        player, opponent = gs.opp, gs.bug
-        def _gl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_goblins(player, opponent, gs, om, _gl, log_entries)
-    elif matchup == 'belcher':
-        from decks.belcher import _strategy_belcher
-        player, opponent = gs.opp, gs.bug
-        def _bel(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_belcher(player, opponent, gs, om, _bel, log_entries)
-    elif matchup == 'ur_delver':
-        from decks.ur_delver import _strategy_ur_delver
-        player, opponent = gs.opp, gs.bug
-        def _udl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_ur_delver(player, opponent, gs, om, _udl, log_entries)
-    elif matchup == 'sneak_a':
-        from decks.sneak_a import _strategy_sneak_a
-        player, opponent = gs.opp, gs.bug
-        def _sa(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_sneak_a(player, opponent, gs, om, _sa, log_entries)
-    elif matchup == 'sneak_b':
-        from decks.sneak_b import _strategy_sneak_b
-        player, opponent = gs.opp, gs.bug
-        def _sb(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_sneak_b(player, opponent, gs, om, _sb, log_entries)
-    elif matchup == 'affinity':
-        from decks.affinity import _strategy_affinity
-        player, opponent = gs.opp, gs.bug
-        def _af(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_affinity(player, opponent, gs, om, _af, log_entries)
-    elif matchup == 'ur_tempo':
-        from decks.ur_tempo import _strategy_ur_tempo
-        player, opponent = gs.opp, gs.bug
-        def _ut(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_ur_tempo(player, opponent, gs, om, _ut, log_entries)
-    elif matchup == 'cephalid':
-        from decks.cephalid import _strategy_cephalid
-        player, opponent = gs.opp, gs.bug
-        def _ce(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_cephalid(player, opponent, gs, om, _ce, log_entries)
-    elif matchup == 'cloudpost':
-        from decks.cloudpost import _strategy_cloudpost
-        player, opponent = gs.opp, gs.bug
-        def _cp(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_cloudpost(player, opponent, gs, om, _cp, log_entries)
-    elif matchup in ('bug', 'bug_sb'):  # BUG as antagonist — use dimir strategy (same archetype)
+    elif matchup in ('bug', 'bug_sb'):  # BUG as antagonist — use dimir strategy
         _opp_dimir(gs, om, log, log_entries)
+    else:
+        # ── Auto-dispatch via deck_registry (all plugin decks) ──
+        from deck_registry import get_strategy
+        strategy_fn = get_strategy(matchup)
+        if strategy_fn:
+            player, opponent = gs.opp, gs.bug
+            def _plugin_log(msg, key=False):
+                gs.log_event('o', 'main', msg, key)
+                log_entries.append(msg)
+            strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
 
     gs.state_based_actions()
     return log_entries

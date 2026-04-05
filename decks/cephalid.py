@@ -432,3 +432,28 @@ if __name__ == '__main__':
     for r in test_cephalid():
         print(f"  {r}")
     print("All Cephalid Breakfast tests passed.")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_cephalid(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    tags = {c.tag for c in hand}
+    has_combo = any(t in tags for t in ('illusionist', 'nomads', 'shuko'))
+    has_cantrip = any(c.is_cantrip for c in nonlands)
+    has_protection = any(t in tags for t in ('fow', 'daze', 'chant'))
+    if len(hand) <= 5: return lc >= 1 and (has_combo or has_cantrip)
+    return 1 <= lc <= 4 and (has_combo or has_cantrip) and (has_combo or has_protection)
+
+
+DECK_META = {
+    'key':        'cephalid',
+    'name':       'Cephalid Breakfast',
+    'make_deck':  make_cephalid_deck,
+    'strategy':   _strategy_cephalid,
+    'keep':       _keep_cephalid,
+    'categories': {'combo', 'gy_combo'},
+    'meta_share': 0.02,
+}

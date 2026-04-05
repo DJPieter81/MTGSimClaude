@@ -437,3 +437,26 @@ if __name__ == '__main__':
     print("Running Goblins tests...")
     for r in test_goblins():
         print(f"  {r}")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_goblins(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    tags = {c.tag for c in hand}
+    has_t1 = 'lackey' in tags or 'vial' in tags
+    threats = sum(1 for c in nonlands if c.is_creature())
+    return 2 <= lc <= 4 and (has_t1 or threats >= 2)
+
+
+DECK_META = {
+    'key':        'goblins',
+    'name':       'Goblins',
+    'make_deck':  make_goblins_deck,
+    'strategy':   _strategy_goblins,
+    'keep':       _keep_goblins,
+    'categories': {'aggro', 'tribal', 'vial_decks'},
+    'meta_share': 0.03,
+}

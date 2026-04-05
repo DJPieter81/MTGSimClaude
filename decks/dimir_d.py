@@ -429,3 +429,30 @@ if __name__ == '__main__':
     for r in test_dimir_d():
         print(f"  {r}")
     print("All tests passed.")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_dimir_d(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    blue_access = any('U' in l.produces or l.is_fetch for l in lands)
+    threats = sum(1 for c in nonlands if c.is_creature())
+    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
+    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
+    action = threats + cantrips + counters
+    if action == 0: return False
+    if lc == 1: return blue_access and cantrips >= 1
+    return 2 <= lc <= 4 and action >= 2
+
+
+DECK_META = {
+    'key':        'dimir_d',
+    'name':       'Dimir Tempo D (Kaito)',
+    'make_deck':  make_dimir_d_deck,
+    'strategy':   _strategy_dimir_d,
+    'keep':       _keep_dimir_d,
+    'categories': {'mirror', 'tempo_mirror', 'dimir_only', 'bowm_decks'},
+    'meta_share': 0.03,
+}

@@ -338,3 +338,25 @@ if __name__ == '__main__':
     for r in test_ur_tempo():
         print(f"  {r}")
     print("All tests passed.")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_ur_tempo(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    threats = sum(1 for c in nonlands if c.is_creature())
+    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder', 'bauble'))
+    return 1 <= lc <= 3 and threats >= 1 and (cantrips >= 1 or len(hand) <= 5)
+
+
+DECK_META = {
+    'key':        'ur_tempo',
+    'name':       'UR Tempo (Cori-Steel)',
+    'make_deck':  make_ur_tempo_deck,
+    'strategy':   _strategy_ur_tempo,
+    'keep':       _keep_ur_tempo,
+    'categories': {'aggro', 'tempo_mirror'},
+    'meta_share': 0.03,
+}

@@ -329,3 +329,25 @@ if __name__ == '__main__':
     for r in test_ur_delver():
         print(f"  {r}")
     print("All tests passed.")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_ur_delver(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    threats = sum(1 for c in nonlands if c.is_creature())
+    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder', 'pre'))
+    return 1 <= lc <= 3 and threats >= 1 and (cantrips >= 1 or len(hand) <= 5)
+
+
+DECK_META = {
+    'key':        'ur_delver',
+    'name':       'UR Delver',
+    'make_deck':  make_ur_delver_deck,
+    'strategy':   _strategy_ur_delver,
+    'keep':       _keep_ur_delver,
+    'categories': {'aggro', 'tempo_mirror'},
+    'meta_share': 0.04,
+}

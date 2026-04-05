@@ -693,3 +693,31 @@ if __name__ == '__main__':
     print("Running TES tests...")
     for r in test_tes():
         print(f"  {r}")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_tes(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    if len(nonlands) < 1: return False
+    tags = {c.tag for c in hand}
+    has_tutor = any(t in tags for t in ('burning_wish', 'infernal'))
+    has_cantrip = any(c.tag in ('bs', 'ponder', 'probe') for c in nonlands)
+    fast_mana = sum(1 for c in nonlands if c.tag in ('petal', 'led', 'chrome_mox', 'darkrit'))
+    has_mana = lc >= 1 or fast_mana >= 2
+    has_action = has_tutor or has_cantrip
+    if len(hand) <= 5: return has_mana and has_action
+    return has_mana and fast_mana >= 1 and has_action
+
+
+DECK_META = {
+    'key':        'tes',
+    'name':       'The Epic Storm',
+    'make_deck':  make_tes_deck,
+    'strategy':   _strategy_tes,
+    'keep':       _keep_tes,
+    'categories': {'combo', 'fast_combo'},
+    'meta_share': 0.02,
+}

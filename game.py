@@ -650,9 +650,17 @@ def bug_keep(hand: List[Card], matchup: str = '') -> bool:
 
 def opp_keep(hand: List[Card], matchup: str = '') -> bool:
     """
-    Opponent mulligan keep. Applies same quality standards as BUG:
-    reject 0-action, flood, and uncastable hands.
+    Opponent mulligan keep. Checks deck_registry for a custom keep function
+    first; falls back to generic logic for built-in decks.
     """
+    # ── Check registry for deck-specific keep function ──
+    try:
+        from deck_registry import get_keep_fn
+        keep_fn = get_keep_fn(matchup)
+        if keep_fn:
+            return keep_fn(hand, matchup)
+    except ImportError:
+        pass
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)

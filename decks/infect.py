@@ -490,3 +490,27 @@ def test_infect():
 
 if __name__ == '__main__':
     test_infect()
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_infect(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    tags = {c.tag for c in hand}
+    has_infect = any(t in tags for t in ('glistener', 'blighted', 'inkmoth'))
+    has_pump = any(t in tags for t in ('invigorate', 'mutagenic', 'berserk', 'vines', 'defense'))
+    if len(hand) <= 5: return has_infect and lc >= 1
+    return has_infect and lc >= 1 and (has_pump or any(c.is_cantrip for c in nonlands))
+
+
+DECK_META = {
+    'key':        'infect',
+    'name':       'Infect',
+    'make_deck':  make_infect_deck,
+    'strategy':   _strategy_infect,
+    'keep':       _keep_infect,
+    'categories': {'combo', 'fast_combo'},
+    'meta_share': 0.03,
+}

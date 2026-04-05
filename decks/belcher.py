@@ -511,3 +511,26 @@ if __name__ == '__main__':
     for r in test_belcher():
         print(f"  {r}")
     print("All Belcher tests passed.")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_belcher(hand, matchup=''):
+    nonlands = [c for c in hand if not c.is_land()]
+    tags = {c.tag for c in hand}
+    fast = sum(1 for c in nonlands if c.tag in ('petal', 'led', 'chrome_mox', 'esg', 'ssg', 'darkrit', 'rite'))
+    has_belcher = 'belcher' in tags or 'burning_wish' in tags
+    has_empty = 'empty' in tags
+    if len(hand) <= 5: return fast >= 1 and (has_belcher or has_empty)
+    return fast >= 2 and (has_belcher or has_empty)
+
+
+DECK_META = {
+    'key':        'belcher',
+    'name':       'Goblin Charbelcher',
+    'make_deck':  make_belcher_deck,
+    'strategy':   _strategy_belcher,
+    'keep':       _keep_belcher,
+    'categories': {'combo', 'fast_combo'},
+    'meta_share': 0.02,
+}
