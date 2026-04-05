@@ -1661,6 +1661,35 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     else:
         gs.opp_goal = None
 
+    # ── Lock piece enforcement ──────────────────────────────────────────────
+    # Chalice of the Void: counter any spell with CMC == chalice_x
+    # Remove Chalice-blocked cards from hand so strategies can't cast them.
+    # Save originals to restore after strategy runs (cards aren't really gone).
+    _chalice_blocked = []
+    if gs.chalice_x is not None:
+        for card in list(o.hand):
+            if not card.is_land() and card.cmc == gs.chalice_x:
+                _chalice_blocked.append(card)
+                o.hand.remove(card)
+        if _chalice_blocked:
+            blocked_names = [c.name for c in _chalice_blocked]
+            log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(blocked_names))}")
+
+    # Trinisphere: all spells cost at least 3. Reduce effective mana budget.
+    if gs.trinisphere_active:
+        # Strategy sees om but individual spells need to cost >= 3.
+        # We can't easily adjust per-spell costs, but we can block cheap spells
+        # by removing CMC < 3 nonland cards from hand (they can't be cast for < 3).
+        _trini_blocked = []
+        for card in list(o.hand):
+            if not card.is_land() and card.cmc < 3 and card not in _chalice_blocked:
+                # Check if player can't afford the trinisphere tax (3 mana min)
+                if om < 3:
+                    _trini_blocked.append(card)
+                    o.hand.remove(card)
+        if _trini_blocked:
+            log(f"Trinisphere — cheap spells blocked (need 3 mana, have {om})")
+
     # ── Matchup dispatch (all decks via registry) ──
     if matchup in ('bug', 'bug_sb'):
         _opp_dimir(gs, om, log, log_entries)  # BUG mirror uses Dimir strategy
@@ -1673,6 +1702,11 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
                 gs.log_event('o', 'main', msg, key)
                 log_entries.append(msg)
             strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
+
+    # Restore Chalice/Trinisphere-blocked cards to hand (they were never actually removed)
+    o.hand.extend(_chalice_blocked)
+    if gs.trinisphere_active:
+        o.hand.extend(_trini_blocked)
 
     gs.state_based_actions()
     return log_entries
@@ -2001,11 +2035,37 @@ def combat_declare(player, opponent, gs, log_entries, attackers):
     Declare attackers and resolve combat.
     Only the supplied `attackers` list enters combat — all other creatures
     (held back for value, summoning sick, designated blockers) stay out.
-    This prevents accidentally pushing held-back creatures into the attacker
-    list via the player.creatures assignment pattern.
+    Enforces Ensnaring Bridge and Maze of Ith.
     """
     if not attackers:
         return
+
+    # Ensnaring Bridge: creatures with power > controller's hand size can't attack (CR 702.9)
+    if gs.bridge_on_board:
+        bridge_controller = gs.p1 if any(
+            getattr(a, 'card', None) and a.card.tag == 'bridge' for a in gs.p1.artifacts
+        ) else gs.p2
+        hand_size = len(bridge_controller.hand)
+        blocked = [a for a in attackers if a.power > hand_size]
+        attackers = [a for a in attackers if a.power <= hand_size]
+        if blocked:
+            names = ', '.join(a.card.name for a in blocked)
+            log_entries.append(f"  Bridge blocks attack: {names} (power > {hand_size} cards in hand)")
+        if not attackers:
+            return
+
+    # Maze of Ith: tap to remove attacker from combat (strongest attacker)
+    defender = gs.p2 if player is gs.p1 else gs.p1
+    maze = next((l for l in defender.lands if l.card.tag == 'maze' and not l.tapped), None)
+    if maze and attackers:
+        biggest = max(attackers, key=lambda a: a.power)
+        if biggest.power >= 2:  # only worth Mazing a real threat
+            maze.tapped = True
+            attackers = [a for a in attackers if a is not biggest]
+            log_entries.append(f"  Maze of Ith removes {biggest.card.name} from combat")
+            if not attackers:
+                return
+
     orig = player.creatures
     player.creatures = list(attackers)
     resolve_combat(gs, player, opponent, log_entries)
