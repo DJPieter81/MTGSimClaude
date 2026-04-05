@@ -161,6 +161,140 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     )
 
 
+def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameResult:
+    """
+    Run a single game between any two decks with equal AI quality.
+    deck1 is p1 (protagonist), deck2 is p2 (antagonist).
+    Both sides use play_turn() which dispatches to the best available AI.
+
+    Usage:
+        run_symmetric_game('ur_delver', 'dimir')
+        run_symmetric_game('storm', 'burn')
+        run_symmetric_game('bug', 'eldrazi')  # equivalent to run_game('eldrazi')
+    """
+    if deck1 not in DECKS:
+        raise ValueError(f"Unknown deck: {deck1}. Available: {sorted(DECKS.keys())}")
+    if deck2 not in DECKS:
+        raise ValueError(f"Unknown deck: {deck2}. Available: {sorted(DECKS.keys())}")
+
+    # Mulligan: each deck uses its own keep logic
+    # BUG has a specialized keep function; all others use opp_keep
+    p1_keep = bug_keep if deck1 == 'bug' else opp_keep
+    p2_keep = bug_keep if deck2 == 'bug' else opp_keep
+
+    p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1 if deck1 != 'bug' else '')
+    p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2 if deck2 != 'bug' else '')
+
+    p1_goes_first = random.random() < 0.5
+
+    gs = GameState(
+        p1=PlayerState(name='b', hand=list(p1_hand), library=list(p1_lib)),
+        p2=PlayerState(name='o', hand=list(p2_hand), library=list(p2_lib)),
+        p1_goes_first=p1_goes_first)
+    gs.p1_deck = deck1
+    gs.p2_deck = deck2
+    gs.matchup = deck2  # backward compat: matchup = antagonist deck
+
+    all_log = []
+    display_turn = 0
+
+    for turn in range(1, 16):
+        if gs.game_over:
+            break
+        gs.turn = turn
+
+        first, second = ('p1', 'p2') if p1_goes_first else ('p2', 'p1')
+        for who in (first, second):
+            display_turn += 1
+            lines = play_turn(gs, turn, who)
+            label = deck1.upper() if who == 'p1' else deck2.upper()
+            all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
+            if gs.game_over: break
+
+    # Timeout resolution: score board position
+    if not gs.game_over:
+        p1_power = sum(c.power for c in gs.p1.creatures)
+        p2_power = sum(c.power for c in gs.p2.creatures)
+        p1_score = p1_power * 2 + len(gs.p1.creatures) * 3 + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life)
+        p2_score = p2_power * 2 + len(gs.p2.creatures) * 3 + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life)
+
+        if p1_score > p2_score:
+            gs.winner = 'p1'
+            gs.win_reason = f"Board/life advantage after T{gs.turn}"
+        elif p2_score > p1_score:
+            gs.winner = 'p2'
+            gs.win_reason = f"Board/life advantage after T{gs.turn}"
+        else:
+            gs.winner = 'p1' if gs.p1.life >= gs.p2.life else 'p2'
+            gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
+        gs.kill_turn = gs.turn
+        gs.game_over = True
+
+    return GameResult(
+        winner=gs.winner,
+        win_reason=gs.win_reason or '',
+        kill_turn=gs.kill_turn,
+        game_length=gs.turn,
+        bug_mulls=p1_mulls,
+        opp_mulls=p2_mulls,
+        bug_opening_hand=[c.name for c in p1_hand],
+        opp_opening_hand=[c.name for c in p2_hand],
+        log_lines=all_log,
+        final_bug_life=gs.p1.life,
+        final_opp_life=gs.p2.life,
+        bug_went_first=p1_goes_first,
+    )
+
+
+def run_symmetric_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
+    """
+    Run n_games between deck1 and deck2, return stats.
+    Returns dict with: p1_wins, p2_wins, p1_wr, avg_length, avg_kill_turn
+    """
+    results = [run_symmetric_game(deck1, deck2) for _ in range(n_games)]
+    p1_wins = sum(1 for r in results if r.winner == 'p1')
+    p2_wins = n_games - p1_wins
+    kill_turns = [r.kill_turn for r in results if r.kill_turn]
+    return {
+        'deck1': deck1, 'deck2': deck2,
+        'p1_wins': p1_wins, 'p2_wins': p2_wins,
+        'p1_wr': p1_wins / n_games,
+        'n_games': n_games,
+        'avg_length': sum(r.game_length for r in results) / n_games,
+        'avg_kill': sum(kill_turns) / len(kill_turns) if kill_turns else 0,
+    }
+
+
+def run_meta_matrix(decks: list = None, n_games: int = 100) -> dict:
+    """
+    Run every deck vs every deck and return a matrix of win rates.
+    Returns dict of {(deck1, deck2): p1_win_rate}.
+
+    Usage:
+        matrix = run_meta_matrix(['bug', 'dimir', 'ur_delver', 'storm'], n_games=200)
+        for (d1, d2), wr in sorted(matrix.items()):
+            print(f'{d1:15s} vs {d2:15s}: {wr:.1%}')
+    """
+    if decks is None:
+        decks = sorted(DECKS.keys())
+
+    matrix = {}
+    total = len(decks) * (len(decks) - 1)
+    done = 0
+
+    for d1 in decks:
+        for d2 in decks:
+            if d1 == d2:
+                continue
+            stats = run_symmetric_sweep(d1, d2, n_games)
+            matrix[(d1, d2)] = stats['p1_wr']
+            done += 1
+            if done % 10 == 0:
+                print(f"  {done}/{total} matchups complete...")
+
+    return matrix
+
+
 def run_matchup(matchup: str, n_games: int, verbose: bool = False) -> dict:
     opp_name = MATCHUP_META[matchup]['name']
     results = []
