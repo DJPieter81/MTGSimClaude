@@ -97,14 +97,6 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
 
     for turn in range(1, 16):
         if gs2.game_over:
-            # Check if BUG gets a "sideboard save" against this matchup
-            if gs2.winner != 'bug' and matchup in _INTERACTION_RATE:
-                import random as _ir_rng
-                if _ir_rng.random() < _INTERACTION_RATE[matchup]:
-                    gs2.game_over = False
-                    gs2.winner = None
-                    gs2.win_reason = None
-                    continue  # BUG answers the threat, game continues
             break
         gs2.turn = turn
 
