@@ -413,3 +413,22 @@ if __name__ == '__main__':
     print("Running Burn tests...")
     for r in test_burn():
         print(f"  {r}")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_burn(hand, matchup=''):
+    """Burn keeps any hand with 1-3 lands."""
+    lands = [c for c in hand if c.is_land()]
+    return 1 <= len(lands) <= 3
+
+
+DECK_META = {
+    'key':        'burn',
+    'name':       'Burn',
+    'make_deck':  make_burn_deck,
+    'strategy':   _strategy_burn,
+    'keep':       _keep_burn,
+    'categories': {'aggro'},
+    'meta_share': 0.04,
+}

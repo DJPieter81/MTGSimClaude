@@ -574,7 +574,7 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
             # Check if the caster can afford to pay {1} extra (pay through Daze)
             # Proxy: if it's turn 3+ AND the spell is CMC 1-2, caster likely has spare mana
             matchup = getattr(gs, 'matchup', '')
-            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator')
+            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator', 'tes', 'belcher')
             is_combo = matchup in combo_decks
             # Combo pays through Daze more readily (rituals give extra mana)
             # Fair decks pay through on T3+ with enough lands
@@ -1612,78 +1612,18 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     elif matchup == 'mono_black':  _opp_mono_black(gs, om, log, log_entries, turn)
     elif matchup == 'boros':       _opp_boros(gs, om, log, log_entries, turn)
     elif matchup == 'elves':       _opp_elves(gs, om, log, log_entries, turn)
-    elif matchup == 'tes':
-        from decks.tes import _strategy_tes
-        player, opponent = gs.opp, gs.bug
-        def _tl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_tes(player, opponent, gs, om, _tl, log_entries)
-    elif matchup == 'eight_cast':
-        from decks.eight_cast import _strategy_eight_cast
-        player, opponent = gs.opp, gs.bug
-        def _el(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_eight_cast(player, opponent, gs, om, _el, log_entries)
-    elif matchup == 'depths':
-        from decks.depths import _strategy_depths
-        player, opponent = gs.opp, gs.bug
-        def _dl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_depths(player, opponent, gs, om, _dl, log_entries)
-    elif matchup == 'burn':
-        from decks.burn import _strategy_burn
-        player, opponent = gs.opp, gs.bug
-        def _bl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_burn(player, opponent, gs, om, _bl, log_entries)
-    elif matchup == 'infect':
-        from decks.infect import _strategy_infect
-        player, opponent = gs.opp, gs.bug
-        def _il(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_infect(player, opponent, gs, om, _il, log_entries)
-    elif matchup == 'goblins':
-        from decks.goblins import _strategy_goblins
-        player, opponent = gs.opp, gs.bug
-        def _gl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_goblins(player, opponent, gs, om, _gl, log_entries)
-    elif matchup == 'belcher':
-        from decks.belcher import _strategy_belcher
-        player, opponent = gs.opp, gs.bug
-        def _bel(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_belcher(player, opponent, gs, om, _bel, log_entries)
-    elif matchup == 'ur_delver':
-        from decks.ur_delver import _strategy_ur_delver
-        player, opponent = gs.opp, gs.bug
-        def _udl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_ur_delver(player, opponent, gs, om, _udl, log_entries)
-    elif matchup == 'sneak_a':
-        from decks.sneak_a import _strategy_sneak_a
-        player, opponent = gs.opp, gs.bug
-        def _sa(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_sneak_a(player, opponent, gs, om, _sa, log_entries)
-    elif matchup == 'sneak_b':
-        from decks.sneak_b import _strategy_sneak_b
-        player, opponent = gs.opp, gs.bug
-        def _sb(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_sneak_b(player, opponent, gs, om, _sb, log_entries)
-    elif matchup == 'affinity':
-        from decks.affinity import _strategy_affinity
-        player, opponent = gs.opp, gs.bug
-        def _af(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_affinity(player, opponent, gs, om, _af, log_entries)
-    elif matchup == 'ur_tempo':
-        from decks.ur_tempo import _strategy_ur_tempo
-        player, opponent = gs.opp, gs.bug
-        def _ut(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_ur_tempo(player, opponent, gs, om, _ut, log_entries)
-    elif matchup == 'cephalid':
-        from decks.cephalid import _strategy_cephalid
-        player, opponent = gs.opp, gs.bug
-        def _ce(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_cephalid(player, opponent, gs, om, _ce, log_entries)
-    elif matchup == 'cloudpost':
-        from decks.cloudpost import _strategy_cloudpost
-        player, opponent = gs.opp, gs.bug
-        def _cp(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
-        _strategy_cloudpost(player, opponent, gs, om, _cp, log_entries)
-    elif matchup in ('bug', 'bug_sb'):  # BUG as antagonist — use dimir strategy (same archetype)
+    elif matchup in ('bug', 'bug_sb'):  # BUG as antagonist — use dimir strategy
         _opp_dimir(gs, om, log, log_entries)
+    else:
+        # ── Auto-dispatch via deck_registry (all plugin decks) ──
+        from deck_registry import get_strategy
+        strategy_fn = get_strategy(matchup)
+        if strategy_fn:
+            player, opponent = gs.opp, gs.bug
+            def _plugin_log(msg, key=False):
+                gs.log_event('o', 'main', msg, key)
+                log_entries.append(msg)
+            strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
 
     gs.state_based_actions()
     return log_entries
@@ -2061,19 +2001,27 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
             b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
             ctr.append(f"Force of Negation counters {spell_card.name} (exiles {blue_pitch.name})")
 
-    # FoW
+    # FoW — against fast combo, BUG sometimes hesitates (save for lethal spell?)
     if fow and not ctr:
         blue_pitch = _select_fow_pitch(b.hand, fow)
         if blue_pitch:
-            b.remove_from_hand(fow); b.add_to_grave(fow)
-            b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
-            ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+            # Against combo decks trying to win, sometimes BUG waits for the
+            # actual kill spell rather than countering setup. Model as 85%
+            # counter rate for win conditions, 60% for non-win-condition combos.
+            import random
+            counter_prob = 0.85 if spell_card.win_condition else 0.60
+            if matchup in ('tes', 'storm', 'belcher') and not spell_card.win_condition:
+                counter_prob = 0.50  # let rituals/wishes through more often
+            if random.random() < counter_prob:
+                b.remove_from_hand(fow); b.add_to_grave(fow)
+                b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
+                ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
 
     # Daze
     if daze and not ctr and is_major:
         blue_land = next((l for l in b.lands if not l.tapped and 'U' in l.effective_produces()), None)
         if blue_land:
-            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator')
+            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator', 'tes', 'belcher')
             pay_prob = 0.55 if matchup in combo_decks else 0.30
             import random
             if gs.turn >= 3 and random.random() < pay_prob:

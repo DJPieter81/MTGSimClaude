@@ -480,3 +480,26 @@ if __name__ == '__main__':
     for r in test_affinity():
         print(f"  {r}")
     print("All tests passed.")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_affinity(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    tags = {c.tag for c in hand}
+    fast_mana = sum(1 for c in hand if c.tag in ('petal', 'opal', 'tomb', 'seat'))
+    threats = sum(1 for c in nonlands if c.is_creature())
+    engine = any(t in tags for t in ('emry', 'monitor', 'automaton', 'cannoneer', 'saga'))
+    return fast_mana >= 1 and (threats >= 1 or engine)
+
+
+DECK_META = {
+    'key':        'affinity',
+    'name':       'Affinity (8-Cast variant)',
+    'make_deck':  make_affinity_deck,
+    'strategy':   _strategy_affinity,
+    'keep':       _keep_affinity,
+    'categories': {'aggro', 'prison'},
+    'meta_share': 0.03,
+}

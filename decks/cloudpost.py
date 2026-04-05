@@ -569,3 +569,29 @@ if __name__ == '__main__':
     for r in test_cloudpost():
         print(f"  {r}")
     print("All Cloudpost tests passed.")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_cloudpost(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    tags = {c.tag for c in hand}
+    locus = sum(1 for c in lands if c.tag in ('post', 'glimmer', 'nexus'))
+    tron = sum(1 for c in lands if c.tag in ('tower', 'mine', 'plant'))
+    has_ramp = any(t in tags for t in ('crop', 'map', 'petal'))
+    has_payoff = any(t in tags for t in ('karn', 'ring', 'ugin', 'ulamog', 'koz_cmd'))
+    if len(hand) <= 5: return lc >= 1 and (has_ramp or has_payoff)
+    return lc >= 2 and (locus >= 1 or tron >= 1 or has_ramp) and (has_payoff or has_ramp)
+
+
+DECK_META = {
+    'key':        'cloudpost',
+    'name':       'Cloudpost (12-Post)',
+    'make_deck':  make_cloudpost_deck,
+    'strategy':   _strategy_cloudpost,
+    'keep':       _keep_cloudpost,
+    'categories': {'prison', 'land_combo'},
+    'meta_share': 0.02,
+}

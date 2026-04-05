@@ -449,3 +449,27 @@ if __name__ == '__main__':
     print("Running 8-Cast tests...")
     for r in test_eight_cast():
         print(f"  {r}")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_eight_cast(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    tags = {c.tag for c in hand}
+    fast_land = any(c.tag in ('ancient_tomb', 'city', 'seat', 'vault') for c in lands)
+    lock_piece = 'chalice' in tags
+    engine = any(t in tags for t in ('emry', 'monitor', 'sai', 'karn', 'saga'))
+    has_mana = 'opal' in tags or 'petal' in tags or fast_land
+    return has_mana and (lock_piece or engine)
+
+
+DECK_META = {
+    'key':        'eight_cast',
+    'name':       '8-Cast',
+    'make_deck':  make_eight_cast_deck,
+    'strategy':   _strategy_eight_cast,
+    'keep':       _keep_eight_cast,
+    'categories': {'aggro', 'prison'},
+    'meta_share': 0.03,
+}

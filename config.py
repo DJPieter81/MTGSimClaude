@@ -121,29 +121,50 @@ class CardRoles:
 # MATCHUP CATEGORIES
 # ═══════════════════════════════════════════════════════════════════
 
-class MatchupCategory:
-    """Named sets of matchup IDs by strategic category."""
+def _registry_decks(category):
+    """Get deck keys from deck_registry that declare a given category."""
+    try:
+        from deck_registry import get_decks_in_category
+        return get_decks_in_category(category)
+    except ImportError:
+        return frozenset()
 
-    COMBO       = frozenset({'storm', 'oops', 'doomsday', 'reanimator', 'show',
-                              'belcher', 'tes', 'infect', 'depths',
-                              'sneak_a', 'sneak_b', 'cephalid'})
-    MIRROR      = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'uwx',
-                              'dimir_c', 'dimir_d'})
-    TEMPO_MIRROR = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'ur_delver',
-                              'dimir_c', 'dimir_d', 'ur_tempo'})
-    AGGRO       = frozenset({'boros', 'ur_aggro', 'mardu', 'mono_black', 'eldrazi',
-                              'burn', 'goblins', 'ur_delver', 'ur_tempo'})
-    PRISON      = frozenset({'prison', 'dnt', 'boros', 'cloudpost'})  # mana-denial / stax
-    GY_COMBO    = frozenset({'reanimator', 'oops', 'doomsday', 'cephalid'})
-    LAND_COMBO  = frozenset({'lands', 'show', 'depths', 'sneak_a', 'sneak_b',
-                              'cloudpost'})
-    VIAL_DECKS  = frozenset({'dnt', 'boros', 'goblins'})
-    DIMIR_ONLY  = frozenset({'dimir', 'dimir_b', 'dimir_c', 'dimir_d'})  # matchups routed to _opp_dimir
-    BOWM_DECKS  = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'ur_aggro',
-                              'mardu', 'mono_black', 'uwx', 'ur_delver',
-                              'dimir_c', 'dimir_d'})
-    FAST_COMBO  = frozenset({'oops', 'belcher', 'tes', 'infect'})  # T1-2 kills
-    TRIBAL      = frozenset({'goblins', 'elves'})  # creature-swarm decks
+
+class MatchupCategory:
+    """Named sets of matchup IDs by strategic category.
+
+    Built-in decks are hardcoded here. Plugin decks auto-register via
+    DECK_META categories in their modules — no manual edits needed.
+    """
+
+    # Built-in (cards.py) deck sets — these don't have DECK_META
+    _BUILTIN_COMBO   = frozenset({'storm', 'oops', 'doomsday', 'reanimator', 'show'})
+    _BUILTIN_MIRROR  = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'uwx'})
+    _BUILTIN_AGGRO   = frozenset({'boros', 'ur_aggro', 'mardu', 'mono_black', 'eldrazi'})
+    _BUILTIN_PRISON  = frozenset({'prison', 'dnt', 'boros'})
+    _BUILTIN_GY      = frozenset({'reanimator', 'oops', 'doomsday'})
+    _BUILTIN_LAND    = frozenset({'lands', 'show'})
+    _BUILTIN_VIAL    = frozenset({'dnt', 'boros'})
+    _BUILTIN_DIMIR   = frozenset({'dimir', 'dimir_b'})
+    _BUILTIN_BOWM    = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'ur_aggro',
+                                   'mardu', 'mono_black', 'uwx'})
+    _BUILTIN_FAST    = frozenset({'oops'})
+    _BUILTIN_TRIBAL  = frozenset({'elves'})
+    _BUILTIN_TEMPO   = frozenset({'dimir', 'dimir_b', 'dimir_flash'})
+
+    # Merged sets: built-in + auto-discovered from deck_registry
+    COMBO        = _BUILTIN_COMBO   | _registry_decks('combo')
+    MIRROR       = _BUILTIN_MIRROR  | _registry_decks('mirror')
+    TEMPO_MIRROR = _BUILTIN_TEMPO   | _registry_decks('tempo_mirror')
+    AGGRO        = _BUILTIN_AGGRO   | _registry_decks('aggro')
+    PRISON       = _BUILTIN_PRISON  | _registry_decks('prison')
+    GY_COMBO     = _BUILTIN_GY      | _registry_decks('gy_combo')
+    LAND_COMBO   = _BUILTIN_LAND    | _registry_decks('land_combo')
+    VIAL_DECKS   = _BUILTIN_VIAL    | _registry_decks('vial_decks')
+    DIMIR_ONLY   = _BUILTIN_DIMIR   | _registry_decks('dimir_only')
+    BOWM_DECKS   = _BUILTIN_BOWM    | _registry_decks('bowm_decks')
+    FAST_COMBO   = _BUILTIN_FAST    | _registry_decks('fast_combo')
+    TRIBAL       = _BUILTIN_TRIBAL  | _registry_decks('tribal')
 
     # Utility predicates
     @staticmethod

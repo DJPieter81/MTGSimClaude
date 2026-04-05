@@ -483,3 +483,31 @@ if __name__ == '__main__':
     print("Running Sneak B tests...")
     for r in test_sneak_b():
         print(f"  {r}")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_sneak_b(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    tags = {c.tag for c in hand}
+    has_sat = 'sat' in tags
+    has_payoff = any(t in tags for t in ('emrakul', 'atraxa', 'omni', 'sneak', 'archon'))
+    has_cantrip = any(c.is_cantrip for c in nonlands)
+    fast_mana = sum(1 for c in hand if c.tag in ('petal', 'tomb', 'city', 'ssg'))
+    mana_ok = lc >= 1 or fast_mana >= 1
+    has_action = has_sat or has_payoff or has_cantrip
+    if len(hand) <= 5: return mana_ok and has_action
+    return mana_ok and 1 <= lc <= 5 and has_action
+
+
+DECK_META = {
+    'key':        'sneak_b',
+    'name':       'Sneak & Show B (JPA93)',
+    'make_deck':  make_sneak_b_deck,
+    'strategy':   _strategy_sneak_b,
+    'keep':       _keep_sneak_b,
+    'categories': {'combo', 'land_combo'},
+    'meta_share': 0.03,
+}

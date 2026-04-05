@@ -560,3 +560,28 @@ if __name__ == '__main__':
     print("Running Dark Depths tests...")
     for r in test_depths():
         print(f"  {r}")
+
+
+# ─── Deck Metadata (auto-registration) ──────────────────────────────────────
+
+def _keep_depths(hand, matchup=''):
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    tags = {c.tag for c in hand}
+    has_combo = ('depths' in tags and 'stage' in tags)
+    has_tutor = any(t in tags for t in ('crop', 'scrying', 'reclaimer', 'gsz', 'once'))
+    has_piece = 'depths' in tags or 'stage' in tags
+    if len(hand) <= 5: return lc >= 1 and (has_piece or has_tutor)
+    return lc >= 1 and (has_combo or (has_piece and has_tutor) or has_tutor)
+
+
+DECK_META = {
+    'key':        'depths',
+    'name':       'Dark Depths',
+    'make_deck':  make_depths_deck,
+    'strategy':   _strategy_depths,
+    'keep':       _keep_depths,
+    'categories': {'combo', 'land_combo'},
+    'meta_share': 0.04,
+}

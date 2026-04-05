@@ -650,30 +650,42 @@ def bug_keep(hand: List[Card], matchup: str = '') -> bool:
 
 def opp_keep(hand: List[Card], matchup: str = '') -> bool:
     """
-    Opponent mulligan keep. Applies same quality standards as BUG:
-    reject 0-action, flood, and uncastable hands.
+    Opponent mulligan keep. Checks deck_registry for a custom keep function
+    first; falls back to generic logic for built-in decks.
     """
+    # ── Check registry for deck-specific keep function ──
+    try:
+        from deck_registry import get_keep_fn
+        keep_fn = get_keep_fn(matchup)
+        if keep_fn:
+            return keep_fn(hand, matchup)
+    except ImportError:
+        pass
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
     prod = [l for l in lands if l.produces or l.is_fetch]
 
+    # Combo decks that can function without lands — check BEFORE generic land gate
+    if matchup in ('tes', 'storm', 'belcher'):
+        if len(nonlands) < 1: return False
+        tags = {c.tag for c in hand}
+
+    if matchup == 'tes':
+        # TES needs: mana source + fast mana + tutor or cantrip to find combo
+        has_tutor = any(t in tags for t in ('burning_wish', 'infernal'))
+        has_cantrip = any(c.tag in ('bs', 'ponder', 'probe') for c in nonlands)
+        fast_mana = sum(1 for c in nonlands if c.tag in ('petal', 'led', 'chrome_mox', 'darkrit'))
+        has_mana = lc >= 1 or fast_mana >= 2  # land, or 2+ artifact mana for 0-land hands
+        has_action = has_tutor or has_cantrip
+        if len(hand) <= 5:
+            return has_mana and has_action
+        # 6-7 cards: need mana + fast mana + tutor/cantrip
+        return has_mana and fast_mana >= 1 and has_action
+
     if not prod or lc > 5: return False
     if len(nonlands) < 1: return False  # need at least 1 spell
     if not _colour_feasible(hand): return False
-
-    # TES: needs tutor + fast mana (Petal/LED/Chrome/Ritual) + land or petal
-    if matchup == 'tes':
-        tags = {c.tag for c in hand}
-        has_tutor  = 'burning_wish' in tags or 'infernal' in tags
-        has_led    = 'led' in tags
-        fast_mana  = sum(1 for c in nonlands if c.tag in ('petal','led','chrome_mox','darkrit'))
-        has_mana_source = lc >= 1 or 'petal' in tags or 'led' in tags
-        # Small hands (<=5 cards): need LED OR Burning Wish as core piece
-        if len(hand) <= 5:
-            return (has_led or 'burning_wish' in tags) and has_mana_source and fast_mana >= 1
-        # 6-7 card hands: need tutor + 2+ fast mana pieces + mana source
-        return has_tutor and fast_mana >= 2 and has_mana_source
     # Combo decks: need a piece or a cantrip to find one
     if matchup in ('oops', 'show', 'doomsday', 'reanimator'):
         combo = [c for c in nonlands if c.is_combo_piece or c.win_condition]
