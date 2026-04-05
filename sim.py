@@ -450,11 +450,13 @@ STRATEGIES = {
 def protagonist_turn(gs, turn, matchup):
     """
     Generic protagonist turn for any deck in STRATEGIES.
-    Handles draw / land drop / mana, then calls the deck's strategy function.
+    Full turn structure: cleanup → untap → upkeep → draw → land → mana →
+    Wasteland → Thoughtseize → removal → strategy → combat → EOT.
     gs.bug = protagonist deck, gs.opp = antagonist.
     """
-    from engine import bowmasters_triggers, update_goyf
-    from rules import LandPermanent
+    from engine import (bowmasters_triggers, update_goyf, opp_can_cast,
+                        _try_counter_any, _select_attackers, combat_declare)
+    from rules import LandPermanent, MTGRules
 
     b = gs.bug
     o = gs.opp
@@ -464,16 +466,24 @@ def protagonist_turn(gs, turn, matchup):
         gs.log_event('b', 'main', msg, key)
         log_entries.append(msg)
 
-    # ── Cleanup ──
+    # ── Cleanup (CR 514) ──
     for player in [b, o]:
-        for c in player.creatures: c.damage_marked = 0
-    for c in b.creatures: c.tapped = False; c.summoning_sick = False
-    for l in b.lands:     l.tapped = False
+        for c in player.creatures:
+            c.damage_marked = 0
+    for c in b.creatures:
+        c.tapped = False
+        c.summoning_sick = False
+    for l in b.lands:
+        l.tapped = False
     gs.opp_spells_cast_this_turn = 0
     gs.veil_active = False
-    b.spells_cast_this_turn = 0  # reset for Storm/TES storm count
+    b.spells_cast_this_turn = 0
+    b.revolt_this_turn = False
 
-    # ── Draw ──
+    # ── Upkeep: Goyf update ──
+    update_goyf(gs)
+
+    # ── Draw (skip T1 on the play, CR 103.7) ──
     if not (turn == 1 and gs.bug_goes_first):
         drawn = b.draw(1, is_draw_step=True)
         if drawn:
@@ -481,10 +491,8 @@ def protagonist_turn(gs, turn, matchup):
             bowmasters_triggers(1, gs, log_entries, controller='o')
 
     # ── Land drop ──
-    # Land drop: prefer non-fetch to avoid wasting the crack
-    # But if only fetch available, play and crack it for mana immediately.
     def _pick_land():
-        # Prefer Ancient Tomb/City T1 when a 2-mana play is in hand (Chalice, etc.)
+        # Prefer fast lands (Tomb/City) when a 2-mana play is in hand
         has_2drop = any(c.tag in ('chalice', 'trini', 'null_rod') or
                         (not c.is_land() and sum(c.mana_cost.values()) == 2)
                         for c in b.hand)
@@ -492,9 +500,12 @@ def protagonist_turn(gs, turn, matchup):
             fast = b.find_any(lambda c: c.is_land() and c.tag in ('ancient_tomb', 'tomb', 'city'))
             if fast:
                 return fast
-        non_fetch = b.find_any(lambda c: c.is_land() and not getattr(c,'is_fetch',False))
-        if non_fetch: return non_fetch
+        # Prefer non-fetch (saves fetch for shuffle/revolt later)
+        non_fetch = b.find_any(lambda c: c.is_land() and not getattr(c, 'is_fetch', False))
+        if non_fetch:
+            return non_fetch
         return b.find_any(lambda c: c.is_land())
+
     land = _pick_land()
     if land and not getattr(b, 'land_played_this_turn', False):
         b.hand.remove(land)
@@ -504,35 +515,131 @@ def protagonist_turn(gs, turn, matchup):
         if lp.is_fetch:
             fetched = b.use_fetch(lp)
             log(f"Play+crack {land.name} → {fetched.name if fetched else '?'}")
+            b.revolt_this_turn = True
         else:
             log(f"Land: {land.name}")
 
     # ── Mana calculation ──
     total_mana = b.available_mana_count()
-    # Cradle mana (any deck running Gaea's Cradle benefits)
+
+    # Cradle: mana = number of creatures
     for l in b.lands:
         if l.card.tag == 'cradle' and not l.tapped:
             total_mana += len(b.creatures)
             l.tapped = True
 
-    # Ancient Tomb / City of Traitors each produce 2 mana not 1
-    # available_mana_count() counts 1 per land; add the bonus +1 for each
+    # Ancient Tomb / City of Traitors: +1 bonus (already counted 1 by available_mana_count)
     tomb_count = sum(1 for l in b.lands
                      if not l.tapped and l.card.tag in ('ancient_tomb', 'tomb', 'city'))
     total_mana += tomb_count
-    # Tomb deals 2 damage when tapped for mana (CR 702.9)
-    b.life -= tomb_count * 2
+    b.life -= tomb_count * 2  # Tomb life cost (CR 702.9)
 
-    # Lotus Petal: sac for any color mana (+1 each)
+    # Eldrazi Temple: +1 bonus when casting Eldrazi
+    temple_count = sum(1 for l in b.lands
+                       if not l.tapped and l.card.tag == 'eldrazi_temple')
+    # (Bonus applied implicitly — strategies handle Eldrazi cost reduction)
+
+    # Lotus Petal: sac for +1 mana each
     total_mana += sum(1 for c in b.hand if c.tag == 'petal')
 
-    # ── Strategy (from registry, fallback to STRATEGIES dict) ──
+    # ── Wasteland: destroy opponent's best nonbasic land ──
+    wl = b.find_any(lambda c: c.is_land() and c.tag in ('wl', 'wasteland'))
+    if wl is None:
+        # Check lands in play
+        wl_land = next((l for l in b.lands if l.card.tag in ('wl', 'wasteland') and not l.tapped), None)
+        if wl_land and o.lands:
+            target = next((l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl'), None)
+            if target:
+                wl_land.tapped = True
+                o.lands.remove(target)
+                o.add_to_grave(target.card)
+                b.revolt_this_turn = True
+                log(f"Wasteland [ACTIVATED-uncounterable] → {target.card.name}")
+
+    # ── Thoughtseize: strip opponent's best card (if we have mana) ──
+    ts = b.find_tag('ts') or b.find_tag('thoughtseize')
+    if ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc):
+        # Only Thoughtseize if opponent has meaningful cards
+        opp_nonland = [c for c in o.hand if not c.is_land()]
+        if opp_nonland and b.life > 4:
+            b.remove_from_hand(ts)
+            countered = _try_counter_any(b, o, gs, ts, log_entries)
+            if not countered:
+                b.add_to_grave(ts)
+                b.life -= 2
+                total_mana -= 1
+                # Take best card: win conditions > combo pieces > counters > threats
+                def _ts_priority(c):
+                    score = 0
+                    if c.win_condition:
+                        score += 10
+                    if c.is_combo_piece:
+                        score += 8
+                    if c.tag in ('fow', 'fon', 'daze', 'fluster'):
+                        score += 6
+                    if c.is_creature():
+                        score += 3 + c.base_power
+                    score += c.cmc
+                    return score
+                best = max(opp_nonland, key=_ts_priority)
+                o.remove_from_hand(best)
+                o.add_to_grave(best)
+                log(f"Thoughtseize → takes {best.name} (−2 life, {b.life})")
+            else:
+                b.add_to_grave(ts)
+
+    # ── Removal: kill opponent's biggest threat ──
+    if o.creatures and total_mana >= 1:
+        # Fatal Push (CMC 1) — kills CMC ≤ 2 (or ≤ 4 with Revolt)
+        push = b.find_tag('push') or b.find_tag('fatal_push')
+        if push and not gs.spell_blocked_by_chalice(push.cmc):
+            revolt = b.revolt_this_turn
+            valid_targets = [c for c in o.creatures
+                             if MTGRules.fatal_push_valid_target(c, revolt)]
+            if valid_targets:
+                target = max(valid_targets, key=lambda c: c.power)
+                b.remove_from_hand(push)
+                countered = _try_counter_any(b, o, gs, push, log_entries)
+                if not countered:
+                    b.add_to_grave(push)
+                    total_mana -= 1
+                    o.creatures.remove(target)
+                    o.add_to_grave(target.card)
+                    log(f"Fatal Push → {target.card.name} ({'revolt' if revolt else 'no revolt'})")
+                else:
+                    b.add_to_grave(push)
+
+        # Swords to Plowshares (CMC 1) — exile any creature, gain life
+        stp = b.find_tag('stp')
+        if stp and o.creatures and total_mana >= 1 and not gs.spell_blocked_by_chalice(stp.cmc):
+            target = max(o.creatures, key=lambda c: c.power)
+            if target.power >= 2:
+                b.remove_from_hand(stp)
+                countered = _try_counter_any(b, o, gs, stp, log_entries)
+                if not countered:
+                    b.add_to_grave(stp)
+                    total_mana -= 1
+                    o.creatures.remove(target)
+                    o.life += target.power
+                    log(f"Swords to Plowshares → exile {target.card.name} (opp +{target.power} life)")
+                else:
+                    b.add_to_grave(stp)
+
+    # ── Strategy (deck-specific logic: combo, lock pieces, special deployment) ──
     from deck_registry import get_strategy
     strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
     if strategy_fn:
         strategy_fn(b, o, gs, total_mana, log, log_entries)
     else:
         log(f"No strategy for {matchup} — passing")
+
+    # ── Fallback combat: attack with eligible creatures if strategy didn't ──
+    # Check if combat already happened (strategy called combat_declare/resolve_combat)
+    combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
+    if not combat_happened and not gs.game_over and b.creatures:
+        attackers = _select_attackers(b, o)
+        if attackers:
+            combat_declare(b, o, gs, log_entries, attackers)
 
     update_goyf(gs)
     b.land_played_this_turn = False
