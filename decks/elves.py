@@ -38,5 +38,6 @@ DECK_META = {
     'strategy':   _strategy_elves,
     'keep':       _keep_elves,
     'categories': {'aggro', 'tribal'},
+    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.02,
 }

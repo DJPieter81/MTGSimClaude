@@ -41,6 +41,6 @@ DECK_META = {
     'strategy':   _strategy_eldrazi,
     'keep':       _keep_eldrazi,
     'categories': {'aggro'},
-    'opp_interaction_rate': {'eldrazi': 0.73},
+    'interaction': {'speed': 4, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'opp_calibration': 0.85},
     'meta_share': 0.03,
 }

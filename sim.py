@@ -89,22 +89,11 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     all_log = []
     display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
 
-    # ── Sideboard interaction model ────────────────────────────────────
-    # In Bo3 Legacy, BUG sideboards specifically against each matchup.
-    # Model: after game 1, BUG has better answers. This adjusts the
-    # effective interaction rate for matchups where BUG under/overperforms.
-    # Applied as a probability of "BUG had the right sideboard card" when
-    # the opponent would otherwise win.
-    _BUG_INTERACTION_RATE = {}   # matchup → probability BUG survives opp's win
-    _OPP_INTERACTION_RATE = {}   # matchup → probability OPP survives bug's win
-    try:
-        from deck_registry import get_meta
-        meta = get_meta(matchup)
-        if meta:
-            _BUG_INTERACTION_RATE = meta.get('bug_interaction_rate', {})
-            _OPP_INTERACTION_RATE = meta.get('opp_interaction_rate', {})
-    except ImportError:
-        pass
+    # ── Interaction model (derived from deck properties, not magic numbers) ──
+    from interaction_model import get_or_infer_interaction, compute_bug_save_rate, compute_opp_save_rate
+    _interaction = get_or_infer_interaction(matchup)
+    _bug_save = compute_bug_save_rate(_interaction)
+    _opp_save = compute_opp_save_rate(_interaction)
 
     for turn in range(1, 16):
         if gs2.game_over:
@@ -120,21 +109,19 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
         gs2.turn = turn
 
         def _check_interaction_save():
-            """Give the losing side a sideboard-save chance."""
+            """Give the losing side a sideboard-save chance (rates from interaction model)."""
             if not gs2.game_over:
                 return False
             import random as _ir_rng
-            # OPP wins → check if BUG had the right sideboard card
-            if gs2.winner != 'bug' and matchup in _BUG_INTERACTION_RATE:
-                if _ir_rng.random() < _BUG_INTERACTION_RATE[matchup]:
+            if gs2.winner != 'bug' and _bug_save > 0:
+                if _ir_rng.random() < _bug_save:
                     gs2.game_over = False
                     gs2.winner = None
                     gs2.win_reason = None
                     gs2.bug.life = max(gs2.bug.life, 3)
                     return True
-            # BUG wins → check if OPP had a comeback
-            if gs2.winner == 'bug' and matchup in _OPP_INTERACTION_RATE:
-                if _ir_rng.random() < _OPP_INTERACTION_RATE[matchup]:
+            if gs2.winner == 'bug' and _opp_save > 0:
+                if _ir_rng.random() < _opp_save:
                     gs2.game_over = False
                     gs2.winner = None
                     gs2.win_reason = None
@@ -193,16 +180,16 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
         gs.kill_turn = gs.turn
         gs.game_over = True
 
-        # Apply interaction save to timeout results too
+        # Apply interaction model to timeout results
         import random as _to_rng
-        if gs.winner == 'bug' and matchup in _OPP_INTERACTION_RATE:
-            if _to_rng.random() < _OPP_INTERACTION_RATE[matchup]:
+        if gs.winner == 'bug' and _opp_save > 0:
+            if _to_rng.random() < _opp_save:
                 gs.winner = 'opp'
-                gs.win_reason = f"Opp recovers (sideboard advantage) after T{gs.turn}"
-        elif gs.winner != 'bug' and matchup in _BUG_INTERACTION_RATE:
-            if _to_rng.random() < _BUG_INTERACTION_RATE[matchup]:
+                gs.win_reason = f"Opp recovers (resilience {_interaction.get('resilience',3)}) after T{gs.turn}"
+        elif gs.winner != 'bug' and _bug_save > 0:
+            if _to_rng.random() < _bug_save:
                 gs.winner = 'bug'
-                gs.win_reason = f"BUG stabilizes (sideboard answers) after T{gs.turn}"
+                gs.win_reason = f"BUG answers (speed {_interaction.get('speed',3)}) after T{gs.turn}"
 
     return GameResult(
         winner=gs.winner,

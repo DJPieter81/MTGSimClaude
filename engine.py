@@ -1976,13 +1976,11 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
     if spell_card.tag == 'ts':
         return False
 
-    # Against fair/aggro decks: don't waste FoW on cheap creatures (CMC ≤ 2)
-    # Real BUG saves counters for must-answer threats, uses Push/removal for small stuff
-    from deck_registry import is_in_category
-    is_fair = (is_in_category(matchup, 'aggro') or is_in_category(matchup, 'tribal')
-               or matchup in ('mardu', 'mono_black', 'ur_aggro', 'boros'))
-    if is_fair and spell_card.cmc <= 2 and not spell_card.lock_piece and not spell_card.win_condition:
-        return False  # don't FoW a Goblin Guide or Llanowar Elves
+    # Use interaction model to decide FoW priority (no hardcoded matchup lists)
+    from interaction_model import get_or_infer_interaction, compute_fow_priority
+    _int = get_or_infer_interaction(matchup)
+    if not compute_fow_priority(_int, spell_card):
+        return False  # interaction model says don't counter this spell
 
     # Shepherd: green spells uncounterable
     if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card, 'colors', set()):
@@ -2006,17 +2004,21 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
             b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
             ctr.append(f"Force of Negation counters {spell_card.name} (exiles {blue_pitch.name})")
 
-    # FoW — against fast combo, BUG sometimes hesitates (save for lethal spell?)
+    # FoW — counter rate depends on spell importance and matchup speed
     if fow and not ctr:
         blue_pitch = _select_fow_pitch(b.hand, fow)
         if blue_pitch:
-            # Against combo decks trying to win, sometimes BUG waits for the
-            # actual kill spell rather than countering setup. Model as 85%
-            # counter rate for win conditions, 60% for non-win-condition combos.
             import random
-            counter_prob = 0.85 if spell_card.win_condition else 0.60
-            if matchup in ('tes', 'storm', 'belcher') and not spell_card.win_condition:
-                counter_prob = 0.50  # let rituals/wishes through more often
+            # Win conditions: always try. Other spells: rate scales with speed.
+            # Faster combo decks = BUG more desperate to counter everything.
+            if spell_card.win_condition or spell_card.is_combo_piece:
+                counter_prob = 0.85
+            else:
+                opp_speed = _int.get('speed', 3) if '_int' in dir() else 3
+                # Speed 1-2 (fast combo): 50% counter non-win-conds (save for kill spell)
+                # Speed 3-4: 65% counter (moderate urgency)
+                # Speed 5: 75% counter (slow, BUG is proactive)
+                counter_prob = 0.40 + opp_speed * 0.08
             if random.random() < counter_prob:
                 b.remove_from_hand(fow); b.add_to_grave(fow)
                 b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
@@ -2946,10 +2948,12 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         if vos:
             player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
             log_fn("Veil of Summer — blue blanked")
-            # Veil + Oops is strong but not guaranteed — BUG may have had Thoughtseize
-            # or graveyard hate. Model as ~70% success rate.
+            # Veil + Oops success rate derived from interaction model
+            from interaction_model import get_or_infer_interaction, compute_veil_kill_rate
+            _oops_int = get_or_infer_interaction('oops')
+            _oops_veil_rate = compute_veil_kill_rate(_oops_int)
             import random
-            if random.random() < 0.70:
+            if random.random() < _oops_veil_rate:
                 player.remove_from_hand(oops); player.add_to_grave(oops)
                 log_fn("★ Oops through Veil — wins", True)
                 gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
@@ -3596,10 +3600,12 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(kill_spell)
                 for r in list(rituals): player.remove_from_hand(r); player.add_to_grave(r)
                 kill_type = 'Ad Nauseam' if kill_C else 'Past in Flames' if kill_D else 'Tendrils chain'
-                # Storm success rate: BUG may have Surgical, Mindbreak, or SB hate
+                # Storm success rate derived from interaction model
+                from interaction_model import get_or_infer_interaction, compute_combo_fizzle_rate
+                _storm_int = get_or_infer_interaction('storm')
+                _fizzle = compute_combo_fizzle_rate(_storm_int, veil_active=veil_up)
                 import random as _rr2
-                success_rate = 0.80 if veil_up else 0.65
-                if _rr2.random() < success_rate:
+                if _rr2.random() >= _fizzle:  # fizzle_rate = P(fail), so succeed if >= fizzle
                     log_fn(f"★ Storm {kill_type} — wins (storm count ≥ 9)", True)
                     gs.game_over = True
                     gs.winner = 'bug' if player is gs.bug else 'opp'

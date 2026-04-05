@@ -39,5 +39,6 @@ DECK_META = {
     'strategy':   _strategy_mardu,
     'keep':       _keep_mardu,
     'categories': {'aggro', 'bowm_decks'},
+    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.03,
 }

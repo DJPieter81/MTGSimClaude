@@ -471,5 +471,6 @@ DECK_META = {
     'strategy':   _strategy_eight_cast,
     'keep':       _keep_eight_cast,
     'categories': {'aggro', 'prison'},
+    'interaction': {'speed': 3, 'resilience': 4, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.03,
 }

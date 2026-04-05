@@ -42,5 +42,6 @@ DECK_META = {
     'strategy':   _strategy_prison,
     'keep':       _keep_prison,
     'categories': {'prison'},
+    'interaction': {'speed': 4, 'resilience': 4, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False, 'opp_calibration': 0.15},
     'meta_share': 0.04,
 }

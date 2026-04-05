@@ -42,5 +42,6 @@ DECK_META = {
     'strategy':   _strategy_boros,
     'keep':       _keep_boros,
     'categories': {'aggro', 'prison', 'vial_decks'},
+    'interaction': {'speed': 4, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.02,
 }

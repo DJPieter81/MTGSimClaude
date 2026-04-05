@@ -40,5 +40,6 @@ DECK_META = {
     'strategy':   _strategy_uwx,
     'keep':       _keep_uwx,
     'categories': {'mirror'},
+    'interaction': {'speed': 5, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.04,
 }

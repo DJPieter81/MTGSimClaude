@@ -42,5 +42,6 @@ DECK_META = {
     'strategy':   _strategy_doomsday,
     'keep':       _keep_doomsday,
     'categories': {'combo', 'gy_combo'},
+    'interaction': {'speed': 3, 'resilience': 2, 'uses_graveyard': True, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.03,
 }

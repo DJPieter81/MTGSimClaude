@@ -358,5 +358,6 @@ DECK_META = {
     'strategy':   _strategy_ur_tempo,
     'keep':       _keep_ur_tempo,
     'categories': {'aggro', 'tempo_mirror'},
+    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.03,
 }

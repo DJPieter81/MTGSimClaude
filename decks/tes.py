@@ -424,10 +424,13 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ Veil of Summer — spells can't be countered (storm={storm})", True)
 
             # With Veil active + tutor/tendrils, TES combos unimpeded.
-            # Model as lethal Tendrils (real TES with Veil = ~90% kill)
+            # Kill rate derived from interaction model (speed + Veil)
             if has_tutor or has_tendrils:
                 import random as _r
-                if _r.random() < 0.62:
+                from interaction_model import get_or_infer_interaction, compute_veil_kill_rate
+                _tes_int = get_or_infer_interaction('tes')
+                _tes_veil_rate = compute_veil_kill_rate(_tes_int)
+                if _r.random() < _tes_veil_rate:
                     final_storm = storm + combo_storm + 1
                     final_dmg = (final_storm + 1) * 2
                     if final_dmg < 20: final_dmg = 20  # at least lethal
@@ -719,5 +722,6 @@ DECK_META = {
     'strategy':   _strategy_tes,
     'keep':       _keep_tes,
     'categories': {'combo', 'fast_combo'},
+    'interaction': {'speed': 2, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.02,
 }
