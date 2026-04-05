@@ -60,15 +60,18 @@ def _deduct(budget: list, cmc: int, card) -> bool:
     return True
 
 
-def _eidolon_trigger(gs: GameState, card, log_fn) -> None:
-    """CR 702.2: Eidolon of the Great Revel — whenever ANY player casts a spell with CMC≥2,
-    Eidolon deals 2 damage to that player's controller. Called on every BUG spell cast."""
+def _eidolon_trigger(gs: GameState, card, log_fn, caster=None) -> None:
+    """CR 702.2: Eidolon of the Great Revel — whenever ANY player casts a spell with CMC≤3,
+    Eidolon deals 2 damage to that spell's caster."""
     if not gs.eidolon_active:
         return
     if card is None or card.cmc < 2:
         return
-    gs.p1.life -= 2
-    log_fn(f"Eidolon trigger — {card.name} (CMC {card.cmc}) deals 2 to BUG ({gs.p1.life})", True)
+    # Damage goes to the caster, not always p1
+    target = caster if caster is not None else gs.p1
+    target.life -= 2
+    label = 'P1' if target is gs.p1 else 'P2'
+    log_fn(f"Eidolon trigger — {card.name} (CMC {card.cmc}) deals 2 to {label} ({target.life})", True)
     gs.check_life_totals()
 
 
@@ -81,10 +84,16 @@ def cast_obj(card: Card, controller: str) -> StackObject:
 def opp_can_cast(card: Card, om: int, gs: GameState, caster=None) -> bool:
     """Single mana+colour gateway for any player casting a spell.
     caster: the PlayerState casting the spell. Defaults to gs.p2 for backward compat.
-    Checks: quantity (om), colour (can_afford), Chalice, Trinisphere."""
+    Checks: Chalice, Trinisphere, Thalia tax, mana quantity, colour."""
     if gs.spell_blocked_by_chalice(card.cmc):
         return False
-    effective = max(card.cmc, 3 if gs.trinisphere_active else 0)
+    effective = card.cmc
+    # Trinisphere: all spells cost at least 3 (CR 601.2f)
+    if gs.trinisphere_active:
+        effective = max(effective, 3)
+    # Thalia: noncreature spells cost +1 (CR 613)
+    if gs.thalia_on_board and not card.is_creature():
+        effective += 1
     if om < effective:
         return False
     caster = caster if caster is not None else gs.p2
