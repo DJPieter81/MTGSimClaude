@@ -862,6 +862,59 @@ def bug_turn(gs: GameState, turn: int):
             return can_afford(b, colored)
         return can_afford(b, c.mana_cost)
 
+    # ── AGGRO REMOVAL PRIORITY ──────────────────────────────────────────────
+    # Against creature aggro (Burn, Eldrazi, UR Delver, etc), removal MUST fire
+    # before cantrips. A T1 Push on Goblin Guide prevents 6+ damage over 3 turns;
+    # a T1 Brainstorm just digs for cards we might not need if we're already dead.
+    _did_early_push = False
+    _did_early_snuff = False
+    if MC.is_aggro(gs) and o.creatures:
+        # Early Push
+        push_early = b.find_tag('push')
+        if push_early and not gs.spell_blocked_by_chalice(push_early.cmc):
+            push_targets_early = [c for c in o.creatures
+                                  if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
+            target_early = (
+                next((c for c in push_targets_early if c.card.haste or c.card.draw_trigger), None) or
+                next((c for c in push_targets_early if c.card.deathtouch or c.card.lifelink), None) or
+                max(push_targets_early, key=lambda c: c.power, default=None)
+            )
+            if target_early and b_budget[0] >= effective_cmc(push_early) and can_afford(b, push_early.mana_cost):
+                spend(push_early)
+                b.remove_from_hand(push_early)
+                b.add_to_grave(push_early)
+                push_spell = cast_obj(push_early, 'b')
+                ctr = []
+                fow_worthwhile = target_early.card.cmc >= 3 or target_early.card.engine
+                if fow_worthwhile and MTGRules.force_of_will_use(push_spell, o.hand, ctr):
+                    pass
+                elif o.available_mana_count() <= 1:
+                    MTGRules.daze_use(push_spell, o.hand, o.lands, ctr)
+                if not ctr:
+                    o.remove_creature(target_early)
+                    rev = " [revolt CMC≤4]" if b.revolt_this_turn else " [CMC≤2]"
+                    log(f"Fatal Push{rev} → kills {target_early.name} (CMC {target_early.cmc})")
+                    _did_early_push = True
+                else:
+                    for m in ctr: log(f"  {m}")
+                update_goyf(gs)
+
+        # Early Snuff Out (free removal — always correct against aggro creatures)
+        if not _did_early_push and o.creatures:
+            snuff_early = b.find_tag('snuffout')
+            has_swamp = any('Swamp' in l.card.subtypes or
+                            (l.card.is_basic and 'B' in l.effective_produces())
+                            for l in b.lands)
+            if snuff_early and has_swamp and not gs.spell_blocked_by_chalice(snuff_early.cmc):
+                target_early = next((c for c in sorted(o.creatures, key=lambda x: -x.power)
+                                     if 'B' not in c.card.colors), None)
+                if target_early and b.life > 6:  # don't Snuff below 6 vs aggro
+                    b.cast_spell(snuff_early, log_fn=log)
+                    o.remove_creature(target_early)
+                    log(f"Snuff Out (free, −4 life → {b.life}) → kills {target_early.name}", key=True)
+                    _did_early_snuff = True
+                    update_goyf(gs)
+
     # ── Brainstorm — C1: needs 1U ──
     bs = b.find_tag('bs')
     if bs and not gs.spell_blocked_by_chalice(bs.cmc):
@@ -969,7 +1022,7 @@ def bug_turn(gs: GameState, turn: int):
 
     # ── Fatal Push — C1: needs 1B ──
     push = b.find_tag('push')
-    if push and not gs.spell_blocked_by_chalice(push.cmc) and o.creatures:
+    if push and not _did_early_push and not gs.spell_blocked_by_chalice(push.cmc) and o.creatures:
         push_targets = [c for c in o.creatures
                         if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
         target = (
@@ -1007,7 +1060,7 @@ def bug_turn(gs: GameState, turn: int):
     # Targets nonblack creatures only — covers Murktide, big Eldrazi, CMC3+ that Push misses.
     # Free to cast as long as BUG controls a Swamp or Underground Sea (Island+Swamp subtype).
     snuffout = b.find_tag('snuffout')
-    if snuffout and not gs.spell_blocked_by_chalice(snuffout.cmc) and o.creatures:
+    if snuffout and not _did_early_snuff and not gs.spell_blocked_by_chalice(snuffout.cmc) and o.creatures:
         has_swamp = any('B' in l.effective_produces() for l in b.lands)
         snuff_targets = [c for c in o.creatures if c.card.tag not in ('bowm',) and
                          'B' not in getattr(c.card, 'colors', set())]  # nonblack only
