@@ -595,6 +595,24 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     return False
 
 
+def play_turn(gs: GameState, turn: int, who: str = 'p1'):
+    """
+    Unified turn entry point — dispatches to the appropriate turn function.
+    who='p1': protagonist's turn (bug_turn for BUG deck, protagonist_turn for others)
+    who='p2': antagonist's turn (opp_turn)
+    """
+    if who == 'p1':
+        p1_deck = getattr(gs, 'p1_deck', 'bug')
+        if p1_deck == 'bug' or p1_deck == '':
+            return bug_turn(gs, turn)
+        else:
+            from sim import protagonist_turn
+            return protagonist_turn(gs, turn, p1_deck)
+    else:
+        matchup = getattr(gs, 'p2_deck', '') or getattr(gs, 'matchup', '')
+        return opp_turn(gs, turn, matchup)
+
+
 def bug_turn(gs: GameState, turn: int):
     b = gs.p1
     o = gs.p2

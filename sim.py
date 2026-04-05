@@ -22,7 +22,7 @@ from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
 from rules import Card
 from typing import List
 from game import GameState, PlayerState, london_mulligan, bug_keep, opp_keep
-from engine import bug_turn, opp_turn, update_goyf, elves_turn
+from engine import bug_turn, opp_turn, play_turn, update_goyf, elves_turn
 
 
 @dataclass
@@ -52,40 +52,12 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     bug_player = PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib))
     opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
 
-    gs = GameState(p1=bug_player, p2=opp_player, p1_goes_first=bug_goes_first)
-    gs.matchup = matchup
-    all_log = []
-
-    for turn in range(1, 16):
-        if gs.game_over:
-            break
-        gs.turn = turn
-
-        # Determine who acts this turn based on coin flip
-        if bug_goes_first:
-            # BUG acts on odd turns (1,3,5...), opp on even
-            if turn % 2 == 1:
-                lines = bug_turn(gs, turn)
-                all_log += [f"T{turn}[BUG] {l}" for l in lines]
-                if gs.game_over: break
-                lines = opp_turn(gs, turn, matchup)
-                all_log += [f"T{turn}[OPP] {l}" for l in lines]
-            # Both happen within same turn number but BUG goes first
-        else:
-            # OPP goes first
-            if turn % 2 == 1:
-                lines = opp_turn(gs, turn, matchup)
-                all_log += [f"T{turn}[OPP] {l}" for l in lines]
-                if gs.game_over: break
-                lines = bug_turn(gs, turn)
-                all_log += [f"T{turn}[BUG] {l}" for l in lines]
-
-    # Simplified: alternate BUG/OPP turns — BUG turn then OPP turn each round
-    # (The above structure is complex; revert to clean alternating)
-    # Actually rewrite this cleanly:
+    # ── Main game loop ──
     gs2 = GameState(p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
                     p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
                     p1_goes_first=bug_goes_first)
+    gs2.p1_deck = 'bug'
+    gs2.p2_deck = matchup
     all_log = []
     display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
 
@@ -125,26 +97,12 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
                     return True
             return False
 
-        if bug_goes_first:
+        first, second = ('p1', 'p2') if bug_goes_first else ('p2', 'p1')
+        for who in (first, second):
             display_turn += 1
-            lines = bug_turn(gs2, turn)
-            all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
-            if gs2.game_over:
-                if not _check_interaction_save(): break
-            display_turn += 1
-            lines = opp_turn(gs2, turn, matchup)
-            all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
-            if gs2.game_over:
-                if not _check_interaction_save(): break
-        else:
-            display_turn += 1
-            lines = opp_turn(gs2, turn, matchup)
-            all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
-            if gs2.game_over:
-                if not _check_interaction_save(): break
-            display_turn += 1
-            lines = bug_turn(gs2, turn)
-            all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
+            lines = play_turn(gs2, turn, who)
+            label = 'BUG' if who == 'p1' else 'OPP'
+            all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
             if gs2.game_over:
                 if not _check_interaction_save(): break
 
@@ -335,25 +293,21 @@ def run_elves_match(opp_matchup: str, verbose: bool = False):
         elves_player = PlayerState(name='b', hand=list(elves_hand), library=list(elves_lib))
         opp_player   = PlayerState(name='o', hand=list(opp_hand),   library=list(opp_lib))
         gs = GameState(p1=elves_player, p2=opp_player, p1_goes_first=elves_goes_first)
-        gs.matchup = opp_deck_key   # opponent matchup key for opp_turn dispatch
+        gs.matchup = opp_deck_key
+        gs.p1_deck = 'elves'
+        gs.p2_deck = opp_deck_key
 
         all_log = []
         for turn in range(1, 16):
             if gs.game_over: break
             gs.turn = turn
 
-            if elves_goes_first:
-                lines = elves_turn(gs, turn)
-                all_log += [f"G{game_num}T{turn}[ELV] {l}" for l in lines]
+            first, second = ('p1', 'p2') if elves_goes_first else ('p2', 'p1')
+            for who in (first, second):
+                lines = play_turn(gs, turn, who)
+                label = 'ELV' if who == 'p1' else 'OPP'
+                all_log += [f"G{game_num}T{turn}[{label}] {l}" for l in lines]
                 if gs.game_over: break
-                lines = opp_turn(gs, turn, opp_deck_key)
-                all_log += [f"G{game_num}T{turn}[OPP] {l}" for l in lines]
-            else:
-                lines = opp_turn(gs, turn, opp_deck_key)
-                all_log += [f"G{game_num}T{turn}[OPP] {l}" for l in lines]
-                if gs.game_over: break
-                lines = elves_turn(gs, turn)
-                all_log += [f"G{game_num}T{turn}[ELV] {l}" for l in lines]
 
         if not gs.game_over:
             elves_power = sum(c.power for c in gs.p1.creatures)
@@ -709,36 +663,20 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         ant_player = PlayerState(name='o', hand=list(ant_hand), library=list(ant_lib))
         gs = GameState(p1=pro_player, p2=ant_player, p1_goes_first=pro_goes_first)
         gs.matchup = antagonist
+        gs.p1_deck = protagonist
+        gs.p2_deck = antagonist
 
         all_log = []
         for turn in range(1, 16):
             if gs.game_over: break
             gs.turn = turn
 
-            if pro_goes_first:
-                # Protagonist turn
-                if protagonist == 'bug':
-                    lines = bug_turn(gs, turn)
-                elif protagonist == 'elves':
-                    lines = elves_turn(gs, turn)
-                else:
-                    lines = protagonist_turn(gs, turn, protagonist)
-                all_log += [f"G{game_num}T{turn}[PRO] {l}" for l in lines]
+            first, second = ('p1', 'p2') if pro_goes_first else ('p2', 'p1')
+            for who in (first, second):
+                lines = play_turn(gs, turn, who)
+                label = 'PRO' if who == 'p1' else 'ANT'
+                all_log += [f"G{game_num}T{turn}[{label}] {l}" for l in lines]
                 if gs.game_over: break
-                # Antagonist turn
-                lines = opp_turn(gs, turn, antagonist)
-                all_log += [f"G{game_num}T{turn}[ANT] {l}" for l in lines]
-            else:
-                lines = opp_turn(gs, turn, antagonist)
-                all_log += [f"G{game_num}T{turn}[ANT] {l}" for l in lines]
-                if gs.game_over: break
-                if protagonist == 'bug':
-                    lines = bug_turn(gs, turn)
-                elif protagonist == 'elves':
-                    lines = elves_turn(gs, turn)
-                else:
-                    lines = protagonist_turn(gs, turn, protagonist)
-                all_log += [f"G{game_num}T{turn}[PRO] {l}" for l in lines]
 
         if not gs.game_over:
             pro_power = sum(c.power for c in gs.p1.creatures)
@@ -1618,6 +1556,8 @@ def run_match(matchup: str, verbose: bool = False):
         opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
         gs = GameState(p1=bug_player, p2=opp_player, p1_goes_first=bug_goes_first)
         gs.matchup = matchup
+        gs.p1_deck = 'bug'
+        gs.p2_deck = matchup
         # Leyline of the Void: if in BUG's opening hand, place on battlefield pre-game
         # Oracle: "If this card is in your opening hand, you may begin the game with it on the battlefield"
         leyline = next((c for c in bug_player.hand if c.tag == 'leyline'), None)
@@ -1632,18 +1572,12 @@ def run_match(matchup: str, verbose: bool = False):
         for turn in range(1, 16):
             if gs.game_over: break
             gs.turn = turn
-            if bug_goes_first:
-                lines = bug_turn(gs, turn)
-                all_log += [f"G{game_num}T{turn}[BUG] {l}" for l in lines]
+            first, second = ('p1', 'p2') if bug_goes_first else ('p2', 'p1')
+            for who in (first, second):
+                lines = play_turn(gs, turn, who)
+                label = 'BUG' if who == 'p1' else 'OPP'
+                all_log += [f"G{game_num}T{turn}[{label}] {l}" for l in lines]
                 if gs.game_over: break
-                lines = opp_turn(gs, turn, matchup)
-                all_log += [f"G{game_num}T{turn}[OPP] {l}" for l in lines]
-            else:
-                lines = opp_turn(gs, turn, matchup)
-                all_log += [f"G{game_num}T{turn}[OPP] {l}" for l in lines]
-                if gs.game_over: break
-                lines = bug_turn(gs, turn)
-                all_log += [f"G{game_num}T{turn}[BUG] {l}" for l in lines]
 
         if not gs.game_over:
             if sum(c.power for c in gs.p1.creatures) > sum(c.power for c in gs.p2.creatures) or gs.p1.life > gs.p2.life + 3:
