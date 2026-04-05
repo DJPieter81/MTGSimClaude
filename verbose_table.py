@@ -490,23 +490,82 @@ def markdown_bo3(matchup, seeds):
     return '\n'.join(lines)
 
 
-def find_no_mull_seeds(matchup, count=10, start=1, end=500):
-    """Find seeds where neither player mulligans.
+def find_bo3_seeds(matchup, start=1, end=1000):
+    """Find 3 seeds for a good Bo3: no mulligans, mix of BUG/OPP wins.
+
+    Picks games to form a 2-1 series with variety (different game lengths,
+    both players winning at least once).
 
     Usage:
-        from verbose_table import find_no_mull_seeds
-        seeds = find_no_mull_seeds('sneak_a')
+        from verbose_table import find_bo3_seeds
+        seeds = find_bo3_seeds('sneak_a')  # e.g. [51, 56, 55]
     """
-    results = []
+    bug_wins = []
+    opp_wins = []
+
     for seed in range(start, end):
         random.seed(seed)
         _, _, bm = london_mulligan(DECKS['bug'], bug_keep)
         _, _, om = london_mulligan(DECKS[matchup], opp_keep, matchup)
-        if bm == 0 and om == 0:
-            results.append(seed)
-            if len(results) >= count:
-                break
-    return results
+        if bm != 0 or om != 0:
+            continue
+
+        # Run the game
+        random.seed(seed)
+        bh, bl, _ = london_mulligan(DECKS['bug'], bug_keep)
+        oh, ol, _ = london_mulligan(DECKS[matchup], opp_keep, matchup)
+        bf = random.random() < 0.5
+        gs = GameState(
+            bug=PlayerState(name='b', hand=list(bh), library=list(bl)),
+            opp=PlayerState(name='o', hand=list(oh), library=list(ol)),
+            bug_goes_first=bf)
+        gs.matchup = matchup
+        try:
+            for t in range(1, 16):
+                if gs.game_over:
+                    break
+                gs.turn = t
+                if bf:
+                    bug_turn(gs, t)
+                    if gs.game_over:
+                        break
+                    opp_turn(gs, t, matchup)
+                else:
+                    opp_turn(gs, t, matchup)
+                    if gs.game_over:
+                        break
+                    bug_turn(gs, t)
+        except Exception:
+            continue
+
+        w = 'BUG' if gs.winner == 'bug' else 'OPP'
+        entry = (seed, gs.turn, gs.win_reason or '')
+        if w == 'BUG':
+            bug_wins.append(entry)
+        else:
+            opp_wins.append(entry)
+
+        # Once we have enough of each, build a 2-1 series
+        if len(bug_wins) >= 2 and len(opp_wins) >= 2:
+            break
+
+    # Prefer 2-1 series with the underdog taking game 1 for drama
+    if len(opp_wins) >= 2 and len(bug_wins) >= 1:
+        # OPP wins 2-1: OPP, BUG, OPP
+        return [opp_wins[0][0], bug_wins[0][0], opp_wins[1][0]]
+    elif len(bug_wins) >= 2 and len(opp_wins) >= 1:
+        # BUG wins 2-1: BUG, OPP, BUG
+        return [bug_wins[0][0], opp_wins[0][0], bug_wins[1][0]]
+    elif len(bug_wins) >= 2:
+        return [bug_wins[0][0], bug_wins[1][0], bug_wins[0][0]]
+    elif len(opp_wins) >= 2:
+        return [opp_wins[0][0], opp_wins[1][0], opp_wins[0][0]]
+    else:
+        # Fallback: just use whatever we found
+        all_seeds = [s for s, _, _ in bug_wins + opp_wins]
+        while len(all_seeds) < 3:
+            all_seeds.append(all_seeds[-1] + 1)
+        return all_seeds[:3]
 
 
 if __name__ == '__main__':
@@ -514,11 +573,19 @@ if __name__ == '__main__':
 
     if '--bo3' in sys.argv:
         idx = sys.argv.index('--bo3')
-        seeds = [int(s) for s in sys.argv[idx+1:idx+4]]
+        remaining = sys.argv[idx+1:]
+        # If seeds provided, use them; otherwise auto-pick
+        seeds = [int(s) for s in remaining if s.isdigit()]
+        if len(seeds) < 3:
+            print(f"Finding best Bo3 seeds for {matchup}...", flush=True)
+            seeds = find_bo3_seeds(matchup)
+            print(f"Using seeds: {seeds}")
+            print()
         print(markdown_bo3(matchup, seeds))
     elif '--md' in sys.argv:
-        # Single game markdown
-        seed = int(sys.argv[sys.argv.index('--md') + 1]) if len(sys.argv) > sys.argv.index('--md') + 1 else None
+        idx = sys.argv.index('--md')
+        remaining = sys.argv[idx+1:]
+        seed = int(remaining[0]) if remaining and remaining[0].isdigit() else None
         g = run_game_data(matchup, seed)
         print(markdown_game(g))
     else:
