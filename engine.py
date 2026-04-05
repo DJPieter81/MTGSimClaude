@@ -2663,7 +2663,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ {win_card.name} enters through Veil (haste)" if getattr(win_card,'haste',False) else f"★ {win_card.name} enters through Veil", True)
             if win_card.is_creature():
                 player.put_creature_in_play(win_card)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
+            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
             gs.win_reason = f"Show+Veil: {win_card.name}"
         else:
             player.remove_from_hand(sat)
@@ -2687,7 +2687,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
                         log_fn(f"★ {win_card.name} attacks — {win_card.base_power} damage, opp at {opponent.life}", True)
                         # Win if lethal, or if Emrakul (annihilator 6 strips 30+ points of permanents)
                         if opponent.life <= 0 or win_card.tag == 'emrakul':
-                            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
+                            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
                             gs.win_reason = f"Show+Tell: {win_card.name} (annihilator+attack)"
                     else:
                         # No haste — mark for next turn
@@ -2724,7 +2724,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
         if emy and om_eff >= 4:  # Sneak costs {R} + creature CMC colourless
             player.remove_from_hand(emy)
             log_fn(f"★ Sneak Attack → {emy.name} attacks for lethal — game over", True)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
+            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
             gs.win_reason = f"Sneak Attack: {emy.name}"
 
     # ── Put Sneak Attack into play if SaT already resolved ──
@@ -2890,7 +2890,7 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             if random.random() < _oops_veil_rate:
                 player.remove_from_hand(oops); player.add_to_grave(oops)
                 log_fn("★ Oops through Veil — wins", True)
-                gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
+                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
                 gs.win_reason = "Oops + Veil — BUG blue interaction blanked"
             else:
                 player.remove_from_hand(oops); player.add_to_grave(oops)
@@ -2907,7 +2907,7 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             if not _try_counter_any(player, opponent, gs, oops, log_entries):
                 player.add_to_grave(oops)
                 log_fn("★ Oops resolves — wins", True)
-                gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
+                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
                 gs.win_reason = "Oops resolves uncountered"
             else: player.add_to_grave(oops)
 
@@ -2946,14 +2946,14 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True  # protect all spells this turn; log_fn("Veil of Summer")
             player.remove_from_hand(dd); player.add_to_grave(dd)
             log_fn("★ Doomsday through Veil", True)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
+            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
             gs.win_reason = "Doomsday + Veil of Summer"
         else:
             player.remove_from_hand(dd)
             if not _try_counter_any(player, opponent, gs, dd, log_entries):
                 player.add_to_grave(dd)
                 log_fn("★ Doomsday resolves", True)
-                gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
+                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
                 gs.win_reason = "Doomsday resolves uncountered"
             else: player.add_to_grave(dd)
 
@@ -3393,7 +3393,7 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(grind)
         if not _try_counter_any(player, opponent, gs, grind, log_entries):
             log_fn("★ Painter + Grindstone — BUG library milled", True)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
+            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
             gs.win_reason = "Painter+Grindstone combo resolves"
         else: player.add_to_grave(grind)
     # UWx selective combat: only attack with creatures that can deal unblocked damage

@@ -127,7 +127,7 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
             gs.winner = 'p2'
             gs.win_reason = f"Opp board/life advantage after T{gs.turn}"
         else:
-            gs.winner = 'p1' if gs.p1.life >= gs.p2.life else 'opp'
+            gs.winner = 'p1' if gs.p1.life >= gs.p2.life else 'p2'
             gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
         gs.kill_turn = gs.turn
         gs.game_over = True
