@@ -283,9 +283,13 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
     if decks is None:
         if top_tier > 0:
             # Sort decks by meta share descending, pick top_tier randomly
+            def _get_share(k):
+                meta = MATCHUP_META.get(k, {})
+                if isinstance(meta, dict) and 'share' in meta:
+                    return meta['share']
+                return 0.0  # unknown decks get 0 share, not included
             ranked = sorted(
-                ((k, v.get('share', 0.01) if isinstance(v, dict) and 'share' in v else 0.01)
-                 for k, v in MATCHUP_META.items() if k in DECKS),
+                ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
                 key=lambda x: -x[1]
             )
             # Always include 'bug' as reference deck
