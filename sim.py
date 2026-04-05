@@ -466,45 +466,65 @@ def protagonist_turn(gs, turn, matchup):
         gs.log_event('b', 'main', msg, key)
         log_entries.append(msg)
 
-    # ── Cleanup (CR 514) ──
+    # ── Cleanup — CR 510.2 ──
     for player in [b, o]:
         for c in player.creatures:
             c.damage_marked = 0
-    for c in b.creatures:
-        c.tapped = False
-        c.summoning_sick = False
-    for l in b.lands:
-        l.tapped = False
+
+    # ── Untap ──
+    b.untap_all()
+    b.revolt_this_turn = False
+    b.clear_summoning_sickness()
     gs.opp_spells_cast_this_turn = 0
     gs.veil_active = False
     b.spells_cast_this_turn = 0
-    b.revolt_this_turn = False
 
     # ── Upkeep: Goyf update ──
     update_goyf(gs)
 
-    # ── Draw (skip T1 on the play, CR 103.7) ──
+    # ── Draw (first player on play skips T1 draw) ──
     if not (turn == 1 and gs.bug_goes_first):
         drawn = b.draw(1, is_draw_step=True)
         if drawn:
             log(f"Draw: {drawn[0].name}")
+            # Bowmasters on opponent's board triggers on protagonist's draws
             bowmasters_triggers(1, gs, log_entries, controller='o')
 
+    # ── Pending Bauble draws from previous turn ──
+    pending = getattr(gs, 'pending_bauble_draws_bug', 0)
+    if pending > 0:
+        drawn = b.draw(pending)
+        for d in drawn:
+            log(f"Bauble (upkeep draw) → {d.name}")
+        bowmasters_triggers(pending, gs, log_entries, controller='o')
+        gs.pending_bauble_draws_bug = 0
+
     # ── Land drop ──
+    # Prioritise mana-producing lands (duals, basics) over utility lands (Wasteland)
     def _pick_land():
+        lands_in_hand = [c for c in b.hand if c.is_land()]
+        if not lands_in_hand:
+            return None
         # Prefer fast lands (Tomb/City) when a 2-mana play is in hand
         has_2drop = any(c.tag in ('chalice', 'trini', 'null_rod') or
                         (not c.is_land() and sum(c.mana_cost.values()) == 2)
                         for c in b.hand)
         if has_2drop:
-            fast = b.find_any(lambda c: c.is_land() and c.tag in ('ancient_tomb', 'tomb', 'city'))
+            fast = next((c for c in lands_in_hand
+                         if c.tag in ('ancient_tomb', 'tomb', 'city')), None)
             if fast:
                 return fast
-        # Prefer non-fetch (saves fetch for shuffle/revolt later)
-        non_fetch = b.find_any(lambda c: c.is_land() and not getattr(c, 'is_fetch', False))
-        if non_fetch:
-            return non_fetch
-        return b.find_any(lambda c: c.is_land())
+        # Priority: fetch > dual > basic > utility (Wasteland etc)
+        def land_priority(c):
+            if getattr(c, 'is_fetch', False): return 2
+            tag = getattr(c, 'tag', '')
+            if tag == 'dual': return 1
+            if c.is_basic: return 1
+            if tag in ('sewers',): return 1
+            if tag in ('ancient_tomb', 'city'): return 0
+            if tag == 'wl': return 5
+            return 3
+        return min(lands_in_hand, key=land_priority)
 
     land = _pick_land()
     if land and not getattr(b, 'land_played_this_turn', False):
@@ -512,54 +532,52 @@ def protagonist_turn(gs, turn, matchup):
         lp = LandPermanent(card=land, controller='b')
         b.lands.append(lp)
         b.land_played_this_turn = True
+        gs.apply_continuous_effects(lp)
         if lp.is_fetch:
             fetched = b.use_fetch(lp)
-            log(f"Play+crack {land.name} → {fetched.name if fetched else '?'}")
+            if fetched:
+                gs.apply_continuous_effects(fetched)
+                log(f"Play+crack {land.name} (−1 life, {b.life}) → {fetched.name}")
+            else:
+                log(f"Play+crack {land.name} → ?")
             b.revolt_this_turn = True
         else:
-            log(f"Land: {land.name}")
+            log(f"Land: {land.name} ({len(b.lands)} lands)")
 
-    # ── Mana calculation ──
+    # ── Mana calculation (mirrors opp_turn) ──
     total_mana = b.available_mana_count()
-
-    # Cradle: mana = number of creatures
+    # Lotus Petal in hand
+    total_mana += sum(1 for c in b.hand if c.tag == 'petal')
+    # Treasure tokens
+    bug_treasure = getattr(gs, 'bug_treasure', 0)
+    if bug_treasure > 0:
+        total_mana += bug_treasure
+        gs.bug_treasure = 0
+    # Ancient Tomb: produces 2C (1 already counted, add 1 bonus), costs 2 life
+    tomb_count = sum(1 for l in b.lands if l.card.tag == 'tomb' and not l.tapped)
+    if tomb_count > 0:
+        total_mana += tomb_count
+        b.life -= tomb_count * 2
+    # Gaea's Cradle: tap for G equal to creature count
     for l in b.lands:
         if l.card.tag == 'cradle' and not l.tapped:
             total_mana += len(b.creatures)
             l.tapped = True
 
-    # Ancient Tomb / City of Traitors: +1 bonus (already counted 1 by available_mana_count)
-    tomb_count = sum(1 for l in b.lands
-                     if not l.tapped and l.card.tag in ('ancient_tomb', 'tomb', 'city'))
-    total_mana += tomb_count
-    b.life -= tomb_count * 2  # Tomb life cost (CR 702.9)
-
-    # Eldrazi Temple: +1 bonus when casting Eldrazi
-    temple_count = sum(1 for l in b.lands
-                       if not l.tapped and l.card.tag == 'eldrazi_temple')
-    # (Bonus applied implicitly — strategies handle Eldrazi cost reduction)
-
-    # Lotus Petal: sac for +1 mana each
-    total_mana += sum(1 for c in b.hand if c.tag == 'petal')
-
     # ── Wasteland: destroy opponent's best nonbasic land ──
-    wl = b.find_any(lambda c: c.is_land() and c.tag in ('wl', 'wasteland'))
-    if wl is None:
-        # Check lands in play
-        wl_land = next((l for l in b.lands if l.card.tag in ('wl', 'wasteland') and not l.tapped), None)
-        if wl_land and o.lands:
-            target = next((l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl'), None)
-            if target:
-                wl_land.tapped = True
-                o.lands.remove(target)
-                o.add_to_grave(target.card)
-                b.revolt_this_turn = True
-                log(f"Wasteland [ACTIVATED-uncounterable] → {target.card.name}")
+    wl_land = next((l for l in b.lands if l.card.tag in ('wl', 'wasteland') and not l.tapped), None)
+    if wl_land and o.lands:
+        target = next((l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl'), None)
+        if target:
+            wl_land.tapped = True
+            o.lands.remove(target)
+            o.add_to_grave(target.card)
+            b.revolt_this_turn = True
+            log(f"Wasteland [ACTIVATED-uncounterable] → {target.card.name}")
 
     # ── Thoughtseize: strip opponent's best card (if we have mana) ──
     ts = b.find_tag('ts') or b.find_tag('thoughtseize')
     if ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc):
-        # Only Thoughtseize if opponent has meaningful cards
         opp_nonland = [c for c in o.hand if not c.is_land()]
         if opp_nonland and b.life > 4:
             b.remove_from_hand(ts)
@@ -568,17 +586,12 @@ def protagonist_turn(gs, turn, matchup):
                 b.add_to_grave(ts)
                 b.life -= 2
                 total_mana -= 1
-                # Take best card: win conditions > combo pieces > counters > threats
                 def _ts_priority(c):
                     score = 0
-                    if c.win_condition:
-                        score += 10
-                    if c.is_combo_piece:
-                        score += 8
-                    if c.tag in ('fow', 'fon', 'daze', 'fluster'):
-                        score += 6
-                    if c.is_creature():
-                        score += 3 + c.base_power
+                    if c.win_condition: score += 10
+                    if c.is_combo_piece: score += 8
+                    if c.tag in ('fow', 'fon', 'daze', 'fluster'): score += 6
+                    if c.is_creature(): score += 3 + c.base_power
                     score += c.cmc
                     return score
                 best = max(opp_nonland, key=_ts_priority)
@@ -590,7 +603,6 @@ def protagonist_turn(gs, turn, matchup):
 
     # ── Removal: kill opponent's biggest threat ──
     if o.creatures and total_mana >= 1:
-        # Fatal Push (CMC 1) — kills CMC ≤ 2 (or ≤ 4 with Revolt)
         push = b.find_tag('push') or b.find_tag('fatal_push')
         if push and not gs.spell_blocked_by_chalice(push.cmc):
             revolt = b.revolt_this_turn
@@ -609,7 +621,6 @@ def protagonist_turn(gs, turn, matchup):
                 else:
                     b.add_to_grave(push)
 
-        # Swords to Plowshares (CMC 1) — exile any creature, gain life
         stp = b.find_tag('stp')
         if stp and o.creatures and total_mana >= 1 and not gs.spell_blocked_by_chalice(stp.cmc):
             target = max(o.creatures, key=lambda c: c.power)
@@ -625,7 +636,16 @@ def protagonist_turn(gs, turn, matchup):
                 else:
                     b.add_to_grave(stp)
 
-    # ── Strategy (deck-specific logic: combo, lock pieces, special deployment) ──
+    # ── Gameplan layer ──
+    from gameplan import GAMEPLANS, assess, active_goal
+    plan = GAMEPLANS.get(matchup)
+    if plan:
+        ba = assess(gs, turn)
+        gs.opp_goal = active_goal(plan, ba)
+    else:
+        gs.opp_goal = None
+
+    # ── Strategy dispatch ──
     from deck_registry import get_strategy
     strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
     if strategy_fn:
@@ -634,7 +654,6 @@ def protagonist_turn(gs, turn, matchup):
         log(f"No strategy for {matchup} — passing")
 
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
-    # Check if combat already happened (strategy called combat_declare/resolve_combat)
     combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
     if not combat_happened and not gs.game_over and b.creatures:
         attackers = _select_attackers(b, o)
