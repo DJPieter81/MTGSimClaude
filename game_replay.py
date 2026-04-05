@@ -104,6 +104,24 @@ def reason(line):
     return ""
 
 
+def classify_play(line):
+    """Classify a play line into a visual category."""
+    lo = line.lower()
+    if lo.startswith('draw:') or 'upkeep draw' in lo: return 'draw'
+    if lo.startswith('land:') or lo.startswith('play ') or lo.startswith('play+crack'): return 'land'
+    if 'attack:' in lo or 'attacks for' in lo or 'unblocked' in lo or 'blocks' in lo: return 'combat'
+    if 'counter' in lo or 'daze' in lo and 'counter' in lo or 'fow' in lo and 'counter' in lo: return 'interact'
+    if 'thoughtseize' in lo or 'strips' in lo: return 'discard'
+    if 'kills' in lo or 'push' in lo and '→' in lo or 'snuff' in lo or 'bolt' in lo: return 'removal'
+    if '★' in line or 'combo' in lo: return 'combo'
+    if 'cast ' in lo or 'flash ' in lo: return 'spell'
+    if 'bowmasters t' in lo or 'orc army' in lo or 'ping' in lo: return 'trigger'
+    if 'brainstorm' in lo or 'ponder' in lo or 'stock' in lo: return 'cantrip'
+    if 'wasteland' in lo and 'destroys' in lo: return 'interact'
+    if 'petal' in lo or 'mox' in lo or 'ritual' in lo: return 'mana'
+    return 'other'
+
+
 def run_one_game(matchup, seed=None):
     """Run a single game and return structured data."""
     if seed is not None: random.seed(seed)
@@ -152,7 +170,8 @@ def run_one_game(matchup, seed=None):
                 r = reason(line)
                 is_key = '★' in line or 'combo' in line.lower() or 'lethal' in line.lower()
                 is_counter = 'countered' in line.lower()
-                plays.append({'text': disp, 'reason': r, 'key': is_key, 'counter': is_counter})
+                cat = classify_play(line)
+                plays.append({'text': disp, 'reason': r, 'key': is_key, 'counter': is_counter, 'cat': cat})
 
             td = {
                 'num': display_turn, 'label': label,
@@ -161,7 +180,9 @@ def run_one_game(matchup, seed=None):
                 'hand_before': hand_before,
                 'hand_after': fmt_hand(player),
                 'creatures': fmt_creatures(player),
+                'opp_creatures': fmt_creatures(opponent),
                 'lands': fmt_lands(player),
+                'opp_lands': fmt_lands(opponent),
                 'plays': plays,
             }
             turns_data.append(td)
@@ -263,6 +284,17 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .play .action.key{{color:#e3b341;font-weight:600}}
 .play .action.counter{{color:#f85149;text-decoration:line-through;opacity:0.7}}
 .play .reasoning{{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px}}
+.play .cat-badge{{font-size:0.65em;text-transform:uppercase;letter-spacing:0.5px;padding:1px 5px;border-radius:3px;font-weight:600;margin-right:4px;font-family:'Segoe UI',system-ui,sans-serif;min-width:50px;text-align:center;display:inline-block}}
+.cat-draw{{background:#1a1a2e;color:#8b8bb8}}.cat-land{{background:#0d2611;color:#7ee787}}.cat-combat{{background:#3d1418;color:#f85149}}.cat-interact{{background:#2d1b4e;color:#d2a8ff}}
+.cat-discard{{background:#3d2e14;color:#e3b341}}.cat-removal{{background:#3d1418;color:#ff7b72}}.cat-combo{{background:#4a1942;color:#f778ba}}.cat-spell{{background:#0d2847;color:#58a6ff}}
+.cat-trigger{{background:#2a2000;color:#d29922}}.cat-cantrip{{background:#0a2540;color:#79c0ff}}.cat-mana{{background:#1a2e1a;color:#56d364}}.cat-other{{background:#1c1c1c;color:#6e7681}}
+.board-grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}}
+.board-side{{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px 10px}}
+.board-side h4{{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}}
+.board-side.bug h4{{color:#58a6ff}}.board-side.opp h4{{color:#f85149}}
+.combat-detail{{background:#1a0a0a;border:1px solid #3d1418;border-radius:6px;padding:8px 12px;margin:4px 0;font-family:'Fira Code','Consolas',monospace;font-size:0.82em}}
+.combat-detail .atk-line{{color:#e3b341;margin-bottom:2px}}.combat-detail .blk-line{{color:#d2a8ff;margin-bottom:2px}}
+.combat-detail .dmg-line{{color:#f85149;font-weight:600}}.combat-detail .death-line{{color:#f85149;opacity:0.8;font-style:italic}}
 .board{{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}}
 .creature-badge{{background:#0d2847;border:1px solid #1f3d5c;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#58a6ff}}
 .creature-badge .pt{{color:#e3b341;font-weight:700;margin-left:4px}}
@@ -353,6 +385,19 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             h.append(f'<span class="tnum {cls}">T{td["num"]}</span>')
             h.append(f'<span class="player {cls}">{label}</span>')
             h.append(f'<span class="life">Life: <b>{td["life"]}{delta_str}</b> &nbsp;|&nbsp; Opp: {td["opp_life"]}</span>')
+            # Quick summary badges in header
+            cats_in_turn = set(p.get('cat','') for p in td['plays'])
+            summary_parts = []
+            n_combat = sum(1 for p in td['plays'] if p.get('cat') == 'combat')
+            n_spells = sum(1 for p in td['plays'] if p.get('cat') in ('spell','cantrip'))
+            n_interact = sum(1 for p in td['plays'] if p.get('cat') in ('interact','discard','removal'))
+            n_combo = sum(1 for p in td['plays'] if p.get('cat') == 'combo')
+            if n_combat: summary_parts.append(f'<span style="color:#f85149;font-size:0.75em">⚔{n_combat}</span>')
+            if n_spells: summary_parts.append(f'<span style="color:#58a6ff;font-size:0.75em">🃏{n_spells}</span>')
+            if n_interact: summary_parts.append(f'<span style="color:#d2a8ff;font-size:0.75em">🛡{n_interact}</span>')
+            if n_combo: summary_parts.append(f'<span style="color:#f778ba;font-size:0.75em">★{n_combo}</span>')
+            if summary_parts:
+                h.append(f'<span style="margin-left:8px">{" ".join(summary_parts)}</span>')
             h.append(f'</div><span class="arrow">&#9654;</span></div>')
 
             h.append(f'<div class="turn-body">')
@@ -364,21 +409,72 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             h.append(f'<div class="section-label">Plays</div>')
             for j, p in enumerate(td['plays']):
                 cls_p = ' key' if p['key'] else (' counter' if p['counter'] else '')
+                cat = p.get('cat', 'other')
+                cat_label = {'draw':'DRAW','land':'LAND','combat':'COMBAT','interact':'COUNTER',
+                             'discard':'DISCARD','removal':'REMOVE','combo':'COMBO','spell':'CAST',
+                             'trigger':'TRIGGER','cantrip':'DIG','mana':'MANA','other':''}.get(cat,'')
+                is_combat = cat == 'combat'
                 h.append(f'<div class="play"><span class="step">{j+1}.</span>')
+                if cat_label:
+                    h.append(f'<span class="cat-badge cat-{cat}">{cat_label}</span>')
                 h.append(f'<span class="action{cls_p}">{p["text"]}</span>')
                 if p['reason']:
                     h.append(f'<span class="reasoning">&larr; {html.escape(p["reason"])}</span>')
                 h.append(f'</div>')
+                # Enhanced combat detail: parse attack lines for creature-level breakdown
+                if is_combat and ('unblocked' in p['text'].lower() or 'blocks' in p['text'].lower() or 'attacks for' in p['text'].lower()):
+                    h.append(f'<div class="combat-detail">')
+                    text = p['text']
+                    if 'unblocked' in text.lower():
+                        # Parse "Attack: X, Y — N unblocked → player at M"
+                        if '—' in text or '&#x2014;' in text:
+                            parts = text.replace('&#x2014;', '—').split('—', 1)
+                            names_part = parts[0].replace('Attack:', '').strip() if len(parts) > 1 else ''
+                            dmg_part = parts[1].strip() if len(parts) > 1 else text
+                            if names_part:
+                                h.append(f'<div class="atk-line">⚔ Attackers: {names_part}</div>')
+                            h.append(f'<div class="dmg-line">→ {dmg_part}</div>')
+                    elif 'blocks' in text.lower():
+                        h.append(f'<div class="blk-line">🛡 {text}</div>')
+                    elif 'attacks for' in text.lower():
+                        h.append(f'<div class="dmg-line">💀 {text}</div>')
+                    h.append(f'</div>')
+                # Enhanced: show creature deaths inline
+                if 'dies' in p['text'].lower():
+                    h.append(f'<div class="combat-detail"><div class="death-line">☠ {p["text"]}</div></div>')
             if not td['plays']:
                 h.append(f'<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>')
 
-            h.append(f'<div class="section-label">Board</div><div class="board">')
+            # Enhanced board: show BOTH sides
+            h.append(f'<div class="section-label">Board State</div>')
+            h.append(f'<div class="board-grid">')
+            # Player side
+            side_label = td['label']
+            opp_label = 'OPP' if side_label == 'BUG' else 'BUG'
+            h.append(f'<div class="board-side {side_label.lower()}">')
+            h.append(f'<h4>{side_label} — {len(td["lands"])} lands</h4>')
+            h.append(f'<div class="board">')
             for c in td['creatures']:
                 sick = ' <span class="sick">(sick)</span>' if c['sick'] else ''
                 h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span>{sick}</span>')
+            if not td['creatures']:
+                h.append(f'<span style="color:#484f58;font-size:0.8em">no creatures</span>')
             h.append(f'</div>')
-            h.append(f'<div class="section-label">Lands ({len(td["lands"])})</div>')
-            h.append(f'<div class="land-list">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
+            h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
+            h.append(f'</div>')
+            # Opponent side
+            h.append(f'<div class="board-side {"opp" if side_label == "BUG" else "bug"}">')
+            h.append(f'<h4>{opp_label} — {len(td["opp_lands"])} lands</h4>')
+            h.append(f'<div class="board">')
+            for c in td.get('opp_creatures', []):
+                sick = ' <span class="sick">(sick)</span>' if c['sick'] else ''
+                h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span>{sick}</span>')
+            if not td.get('opp_creatures', []):
+                h.append(f'<span style="color:#484f58;font-size:0.8em">no creatures</span>')
+            h.append(f'</div>')
+            h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td.get("opp_lands", [])) if td.get("opp_lands") else "none"}</div>')
+            h.append(f'</div>')
+            h.append(f'</div>')  # board-grid
             h.append(f'</div></div>')
 
         # Game result
