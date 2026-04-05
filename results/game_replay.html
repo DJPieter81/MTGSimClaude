@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Game Replay: BUG vs Sneak A</title>
+<title>Game Replay: BUG vs Burn</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:900px;margin:0 auto}
@@ -54,6 +54,17 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 .play .action.key{color:#e3b341;font-weight:600}
 .play .action.counter{color:#f85149;text-decoration:line-through;opacity:0.7}
 .play .reasoning{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px}
+.play .cat-badge{font-size:0.65em;text-transform:uppercase;letter-spacing:0.5px;padding:1px 5px;border-radius:3px;font-weight:600;margin-right:4px;font-family:'Segoe UI',system-ui,sans-serif;min-width:50px;text-align:center;display:inline-block}
+.cat-draw{background:#1a1a2e;color:#8b8bb8}.cat-land{background:#0d2611;color:#7ee787}.cat-combat{background:#3d1418;color:#f85149}.cat-interact{background:#2d1b4e;color:#d2a8ff}
+.cat-discard{background:#3d2e14;color:#e3b341}.cat-removal{background:#3d1418;color:#ff7b72}.cat-combo{background:#4a1942;color:#f778ba}.cat-spell{background:#0d2847;color:#58a6ff}
+.cat-trigger{background:#2a2000;color:#d29922}.cat-cantrip{background:#0a2540;color:#79c0ff}.cat-mana{background:#1a2e1a;color:#56d364}.cat-other{background:#1c1c1c;color:#6e7681}
+.board-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.board-side{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px 10px}
+.board-side h4{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
+.board-side.bug h4{color:#58a6ff}.board-side.opp h4{color:#f85149}
+.combat-detail{background:#1a0a0a;border:1px solid #3d1418;border-radius:6px;padding:8px 12px;margin:4px 0;font-family:'Fira Code','Consolas',monospace;font-size:0.82em}
+.combat-detail .atk-line{color:#e3b341;margin-bottom:2px}.combat-detail .blk-line{color:#d2a8ff;margin-bottom:2px}
+.combat-detail .dmg-line{color:#f85149;font-weight:600}.combat-detail .death-line{color:#f85149;opacity:0.8;font-style:italic}
 .board{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .creature-badge{background:#0d2847;border:1px solid #1f3d5c;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#58a6ff}
 .creature-badge .pt{color:#e3b341;font-weight:700;margin-left:4px}
@@ -68,81 +79,86 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 </style></head><body>
 
 <div class="header">
-<h1><span class="bug-name">BUG Tempo</span> <span class="vs">vs</span> <span class="opp-name">Sneak A</span></h1>
+<h1><span class="bug-name">BUG</span> <span class="vs">vs</span> <span class="opp-name">Burn</span></h1>
 </div>
 <div class="game-panel active" id="game-0">
-<div class="meta" style="margin-bottom:12px;color:#8b949e">BUG is ON THE PLAY &nbsp;|&nbsp; Seed: 2</div>
+<div class="meta" style="margin-bottom:12px;color:#8b949e">BUG is ON THE PLAY &nbsp;|&nbsp; Seed: 42</div>
 <div class="hands">
-<div class="hand-box bug"><h3>BUG opening (mull 0)</h3>
-<span class="pill">USea</span>
-<span class="pill">Thoughtseize</span>
-<span class="pill">PDelta</span>
-<span class="pill">Bowmasters</span>
+<div class="hand-box bug"><h3>BUG opening (mull 1)</h3>
+<span class="pill">Tamiyo</span>
 <span class="pill">Kaito</span>
-<span class="pill">Waste</span>
-<span class="pill">Goyf</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Thoughtseize</span>
+<span class="pill">USea</span>
+<span class="pill">Island</span>
 </div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
-<span class="pill">Ponder</span>
-<span class="pill">Tomb</span>
-<span class="pill">Tomb</span>
-<span class="pill">City</span>
-<span class="pill">Stock</span>
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
+<span class="pill">Mountain</span>
+<span class="pill">Inspiring Vantage</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Fiery Islet</span>
+<span class="pill">Monastery Swiftspear</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Lava Spike</span>
 </div></div>
-<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 400 80">
-<circle cx="20" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 440 80">
+<circle cx="20" cy="17.727272727272727" r="3" fill="#58a6ff"/>
 <circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
-<text x="20" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="20" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
 <text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
-<line x1="20" y1="20.909090909090914" x2="60" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="20" y1="11.363636363636367" x2="60" y2="17.727272727272727" stroke="#f85149" stroke-width="2"/>
-<circle cx="60" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="60" cy="17.727272727272727" r="3" fill="#f85149"/>
-<text x="60" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="60" y="29.727272727272727" text-anchor="middle" fill="#f85149" font-size="9">18</text>
-<line x1="60" y1="20.909090909090914" x2="100" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="60" y1="17.727272727272727" x2="100" y2="17.727272727272727" stroke="#f85149" stroke-width="2"/>
-<circle cx="100" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="100" cy="17.727272727272727" r="3" fill="#f85149"/>
-<text x="100" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="100" y="29.727272727272727" text-anchor="middle" fill="#f85149" font-size="9">18</text>
-<line x1="100" y1="20.909090909090914" x2="140" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="100" y1="17.727272727272727" x2="140" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
-<circle cx="140" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="140" cy="30.454545454545453" r="3" fill="#f85149"/>
-<text x="140" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="140" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
-<line x1="140" y1="20.909090909090914" x2="180" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="140" y1="30.454545454545453" x2="180" y2="33.63636363636363" stroke="#f85149" stroke-width="2"/>
-<circle cx="180" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="180" cy="33.63636363636363" r="3" fill="#f85149"/>
-<text x="180" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="180" y="45.63636363636363" text-anchor="middle" fill="#f85149" font-size="9">13</text>
-<line x1="180" y1="20.909090909090914" x2="220" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="180" y1="33.63636363636363" x2="220" y2="40.0" stroke="#f85149" stroke-width="2"/>
-<circle cx="220" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="220" cy="40.0" r="3" fill="#f85149"/>
-<text x="220" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="220" y="52.0" text-anchor="middle" fill="#f85149" font-size="9">11</text>
-<line x1="220" y1="20.909090909090914" x2="260" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="220" y1="40.0" x2="260" y2="52.72727272727273" stroke="#f85149" stroke-width="2"/>
-<circle cx="260" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="260" cy="52.72727272727273" r="3" fill="#f85149"/>
-<text x="260" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="260" y="64.72727272727272" text-anchor="middle" fill="#f85149" font-size="9">7</text>
-<line x1="260" y1="20.909090909090914" x2="300" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="260" y1="52.72727272727273" x2="300" y2="62.27272727272727" stroke="#f85149" stroke-width="2"/>
-<circle cx="300" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="300" cy="62.27272727272727" r="3" fill="#f85149"/>
-<text x="300" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="300" y="74.27272727272728" text-anchor="middle" fill="#f85149" font-size="9">4</text>
-<line x1="300" y1="20.909090909090914" x2="340" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
-<line x1="300" y1="62.27272727272727" x2="340" y2="75.0" stroke="#f85149" stroke-width="2"/>
-<circle cx="340" cy="20.909090909090914" r="3" fill="#58a6ff"/>
-<circle cx="340" cy="75.0" r="3" fill="#f85149"/>
-<text x="340" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
-<text x="340" y="87.0" text-anchor="middle" fill="#f85149" font-size="9">0</text>
+<line x1="20" y1="17.727272727272727" x2="60" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="60" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="60" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="60" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="60" y1="27.272727272727273" x2="100" y2="30.454545454545453" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="100" cy="30.454545454545453" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="100" y="24.454545454545453" text-anchor="middle" fill="#58a6ff" font-size="9">14</text>
+<text x="100" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="100" y1="30.454545454545453" x2="140" y2="30.454545454545453" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="11.363636363636367" x2="140" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="30.454545454545453" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="140" y="24.454545454545453" text-anchor="middle" fill="#58a6ff" font-size="9">14</text>
+<text x="140" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="140" y1="30.454545454545453" x2="180" y2="30.454545454545453" stroke="#58a6ff" stroke-width="2"/>
+<line x1="140" y1="11.363636363636367" x2="180" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
+<circle cx="180" cy="30.454545454545453" r="3" fill="#58a6ff"/>
+<circle cx="180" cy="20.909090909090914" r="3" fill="#f85149"/>
+<text x="180" y="24.454545454545453" text-anchor="middle" fill="#58a6ff" font-size="9">14</text>
+<text x="180" y="32.909090909090914" text-anchor="middle" fill="#f85149" font-size="9">17</text>
+<line x1="180" y1="30.454545454545453" x2="220" y2="49.54545454545455" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="20.909090909090914" x2="220" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="49.54545454545455" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="20.909090909090914" r="3" fill="#f85149"/>
+<text x="220" y="43.54545454545455" text-anchor="middle" fill="#58a6ff" font-size="9">8</text>
+<text x="220" y="32.909090909090914" text-anchor="middle" fill="#f85149" font-size="9">17</text>
+<line x1="220" y1="49.54545454545455" x2="260" y2="49.54545454545455" stroke="#58a6ff" stroke-width="2"/>
+<line x1="220" y1="20.909090909090914" x2="260" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
+<circle cx="260" cy="49.54545454545455" r="3" fill="#58a6ff"/>
+<circle cx="260" cy="30.454545454545453" r="3" fill="#f85149"/>
+<text x="260" y="43.54545454545455" text-anchor="middle" fill="#58a6ff" font-size="9">8</text>
+<text x="260" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
+<line x1="260" y1="49.54545454545455" x2="300" y2="59.09090909090909" stroke="#58a6ff" stroke-width="2"/>
+<line x1="260" y1="30.454545454545453" x2="300" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
+<circle cx="300" cy="59.09090909090909" r="3" fill="#58a6ff"/>
+<circle cx="300" cy="30.454545454545453" r="3" fill="#f85149"/>
+<text x="300" y="53.09090909090909" text-anchor="middle" fill="#58a6ff" font-size="9">5</text>
+<text x="300" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
+<line x1="300" y1="59.09090909090909" x2="340" y2="65.45454545454545" stroke="#58a6ff" stroke-width="2"/>
+<line x1="300" y1="30.454545454545453" x2="340" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
+<circle cx="340" cy="65.45454545454545" r="3" fill="#58a6ff"/>
+<circle cx="340" cy="30.454545454545453" r="3" fill="#f85149"/>
+<text x="340" y="59.45454545454545" text-anchor="middle" fill="#58a6ff" font-size="9">3</text>
+<text x="340" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
+<line x1="340" y1="65.45454545454545" x2="380" y2="75.0" stroke="#58a6ff" stroke-width="2"/>
+<line x1="340" y1="30.454545454545453" x2="380" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
+<circle cx="380" cy="75.0" r="3" fill="#58a6ff"/>
+<circle cx="380" cy="30.454545454545453" r="3" fill="#f85149"/>
+<text x="380" y="69.0" text-anchor="middle" fill="#58a6ff" font-size="9">0</text>
+<text x="380" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
 </svg></div>
 <div class="controls">
 <button onclick="expandAll()">Expand All</button>
@@ -154,317 +170,551 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="left">
 <span class="tnum bug">T1</span>
 <span class="player bug">BUG</span>
-<span class="life">Life: <b>17 (-3)</b> &nbsp;|&nbsp; Opp: 20</span>
+<span class="life">Life: <b>18 (-2)</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡2</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">USea</span>
-<span class="pill">Thoughtseize</span>
-<span class="pill">PDelta</span>
-<span class="pill">Bowmasters</span>
+<span class="pill">Tamiyo</span>
 <span class="pill">Kaito</span>
-<span class="pill">Waste</span>
-<span class="pill">Goyf</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Thoughtseize</span>
+<span class="pill">USea</span>
+<span class="pill">Island</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
-<span class="action">Play+crack PDelta (−1 life, 19) → USea [untapped]</span>
-<span class="reasoning">&larr; fix mana + shuffle</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play USea (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Thoughtseize (−2 life, 17)</span>
+<span class="cat-badge cat-discard">DISCARD</span>
+<span class="action">Thoughtseize (−2 life, 18)</span>
 <span class="reasoning">&larr; pay 2 life to see hand + take best card</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Thoughtseize -&gt; strips Ponder</span>
+<span class="cat-badge cat-discard">DISCARD</span>
+<span class="action">Thoughtseize -&gt; strips Monastery Swiftspear</span>
 <span class="reasoning">&larr; rip their best card</span>
 </div>
-<div class="section-label">Board</div><div class="board">
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BUG — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="section-label">Lands (1)</div>
-<div class="land-list">USea</div>
+<div class="land-list" style="margin-top:4px">USea</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
 </div></div>
 <div class="turn opp" data-idx="1">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum opp">T2</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>18 (-2)</b> &nbsp;|&nbsp; Opp: 17</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 15</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Tomb</span>
-<span class="pill">Tomb</span>
-<span class="pill">City</span>
-<span class="pill">Stock</span>
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
+<span class="pill">Mountain</span>
+<span class="pill">Inspiring Vantage</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Fiery Islet</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Lava Spike</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
-<span class="action">Draw: Tomb</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Skullcrack</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Land: Tomb (1 lands)</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Mountain (1 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Stock (draw 2, mana=0)</span>
-<span class="reasoning">&larr; instant-speed draw 2</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Chain Lightning → 3 damage (opp at 15)</span>
 </div>
-<div class="section-label">Board</div><div class="board">
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="section-label">Lands (1)</div>
-<div class="land-list">Tomb</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+</div>
+<div class="board-side bug">
+<h4>BUG — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">USea</div>
+</div>
+</div>
 </div></div>
 <div class="turn bug" data-idx="2">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum bug">T3</span>
 <span class="player bug">BUG</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 18</span>
+<span class="life">Life: <b>14 (-1)</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏2</span> <span style="color:#d2a8ff;font-size:0.75em">🛡1</span> <span style="color:#f778ba;font-size:0.75em">★1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">USea</span>
-<span class="pill">Bowmasters</span>
+<span class="pill">Tamiyo</span>
 <span class="pill">Kaito</span>
-<span class="pill">Waste</span>
-<span class="pill">Goyf</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Island</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
-<span class="action">Draw: FoW</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: PDelta</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Play USea (2 lands)</span>
-<span class="reasoning">&larr; develop mana</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack PDelta (−1 life, 14) → USea [untapped]</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Flash Bowmasters (1 trigger per card opp draws)</span>
-<span class="reasoning">&larr; punishes every draw: 1 ping + grows Army</span>
+<span class="cat-badge cat-discard">DISCARD</span>
+<span class="action">Brainstorm (3 draws = 3 separate draw events) → [FoW, Brainstorm, Thoughtseize]</span>
+<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
 </div>
-<div class="section-label">Board</div><div class="board">
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Puts back: [&#x27;Island&#x27;, &#x27;Brainstorm&#x27;]</span>
+<span class="reasoning">&larr; hide bad cards on top</span>
 </div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">USea, USea</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-spell">CAST</span>
+<span class="action">Cast Tamiyo (CMC 1, summoning sick)</span>
+<span class="reasoning">&larr; 0/3 that flips to planeswalker</span>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)</span>
+<span class="reasoning">&larr; FLIP! Card-advantage engine online</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BUG — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, USea</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+</div>
+</div>
 </div></div>
 <div class="turn opp" data-idx="3">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum opp">T4</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>14 (-4)</b> &nbsp;|&nbsp; Opp: 17</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 14</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Tomb</span>
-<span class="pill">City</span>
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
-<span class="pill">Tomb</span>
-<span class="pill">STarn</span>
-<span class="pill">Tomb</span>
+<span class="pill">Inspiring Vantage</span>
+<span class="pill">Fiery Islet</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Lava Spike</span>
+<span class="pill">Skullcrack</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
-<span class="action">Draw: Atraxa</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Eidolon of the Great Revel</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Land: Tomb (2 lands)</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Inspiring Vantage (2 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
 </div>
-<div class="section-label">Board</div><div class="board">
+<div class="play"><span class="step">3.</span>
+<span class="action">Eidolon of the Great Revel enters the battlefield</span>
 </div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">Tomb, Tomb</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage</div>
+</div>
+<div class="board-side bug">
+<h4>BUG — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, USea</div>
+</div>
+</div>
 </div></div>
 <div class="turn bug" data-idx="4">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum bug">T5</span>
 <span class="player bug">BUG</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 13</span>
-</div><span class="arrow">&#9654;</span></div>
-<div class="turn-body">
-<div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Kaito</span>
-<span class="pill">Waste</span>
-<span class="pill">Goyf</span>
-<span class="pill">FoW</span>
-</div>
-<div class="section-label">Plays</div>
-<div class="play"><span class="step">1.</span>
-<span class="action">Draw: Brainstorm</span>
-<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
-</div>
-<div class="play"><span class="step">2.</span>
-<span class="action">Play Waste (3 lands)</span>
-<span class="reasoning">&larr; threaten mana denial</span>
-</div>
-<div class="play"><span class="step">3.</span>
-<span class="action">Waste [ACTIVATED-uncounterable] → destroys Tomb</span>
-<span class="reasoning">&larr; deny opponent mana</span>
-</div>
-<div class="play"><span class="step">4.</span>
-<span class="action">Cast Goyf (CMC 2, sick, P/T 2/3)</span>
-<span class="reasoning">&larr; cheap threat, grows with GY</span>
-</div>
-<div class="play"><span class="step">5.</span>
-<span class="action">Attack: Bowmasters — 1 unblocked → o at 13</span>
-<span class="reasoning">&larr; swing for damage</span>
-</div>
-<div class="section-label">Board</div><div class="board">
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
-<span class="creature-badge">Goyf<span class="pt">2/3</span> <span class="sick">(sick)</span></span>
-</div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">USea, USea</div>
-</div></div>
-<div class="turn opp" data-idx="5">
-<div class="turn-header" onclick="toggle(this.parentElement)">
-<div class="left">
-<span class="tnum opp">T6</span>
-<span class="player opp">OPP</span>
-<span class="life">Life: <b>11 (-2)</b> &nbsp;|&nbsp; Opp: 17</span>
-</div><span class="arrow">&#9654;</span></div>
-<div class="turn-body">
-<div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">City</span>
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
-<span class="pill">Tomb</span>
-<span class="pill">STarn</span>
-<span class="pill">Tomb</span>
-<span class="pill">Atraxa</span>
-</div>
-<div class="section-label">Plays</div>
-<div class="play"><span class="step">1.</span>
-<span class="action">Draw: Sneak</span>
-<span class="reasoning">&larr; draw for turn</span>
-</div>
-<div class="play"><span class="step">2.</span>
-<span class="action">Land: City (2 lands)</span>
-<span class="reasoning">&larr; develop mana</span>
-</div>
-<div class="section-label">Board</div><div class="board">
-</div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">Tomb, City</div>
-</div></div>
-<div class="turn bug" data-idx="6">
-<div class="turn-header" onclick="toggle(this.parentElement)">
-<div class="left">
-<span class="tnum bug">T7</span>
-<span class="player bug">BUG</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 7</span>
-</div><span class="arrow">&#9654;</span></div>
-<div class="turn-body">
-<div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Kaito</span>
-<span class="pill">FoW</span>
-<span class="pill">Brainstorm</span>
-</div>
-<div class="section-label">Plays</div>
-<div class="play"><span class="step">1.</span>
-<span class="action">Draw: Thoughtseize</span>
-<span class="reasoning">&larr; draw for turn</span>
-</div>
-<div class="play"><span class="step">2.</span>
-<span class="action">Brainstorm (3 draws = 3 separate draw events) → [PDelta, Push, Ponder]</span>
-<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
-</div>
-<div class="play"><span class="step">3.</span>
-<span class="action">Puts back: [&#x27;PDelta&#x27;, &#x27;Ponder&#x27;]</span>
-<span class="reasoning">&larr; hide bad cards on top</span>
-</div>
-<div class="play"><span class="step">4.</span>
-<span class="action">Attack: Bowmasters, Goyf — 4 unblocked → o at 7</span>
-<span class="reasoning">&larr; swing for damage</span>
-</div>
-<div class="section-label">Board</div><div class="board">
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
-<span class="creature-badge">Goyf<span class="pt">3/4</span></span>
-</div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">USea, USea</div>
-</div></div>
-<div class="turn opp" data-idx="7">
-<div class="turn-header" onclick="toggle(this.parentElement)">
-<div class="left">
-<span class="tnum opp">T8</span>
-<span class="player opp">OPP</span>
-<span class="life">Life: <b>4 (-3)</b> &nbsp;|&nbsp; Opp: 17</span>
-</div><span class="arrow">&#9654;</span></div>
-<div class="turn-body">
-<div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">STarn</span>
-<span class="pill">Daze</span>
-<span class="pill">Tomb</span>
-<span class="pill">STarn</span>
-<span class="pill">Tomb</span>
-<span class="pill">Atraxa</span>
-<span class="pill">Sneak</span>
-</div>
-<div class="section-label">Plays</div>
-<div class="play"><span class="step">1.</span>
-<span class="action">Draw: MRain</span>
-<span class="reasoning">&larr; draw for turn</span>
-</div>
-<div class="play"><span class="step">2.</span>
-<span class="action">Play+crack STarn (−1 life, 6) → Volc</span>
-<span class="reasoning">&larr; fix mana + shuffle</span>
-</div>
-<div class="section-label">Board</div><div class="board">
-</div>
-<div class="section-label">Lands (3)</div>
-<div class="land-list">Tomb, City, Volc</div>
-</div></div>
-<div class="turn bug open" data-idx="8">
-<div class="turn-header" onclick="toggle(this.parentElement)">
-<div class="left">
-<span class="tnum bug">T9</span>
-<span class="player bug">BUG</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 0</span>
+<span class="life">Life: <b>14</b> &nbsp;|&nbsp; Opp: 17</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
 <span class="pill">Kaito</span>
 <span class="pill">FoW</span>
 <span class="pill">Thoughtseize</span>
-<span class="pill">Push</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
-<span class="action">Draw: Ponder</span>
-<span class="reasoning">&larr; look at top 3, keep the best</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Brainstorm</span>
+<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="action">Ponder (1 draw) → keeps Bowmasters</span>
-<span class="reasoning">&larr; look at top 3, keep the best</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Brainstorm (3 draws = 3 separate draw events) → [Island, Bowmasters, Bowmasters]</span>
+<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Attack: Bowmasters, Goyf — 4 unblocked → o at 0</span>
+<span class="action">Puts back: [&#x27;Island&#x27;, &#x27;Kaito&#x27;]</span>
+<span class="reasoning">&larr; hide bad cards on top</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Tamiyo — 3 unblocked → o at 17</span>
 <span class="reasoning">&larr; swing for damage</span>
 </div>
-<div class="section-label">Board</div><div class="board">
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
-<span class="creature-badge">Goyf<span class="pt">3/4</span></span>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Tamiyo</div>
+<div class="dmg-line">→ 3 unblocked → o at 17</div>
 </div>
-<div class="section-label">Lands (2)</div>
-<div class="land-list">USea, USea</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BUG — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, USea</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="5">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T6</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 8</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★2</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Fiery Islet</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Lava Spike</span>
+<span class="pill">Skullcrack</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Barbarian Ring</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Fiery Islet (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Chain Lightning → 3 damage (opp at 11)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Lava Spike → 3 damage (opp at 8)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet</div>
+</div>
+<div class="board-side bug">
+<h4>BUG — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, USea</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="6">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T7</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>8</b> &nbsp;|&nbsp; Opp: 14</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">Thoughtseize</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Bowmasters</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Kaito</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-spell">CAST</span>
+<span class="action">Flash Bowmasters (1 trigger per card opp draws)</span>
+<span class="reasoning">&larr; punishes every draw: 1 ping + grows Army</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Tamiyo — 3 unblocked → o at 14</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Tamiyo</div>
+<div class="dmg-line">→ 3 unblocked → o at 14</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BUG — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, USea</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="7">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T8</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>14</b> &nbsp;|&nbsp; Opp: 5</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Skullcrack</span>
+<span class="pill">Barbarian Ring</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Goblin Guide</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Barbarian Ring (4 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Goblin Guide enters the battlefield</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Skullcrack → 3 damage (opp at 5)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span></span>
+<span class="creature-badge">Goblin Guide<span class="pt">2/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet, Barbarian Ring</div>
+</div>
+<div class="board-side bug">
+<h4>BUG — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, USea</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="8">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T9</span>
+<span class="player bug">BUG</span>
+<span class="life">Life: <b>3 (-2)</b> &nbsp;|&nbsp; Opp: 14</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">Thoughtseize</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Kaito</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Island</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play Island (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Eidolon trigger — Kaito (CMC 3) deals 2 to BUG (3)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-spell">CAST</span>
+<span class="action">Cast Kaito (3/4 hexproof) → Surveil 2, draw 1 [Tamiyo]</span>
+<span class="reasoning">&larr; hexproof threat + card advantage</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Tamiyo — Eidolon of the Great Revel blocks Tamiyo. Tamiyo deals 3, Eidolon of the Great Revel deals 2 back. 0 unblocked damage to player (o at 14)</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Tamiyo</div>
+<div class="dmg-line">→ Eidolon of the Great Revel blocks Tamiyo. Tamiyo deals 3, Eidolon of the Great Revel deals 2 back. 0 unblocked damage to player (o at 14)</div>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="action">Eidolon of the Great Revel dies.</span>
+</div>
+<div class="combat-detail"><div class="death-line">☠ Eidolon of the Great Revel dies.</div></div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BUG — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
+<span class="creature-badge">Kaito<span class="pt">3/4</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, USea, Island</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet, Barbarian Ring</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp open" data-idx="9">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T10</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>14</b> &nbsp;|&nbsp; Opp: 0</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Rift Bolt</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action key">★ Rift Bolt → 3 damage (opp at 0)</span>
+<span class="reasoning">&larr; 3 damage removal or burn</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet, Barbarian Ring</div>
+</div>
+<div class="board-side bug">
+<h4>BUG — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
+<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
+<span class="creature-badge">Kaito<span class="pt">3/4</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, USea, Island</div>
+</div>
+</div>
 </div></div>
 <div class="result">
-<h2 class="bug-win">BUG WINS</h2>
-<div class="reason">Opp life reaches 0 on turn 5</div>
-<div class="stats">Final life: BUG 17 | OPP 0 &nbsp;|&nbsp; Length: T9</div>
+<h2 class="opp-win">OPP WINS</h2>
+<div class="reason">BUG life reaches 0 on turn 5</div>
+<div class="stats">Final life: BUG 0 | OPP 14 &nbsp;|&nbsp; Length: T10</div>
 <div class="stats" style="margin-top:6px">BUG: 
+<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span> 
 <span class="creature-badge">Bowmasters<span class="pt">1/1</span></span> 
-<span class="creature-badge">Goyf<span class="pt">3/4</span></span> 
+<span class="creature-badge">Kaito<span class="pt">3/4</span></span> 
+</div>
+<div class="stats" style="margin-top:6px">OPP: 
+<span class="creature-badge">Goblin Guide<span class="pt">2/1</span></span> 
 </div>
 </div>
 </div>

@@ -52,7 +52,7 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     bug_player = PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib))
     opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
 
-    gs = GameState(bug=bug_player, opp=opp_player, bug_goes_first=bug_goes_first)
+    gs = GameState(p1=bug_player, p2=opp_player, p1_goes_first=bug_goes_first)
     gs.matchup = matchup
     all_log = []
 
@@ -83,9 +83,9 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     # Simplified: alternate BUG/OPP turns — BUG turn then OPP turn each round
     # (The above structure is complex; revert to clean alternating)
     # Actually rewrite this cleanly:
-    gs2 = GameState(bug=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
-                    opp=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-                    bug_goes_first=bug_goes_first)
+    gs2 = GameState(p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
+                    p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
+                    p1_goes_first=bug_goes_first)
     all_log = []
     display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
 
@@ -110,18 +110,18 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
                     gs2.game_over = False
                     gs2.winner = None
                     gs2.win_reason = None
-                    gs2.bug.life = max(gs2.bug.life, 3)
+                    gs2.p1.life = max(gs2.p1.life, 3)
                     # Remove the threat that killed BUG (Karakas, STP, etc.)
-                    if gs2.opp.creatures:
-                        biggest = max(gs2.opp.creatures, key=lambda c: c.power)
-                        gs2.opp.creatures.remove(biggest)
+                    if gs2.p2.creatures:
+                        biggest = max(gs2.p2.creatures, key=lambda c: c.power)
+                        gs2.p2.creatures.remove(biggest)
                     return True
             if gs2.winner == 'bug' and _opp_save > 0:
                 if _ir_rng.random() < _opp_save:
                     gs2.game_over = False
                     gs2.winner = None
                     gs2.win_reason = None
-                    gs2.opp.life = max(gs2.opp.life, 3)
+                    gs2.p2.life = max(gs2.p2.life, 3)
                     return True
             return False
 
@@ -151,13 +151,13 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     gs = gs2
 
     if not gs.game_over:
-        bug_power = sum(c.power for c in gs.bug.creatures)
-        opp_power = sum(c.power for c in gs.opp.creatures)
-        bug_creatures = len(gs.bug.creatures)
-        opp_creatures = len(gs.opp.creatures)
-        bug_lands = len(gs.bug.lands)
-        opp_lands = len(gs.opp.lands)
-        life_edge = gs.bug.life - gs.opp.life
+        bug_power = sum(c.power for c in gs.p1.creatures)
+        opp_power = sum(c.power for c in gs.p2.creatures)
+        bug_creatures = len(gs.p1.creatures)
+        opp_creatures = len(gs.p2.creatures)
+        bug_lands = len(gs.p1.lands)
+        opp_lands = len(gs.p2.lands)
+        life_edge = gs.p1.life - gs.p2.life
 
         # Score board position: creatures, power, lands, life
         bug_score = bug_power * 2 + bug_creatures * 3 + bug_lands + max(0, life_edge)
@@ -171,7 +171,7 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
             gs.winner = 'opp'
             gs.win_reason = f"Opp board/life advantage after T{gs.turn}"
         else:
-            gs.winner = 'bug' if gs.bug.life >= gs.opp.life else 'opp'
+            gs.winner = 'bug' if gs.p1.life >= gs.p2.life else 'opp'
             gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
         gs.kill_turn = gs.turn
         gs.game_over = True
@@ -197,8 +197,8 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
         bug_opening_hand=[c.name for c in bug_hand],
         opp_opening_hand=[c.name for c in opp_hand],
         log_lines=all_log,
-        final_bug_life=gs.bug.life,
-        final_opp_life=gs.opp.life,
+        final_bug_life=gs.p1.life,
+        final_opp_life=gs.p2.life,
         bug_went_first=bug_goes_first,
     )
 
@@ -313,7 +313,7 @@ ELVES_MATCHUPS = {
 
 def run_elves_match(opp_matchup: str, verbose: bool = False):
     """
-    Run a Bo3 match with ELVES as the protagonist (gs.bug = Elves, gs.opp = opponent).
+    Run a Bo3 match with ELVES as the protagonist (gs.p1 = Elves, gs.p2 = opponent).
     Winner == 'bug' means Elves won; 'opp' means the opponent won.
     Returns (elves_wins, opp_wins, games_played, results).
     """
@@ -334,7 +334,7 @@ def run_elves_match(opp_matchup: str, verbose: bool = False):
 
         elves_player = PlayerState(name='b', hand=list(elves_hand), library=list(elves_lib))
         opp_player   = PlayerState(name='o', hand=list(opp_hand),   library=list(opp_lib))
-        gs = GameState(bug=elves_player, opp=opp_player, bug_goes_first=elves_goes_first)
+        gs = GameState(p1=elves_player, p2=opp_player, p1_goes_first=elves_goes_first)
         gs.matchup = opp_deck_key   # opponent matchup key for opp_turn dispatch
 
         all_log = []
@@ -356,9 +356,9 @@ def run_elves_match(opp_matchup: str, verbose: bool = False):
                 all_log += [f"G{game_num}T{turn}[ELV] {l}" for l in lines]
 
         if not gs.game_over:
-            elves_power = sum(c.power for c in gs.bug.creatures)
-            opp_power   = sum(c.power for c in gs.opp.creatures)
-            if elves_power > opp_power or gs.bug.life > gs.opp.life + 3:
+            elves_power = sum(c.power for c in gs.p1.creatures)
+            opp_power   = sum(c.power for c in gs.p2.creatures)
+            if elves_power > opp_power or gs.p1.life > gs.p2.life + 3:
                 gs.winner = 'bug'; gs.win_reason = f"Elves board advantage G{game_num}"
                 gs.kill_turn = gs.turn
             else:
@@ -371,7 +371,7 @@ def run_elves_match(opp_matchup: str, verbose: bool = False):
             bug_opening_hand=[c.name for c in elves_hand],
             opp_opening_hand=[c.name for c in opp_hand],
             log_lines=all_log,
-            final_bug_life=gs.bug.life, final_opp_life=gs.opp.life,
+            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
             bug_went_first=elves_goes_first,
         )
         results.append(result)
@@ -444,14 +444,14 @@ def protagonist_turn(gs, turn, matchup):
     Generic protagonist turn for any deck in STRATEGIES.
     Full turn structure: cleanup → untap → upkeep → draw → land → mana →
     Wasteland → Thoughtseize → removal → strategy → combat → EOT.
-    gs.bug = protagonist deck, gs.opp = antagonist.
+    gs.p1 = protagonist deck, gs.p2 = antagonist.
     """
     from engine import (bowmasters_triggers, update_goyf, opp_can_cast,
                         _try_counter_any, _select_attackers, combat_declare)
     from rules import LandPermanent, MTGRules
 
-    b = gs.bug
-    o = gs.opp
+    b = gs.p1
+    o = gs.p2
     log_entries = []
 
     def log(msg, key=False):
@@ -475,7 +475,7 @@ def protagonist_turn(gs, turn, matchup):
     update_goyf(gs)
 
     # ── Draw (first player on play skips T1 draw) ──
-    if not (turn == 1 and gs.bug_goes_first):
+    if not (turn == 1 and gs.p1_goes_first):
         drawn = b.draw(1, is_draw_step=True)
         if drawn:
             log(f"Draw: {drawn[0].name}")
@@ -707,7 +707,7 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         pro_goes_first = random.random() < 0.5
         pro_player = PlayerState(name='b', hand=list(pro_hand), library=list(pro_lib))
         ant_player = PlayerState(name='o', hand=list(ant_hand), library=list(ant_lib))
-        gs = GameState(bug=pro_player, opp=ant_player, bug_goes_first=pro_goes_first)
+        gs = GameState(p1=pro_player, p2=ant_player, p1_goes_first=pro_goes_first)
         gs.matchup = antagonist
 
         all_log = []
@@ -741,9 +741,9 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
                 all_log += [f"G{game_num}T{turn}[PRO] {l}" for l in lines]
 
         if not gs.game_over:
-            pro_power = sum(c.power for c in gs.bug.creatures)
-            ant_power = sum(c.power for c in gs.opp.creatures)
-            if pro_power > ant_power or gs.bug.life > gs.opp.life + 3:
+            pro_power = sum(c.power for c in gs.p1.creatures)
+            ant_power = sum(c.power for c in gs.p2.creatures)
+            if pro_power > ant_power or gs.p1.life > gs.p2.life + 3:
                 gs.winner = 'bug'; gs.win_reason = f"Board advantage G{game_num}"
                 gs.kill_turn = gs.turn
             else:
@@ -756,7 +756,7 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
             bug_opening_hand=[c.name for c in pro_hand],
             opp_opening_hand=[c.name for c in ant_hand],
             log_lines=all_log,
-            final_bug_life=gs.bug.life, final_opp_life=gs.opp.life,
+            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
             bug_went_first=pro_goes_first,
         )
         results.append(result)
@@ -1379,33 +1379,33 @@ def run_rules_tests():
     from cards import make_bug_deck, make_dimir_deck
     from engine import bowmasters_triggers
     gs_bm = GameState(
-        bug=PS_(name='b', hand=make_bug_deck(), library=[]),
-        opp=PS_(name='o', hand=make_dimir_deck(), library=[]),
-        bug_goes_first=True
+        p1=PS_(name='b', hand=make_bug_deck(), library=[]),
+        p2=PS_(name='o', hand=make_dimir_deck(), library=[]),
+        p1_goes_first=True
     )
     # Put Bowmasters in play so the computed property returns True
     from rules import Permanent
     from cards import make_bug_deck
     bowm_card = next(c for c in make_bug_deck() if c.tag == 'bowm')
-    gs_bm.bug.creatures.append(Permanent(card=bowm_card, controller='b'))
+    gs_bm.p1.creatures.append(Permanent(card=bowm_card, controller='b'))
     bm_log = []; bowmasters_triggers(3, gs_bm, bm_log)
     test("Bowmasters: 3 triggers for Brainstorm (3 draws)", len(bm_log), 3)
 
     # ── Audit: Orc Army is a real Permanent (not just a counter) ───────────
     gs_orc = GameState(
-        bug=PS_(name='b', hand=make_bug_deck(), library=[]),
-        opp=PS_(name='o', hand=make_dimir_deck(), library=[]),
-        bug_goes_first=True
+        p1=PS_(name='b', hand=make_bug_deck(), library=[]),
+        p2=PS_(name='o', hand=make_dimir_deck(), library=[]),
+        p1_goes_first=True
     )
     # Put Bowmasters in play so the trigger can actually fire
     from rules import Card, CardType, Permanent as Perm_
-    bowm_card = next((c for c in gs_orc.bug.hand if c.tag == 'bowm'), None)
+    bowm_card = next((c for c in gs_orc.p1.hand if c.tag == 'bowm'), None)
     if bowm_card:
-        gs_orc.bug.hand.remove(bowm_card)
+        gs_orc.p1.hand.remove(bowm_card)
         bowm_perm = Perm_(card=bowm_card, controller='b', summoning_sick=False)
-        gs_orc.bug.creatures.append(bowm_perm)
+        gs_orc.p1.creatures.append(bowm_perm)
     orc_log = []; bowmasters_triggers(1, gs_orc, orc_log)
-    orc_in_creatures = any(p.name == 'Orc Army' for p in gs_orc.bug.creatures)
+    orc_in_creatures = any(p.name == 'Orc Army' for p in gs_orc.p1.creatures)
     test("Orc Army: added to creatures list (real permanent)", orc_in_creatures, True)
 
     # ── Audit: BUG deck is exactly 60 cards ────────────────────────────────
@@ -1424,9 +1424,9 @@ def run_rules_tests():
     # -- Audit: CR 510.2 - damage cleared between turns -------------------------
     # Tamiyo (0/3) should survive repeated Bowmasters (1/1) blocks across turns
     gs_dmg = GameState(
-        bug=PS_(name='b', hand=make_bug_deck(), library=[]),
-        opp=PS_(name='o', hand=make_dimir_deck(), library=[]),
-        bug_goes_first=True
+        p1=PS_(name='b', hand=make_bug_deck(), library=[]),
+        p2=PS_(name='o', hand=make_dimir_deck(), library=[]),
+        p1_goes_first=True
     )
     from rules import Permanent
     tamiyo_c = Card(name='Tamiyo, Inquisitive Student', card_type=CardType.CREATURE,
@@ -1434,34 +1434,34 @@ def run_rules_tests():
                     tag='tamiyo', gy_type='creature')
     tam_perm = Permanent(card=tamiyo_c, controller='o')
     tam_perm.power_mod = 0; tam_perm.toughness_mod = 0
-    gs_dmg.opp.creatures = [tam_perm]
+    gs_dmg.p2.creatures = [tam_perm]
     # Simulate 1 damage from Bowmasters block, then damage clears
     tam_perm.damage_marked = 1
     # Simulate turn boundary cleanup
-    for c in gs_dmg.opp.creatures: c.damage_marked = 0
+    for c in gs_dmg.p2.creatures: c.damage_marked = 0
     gs_dmg.state_based_actions()
-    test("CR 510.2: Tamiyo survives 1 damage after turn cleanup", len(gs_dmg.opp.creatures), 1)
+    test("CR 510.2: Tamiyo survives 1 damage after turn cleanup", len(gs_dmg.p2.creatures), 1)
     # Now mark 3 damage (lethal) - should die
     tam_perm.damage_marked = 3
     gs_dmg.state_based_actions()
-    test("CR 510.2: Tamiyo dies to 3 damage (lethal = toughness)", len(gs_dmg.opp.creatures), 0)
+    test("CR 510.2: Tamiyo dies to 3 damage (lethal = toughness)", len(gs_dmg.p2.creatures), 0)
 
     # -- Audit: mana budget refreshes after fetch crack -----------------------
     # BUG starts T1 with 0 lands, cracks a fetch → should have 1 mana available
     # (verified by checking available_mana_count after fetch resolves)
     # -- Audit: mana budget refreshes after fetch crack -----------------------
     gs_budget = GameState(
-        bug=PS_(name='b', hand=[], library=make_bug_deck()),
-        opp=PS_(name='o', hand=[], library=[]),
-        bug_goes_first=True
+        p1=PS_(name='b', hand=[], library=make_bug_deck()),
+        p2=PS_(name='o', hand=[], library=[]),
+        p1_goes_first=True
     )
     from cards import fetch_land
     fetch_c = fetch_land('Polluted Delta', ['Island', 'Swamp'])  # subtypes, not names
     fetch_p = LandPermanent(card=fetch_c, controller='b')
-    gs_budget.bug.lands.append(fetch_p)
-    pre_fetch = gs_budget.bug.available_mana_count()
-    fetched_land = gs_budget.bug.use_fetch(fetch_p)
-    post_fetch = gs_budget.bug.available_mana_count()
+    gs_budget.p1.lands.append(fetch_p)
+    pre_fetch = gs_budget.p1.available_mana_count()
+    fetched_land = gs_budget.p1.use_fetch(fetch_p)
+    post_fetch = gs_budget.p1.available_mana_count()
     test("Budget: before fetch crack, 0 mana (fetch taps for nothing)", pre_fetch, 0)
     test("Budget: fetch crack gives 1 mana (untapped dual enters)", post_fetch, 1)
 
@@ -1475,24 +1475,24 @@ def run_rules_tests():
     from rules import Permanent
 
     gs_ng = GameState(
-        bug=PS_(name='b', hand=make_bug_deck(), library=[]),
-        opp=PS_(name='o', hand=make_dimir_deck(), library=[]),
-        bug_goes_first=True
+        p1=PS_(name='b', hand=make_bug_deck(), library=[]),
+        p2=PS_(name='o', hand=make_dimir_deck(), library=[]),
+        p1_goes_first=True
     )
     # Put Nethergoyf into play controlled by opp
     from cards import creature as mkc_ng
     ng_card = mkc_ng('Nethergoyf', 1, {'U':1}, {'U','B'}, 0, 1, tag='nether')
     ng_perm = Permanent(card=ng_card, controller='o')
     ng_perm.power_mod = 0; ng_perm.toughness_mod = 0
-    gs_ng.opp.creatures.append(ng_perm)
+    gs_ng.p2.creatures.append(ng_perm)
 
     # Give opp GY: land + instant + creature = 3 types
     from rules import Card, CardType
     def gy_card(gy_type):
         c = Card(name='x', card_type=CardType.INSTANT, cmc=1, mana_cost={}, colors=set(), gy_type=gy_type)
         return c
-    gs_ng.opp.graveyard = [gy_card('land'), gy_card('instant'), gy_card('creature')]
-    gs_ng.bug.graveyard = [gy_card('sorcery')]  # 1 type in BUG GY — should NOT affect opp's Nethergoyf
+    gs_ng.p2.graveyard = [gy_card('land'), gy_card('instant'), gy_card('creature')]
+    gs_ng.p1.graveyard = [gy_card('sorcery')]  # 1 type in BUG GY — should NOT affect opp's Nethergoyf
 
     update_goyf(gs_ng)
     test("Nethergoyf (opp-controlled): P uses opp GY (3 types → P=3)", ng_perm.power, 3)
@@ -1504,9 +1504,9 @@ def run_rules_tests():
     from game import GameState
     from cards import make_bug_deck, make_dimir_deck
     gs_leg = GameState(
-        bug=PS_(name='b', hand=make_bug_deck(), library=[]),
-        opp=PS_(name='o', hand=make_dimir_deck(), library=[]),
-        bug_goes_first=True
+        p1=PS_(name='b', hand=make_bug_deck(), library=[]),
+        p2=PS_(name='o', hand=make_dimir_deck(), library=[]),
+        p1_goes_first=True
     )
     from rules import Permanent
     def make_tagged_creature(name, tag, cmc=1):
@@ -1516,21 +1516,21 @@ def run_rules_tests():
         p = Permanent(card=c, controller='o'); p.power_mod=0; p.toughness_mod=0
         return p
     # Two Tamiyos -> legend rule fires
-    gs_leg.opp.creatures = [make_tagged_creature('Tamiyo, Inquisitive Student','tamiyo'),
+    gs_leg.p2.creatures = [make_tagged_creature('Tamiyo, Inquisitive Student','tamiyo'),
                              make_tagged_creature('Tamiyo, Inquisitive Student','tamiyo')]
     gs_leg.state_based_actions()
-    test("Legend rule: two Tamiyos -> only one survives", len(gs_leg.opp.creatures), 1)
-    test("Legend rule: second Tamiyo goes to GY",         len(gs_leg.opp.graveyard), 1)
+    test("Legend rule: two Tamiyos -> only one survives", len(gs_leg.p2.creatures), 1)
+    test("Legend rule: second Tamiyo goes to GY",         len(gs_leg.p2.graveyard), 1)
     # Two Bowmasters -> legend rule does NOT fire (not legendary)
     gs_bowm = GameState(
-        bug=PS_(name='b', hand=make_bug_deck(), library=[]),
-        opp=PS_(name='o', hand=make_dimir_deck(), library=[]),
-        bug_goes_first=True
+        p1=PS_(name='b', hand=make_bug_deck(), library=[]),
+        p2=PS_(name='o', hand=make_dimir_deck(), library=[]),
+        p1_goes_first=True
     )
-    gs_bowm.opp.creatures = [make_tagged_creature('Orcish Bowmasters','bowm',cmc=2),
+    gs_bowm.p2.creatures = [make_tagged_creature('Orcish Bowmasters','bowm',cmc=2),
                               make_tagged_creature('Orcish Bowmasters','bowm',cmc=2)]
     gs_bowm.state_based_actions()
-    test("Legend rule: two Bowmasters both survive (not legendary)", len(gs_bowm.opp.creatures), 2)
+    test("Legend rule: two Bowmasters both survive (not legendary)", len(gs_bowm.p2.creatures), 2)
 
     # -- Audit: Thoughtseize priority - Bowmasters over removal ------------
     from cards import instant, creature as mkc2
@@ -1616,7 +1616,7 @@ def run_match(matchup: str, verbose: bool = False):
 
         bug_player = PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib))
         opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
-        gs = GameState(bug=bug_player, opp=opp_player, bug_goes_first=bug_goes_first)
+        gs = GameState(p1=bug_player, p2=opp_player, p1_goes_first=bug_goes_first)
         gs.matchup = matchup
         # Leyline of the Void: if in BUG's opening hand, place on battlefield pre-game
         # Oracle: "If this card is in your opening hand, you may begin the game with it on the battlefield"
@@ -1646,7 +1646,7 @@ def run_match(matchup: str, verbose: bool = False):
                 all_log += [f"G{game_num}T{turn}[BUG] {l}" for l in lines]
 
         if not gs.game_over:
-            if sum(c.power for c in gs.bug.creatures) > sum(c.power for c in gs.opp.creatures) or gs.bug.life > gs.opp.life + 3:
+            if sum(c.power for c in gs.p1.creatures) > sum(c.power for c in gs.p2.creatures) or gs.p1.life > gs.p2.life + 3:
                 gs.winner = 'bug'; gs.win_reason = f"Board advantage G{game_num}"
                 gs.kill_turn = gs.turn
             else:
@@ -1659,7 +1659,7 @@ def run_match(matchup: str, verbose: bool = False):
             bug_opening_hand=[c.name for c in bug_hand],
             opp_opening_hand=[c.name for c in opp_hand],
             log_lines=all_log,
-            final_bug_life=gs.bug.life, final_opp_life=gs.opp.life,
+            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
             bug_went_first=bug_goes_first,
         )
         results.append(result)
@@ -1676,7 +1676,7 @@ def run_match(matchup: str, verbose: bool = False):
             for line in result.log_lines:
                 print(f"  {line}")
             print(f"{'BUG WINS' if gs.winner == 'bug' else 'OPP WINS'} — {gs.win_reason}")
-            print(f"Life: BUG {gs.bug.life} — Opp {gs.opp.life}")
+            print(f"Life: BUG {gs.p1.life} — Opp {gs.p2.life}")
 
     return bug_match_wins, opp_match_wins, games_played, results
 

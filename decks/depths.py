@@ -325,7 +325,7 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Once Upon a Time ({'free' if cost == 0 else 'paid'}) → dig")
             if gs.bowmasters_on_board:
                 bowmasters_triggers(1, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
+                                    controller='o' if player is gs.p1 else 'b')
 
     # ── Step 5: Crop Rotation — instant land tutor ───────────────────────────
     crop = player.find_tag('crop')
@@ -504,7 +504,7 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                 # If Marit Lage connected, opponent should be dead (20 >= 20 life)
                 if opponent.life <= 0:
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.winner = 'bug' if player is gs.p1 else 'opp'
                     gs.win_reason = "Dark Depths: Marit Lage 20/20 lethal"
                     gs.kill_turn = gs.turn
 

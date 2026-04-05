@@ -189,7 +189,7 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
     def _bowm_check(n):
         if getattr(gs, 'bowmasters_on_board', False):
             bowmasters_triggers(n, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
 
     # ── Track persistent effects ────────────────────────────────────────────
     if not hasattr(gs, 'cloudpost_ring_counters'):
@@ -217,7 +217,7 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
         # Karn + Mycosynth Lattice = hard lock. Opponent's lands don't work.
         log_fn("★ Karn + Mycosynth Lattice lock — opponent locked out", True)
         gs.game_over = True
-        gs.winner = 'bug' if player is gs.bug else 'opp'
+        gs.winner = 'bug' if player is gs.p1 else 'opp'
         gs.win_reason = "Cloudpost: Karn Lattice lock"
         gs.kill_turn = gs.turn
         return
@@ -267,7 +267,7 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(sac_land.card)
                 # Put target land directly onto battlefield
                 player.library.remove(target_land)
-                new_land = LandPermanent(target_land, controller='o' if player is gs.opp else 'b')
+                new_land = LandPermanent(target_land, controller='o' if player is gs.p2 else 'b')
                 player.lands.append(new_land)
                 mana -= 1
                 # Recalculate mana with new land

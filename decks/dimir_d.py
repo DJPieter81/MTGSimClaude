@@ -252,7 +252,7 @@ def _strategy_dimir_d(player, opponent, gs, total_mana, log_fn, log_entries):
             drawn = player.draw(1)
             log_fn("Kaito, Bane of Nightmares (card advantage engine)")
             bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
         else:
             player.add_to_grave(kaito)
 
@@ -285,7 +285,7 @@ def _strategy_dimir_d(player, opponent, gs, total_mana, log_fn, log_entries):
             drawn = player.draw(1)
             log_fn(f"{cantrip.name} — cantrip")
             bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
             break  # one cantrip per turn
 
     # Mishra's Bauble — free cantrip (delayed draw, modeled as immediate)
@@ -296,7 +296,7 @@ def _strategy_dimir_d(player, opponent, gs, total_mana, log_fn, log_entries):
         drawn = player.draw(1)
         log_fn("Mishra's Bauble — cantrip")
         bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.bug else 'b')
+                            controller='o' if player is gs.p1 else 'b')
         update_goyf(gs)
 
     if gs.game_over:

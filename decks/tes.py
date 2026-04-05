@@ -287,7 +287,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             player.spells_cast_this_turn += 1
             log_fn(f"Gitaxian Probe (−2 life, {player.life})")
             bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
             gs.check_life_totals()
             if gs.game_over: return
 
@@ -308,7 +308,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             player.spells_cast_this_turn += 1
             log_fn(f"{bs.name} (dig for combo)")
             bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
             gs.check_life_totals()
             if gs.game_over: return
 
@@ -380,7 +380,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         storm += 1; player.spells_cast_this_turn += 1
         log_fn(f"Gitaxian Probe (−2 life, {player.life}) storm={storm}")
         bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.bug else 'b')
+                            controller='o' if player is gs.p1 else 'b')
         gs.check_life_totals()
         if gs.game_over: return
 
@@ -396,7 +396,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         player.draw(1)
         log_fn(f"{bs.name} (storm={storm})")
         bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.bug else 'b')
+                            controller='o' if player is gs.p1 else 'b')
         gs.check_life_totals()
         if gs.game_over: return
     # Crack any newly drawn fast mana
@@ -438,7 +438,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
                     player.life += final_dmg
                     log_fn(f"★ Veil + combo chain → Tendrils storm {final_storm}, {final_dmg} dmg, opp at {opponent.life}", True)
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.winner = 'bug' if player is gs.p1 else 'opp'
                     gs.win_reason = f"TES: Veil + Tendrils storm={final_storm} deals {final_dmg}"
                     gs.kill_turn = gs.turn
                     return
@@ -486,7 +486,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.draw(7)
             log_fn(f"★ Echo of Eons flashback — both draw 7! storm={storm}", True)
             bowmasters_triggers(7, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
             gs.check_life_totals()
             if gs.game_over: return
             # Now chain the new hand's fast mana
@@ -628,7 +628,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"★ Tendrils — storm {storm}, {final_damage} dmg, opp at {opponent.life}", True)
                 if opponent.life <= 0:
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.winner = 'bug' if player is gs.p1 else 'opp'
                     gs.win_reason = f"TES: Tendrils storm={storm} deals {final_damage}"
                     gs.kill_turn = gs.turn
                 else:
@@ -647,7 +647,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ Empty the Warrens — storm {storm}, {token_count} Goblins", True)
             if token_count >= 6:
                 gs.game_over = True
-                gs.winner = 'bug' if player is gs.bug else 'opp'
+                gs.winner = 'bug' if player is gs.p1 else 'opp'
                 gs.win_reason = f"TES: Empty the Warrens ({token_count} goblins)"
                 gs.kill_turn = gs.turn + 1
         else:

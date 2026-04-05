@@ -108,13 +108,13 @@ def best_reactive_answer(spell_card, gs, is_opponents_turn: bool) -> AnswerPlan:
     Choose cheapest answer to a spell on the stack.
     Push/AD cannot counter stacked spells — only counters available here.
     """
-    b = gs.bug
+    b = gs.p1
     tag = spell_card.tag
     cmc = spell_card.cmc
     is_creature = spell_card.is_creature()
 
     threat = classify_threat(spell_card, gs)
-    opp_untapped = gs.opp.available_mana_count()
+    opp_untapped = gs.p2.available_mana_count()
     hand = _hand_size(b)
     life = b.life
     is_mirror = MC.is_mirror(gs)
@@ -174,7 +174,7 @@ def best_proactive_target(gs):
     Property-based Thoughtseize targeting.
     Orders by strategic priority, not tag membership.
     """
-    o = gs.opp
+    o = gs.p2
     if not o.hand:
         return None
 
@@ -222,7 +222,7 @@ def best_proactive_target(gs):
 def should_push_now(gs, target_perm) -> bool:
     """Should BUG spend Fatal Push on target_perm now vs holding mana for a counter?"""
     from rules import MTGRules
-    b = gs.bug
+    b = gs.p1
     revolt = b.revolt_this_turn
 
     if not MTGRules.fatal_push_valid_target(target_perm, revolt):
@@ -242,7 +242,7 @@ def should_push_now(gs, target_perm) -> bool:
     # Hold if we have a counter and opp likely has more spells
     has_counter = any(c.free_cast_if_blue or c.tag in ('fow','fon','daze','fluster')
                       for c in b.hand)
-    opp_has_spells = any(not c.is_land() for c in gs.opp.hand)
+    opp_has_spells = any(not c.is_land() for c in gs.p2.hand)
     if has_counter and opp_has_spells:
         return False
 

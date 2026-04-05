@@ -211,7 +211,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             artifacts_cast_this_turn += 1
             log_fn(f"{bauble.name} — cantrip")
             bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
             if gs.game_over:
                 return
 
@@ -285,7 +285,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 drawn = player.draw(2)
                 log_fn(f"Thought Monitor (2/2 flying, affinity {eff_cost}) — draws 2")
                 bowmasters_triggers(2, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
+                                    controller='o' if player is gs.p1 else 'b')
             else:
                 player.add_to_grave(monitor)
             if gs.game_over:
@@ -327,7 +327,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             drawn = player.draw(2)
             log_fn(f"Thoughtcast (affinity {eff_cost}) — draws 2")
             bowmasters_triggers(2, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
             if gs.game_over:
                 return
 
@@ -355,7 +355,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                                    subtypes={'Construct', 'Artifact'},
                                    base_power=0, base_toughness=0)
             perm = Permanent(card=construct_card,
-                             controller='b' if player is gs.bug else 'o',
+                             controller='b' if player is gs.p1 else 'o',
                              summoning_sick=True)
             perm.is_artifact = True
             player.creatures.append(perm)

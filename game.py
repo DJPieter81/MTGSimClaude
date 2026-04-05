@@ -211,13 +211,13 @@ class PlayerState:
 
 @dataclass
 class GameState:
-    bug: PlayerState
-    opp: PlayerState
+    p1: PlayerState                   # player 1 (protagonist)
+    p2: PlayerState                   # player 2 (antagonist)
     turn: int = 1
     active_player: str = 'b'
     log: List[LogEntry] = field(default_factory=list)
     game_over: bool = False
-    winner: Optional[str] = None
+    winner: Optional[str] = None      # 'p1' or 'p2'
     win_reason: str = ''
     kill_turn: Optional[int] = None
     # Board flags
@@ -225,24 +225,40 @@ class GameState:
     bridge_on_board: bool = False
     moon_on_board: bool = False       # Blood Moon
     b2b_on_board: bool = False        # Back to Basics
-    # BUG tracking — bowmasters_on_board and orc_army are computed properties (see below)
+    # P1 tracking — bowmasters_on_board and orc_army are computed properties (see below)
     leyline_active: bool = False      # Leyline of the Void in play pre-game
     trinisphere_active: bool = False  # Trinisphere — all spells cost ≥ {3}
-    eidolon_active: bool = False      # Eidolon of the Great Revel — 2 dmg to BUG per CMC≥2 spell cast
+    eidolon_active: bool = False      # Eidolon of the Great Revel — 2 dmg to p1 per CMC≥2 spell cast
     tamiyo_flipped: bool = False
-    bug_goes_first: bool = True       # S2: set by coin flip in run_game
+    p1_goes_first: bool = True        # S2: set by coin flip in run_game
     vial_counters: int = 0            # Aether Vial counter tracker
     _vial_entered_last_turn: bool = False  # prevents tick on entry turn
     matchup: str = ''                 # current matchup name for strategy-aware decisions
+    p1_deck: str = ''                 # protagonist deck key
+    p2_deck: str = ''                 # antagonist deck key
     # Kept for Storm/Oops spell-count tracking
     pending_bauble_draws: int = 0
+
+    # ── Compatibility shims — allow gs.bug / gs.opp / gs.bug_goes_first ──
+    @property
+    def bug(self): return self.p1
+    @bug.setter
+    def bug(self, value): self.p1 = value
+    @property
+    def opp(self): return self.p2
+    @opp.setter
+    def opp(self, value): self.p2 = value
+    @property
+    def bug_goes_first(self): return self.p1_goes_first
+    @bug_goes_first.setter
+    def bug_goes_first(self, value): self.p1_goes_first = value
 
     # ── Computed properties — always derived from board state, never manually synced ──
 
     @property
     def bowmasters_on_board(self) -> bool:
-        """True iff BUG controls at least one Orcish Bowmasters permanent."""
-        return any(c.card.tag == 'bowm' for c in self.bug.creatures)
+        """True iff p1 controls at least one Orcish Bowmasters permanent."""
+        return any(c.card.tag == 'bowm' for c in self.p1.creatures)
 
     @bowmasters_on_board.setter
     def bowmasters_on_board(self, value):
@@ -250,8 +266,8 @@ class GameState:
 
     @property
     def orc_army(self):
-        """The Orc Army token permanent, or None. Derived from bug.creatures."""
-        return next((c for c in self.bug.creatures if c.card.tag == 'orc_army'), None)
+        """The Orc Army token permanent, or None. Derived from p1.creatures."""
+        return next((c for c in self.p1.creatures if c.card.tag == 'orc_army'), None)
 
     @orc_army.setter
     def orc_army(self, value):
@@ -260,16 +276,16 @@ class GameState:
     @property
     def shepherd_in_play(self) -> bool:
         """True iff Allosaurus Shepherd is in play anywhere — green spells uncounterable."""
-        return any(c.card.tag == 'shepherd' for c in self.opp.creatures)
-        return any(c.card.tag == 'shepherd' for c in self.bug.creatures + self.opp.creatures)
+        return any(c.card.tag == 'shepherd' for c in self.p2.creatures)
+        return any(c.card.tag == 'shepherd' for c in self.p1.creatures + self.p2.creatures)
     @shepherd_in_play.setter
     def shepherd_in_play(self, value):
         pass  # derived from board
 
     @property
     def thalia_on_board(self) -> bool:
-        """True iff opp controls Thalia — noncreature spells cost +1 (CR 613)."""
-        return any(c.card.tag == 'thalia' for c in self.opp.creatures)
+        """True iff p2 controls Thalia — noncreature spells cost +1 (CR 613)."""
+        return any(c.card.tag == 'thalia' for c in self.p2.creatures)
 
     @thalia_on_board.setter
     def thalia_on_board(self, value):
@@ -277,22 +293,22 @@ class GameState:
 
     @property
     def narset_active(self) -> bool:
-        """True iff opp controls Narset, Parter of Veils — BUG can't draw extra cards."""
-        return any(c.card.tag == 'narset' for c in self.opp.planeswalkers
-                   ) if hasattr(self.opp, 'planeswalkers') else False
+        """True iff p2 controls Narset, Parter of Veils — p1 can't draw extra cards."""
+        return any(c.card.tag == 'narset' for c in self.p2.planeswalkers
+                   ) if hasattr(self.p2, 'planeswalkers') else False
 
     def log_event(self, player: str, phase: str, message: str, key: bool = False):
         self.log.append(LogEntry(self.turn, player, phase, message, key))
 
     def check_life_totals(self):
-        if self.bug.life <= 0 and not self.game_over:
+        if self.p1.life <= 0 and not self.game_over:
             self.game_over = True
             self.winner = 'opp'
-            self.win_reason = f'BUG life reaches {self.bug.life} on turn {self.turn}'
-        if self.opp.life <= 0 and not self.game_over:
+            self.win_reason = f'BUG life reaches {self.p1.life} on turn {self.turn}'
+        if self.p2.life <= 0 and not self.game_over:
             self.game_over = True
             self.winner = 'bug'
-            self.win_reason = f'Opp life reaches {self.opp.life} on turn {self.turn}'
+            self.win_reason = f'Opp life reaches {self.p2.life} on turn {self.turn}'
             self.kill_turn = self.turn
 
     def spell_blocked_by_chalice(self, spell_cmc: int) -> bool:
@@ -315,7 +331,7 @@ class GameState:
           F. Even trade while at board parity or behind — reinforces opp lead.
           G. Deathtouch blocker — attacker dies regardless of power.
         """
-        defender   = self.opp if player == self.bug else self.bug
+        defender   = self.p2 if player == self.p1 else self.p1
         # Bridge uses defender's hand size (Bridge controller = defender)
         hand_size  = len(defender.hand)
         blockers   = defender.creatures
@@ -324,7 +340,7 @@ class GameState:
         board_behind = len(player.creatures) < len(blockers)
 
         # Lethal pressure: opp at or near lethal — attack regardless
-        def_player = defender if player == self.bug else player
+        def_player = defender if player == self.p1 else player
         near_lethal = def_player.life <= sum(
             c.power for c in player.creatures if MTGRules.can_attack(c)
         ) * 0.75  # within striking distance
@@ -445,7 +461,7 @@ class GameState:
 
     def state_based_actions(self):
         """CR 704 - lethal damage, 0-toughness, and legend rule."""
-        for player in [self.bug, self.opp]:
+        for player in [self.p1, self.p2]:
             # CR 704.5a/b - lethal damage and 0-toughness
             dead = [c for c in player.creatures
                     if MTGRules.check_lethal_damage(c) or MTGRules.check_zero_toughness(c)]
@@ -466,10 +482,10 @@ class GameState:
 
         # Sync derived flags — bowmasters_on_board must reflect actual board state
         self.bowmasters_on_board = any(
-            c.card.tag == 'bowm' for c in self.bug.creatures
+            c.card.tag == 'bowm' for c in self.p1.creatures
         )
         # Sync orc_army reference
-        orc = next((c for c in self.bug.creatures if c.card.tag == 'orc_army'), None)
+        orc = next((c for c in self.p1.creatures if c.card.tag == 'orc_army'), None)
         if orc is None:
             self.orc_army = None
 
@@ -478,14 +494,14 @@ class GameState:
     def set_moon(self, active: bool):
         """S3: apply/remove Blood Moon to both players' lands."""
         self.moon_on_board = active
-        self.bug.apply_blood_moon(active)
-        self.opp.apply_blood_moon(active)
+        self.p1.apply_blood_moon(active)
+        self.p2.apply_blood_moon(active)
 
     def set_b2b(self, active: bool):
         """S4: apply/remove Back to Basics to both players' lands."""
         self.b2b_on_board = active
-        self.bug.apply_b2b(active)
-        self.opp.apply_b2b(active)
+        self.p1.apply_b2b(active)
+        self.p2.apply_b2b(active)
 
     def apply_continuous_effects(self, perm) -> None:
         """CR 613 — apply all currently active global continuous effects to a
@@ -506,6 +522,18 @@ class GameState:
             if self.b2b_on_board:
                 perm.b2b_active = True
 
+
+# ── Wrap GameState.__init__ to accept legacy kwargs (bug=, opp=, bug_goes_first=) ──
+_gs_orig_init = GameState.__init__
+def _gs_compat_init(self, *args, **kwargs):
+    if 'bug' in kwargs and 'p1' not in kwargs:
+        kwargs['p1'] = kwargs.pop('bug')
+    if 'opp' in kwargs and 'p2' not in kwargs:
+        kwargs['p2'] = kwargs.pop('opp')
+    if 'bug_goes_first' in kwargs and 'p1_goes_first' not in kwargs:
+        kwargs['p1_goes_first'] = kwargs.pop('bug_goes_first')
+    _gs_orig_init(self, *args, **kwargs)
+GameState.__init__ = _gs_compat_init
 
 # ─────────────────────────────────────────────
 # Mulligan  CR 103.5 — London format
