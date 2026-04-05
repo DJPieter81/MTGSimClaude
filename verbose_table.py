@@ -13,109 +13,140 @@ from game import PlayerState, GameState, london_mulligan, bug_keep, opp_keep
 from engine import bug_turn, opp_turn
 
 
-def format_hand(player):
-    """Summarize hand by card names."""
-    names = [c.name for c in player.hand]
-    if not names:
-        return "(empty)"
-    # Abbreviate long names
-    abbrev = {
-        'Tamiyo, Inquisitive Student': 'Tamiyo',
-        'Orcish Bowmasters': 'Bowmasters',
-        'Murktide Regent': 'Murktide',
-        'Force of Will': 'FoW',
-        'Force of Negation': 'FoN',
-        'Underground Sea': 'USea',
-        'Polluted Delta': 'PDelta',
-        'Misty Rainforest': 'MRain',
-        'Flooded Strand': 'FStrand',
-        'Marsh Flats': 'MFlats',
-        'Scalding Tarn': 'STarn',
-        'Kaito, Bane of Nightmares': 'Kaito',
-        'Dragon\'s Rage Channeler': 'DRC',
-        'Nethergoyf': 'Goyf',
-        "Mishra's Bauble": 'Bauble',
-        'Lightning Bolt': 'Bolt',
-        'Emrakul, the Aeons Torn': 'Emrakul',
-        'Atraxa, Grand Unifier': 'Atraxa',
-        'Show and Tell': 'SnT',
-        'Sneak Attack': 'Sneak',
-        'Lotus Petal': 'Petal',
-        'Volcanic Island': 'Volc',
-        'Ancient Tomb': 'Tomb',
-        'Thundering Falls': 'TFalls',
-        'Omniscience': 'Omni',
-        'Stock Up': 'Stock',
-        'Sink into Stupor': 'Sink',
-        'Simian Spirit Guide': 'SSG',
-        'Cephalid Illusionist': 'Illusionist',
-        "Nomads en-Kor": 'Nomads',
-        "Thassa's Oracle": 'Oracle',
-        'Karn, the Great Creator': 'Karn',
-        'The One Ring': 'Ring',
-        'Ugin, Eye of the Storms': 'Ugin',
-        'Ulamog, the Ceaseless Hunger': 'Ulamog',
-        'Patchwork Automaton': 'Automaton',
-        'Thought Monitor': 'Monitor',
-        'Kappa Cannoneer': 'Cannoneer',
-        'Cori-Steel Cutter': 'Cutter',
-        'Brazen Borrower': 'Borrower',
-        'Undercity Sewers': 'Sewers',
-        'Fatal Push': 'Push',
-        'Snuff Out': 'Snuff',
-        'Wasteland': 'Waste',
-        'Crop Rotation': 'Crop',
-        'Expedition Map': 'Map',
-        'Disruptor Flute': 'Flute',
-        'Pithing Needle': 'Needle',
-        "Kozilek's Command": 'KozCmd',
-        "Urza's Saga": 'Saga',
-        "Urza's Tower": 'Tower',
-        "Urza's Mine": 'Mine',
-        "Urza's Power Plant": 'Plant',
-        'Planar Nexus': 'Nexus',
-        'Cloudpost': 'CPost',
-        'Glimmerpost': 'GPost',
-    }
-    short = [abbrev.get(n, n) for n in names]
-    return ', '.join(short)
+ABBREV = {
+    'Tamiyo, Inquisitive Student': 'Tamiyo',
+    'Orcish Bowmasters': 'Bowmasters',
+    'Murktide Regent': 'Murktide',
+    'Force of Will': 'FoW',
+    'Force of Negation': 'FoN',
+    'Underground Sea': 'USea',
+    'Polluted Delta': 'PDelta',
+    'Misty Rainforest': 'MRain',
+    'Flooded Strand': 'FStrand',
+    'Marsh Flats': 'MFlats',
+    'Scalding Tarn': 'STarn',
+    'Kaito, Bane of Nightmares': 'Kaito',
+    "Dragon's Rage Channeler": 'DRC',
+    'Nethergoyf': 'Goyf',
+    "Mishra's Bauble": 'Bauble',
+    'Lightning Bolt': 'Bolt',
+    'Emrakul, the Aeons Torn': 'Emrakul',
+    'Atraxa, Grand Unifier': 'Atraxa',
+    'Show and Tell': 'SnT',
+    'Sneak Attack': 'Sneak',
+    'Lotus Petal': 'Petal',
+    'Volcanic Island': 'Volc',
+    'Ancient Tomb': 'Tomb',
+    'Thundering Falls': 'TFalls',
+    'Omniscience': 'Omni',
+    'Stock Up': 'Stock',
+    'Sink into Stupor': 'Sink',
+    'Simian Spirit Guide': 'SSG',
+    'Cephalid Illusionist': 'Illusionist',
+    'Nomads en-Kor': 'Nomads',
+    "Thassa's Oracle": 'Oracle',
+    'Karn, the Great Creator': 'Karn',
+    'The One Ring': 'Ring',
+    'Ugin, Eye of the Storms': 'Ugin',
+    'Ulamog, the Ceaseless Hunger': 'Ulamog',
+    'Patchwork Automaton': 'Automaton',
+    'Thought Monitor': 'Monitor',
+    'Kappa Cannoneer': 'Cannoneer',
+    'Cori-Steel Cutter': 'Cutter',
+    'Brazen Borrower': 'Borrower',
+    'Undercity Sewers': 'Sewers',
+    'Fatal Push': 'Push',
+    'Snuff Out': 'Snuff',
+    'Wasteland': 'Waste',
+    'Crop Rotation': 'Crop',
+    'Expedition Map': 'Map',
+    'Disruptor Flute': 'Flute',
+    'Pithing Needle': 'Needle',
+    "Kozilek's Command": 'KozCmd',
+    "Urza's Saga": 'Saga',
+    "Urza's Tower": 'Tower',
+    "Urza's Mine": 'Mine',
+    "Urza's Power Plant": 'Plant',
+    'Planar Nexus': 'Nexus',
+    'Cloudpost': 'CPost',
+    'Glimmerpost': 'GPost',
+    'Orim\'s Chant': 'Chant',
+    'Swords to Plowshares': 'StP',
+    'Voice of Victory': 'Voice',
+    'Unholy Heat': 'Heat',
+    'Dread Return': 'Dread',
+    'Narcomoeba': 'Narco',
+    'Flusterstorm': 'Fluster',
+    'Archon of Cruelty': 'Archon',
+    'Mox Opal': 'Opal',
+    "Urza's Bauble": 'UBauble',
+    'Pinnacle Emissary': 'Emissary',
+    'Emry, Lurker of the Loch': 'Emry',
+    'Shadowspear': 'Spear',
+    'Lavaspur Boots': 'Boots',
+    'Krang, Master Mind': 'Krang',
+    'Seat of the Synod': 'Seat',
+    'Otawara, Soaring City': 'Otawara',
+    'Boseiju, Who Endures': 'Boseiju',
+    'Bojuka Bog': 'Bog',
+}
 
 
-def format_board(player):
-    """Summarize board: creatures + lands."""
-    creatures = []
+def ab(name):
+    """Abbreviate a card name."""
+    return ABBREV.get(name, name)
+
+
+def fmt_hand(player):
+    names = [ab(c.name) for c in player.hand]
+    return ', '.join(names) if names else '(empty)'
+
+
+def fmt_creatures(player):
+    parts = []
     for c in player.creatures:
-        p = c.power
-        t = c.toughness
-        name = c.card.name
-        # Abbreviate
-        short = name.split(',')[0]
+        short = ab(c.card.name)
         if len(short) > 12:
             short = short[:10] + '..'
-        sick = '(sick)' if c.summoning_sick else ''
-        creatures.append(f"{short} {p}/{t}{sick}")
+        sick = '*' if c.summoning_sick else ''
+        parts.append(f"{short} {c.power}/{c.toughness}{sick}")
+    return ', '.join(parts) if parts else '-'
 
-    lands = []
-    for l in player.lands:
-        name = l.card.name
-        short = {
-            'Underground Sea': 'USea', 'Polluted Delta': 'PDelta',
-            'Volcanic Island': 'Volc', 'Ancient Tomb': 'Tomb',
-            'Misty Rainforest': 'MRain', 'Flooded Strand': 'FStrand',
-            'Scalding Tarn': 'STarn', 'Marsh Flats': 'MFlats',
-            'Island': 'Island', 'Swamp': 'Swamp', 'Mountain': 'Mtn',
-            'Undercity Sewers': 'Sewers', 'Thundering Falls': 'TFalls',
-            'Wasteland': 'Waste',
-        }.get(name, name[:8])
-        tap = '(T)' if l.tapped else ''
-        lands.append(f"{short}{tap}")
 
+def fmt_lands(player):
     parts = []
-    if creatures:
-        parts.append('Creatures: ' + ', '.join(creatures))
-    if lands:
-        parts.append('Lands: ' + ', '.join(lands))
-    return ' | '.join(parts) if parts else '(empty)'
+    for l in player.lands:
+        short = ab(l.card.name)
+        if len(short) > 8:
+            short = short[:7] + '.'
+        tap = '(T)' if l.tapped else ''
+        parts.append(f"{short}{tap}")
+    return ', '.join(parts) if parts else '-'
+
+
+def fmt_actions(lines):
+    """Clean up action lines into concise summaries."""
+    actions = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        # Abbreviate card names in action text
+        for full, short in ABBREV.items():
+            line = line.replace(full, short)
+        actions.append(line)
+    return actions
+
+
+def print_row(turn, player, life, actions, hand, creatures, lands):
+    """Print one turn as a formatted block."""
+    act_str = actions[0] if actions else '(pass)'
+    print(f"  T{turn:<3} {player:<4} {life:>4}  {act_str}")
+    for a in actions[1:]:
+        print(f"       {'':<4} {'':>4}  {a}")
+    print(f"       {'':<4} {'':>4}  Hand: [{hand}]")
+    print(f"       {'':<4} {'':>4}  Board: {creatures}  |  Lands({len(lands.split(',')) if lands != '-' else 0}): {lands}")
+    print()
 
 
 def run_table_game(matchup, seed=None):
@@ -133,95 +164,67 @@ def run_table_game(matchup, seed=None):
     gs = GameState(bug=bug_player, opp=opp_player, bug_goes_first=bug_goes_first)
     gs.matchup = matchup
 
-    first_label = 'BUG' if bug_goes_first else 'OPP'
-    second_label = 'OPP' if bug_goes_first else 'BUG'
-
-    # Header
     meta_name = matchup.replace('_', ' ').title()
-    print(f"{'=' * 100}")
-    print(f"  BUG Tempo vs {meta_name}  |  BUG is {'ON THE PLAY' if bug_goes_first else 'ON THE DRAW'}")
-    print(f"  BUG mulligans: {bug_mulls}  |  OPP mulligans: {opp_mulls}")
-    print(f"{'=' * 100}")
-    print()
+    play_draw = 'ON THE PLAY' if bug_goes_first else 'ON THE DRAW'
 
-    # Opening hands
-    print(f"  BUG opening hand ({7 - bug_mulls} cards): {format_hand(gs.bug)}")
-    print(f"  OPP opening hand ({7 - opp_mulls} cards): {format_hand(gs.opp)}")
     print()
-
-    # Column header
-    sep = '-' * 100
-    print(f"{'Turn':<8} {'Player':<6} {'Life':>4}  {'Actions':<50} ")
-    print(sep)
+    print(f"  ╔{'═' * 78}╗")
+    print(f"  ║  BUG Tempo vs {meta_name:<30}  BUG is {play_draw:<20} ║")
+    print(f"  ╚{'═' * 78}╝")
+    print()
+    print(f"  BUG opening ({7 - bug_mulls} cards, mull {bug_mulls}): {fmt_hand(gs.bug)}")
+    print(f"  OPP opening ({7 - opp_mulls} cards, mull {opp_mulls}): {fmt_hand(gs.opp)}")
+    print()
+    print(f"  {'Turn':<5} {'Who':<4} {'Life':>4}  {'Action / State'}")
+    print(f"  {'─' * 80}")
 
     display_turn = 0
 
-    for turn in range(1, 16):
+    for rnd in range(1, 16):
         if gs.game_over:
             break
-        gs.turn = turn
+        gs.turn = rnd
 
-        def do_turn(label, turn_fn, *args):
+        def do_one(label):
             nonlocal display_turn
             display_turn += 1
 
             player = gs.bug if label == 'BUG' else gs.opp
-            life_before = player.life
 
-            # Run the turn
             if label == 'BUG':
-                lines = bug_turn(gs, turn)
+                lines = bug_turn(gs, rnd)
             else:
-                lines = opp_turn(gs, turn, matchup)
+                lines = opp_turn(gs, rnd, matchup)
 
-            life_after = player.life
-            opp_ref = gs.opp if label == 'BUG' else gs.bug
+            actions = fmt_actions(lines)
+            hand = fmt_hand(player)
+            creatures = fmt_creatures(player)
+            lands = fmt_lands(player)
 
-            # Print turn header with board state
-            print(f"\n  T{display_turn:<5} {label:<6} {life_after:>3}   ", end='')
-
-            # Filter and print key actions
-            key_actions = []
-            for line in lines:
-                line = line.strip()
-                if not line:
-                    continue
-                key_actions.append(line)
-
-            if key_actions:
-                print(key_actions[0])
-                for a in key_actions[1:]:
-                    print(f"{'':>17} {a}")
-            else:
-                print("(pass)")
-
-            # Print board state summary
-            print(f"{'':>17} Hand: [{format_hand(player)}]")
-            board = format_board(player)
-            if 'Creatures' in board:
-                print(f"{'':>17} Board: {board}")
+            print_row(display_turn, label, player.life, actions, hand, creatures, lands)
 
             return gs.game_over
 
         if bug_goes_first:
-            if do_turn('BUG', bug_turn, gs, turn):
+            if do_one('BUG'):
                 break
-            if do_turn('OPP', opp_turn, gs, turn, matchup):
+            if do_one('OPP'):
                 break
         else:
-            if do_turn('OPP', opp_turn, gs, turn, matchup):
+            if do_one('OPP'):
                 break
-            if do_turn('BUG', bug_turn, gs, turn):
+            if do_one('BUG'):
                 break
 
     # Result
-    print()
-    print(sep)
+    print(f"  {'═' * 80}")
     winner = 'BUG' if gs.winner == 'bug' else 'OPP'
-    print(f"  RESULT: {winner} WINS — {gs.win_reason}")
+    loser = 'OPP' if winner == 'BUG' else 'BUG'
+    print(f"  ★ {winner} WINS on T{display_turn} — {gs.win_reason}")
     print(f"  Final life: BUG {gs.bug.life} | OPP {gs.opp.life}")
-    print(f"  Game length: T{display_turn}")
-    print(sep)
+    print(f"  BUG board: {fmt_creatures(gs.bug)}  |  OPP board: {fmt_creatures(gs.opp)}")
+    print(f"  {'═' * 80}")
+    print()
 
 
 if __name__ == '__main__':
