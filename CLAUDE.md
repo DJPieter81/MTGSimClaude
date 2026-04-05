@@ -41,11 +41,11 @@ matrix = run_meta_matrix(decks=['bug','storm','dimir'])  # explicit list
 
 ### Other functions
 ```python
-from sim import run_match, run_any_match, run_rules_tests
+from sim import run_any_match, run_any_bo3, run_rules_tests
 
-run_match('storm', verbose=True)                    # BUG vs storm Bo3
 run_any_match('ur_delver', 'dimir', verbose=True)   # any deck Bo3
-run_rules_tests()                                   # 116 unit tests
+run_any_bo3('storm', 'bug', n_matches=100)           # Bo3 batch
+run_rules_tests()                                    # 116 unit tests
 ```
 
 ## CLI: run_meta.py
@@ -59,6 +59,29 @@ python3 run_meta.py --matrix --decks 8 -n 30          # Top-8 meta matrix
 python3 run_meta.py --matrix bug storm dimir -n 50    # Custom deck matrix
 python3 run_meta.py --verbose storm burn -s 42        # Single game log
 ```
+
+## Import a New Deck
+
+Paste a raw decklist (MTGGoldfish/Moxfield format) to auto-generate a deck module:
+
+```bash
+echo "4 Delver of Secrets
+4 Lightning Bolt
+4 Force of Will
+..." | python3 import_deck.py "My Deck Name" aggro,tempo_mirror
+
+# Or batch import from text files:
+python3 import_deck.py --scan  # reads decks/imports/*.txt
+```
+
+From Python:
+```python
+from import_deck import import_decklist
+import_decklist(decklist_text, name='My Deck', categories={'aggro'})
+```
+
+The importer auto-matches known cards, generates a strategy, and registers the deck.
+Verify with `python3 run_meta.py --deck my_deck`.
 
 ## Available Decks (36)
 
@@ -101,6 +124,8 @@ r.p2_deck
 - `deck_registry.py` — Auto-discovery of deck modules in `decks/`
 - `interaction_model.py` — Interaction profiles, save rates, FoW priority
 - `run_meta.py` — CLI for all meta analysis commands
+- `import_deck.py` — Decklist parser and deck module generator
+- `parallel.py` — Multiprocessing for matrix and field runs (~3x speedup)
 
 ## Key Design Principles
 
