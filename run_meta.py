@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+"""
+MTGSimClaude — Meta Analysis CLI
+
+Usage:
+  python3 run_meta.py --list                          All decks with meta share
+  python3 run_meta.py --deck storm                    Decklist, strategy, card tags
+  python3 run_meta.py --matchup storm burn -n 100     Win rate, avg turn, turn distribution
+  python3 run_meta.py --field ur_delver -n 50         One deck vs all others
+  python3 run_meta.py --matrix --decks 8 -n 30        Top-8 meta matrix with rankings
+  python3 run_meta.py --matrix -n 50 bug storm dimir  Custom deck list matrix
+  python3 run_meta.py --verbose storm burn -s 42      Game log (actions only)
+  python3 run_meta.py --trace storm burn -s 42        Full log with hand state
+"""
+
+import argparse
+import random
+import sys
+
+
+def cmd_list():
+    """List all available decks with meta share."""
+    from cards import DECKS, MATCHUP_META
+
+    print(f"\n{'Deck':<20s} {'Meta Share':>10s}   {'Has Strategy':>12s}")
+    print('-' * 46)
+
+    def _get_share(k):
+        meta = MATCHUP_META.get(k, {})
+        if isinstance(meta, dict) and 'share' in meta:
+            return meta['share']
+        return 0.0
+
+    from deck_registry import get_strategy
+    from sim import STRATEGIES
+
+    ranked = sorted(DECKS.keys(), key=lambda k: -_get_share(k))
+    for k in ranked:
+        share = _get_share(k)
+        has_strat = bool(get_strategy(k) or STRATEGIES.get(k))
+        print(f"  {k:<18s} {share:>8.0%}      {'yes' if has_strat else 'NO ':>5s}")
+    print(f"\n  {len(ranked)} decks available")
+
+
+def cmd_deck(deck_key):
+    """Show deck details: card list, strategy, tags."""
+    from cards import DECKS, MATCHUP_META
+    from deck_registry import get_strategy
+    from sim import STRATEGIES
+
+    if deck_key not in DECKS:
+        print(f"Unknown deck: {deck_key}")
+        print(f"Available: {sorted(DECKS.keys())}")
+        return
+
+    deck_fn = DECKS[deck_key]
+    cards = deck_fn()
+
+    meta = MATCHUP_META.get(deck_key, {})
+    name = meta.get('name', deck_key) if isinstance(meta, dict) else deck_key
+    share = meta.get('share', 0) if isinstance(meta, dict) else 0
+
+    print(f"\n{'=' * 60}")
+    print(f"  {name}  ({deck_key})")
+    print(f"  Meta share: {share:.0%}  |  Cards: {len(cards)}")
+    print(f"{'=' * 60}")
+
+    # Group by type
+    creatures = [c for c in cards if c.is_creature()]
+    lands = [c for c in cards if c.is_land()]
+    spells = [c for c in cards if not c.is_creature() and not c.is_land()]
+
+    for label, group in [('Creatures', creatures), ('Spells', spells), ('Lands', lands)]:
+        if not group:
+            continue
+        print(f"\n  {label} ({len(group)}):")
+        # Count duplicates
+        counts = {}
+        for c in group:
+            key = c.name
+            counts[key] = counts.get(key, 0) + 1
+        for name, count in sorted(counts.items()):
+            card = next(c for c in group if c.name == name)
+            tags = f" [{card.tag}]" if card.tag else ""
+            cmc = f" CMC{card.cmc}" if not card.is_land() else ""
+            print(f"    {count}x {name}{cmc}{tags}")
+
+    has_strat = bool(get_strategy(deck_key) or STRATEGIES.get(deck_key))
+    print(f"\n  Strategy: {'registered' if has_strat else 'MISSING'}")
+
+    # Gameplan
+    from gameplan import GAMEPLANS
+    plan = GAMEPLANS.get(deck_key)
+    if plan:
+        print(f"  Gameplan: {plan.get('archetype', '?')} — {plan.get('primary_goal', '?')}")
+
+
+def cmd_matchup(deck1, deck2, n_games, seed=None):
+    """Run N games between two decks, show stats."""
+    from sim import run_game
+    if seed is not None:
+        random.seed(seed)
+
+    print(f"\n{'=' * 60}")
+    print(f"  {deck1.upper()} vs {deck2.upper()} — {n_games} games")
+    print(f"{'=' * 60}")
+
+    results = [run_game(deck1, deck2) for _ in range(n_games)]
+    p1_wins = sum(1 for r in results if r.winner == 'p1')
+    p2_wins = n_games - p1_wins
+
+    kill_turns = [r.kill_turn for r in results if r.kill_turn]
+    lengths = [r.game_length for r in results]
+
+    p1_first_games = [r for r in results if r.p1_went_first]
+    p1_first_wr = (sum(1 for r in p1_first_games if r.winner == 'p1') /
+                   max(1, len(p1_first_games)))
+    p1_second_wr = (sum(1 for r in results if r.winner == 'p1' and not r.p1_went_first) /
+                    max(1, sum(1 for r in results if not r.p1_went_first)))
+
+    print(f"\n  {deck1.upper():>15s}: {p1_wins:3d} wins ({p1_wins/n_games:.1%})")
+    print(f"  {deck2.upper():>15s}: {p2_wins:3d} wins ({p2_wins/n_games:.1%})")
+    print(f"\n  Avg game length:  {sum(lengths)/len(lengths):.1f} turns")
+    if kill_turns:
+        print(f"  Avg kill turn:    {sum(kill_turns)/len(kill_turns):.1f}")
+    print(f"\n  {deck1} on play:   {p1_first_wr:.1%}")
+    print(f"  {deck1} on draw:   {p1_second_wr:.1%}")
+
+    # Turn distribution
+    turn_hist = {}
+    for r in results:
+        t = r.game_length
+        turn_hist[t] = turn_hist.get(t, 0) + 1
+    print(f"\n  Turn distribution:")
+    for t in sorted(turn_hist.keys()):
+        bar = '#' * (turn_hist[t] * 40 // n_games)
+        print(f"    T{t:2d}: {turn_hist[t]:3d} ({turn_hist[t]/n_games:4.0%}) {bar}")
+
+    # Win reasons
+    reasons = {}
+    for r in results:
+        key = r.win_reason.split(' on ')[0].split(' after ')[0][:40]
+        reasons[key] = reasons.get(key, 0) + 1
+    print(f"\n  Win reasons:")
+    for reason, count in sorted(reasons.items(), key=lambda x: -x[1])[:8]:
+        print(f"    {count:3d}  {reason}")
+
+
+def cmd_field(deck, n_games, seed=None):
+    """Run one deck vs all others."""
+    from cards import DECKS
+    from sim import run_game
+    if seed is not None:
+        random.seed(seed)
+
+    opponents = sorted(k for k in DECKS.keys() if k != deck)
+
+    print(f"\n{'=' * 60}")
+    print(f"  {deck.upper()} vs THE FIELD — {n_games} games each")
+    print(f"{'=' * 60}\n")
+
+    total_wins = 0
+    total_games = 0
+    rows = []
+
+    for opp in opponents:
+        results = [run_game(deck, opp) for _ in range(n_games)]
+        wins = sum(1 for r in results if r.winner == 'p1')
+        wr = wins / n_games
+        avg_len = sum(r.game_length for r in results) / n_games
+        rows.append((opp, wins, n_games - wins, wr, avg_len))
+        total_wins += wins
+        total_games += n_games
+
+    rows.sort(key=lambda x: -x[3])
+    print(f"  {'Opponent':<20s} {'W-L':>7s} {'WR':>6s} {'AvgT':>5s}")
+    print(f"  {'-'*40}")
+    for opp, w, l, wr, avg_len in rows:
+        print(f"  {opp:<20s} {w:2d}-{l:<2d}   {wr:5.0%}  {avg_len:4.1f}")
+
+    overall = total_wins / total_games
+    print(f"\n  Overall: {total_wins}/{total_games} ({overall:.1%})")
+
+
+def cmd_matrix(decks, n_games, top_tier, seed=None):
+    """Run NxN meta matrix."""
+    from sim import run_meta_matrix
+    if seed is not None:
+        random.seed(seed)
+
+    if decks:
+        matrix = run_meta_matrix(decks=decks, n_games=n_games)
+    else:
+        matrix = run_meta_matrix(top_tier=top_tier, n_games=n_games)
+
+    print()
+    all_decks = sorted(set(d for pair in matrix for d in pair))
+
+    # Abbreviate long names
+    def s(d):
+        if len(d) > 8:
+            return d[:8]
+        return d
+
+    hdr = f"{'':13s}" + ''.join(f'{s(d):>9s}' for d in all_decks)
+    print(hdr)
+    print('-' * len(hdr))
+
+    for d1 in all_decks:
+        row = f'{s(d1):13s}'
+        for d2 in all_decks:
+            if d1 == d2:
+                row += f"{'---':>9s}"
+            else:
+                wr = matrix.get((d1, d2), 0)
+                row += f'{wr:>8.0%} '
+        print(row)
+
+    print('\nMeta EV (avg win rate):')
+    evs = []
+    for d in all_decks:
+        rates = [matrix[(d, d2)] for d2 in all_decks if d != d2]
+        avg = sum(rates) / len(rates)
+        evs.append((avg, d))
+    evs.sort(reverse=True)
+    for i, (avg, d) in enumerate(evs):
+        bar = '#' * int(avg * 40)
+        print(f'  {i+1:2d}. {d:15s} {avg:5.1%}  {bar}')
+
+
+def cmd_verbose(deck1, deck2, seed=None):
+    """Run one game with full log output."""
+    from sim import run_game
+    if seed is not None:
+        random.seed(seed)
+
+    r = run_game(deck1, deck2)
+
+    print(f"\n{'=' * 60}")
+    print(f"  {deck1.upper()} vs {deck2.upper()}")
+    print(f"  Winner: {r.winner.upper()} — {r.win_reason}")
+    print(f"  {deck1} {'FIRST' if r.p1_went_first else 'SECOND'} | "
+          f"Life: {r.final_p1_life}-{r.final_p2_life} | T{r.game_length}")
+    print(f"  P1 hand: {r.p1_opening_hand}")
+    print(f"  P2 hand: {r.p2_opening_hand}")
+    print(f"{'=' * 60}")
+
+    for line in r.log_lines:
+        print(line)
+
+
+def cmd_trace(deck1, deck2, seed=None):
+    """Run one game with full log + hand state each turn."""
+    from sim import run_game
+    if seed is not None:
+        random.seed(seed)
+
+    # For trace, we need to run the game ourselves to access gs mid-game
+    # For now, just run verbose with extra header info
+    cmd_verbose(deck1, deck2, seed)
+    print("\n  (--trace currently shows same output as --verbose)")
+    print("  Full AI reasoning trace requires engine instrumentation — future work)")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='MTGSimClaude — Meta Analysis CLI',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 run_meta.py --list
+  python3 run_meta.py --deck storm
+  python3 run_meta.py --matchup ur_delver dimir -n 200
+  python3 run_meta.py --field bug -n 50
+  python3 run_meta.py --matrix --decks 10 -n 100
+  python3 run_meta.py --matrix -n 50 bug storm ur_delver dimir
+  python3 run_meta.py --verbose storm burn -s 42
+        """)
+
+    parser.add_argument('--list', action='store_true',
+                        help='List all decks with meta share')
+    parser.add_argument('--deck', metavar='NAME',
+                        help='Show deck details (cards, strategy, tags)')
+    parser.add_argument('--matchup', nargs=2, metavar=('D1', 'D2'),
+                        help='Run D1 vs D2 sweep')
+    parser.add_argument('--field', metavar='DECK',
+                        help='Run one deck vs all others')
+    parser.add_argument('--matrix', action='store_true',
+                        help='Run NxN meta matrix')
+    parser.add_argument('--verbose', nargs=2, metavar=('D1', 'D2'),
+                        help='Single game with full log')
+    parser.add_argument('--trace', nargs=2, metavar=('D1', 'D2'),
+                        help='Single game with AI reasoning trace')
+
+    parser.add_argument('-n', type=int, default=100,
+                        help='Number of games (default: 100)')
+    parser.add_argument('-s', '--seed', type=int, default=None,
+                        help='Random seed for reproducibility')
+    parser.add_argument('--decks', type=int, default=0,
+                        help='For --matrix: pick N top-tier decks (default: use positional args)')
+    parser.add_argument('deck_list', nargs='*',
+                        help='For --matrix: explicit deck list')
+
+    args = parser.parse_args()
+
+    if args.list:
+        cmd_list()
+    elif args.deck:
+        cmd_deck(args.deck)
+    elif args.matchup:
+        cmd_matchup(args.matchup[0], args.matchup[1], args.n, args.seed)
+    elif args.field:
+        cmd_field(args.field, args.n, args.seed)
+    elif args.matrix:
+        decks = args.deck_list if args.deck_list else None
+        cmd_matrix(decks, args.n, args.decks or 8, args.seed)
+    elif args.verbose:
+        cmd_verbose(args.verbose[0], args.verbose[1], args.seed)
+    elif args.trace:
+        cmd_trace(args.trace[0], args.trace[1], args.seed)
+    else:
+        parser.print_help()
+
+
+if __name__ == '__main__':
+    main()

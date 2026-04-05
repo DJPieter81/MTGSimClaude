@@ -513,7 +513,10 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         return False
 
     # ── Determine defender label for log messages ──
-    d_label = 'P1' if defender is gs.p1 else 'OPP'
+    if defender is gs.p1:
+        d_label = getattr(gs, 'p1_deck', 'P1').upper()
+    else:
+        d_label = getattr(gs, 'p2_deck', 'P2').upper()
 
     ctr = []
 

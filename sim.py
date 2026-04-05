@@ -29,154 +29,55 @@ class GameResult:
     win_reason: str
     kill_turn: Optional[int]
     game_length: int
-    bug_mulls: int
-    opp_mulls: int
-    bug_opening_hand: List[str]
-    opp_opening_hand: List[str]
+    p1_mulls: int
+    p2_mulls: int
+    p1_opening_hand: List[str]
+    p2_opening_hand: List[str]
     log_lines: List[str]
-    final_bug_life: int
-    final_opp_life: int
-    bug_went_first: bool
+    final_p1_life: int
+    final_p2_life: int
+    p1_went_first: bool
+    p1_deck: str = ''
+    p2_deck: str = ''
+
+    # Compat aliases
+    @property
+    def bug_mulls(self): return self.p1_mulls
+    @property
+    def opp_mulls(self): return self.p2_mulls
+    @property
+    def bug_opening_hand(self): return self.p1_opening_hand
+    @property
+    def opp_opening_hand(self): return self.p2_opening_hand
+    @property
+    def final_bug_life(self): return self.final_p1_life
+    @property
+    def final_opp_life(self): return self.final_p2_life
+    @property
+    def bug_went_first(self): return self.p1_went_first
 
 
-def run_game(matchup: str, verbose: bool = False) -> GameResult:
-    # S1: London mulligan — draw 7, put N on bottom
-    bug_hand, bug_lib, bug_mulls = london_mulligan(DECKS['bug'], bug_keep)
-    opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
-
-    # S2: Coin flip — who goes first (CR 103.1)
-    bug_goes_first = random.random() < 0.5
-
-    bug_player = PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib))
-    opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
-
-    # ── Main game loop ──
-    gs2 = GameState(p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
-                    p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-                    p1_goes_first=bug_goes_first)
-    gs2.p1_deck = 'bug'
-    gs2.p2_deck = matchup
-    all_log = []
-    display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
-
-    # ── Interaction model (derived from deck properties, not magic numbers) ──
-    from interaction_model import get_or_infer_interaction, compute_bug_save_rate, compute_opp_save_rate
-    _interaction = get_or_infer_interaction(matchup)
-    _bug_save = compute_bug_save_rate(_interaction)
-    _opp_save = compute_opp_save_rate(_interaction)
-
-    for turn in range(1, 16):
-        if gs2.game_over:
-            break
-        gs2.turn = turn
-
-        def _check_interaction_save():
-            """Give the losing side a sideboard-save chance (rates from interaction model)."""
-            if not gs2.game_over:
-                return False
-            import random as _ir_rng
-            if gs2.winner != 'p1' and _bug_save > 0:
-                if _ir_rng.random() < _bug_save:
-                    gs2.game_over = False
-                    gs2.winner = None
-                    gs2.win_reason = None
-                    gs2.p1.life = max(gs2.p1.life, 3)
-                    # Remove the threat that killed BUG (Karakas, STP, etc.)
-                    if gs2.p2.creatures:
-                        biggest = max(gs2.p2.creatures, key=lambda c: c.power)
-                        gs2.p2.creatures.remove(biggest)
-                    return True
-            if gs2.winner == 'p1' and _opp_save > 0:
-                if _ir_rng.random() < _opp_save:
-                    gs2.game_over = False
-                    gs2.winner = None
-                    gs2.win_reason = None
-                    gs2.p2.life = max(gs2.p2.life, 3)
-                    return True
-            return False
-
-        first, second = ('p1', 'p2') if bug_goes_first else ('p2', 'p1')
-        for who in (first, second):
-            display_turn += 1
-            lines = play_turn(gs2, turn, who)
-            label = 'BUG' if who == 'p1' else 'OPP'
-            all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
-            if gs2.game_over:
-                if not _check_interaction_save(): break
-
-    gs = gs2
-
-    if not gs.game_over:
-        bug_power = sum(c.power for c in gs.p1.creatures)
-        opp_power = sum(c.power for c in gs.p2.creatures)
-        bug_creatures = len(gs.p1.creatures)
-        opp_creatures = len(gs.p2.creatures)
-        bug_lands = len(gs.p1.lands)
-        opp_lands = len(gs.p2.lands)
-        life_edge = gs.p1.life - gs.p2.life
-
-        # Score board position: creatures, power, lands, life
-        bug_score = bug_power * 2 + bug_creatures * 3 + bug_lands + max(0, life_edge)
-        opp_score = opp_power * 2 + opp_creatures * 3 + opp_lands + max(0, -life_edge)
-
-        if bug_score > opp_score:
-            gs.winner = 'p1'
-            gs.win_reason = f"Board/life advantage after T{gs.turn}"
-            gs.kill_turn = gs.turn
-        elif opp_score > bug_score:
-            gs.winner = 'p2'
-            gs.win_reason = f"Opp board/life advantage after T{gs.turn}"
-        else:
-            gs.winner = 'p1' if gs.p1.life >= gs.p2.life else 'p2'
-            gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
-        gs.kill_turn = gs.turn
-        gs.game_over = True
-
-        # Apply interaction model to timeout results
-        import random as _to_rng
-        if gs.winner == 'p1' and _opp_save > 0:
-            if _to_rng.random() < _opp_save:
-                gs.winner = 'p2'
-                gs.win_reason = f"Opp recovers (resilience {_interaction.get('resilience',3)}) after T{gs.turn}"
-        elif gs.winner != 'p1' and _bug_save > 0:
-            if _to_rng.random() < _bug_save:
-                gs.winner = 'p1'
-                gs.win_reason = f"BUG answers (speed {_interaction.get('speed',3)}) after T{gs.turn}"
-
-    return GameResult(
-        winner=gs.winner,
-        win_reason=gs.win_reason or '',
-        kill_turn=gs.kill_turn,
-        game_length=gs.turn,
-        bug_mulls=bug_mulls,
-        opp_mulls=opp_mulls,
-        bug_opening_hand=[c.name for c in bug_hand],
-        opp_opening_hand=[c.name for c in opp_hand],
-        log_lines=all_log,
-        final_bug_life=gs.p1.life,
-        final_opp_life=gs.p2.life,
-        bug_went_first=bug_goes_first,
-    )
-
-
-def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameResult:
+def run_game(deck1: str, deck2: str = None, verbose: bool = False) -> GameResult:
     """
     Run a single game between any two decks with equal AI quality.
-    deck1 is p1 (protagonist), deck2 is p2 (antagonist).
-    Both sides use play_turn() which dispatches to the best available AI.
 
     Usage:
-        run_symmetric_game('ur_delver', 'dimir')
-        run_symmetric_game('storm', 'burn')
-        run_symmetric_game('bug', 'eldrazi')  # equivalent to run_game('eldrazi')
+        run_game('ur_delver', 'dimir')
+        run_game('storm', 'burn')
+        run_game('bug', 'eldrazi')
+        run_game('storm')          # legacy: deck1=BUG, deck2='storm'
     """
+    # Legacy compat: run_game('storm') means BUG vs storm
+    if deck2 is None:
+        deck2 = deck1
+        deck1 = 'bug'
+
     if deck1 not in DECKS:
         raise ValueError(f"Unknown deck: {deck1}. Available: {sorted(DECKS.keys())}")
     if deck2 not in DECKS:
         raise ValueError(f"Unknown deck: {deck2}. Available: {sorted(DECKS.keys())}")
 
     # Mulligan: each deck uses its own keep logic
-    # BUG has a specialized keep function; all others use opp_keep
     p1_keep = bug_keep if deck1 == 'bug' else opp_keep
     p2_keep = bug_keep if deck2 == 'bug' else opp_keep
 
@@ -211,10 +112,12 @@ def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameRes
 
     # Timeout resolution: score board position
     if not gs.game_over:
-        p1_power = sum(c.power for c in gs.p1.creatures)
-        p2_power = sum(c.power for c in gs.p2.creatures)
-        p1_score = p1_power * 2 + len(gs.p1.creatures) * 3 + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life)
-        p2_score = p2_power * 2 + len(gs.p2.creatures) * 3 + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life)
+        p1_score = (sum(c.power for c in gs.p1.creatures) * 2 +
+                    len(gs.p1.creatures) * 3 + len(gs.p1.lands) +
+                    max(0, gs.p1.life - gs.p2.life))
+        p2_score = (sum(c.power for c in gs.p2.creatures) * 2 +
+                    len(gs.p2.creatures) * 3 + len(gs.p2.lands) +
+                    max(0, gs.p2.life - gs.p1.life))
 
         if p1_score > p2_score:
             gs.winner = 'p1'
@@ -233,23 +136,28 @@ def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameRes
         win_reason=gs.win_reason or '',
         kill_turn=gs.kill_turn,
         game_length=gs.turn,
-        bug_mulls=p1_mulls,
-        opp_mulls=p2_mulls,
-        bug_opening_hand=[c.name for c in p1_hand],
-        opp_opening_hand=[c.name for c in p2_hand],
+        p1_mulls=p1_mulls,
+        p2_mulls=p2_mulls,
+        p1_opening_hand=[c.name for c in p1_hand],
+        p2_opening_hand=[c.name for c in p2_hand],
         log_lines=all_log,
-        final_bug_life=gs.p1.life,
-        final_opp_life=gs.p2.life,
-        bug_went_first=p1_goes_first,
+        final_p1_life=gs.p1.life,
+        final_p2_life=gs.p2.life,
+        p1_went_first=p1_goes_first,
+        p1_deck=deck1,
+        p2_deck=deck2,
     )
 
+# Backward compat alias
+run_symmetric_game = run_game
 
-def run_symmetric_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
+
+def run_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
     """
     Run n_games between deck1 and deck2, return stats.
     Returns dict with: p1_wins, p2_wins, p1_wr, avg_length, avg_kill_turn
     """
-    results = [run_symmetric_game(deck1, deck2) for _ in range(n_games)]
+    results = [run_game(deck1, deck2) for _ in range(n_games)]
     p1_wins = sum(1 for r in results if r.winner == 'p1')
     p2_wins = n_games - p1_wins
     kill_turns = [r.kill_turn for r in results if r.kill_turn]
@@ -261,6 +169,9 @@ def run_symmetric_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
         'avg_length': sum(r.game_length for r in results) / n_games,
         'avg_kill': sum(kill_turns) / len(kill_turns) if kill_turns else 0,
     }
+
+# Backward compat alias
+run_symmetric_sweep = run_sweep
 
 
 def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -> dict:
@@ -311,7 +222,7 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
         for d2 in decks:
             if d1 == d2:
                 continue
-            stats = run_symmetric_sweep(d1, d2, n_games)
+            stats = run_sweep(d1, d2, n_games)
             matrix[(d1, d2)] = stats['p1_wr']
             done += 1
             if done % 10 == 0:
@@ -480,12 +391,13 @@ def run_elves_match(opp_matchup: str, verbose: bool = False):
         result = GameResult(
             winner=gs.winner, win_reason=gs.win_reason or '',
             kill_turn=gs.kill_turn, game_length=gs.turn,
-            bug_mulls=e_mulls, opp_mulls=o_mulls,
-            bug_opening_hand=[c.name for c in elves_hand],
-            opp_opening_hand=[c.name for c in opp_hand],
+            p1_mulls=e_mulls, p2_mulls=o_mulls,
+            p1_opening_hand=[c.name for c in elves_hand],
+            p2_opening_hand=[c.name for c in opp_hand],
             log_lines=all_log,
-            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
-            bug_went_first=elves_goes_first,
+            final_p1_life=gs.p1.life, final_p2_life=gs.p2.life,
+            p1_went_first=elves_goes_first,
+            p1_deck='elves', p2_deck=opp_deck_key,
         )
         results.append(result)
 
@@ -849,12 +761,13 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         result = GameResult(
             winner=gs.winner, win_reason=gs.win_reason or '',
             kill_turn=gs.kill_turn, game_length=gs.turn,
-            bug_mulls=pro_mulls, opp_mulls=ant_mulls,
-            bug_opening_hand=[c.name for c in pro_hand],
-            opp_opening_hand=[c.name for c in ant_hand],
+            p1_mulls=pro_mulls, p2_mulls=ant_mulls,
+            p1_opening_hand=[c.name for c in pro_hand],
+            p2_opening_hand=[c.name for c in ant_hand],
             log_lines=all_log,
-            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
-            bug_went_first=pro_goes_first,
+            final_p1_life=gs.p1.life, final_p2_life=gs.p2.life,
+            p1_went_first=pro_goes_first,
+            p1_deck=protagonist, p2_deck=antagonist,
         )
         results.append(result)
         if gs.winner == 'p1': protagonist_wins += 1
@@ -1748,12 +1661,13 @@ def run_match(matchup: str, verbose: bool = False):
         result = GameResult(
             winner=gs.winner, win_reason=gs.win_reason or '',
             kill_turn=gs.kill_turn, game_length=gs.turn,
-            bug_mulls=bug_mulls, opp_mulls=opp_mulls,
-            bug_opening_hand=[c.name for c in bug_hand],
-            opp_opening_hand=[c.name for c in opp_hand],
+            p1_mulls=bug_mulls, p2_mulls=opp_mulls,
+            p1_opening_hand=[c.name for c in bug_hand],
+            p2_opening_hand=[c.name for c in opp_hand],
             log_lines=all_log,
-            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
-            bug_went_first=bug_goes_first,
+            final_p1_life=gs.p1.life, final_p2_life=gs.p2.life,
+            p1_went_first=bug_goes_first,
+            p1_deck='bug', p2_deck=matchup,
         )
         results.append(result)
 
