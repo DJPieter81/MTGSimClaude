@@ -449,15 +449,14 @@ STRATEGIES = {
 
 def protagonist_turn(gs, turn, matchup):
     """
-    Generic protagonist turn for any deck as protagonist.
-    Mirrors opp_turn's flow but operates on gs.bug as the active player.
+    Generic protagonist turn for any deck in STRATEGIES.
+    Full turn structure: cleanup → untap → upkeep → draw → land → mana →
+    Wasteland → Thoughtseize → removal → strategy → combat → EOT.
     gs.bug = protagonist deck, gs.opp = antagonist.
-
-    The strategy functions (from deck registry) hardcode player=gs.opp,
-    so we temporarily swap gs.bug ↔ gs.opp around the strategy call,
-    then swap back and fix up any winner flags.
     """
-    from engine import bowmasters_triggers, update_goyf, opp_turn as _real_opp_turn
+    from engine import (bowmasters_triggers, update_goyf, opp_can_cast,
+                        _try_counter_any, _select_attackers, combat_declare)
+    from rules import LandPermanent, MTGRules
 
     b = gs.bug
     o = gs.opp
@@ -476,6 +475,12 @@ def protagonist_turn(gs, turn, matchup):
     b.untap_all()
     b.revolt_this_turn = False
     b.clear_summoning_sickness()
+    gs.opp_spells_cast_this_turn = 0
+    gs.veil_active = False
+    b.spells_cast_this_turn = 0
+
+    # ── Upkeep: Goyf update ──
+    update_goyf(gs)
 
     # ── Draw (first player on play skips T1 draw) ──
     if not (turn == 1 and gs.bug_goes_first):
@@ -496,20 +501,28 @@ def protagonist_turn(gs, turn, matchup):
 
     # ── Land drop ──
     # Prioritise mana-producing lands (duals, basics) over utility lands (Wasteland)
-    from rules import LandPermanent
     def _pick_land():
         lands_in_hand = [c for c in b.hand if c.is_land()]
         if not lands_in_hand:
             return None
+        # Prefer fast lands (Tomb/City) when a 2-mana play is in hand
+        has_2drop = any(c.tag in ('chalice', 'trini', 'null_rod') or
+                        (not c.is_land() and sum(c.mana_cost.values()) == 2)
+                        for c in b.hand)
+        if has_2drop:
+            fast = next((c for c in lands_in_hand
+                         if c.tag in ('ancient_tomb', 'tomb', 'city')), None)
+            if fast:
+                return fast
         # Priority: fetch > dual > basic > utility (Wasteland etc)
         def land_priority(c):
-            if getattr(c, 'is_fetch', False): return 2  # fetches find colored mana
+            if getattr(c, 'is_fetch', False): return 2
             tag = getattr(c, 'tag', '')
             if tag == 'dual': return 1
             if c.is_basic: return 1
-            if tag in ('sewers',): return 1  # surveil land
-            if tag in ('ancient_tomb', 'city'): return 0  # fast mana lands first for 8-Cast etc
-            if tag == 'wl': return 5  # Wasteland = play last (no colored mana)
+            if tag in ('sewers',): return 1
+            if tag in ('ancient_tomb', 'city'): return 0
+            if tag == 'wl': return 5
             return 3
         return min(lands_in_hand, key=land_priority)
 
@@ -527,6 +540,7 @@ def protagonist_turn(gs, turn, matchup):
                 log(f"Play+crack {land.name} (−1 life, {b.life}) → {fetched.name}")
             else:
                 log(f"Play+crack {land.name} → ?")
+            b.revolt_this_turn = True
         else:
             log(f"Land: {land.name} ({len(b.lands)} lands)")
 
@@ -542,7 +556,7 @@ def protagonist_turn(gs, turn, matchup):
     # Ancient Tomb: produces 2C (1 already counted, add 1 bonus), costs 2 life
     tomb_count = sum(1 for l in b.lands if l.card.tag == 'tomb' and not l.tapped)
     if tomb_count > 0:
-        total_mana += tomb_count  # bonus mana
+        total_mana += tomb_count
         b.life -= tomb_count * 2
     # Gaea's Cradle: tap for G equal to creature count
     for l in b.lands:
@@ -550,59 +564,101 @@ def protagonist_turn(gs, turn, matchup):
             total_mana += len(b.creatures)
             l.tapped = True
 
+    # ── Wasteland: destroy opponent's best nonbasic land ──
+    wl_land = next((l for l in b.lands if l.card.tag in ('wl', 'wasteland') and not l.tapped), None)
+    if wl_land and o.lands:
+        target = next((l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl'), None)
+        if target:
+            wl_land.tapped = True
+            o.lands.remove(target)
+            o.add_to_grave(target.card)
+            b.revolt_this_turn = True
+            log(f"Wasteland [ACTIVATED-uncounterable] → {target.card.name}")
+
+    # ── Thoughtseize: strip opponent's best card (if we have mana) ──
+    ts = b.find_tag('ts') or b.find_tag('thoughtseize')
+    if ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc):
+        opp_nonland = [c for c in o.hand if not c.is_land()]
+        if opp_nonland and b.life > 4:
+            b.remove_from_hand(ts)
+            countered = _try_counter_any(b, o, gs, ts, log_entries)
+            if not countered:
+                b.add_to_grave(ts)
+                b.life -= 2
+                total_mana -= 1
+                def _ts_priority(c):
+                    score = 0
+                    if c.win_condition: score += 10
+                    if c.is_combo_piece: score += 8
+                    if c.tag in ('fow', 'fon', 'daze', 'fluster'): score += 6
+                    if c.is_creature(): score += 3 + c.base_power
+                    score += c.cmc
+                    return score
+                best = max(opp_nonland, key=_ts_priority)
+                o.remove_from_hand(best)
+                o.add_to_grave(best)
+                log(f"Thoughtseize → takes {best.name} (−2 life, {b.life})")
+            else:
+                b.add_to_grave(ts)
+
+    # ── Removal: kill opponent's biggest threat ──
+    if o.creatures and total_mana >= 1:
+        push = b.find_tag('push') or b.find_tag('fatal_push')
+        if push and not gs.spell_blocked_by_chalice(push.cmc):
+            revolt = b.revolt_this_turn
+            valid_targets = [c for c in o.creatures
+                             if MTGRules.fatal_push_valid_target(c, revolt)]
+            if valid_targets:
+                target = max(valid_targets, key=lambda c: c.power)
+                b.remove_from_hand(push)
+                countered = _try_counter_any(b, o, gs, push, log_entries)
+                if not countered:
+                    b.add_to_grave(push)
+                    total_mana -= 1
+                    o.creatures.remove(target)
+                    o.add_to_grave(target.card)
+                    log(f"Fatal Push → {target.card.name} ({'revolt' if revolt else 'no revolt'})")
+                else:
+                    b.add_to_grave(push)
+
+        stp = b.find_tag('stp')
+        if stp and o.creatures and total_mana >= 1 and not gs.spell_blocked_by_chalice(stp.cmc):
+            target = max(o.creatures, key=lambda c: c.power)
+            if target.power >= 2:
+                b.remove_from_hand(stp)
+                countered = _try_counter_any(b, o, gs, stp, log_entries)
+                if not countered:
+                    b.add_to_grave(stp)
+                    total_mana -= 1
+                    o.creatures.remove(target)
+                    o.life += target.power
+                    log(f"Swords to Plowshares → exile {target.card.name} (opp +{target.power} life)")
+                else:
+                    b.add_to_grave(stp)
+
     # ── Gameplan layer ──
     from gameplan import GAMEPLANS, assess, active_goal
     plan = GAMEPLANS.get(matchup)
     if plan:
-        # Assess from protagonist's perspective (swap briefly for assess)
-        gs.bug, gs.opp = o, b
         ba = assess(gs, turn)
         gs.opp_goal = active_goal(plan, ba)
-        gs.bug, gs.opp = b, o
     else:
         gs.opp_goal = None
 
     # ── Strategy dispatch ──
-    # Strategy functions from deck registry hardcode player=gs.opp, opponent=gs.bug.
-    # We temporarily swap gs.bug ↔ gs.opp so the strategy operates on the correct player.
-    # Engine STRATEGIES dict functions correctly accept (player, opponent) args and don't
-    # need the swap — try those first.
-    engine_fn = STRATEGIES.get(matchup)
-    if engine_fn:
-        # Engine version: correctly parameterised, call directly
-        engine_fn(b, o, gs, total_mana, log, log_entries)
+    from deck_registry import get_strategy
+    strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
+    if strategy_fn:
+        strategy_fn(b, o, gs, total_mana, log, log_entries)
     else:
-        # Deck registry version: hardcodes gs.opp as player — swap around the call
-        from deck_registry import get_strategy
-        registry_fn = get_strategy(matchup)
-        if registry_fn:
-            # Swap gs slots
-            gs.bug, gs.opp = o, b
-            orig_first = gs.bug_goes_first
-            gs.bug_goes_first = not orig_first
-            orig_matchup = gs.matchup
-            gs.matchup = matchup
-            winner_before = gs.winner
+        log(f"No strategy for {matchup} — passing")
 
-            def _swapped_log(msg, key=False):
-                gs.log_event('o', 'main', msg, key)
-                log_entries.append(msg)
-
-            registry_fn(b, o, gs, total_mana, _swapped_log, log_entries)
-
-            # Swap back
-            gs.bug, gs.opp = b, o
-            gs.bug_goes_first = orig_first
-            gs.matchup = orig_matchup
-
-            # Fix winner if set during swapped call
-            if gs.winner != winner_before:
-                if gs.winner == 'opp':
-                    gs.winner = 'bug'
-                elif gs.winner == 'bug':
-                    gs.winner = 'opp'
-        else:
-            log(f"No strategy for {matchup} — passing")
+    # ── Fallback combat: attack with eligible creatures if strategy didn't ──
+    combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
+    if not combat_happened and not gs.game_over and b.creatures:
+        attackers = _select_attackers(b, o)
+        if attackers:
+            combat_declare(b, o, gs, log_entries, attackers)
 
     update_goyf(gs)
     b.land_played_this_turn = False

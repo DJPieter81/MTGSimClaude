@@ -9,6 +9,11 @@ Usage:
   python hypothesis_testing.py --live bug storm 500
   python hypothesis_testing.py --compare bug storm dimir 500
   python hypothesis_testing.py --sample-size 0.03
+  python hypothesis_testing.py --integrity storm dimir 200
+  python hypothesis_testing.py --play-draw bug dimir 500
+  python hypothesis_testing.py --mulligan bug dimir 500
+  python hypothesis_testing.py --archetype 300
+  python hypothesis_testing.py --kill-turn 300
 
 All tests use the normal approximation to the binomial (valid for n >= 30).
 """
@@ -419,6 +424,412 @@ def meta_ev_ci(json_path: str, protagonist: str = 'bug',
     return (ev, ci_low, ci_high)
 
 
+# ── H1: Reciprocity / Simulator Integrity Test ───────────────────────────────
+
+def test_reciprocity(deck_a: str, deck_b: str, n_matches: int = 200,
+                     confidence: float = 0.95):
+    """
+    H1: If A beats B at X%, does B beat A at ~(100-X)%?
+
+    A well-calibrated simulator should produce symmetric results. Significant
+    deviations indicate a protagonist/antagonist implementation bug.
+
+    H0: WR(A vs B) + WR(B vs A) = 100%  (symmetric)
+    H1: WR(A vs B) + WR(B vs A) ≠ 100%  (asymmetric — possible bug)
+    """
+    from sim import run_any_bo3
+
+    print(f"\n{'=' * 60}")
+    print(f"  H1: Reciprocity Test — {deck_a} vs {deck_b}")
+    print(f"  n={n_matches:,} Bo3 each direction")
+    print(f"{'=' * 60}")
+
+    print(f"  Running {deck_a} vs {deck_b}...", flush=True)
+    r_ab = run_any_bo3(deck_a, deck_b, n_matches)
+    print(f"  Running {deck_b} vs {deck_a}...", flush=True)
+    r_ba = run_any_bo3(deck_b, deck_a, n_matches)
+
+    wr_ab = r_ab['match_wr']
+    wr_ba = r_ba['match_wr']
+    symmetry_sum = wr_ab + wr_ba  # should be ~1.0
+
+    # Test: is wr_ab + wr_ba significantly different from 1.0?
+    # Reframe: is (wr_ab - (1 - wr_ba)) significantly different from 0?
+    diff = wr_ab - (1 - wr_ba)  # should be ~0 if symmetric
+    se = math.sqrt(wr_ab * (1 - wr_ab) / n_matches +
+                   wr_ba * (1 - wr_ba) / n_matches)
+    z = diff / se if se > 0 else 0
+    p_value = 2 * (1 - _phi(abs(z)))
+    z_star = _z_critical(confidence)
+    ci_low = diff - z_star * se
+    ci_high = diff + z_star * se
+    significant = p_value < (1 - confidence)
+
+    status = "FAIL — asymmetry detected" if significant else "PASS — symmetric"
+    print(f"\n  {deck_a} vs {deck_b}: {wr_ab * 100:.1f}%")
+    print(f"  {deck_b} vs {deck_a}: {wr_ba * 100:.1f}%")
+    print(f"  Sum:                  {symmetry_sum * 100:.1f}%  (expect ~100%)")
+    print(f"  Asymmetry:            {diff * 100:+.1f}pp  CI: [{ci_low * 100:+.1f}, {ci_high * 100:+.1f}]pp")
+    print(f"  z={z:+.3f}  p={p_value:.6f}")
+    print(f"  Result: {status}")
+    print(f"{'─' * 60}")
+
+    return {
+        'deck_a': deck_a, 'deck_b': deck_b,
+        'wr_ab': wr_ab, 'wr_ba': wr_ba,
+        'asymmetry': diff, 'z': z, 'p_value': p_value,
+        'significant': significant, 'status': status,
+    }
+
+
+# ── H2: Play/Draw Advantage ─────────────────────────────────────────────────
+
+def test_play_draw(protagonist: str, antagonist: str, n_games: int = 500,
+                   confidence: float = 0.95):
+    """
+    H2: Does going first significantly improve win rate?
+
+    Legacy average is ~53-55% for the player on the play. Large deviations
+    suggest the simulator has a turn-order bias.
+
+    H0: WR(on play) = WR(on draw)
+    H1: WR(on play) ≠ WR(on draw)
+    """
+    from sim import run_any_match
+
+    print(f"\n{'=' * 60}")
+    print(f"  H2: Play/Draw Advantage — {protagonist} vs {antagonist}")
+    print(f"  n={n_games:,} individual games")
+    print(f"{'=' * 60}")
+
+    # Collect individual game results
+    play_wins = play_total = draw_wins = draw_total = 0
+    for _ in range(n_games):
+        pw, aw, gp, results = run_any_match(protagonist, antagonist)
+        for r in results:
+            if r.bug_went_first:
+                play_total += 1
+                if r.winner == 'bug':
+                    play_wins += 1
+            else:
+                draw_total += 1
+                if r.winner == 'bug':
+                    draw_wins += 1
+
+    play_wr = play_wins / play_total if play_total else 0
+    draw_wr = draw_wins / draw_total if draw_total else 0
+
+    # Two-sample proportion test
+    comp = compare_matchups(
+        play_wins, play_total, draw_wins, draw_total,
+        label_a="On play", label_b="On draw", confidence=confidence,
+    )
+
+    # Also test: is play WR significantly > 50%?
+    play_test = test_vs_fair(play_wins, play_total, confidence)
+
+    z_star = _z_critical(confidence)
+    play_ci = _wilson_ci(play_wins, play_total, z_star)
+    draw_ci = _wilson_ci(draw_wins, draw_total, z_star)
+
+    advantage = play_wr - draw_wr
+
+    print(f"\n  On play:  {play_wr * 100:.1f}%  ({play_wins}/{play_total})  CI: [{play_ci[0] * 100:.1f}, {play_ci[1] * 100:.1f}%]")
+    print(f"  On draw:  {draw_wr * 100:.1f}%  ({draw_wins}/{draw_total})  CI: [{draw_ci[0] * 100:.1f}, {draw_ci[1] * 100:.1f}%]")
+    print(f"  Advantage: {advantage * 100:+.1f}pp  (z={comp.z_stat:+.3f}, p={comp.p_value:.4f})")
+    if comp.significant:
+        print(f"  Result: Significant play/draw advantage detected")
+    else:
+        print(f"  Result: No significant play/draw advantage at {confidence * 100:.0f}% level")
+
+    # Sanity check against expected Legacy range
+    if play_total > 100:
+        if play_wr > 0.62:
+            print(f"  WARNING: Play WR ({play_wr * 100:.1f}%) unusually high — possible turn-order bias")
+        elif play_wr < 0.45:
+            print(f"  WARNING: Play WR ({play_wr * 100:.1f}%) unusually low — possible turn-order bias")
+
+    print(f"{'─' * 60}")
+
+    return {
+        'play_wr': play_wr, 'draw_wr': draw_wr,
+        'play_n': play_total, 'draw_n': draw_total,
+        'advantage': advantage, 'comparison': comp,
+    }
+
+
+# ── H3: Mulligan Penalty ────────────────────────────────────────────────────
+
+def test_mulligan_penalty(protagonist: str, antagonist: str, n_games: int = 500,
+                          confidence: float = 0.95):
+    """
+    H3: Does mulliganing significantly reduce win rate?
+
+    Expected: 5-15% penalty per mulligan. No penalty or extreme penalty
+    suggests broken mulligan/keep logic.
+
+    H0: WR(kept 7) = WR(mulliganed)
+    H1: WR(kept 7) ≠ WR(mulliganed)
+    """
+    from sim import run_any_match
+
+    print(f"\n{'=' * 60}")
+    print(f"  H3: Mulligan Penalty — {protagonist} vs {antagonist}")
+    print(f"  n={n_games:,} individual games")
+    print(f"{'=' * 60}")
+
+    keep7_wins = keep7_total = mull_wins = mull_total = 0
+    mull_counts = {}
+
+    for _ in range(n_games):
+        pw, aw, gp, results = run_any_match(protagonist, antagonist)
+        for r in results:
+            mulls = r.bug_mulls
+            mull_counts[mulls] = mull_counts.get(mulls, 0) + 1
+            if mulls == 0:
+                keep7_total += 1
+                if r.winner == 'bug':
+                    keep7_wins += 1
+            else:
+                mull_total += 1
+                if r.winner == 'bug':
+                    mull_wins += 1
+
+    keep7_wr = keep7_wins / keep7_total if keep7_total else 0
+    mull_wr = mull_wins / mull_total if mull_total else 0
+    penalty = keep7_wr - mull_wr
+
+    # Two-sample test
+    comp = compare_matchups(
+        keep7_wins, keep7_total, mull_wins, mull_total,
+        label_a="Kept 7", label_b="Mulliganed", confidence=confidence,
+    ) if mull_total >= 10 else None
+
+    z_star = _z_critical(confidence)
+
+    print(f"\n  Mulligan distribution:")
+    total_games = sum(mull_counts.values())
+    for m in sorted(mull_counts.keys()):
+        pct = mull_counts[m] / total_games * 100
+        print(f"    Mull {m}: {mull_counts[m]:>4} games ({pct:.1f}%)")
+
+    print(f"\n  Kept 7 WR:     {keep7_wr * 100:.1f}%  ({keep7_wins}/{keep7_total})")
+    if mull_total >= 10:
+        print(f"  Mulliganed WR: {mull_wr * 100:.1f}%  ({mull_wins}/{mull_total})")
+        print(f"  Penalty:       {penalty * 100:+.1f}pp")
+        if comp:
+            print(f"  z={comp.z_stat:+.3f}  p={comp.p_value:.4f}")
+            if comp.significant:
+                print(f"  Result: Significant mulligan penalty detected")
+            else:
+                print(f"  Result: No significant mulligan penalty at {confidence * 100:.0f}% level")
+            if mull_total >= 30 and abs(penalty) < 0.02:
+                print(f"  WARNING: Near-zero penalty — mulligan logic may not be working")
+    else:
+        print(f"  Mulliganed: too few samples ({mull_total}) to test")
+
+    print(f"{'─' * 60}")
+
+    return {
+        'keep7_wr': keep7_wr, 'mull_wr': mull_wr,
+        'penalty': penalty, 'mull_counts': mull_counts,
+        'comparison': comp,
+    }
+
+
+# ── H4: Archetype Dominance (Combo vs Fair) ─────────────────────────────────
+
+def test_archetype_dominance(n_matches: int = 200, confidence: float = 0.95):
+    """
+    H4: Do combo decks significantly beat fair decks?
+
+    Tests the rock-paper-scissors metagame structure:
+    Combo should beat Fair, Fair should beat Prison, Prison should beat Combo.
+
+    H0: Combo WR vs Fair = 50%
+    H1: Combo WR vs Fair ≠ 50%
+    """
+    from sim import run_any_bo3
+    from cards import DECKS
+    from deck_registry import get_categories
+
+    print(f"\n{'=' * 60}")
+    print(f"  H4: Archetype Dominance Test")
+    print(f"  n={n_matches:,} Bo3 per pairing")
+    print(f"{'=' * 60}")
+
+    # Classify decks by archetype
+    combo_decks = [k for k in DECKS if 'combo' in get_categories(k) and k in DECKS]
+    fair_decks = [k for k in DECKS if 'aggro' in get_categories(k)
+                  and 'combo' not in get_categories(k) and k in DECKS]
+    prison_decks = [k for k in DECKS if 'prison' in get_categories(k)
+                    and 'combo' not in get_categories(k)
+                    and 'aggro' not in get_categories(k) and k in DECKS]
+
+    # Pick representative decks (avoid running 30+ pairings)
+    combo_reps = [d for d in ['storm', 'reanimator', 'oops'] if d in DECKS][:3]
+    fair_reps = [d for d in ['dimir', 'mardu', 'eldrazi'] if d in DECKS][:3]
+    prison_reps = [d for d in ['prison', 'dnt'] if d in DECKS][:2]
+
+    print(f"\n  Combo reps:  {combo_reps}")
+    print(f"  Fair reps:   {fair_reps}")
+    print(f"  Prison reps: {prison_reps}")
+
+    def _run_archetype_vs(archetype_a, label_a, archetype_b, label_b):
+        wins = total = 0
+        results_detail = []
+        for a in archetype_a:
+            for b in archetype_b:
+                if a == b:
+                    continue
+                r = run_any_bo3(a, b, n_matches)
+                w = r['wins']
+                n = r['n']
+                wins += w
+                total += n
+                wr = w / n * 100
+                results_detail.append((a, b, wr, n))
+                print(f"    {a:<14} vs {b:<14} {wr:>5.1f}%", flush=True)
+        return wins, total, results_detail
+
+    # Combo vs Fair
+    print(f"\n  Combo vs Fair:")
+    cf_wins, cf_total, cf_detail = _run_archetype_vs(combo_reps, "Combo", fair_reps, "Fair")
+    cf_test = test_vs_fair(cf_wins, cf_total, confidence)
+
+    # Fair vs Prison
+    print(f"\n  Fair vs Prison:")
+    fp_wins, fp_total, fp_detail = _run_archetype_vs(fair_reps, "Fair", prison_reps, "Prison")
+    fp_test = test_vs_fair(fp_wins, fp_total, confidence)
+
+    # Prison vs Combo
+    print(f"\n  Prison vs Combo:")
+    pc_wins, pc_total, pc_detail = _run_archetype_vs(prison_reps, "Prison", combo_reps, "Combo")
+    pc_test = test_vs_fair(pc_wins, pc_total, confidence)
+
+    print(f"\n  {'─' * 55}")
+    print(f"  {'Archetype Pairing':<25} {'WR':>6} {'z':>7} {'p':>10} {'Sig':>5}")
+    print(f"  {'─' * 55}")
+    for label, test, wins, total in [
+        ("Combo vs Fair", cf_test, cf_wins, cf_total),
+        ("Fair vs Prison", fp_test, fp_wins, fp_total),
+        ("Prison vs Combo", pc_test, pc_wins, pc_total),
+    ]:
+        wr = wins / total * 100 if total else 0
+        sig = "***" if test.p_value < 0.001 else "**" if test.p_value < 0.01 else "*" if test.significant else ""
+        print(f"  {label:<25} {wr:>5.1f}% {test.z_stat:>+7.2f} {test.p_value:>10.4f} {sig:>5}")
+
+    # Check RPS structure
+    rps = (cf_test.p_hat > 0.5 and fp_test.p_hat > 0.5 and pc_test.p_hat > 0.5)
+    print(f"\n  Rock-Paper-Scissors structure: {'YES' if rps else 'NO'}")
+    if rps:
+        print(f"  Combo > Fair > Prison > Combo — metagame is non-transitive")
+    else:
+        all_results = [(cf_test, "Combo>Fair"), (fp_test, "Fair>Prison"), (pc_test, "Prison>Combo")]
+        broken = [label for t, label in all_results if t.p_hat <= 0.5]
+        print(f"  Violated: {broken}")
+
+    print(f"{'─' * 60}")
+
+    return {
+        'combo_vs_fair': {'wr': cf_wins / cf_total if cf_total else 0, 'test': cf_test},
+        'fair_vs_prison': {'wr': fp_wins / fp_total if fp_total else 0, 'test': fp_test},
+        'prison_vs_combo': {'wr': pc_wins / pc_total if pc_total else 0, 'test': pc_test},
+        'rps_holds': rps,
+    }
+
+
+# ── H5: Kill Turn Distribution (Combo vs Fair Speed) ────────────────────────
+
+def test_kill_turn(n_games: int = 300, confidence: float = 0.95):
+    """
+    H5: Do combo decks kill significantly faster than fair decks?
+
+    Compares average kill turn for combo vs fair archetypes using a
+    two-sample t-test (Welch's, no equal variance assumption).
+
+    H0: mean_kill_combo = mean_kill_fair
+    H1: mean_kill_combo < mean_kill_fair  (combo is faster)
+    """
+    from sim import run_any_match
+    from cards import DECKS
+
+    print(f"\n{'=' * 60}")
+    print(f"  H5: Kill Turn Comparison — Combo vs Fair")
+    print(f"  n={n_games:,} games per deck")
+    print(f"{'=' * 60}")
+
+    combo_decks = [d for d in ['storm', 'oops', 'reanimator'] if d in DECKS]
+    fair_decks = [d for d in ['dimir', 'mardu', 'eldrazi'] if d in DECKS]
+    # Use 'bug' as a common opponent
+    opponent = 'bug'
+
+    combo_turns = []
+    fair_turns = []
+
+    for deck in combo_decks:
+        deck_turns = []
+        for _ in range(n_games):
+            pw, aw, gp, results = run_any_match(deck, opponent)
+            for r in results:
+                if r.winner == 'bug' and r.kill_turn:
+                    deck_turns.append(r.kill_turn)
+        avg = sum(deck_turns) / len(deck_turns) if deck_turns else 0
+        combo_turns.extend(deck_turns)
+        print(f"  {deck:<14} avg kill: T{avg:.1f}  ({len(deck_turns)} wins)", flush=True)
+
+    for deck in fair_decks:
+        deck_turns = []
+        for _ in range(n_games):
+            pw, aw, gp, results = run_any_match(deck, opponent)
+            for r in results:
+                if r.winner == 'bug' and r.kill_turn:
+                    deck_turns.append(r.kill_turn)
+        avg = sum(deck_turns) / len(deck_turns) if deck_turns else 0
+        fair_turns.extend(deck_turns)
+        print(f"  {deck:<14} avg kill: T{avg:.1f}  ({len(deck_turns)} wins)", flush=True)
+
+    if not combo_turns or not fair_turns:
+        print("  Not enough data to compare.")
+        return None
+
+    # Welch's t-test
+    n1, n2 = len(combo_turns), len(fair_turns)
+    mean1 = sum(combo_turns) / n1
+    mean2 = sum(fair_turns) / n2
+    var1 = sum((x - mean1) ** 2 for x in combo_turns) / (n1 - 1)
+    var2 = sum((x - mean2) ** 2 for x in fair_turns) / (n2 - 1)
+    se = math.sqrt(var1 / n1 + var2 / n2) if (var1 / n1 + var2 / n2) > 0 else 1
+
+    t_stat = (mean1 - mean2) / se
+    # Approximate p-value using normal (valid for large n)
+    p_value = 2 * (1 - _phi(abs(t_stat)))
+
+    z_star = _z_critical(confidence)
+    ci_low = (mean1 - mean2) - z_star * se
+    ci_high = (mean1 - mean2) + z_star * se
+
+    print(f"\n  Combo avg kill: T{mean1:.2f}  (sd={math.sqrt(var1):.2f}, n={n1})")
+    print(f"  Fair avg kill:  T{mean2:.2f}  (sd={math.sqrt(var2):.2f}, n={n2})")
+    print(f"  Difference:     {mean1 - mean2:+.2f} turns  CI: [{ci_low:+.2f}, {ci_high:+.2f}]")
+    print(f"  t={t_stat:+.3f}  p={p_value:.6f}")
+
+    if p_value < (1 - confidence) and mean1 < mean2:
+        print(f"  Result: Combo kills SIGNIFICANTLY faster than Fair")
+    elif p_value < (1 - confidence) and mean1 > mean2:
+        print(f"  WARNING: Fair kills faster than Combo — unexpected!")
+    else:
+        print(f"  Result: No significant speed difference at {confidence * 100:.0f}% level")
+
+    print(f"{'─' * 60}")
+
+    return {
+        'combo_mean': mean1, 'fair_mean': mean2,
+        'difference': mean1 - mean2, 't_stat': t_stat,
+        'p_value': p_value, 'significant': p_value < (1 - confidence),
+    }
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main():
@@ -463,9 +874,24 @@ Examples:
     parser.add_argument('--n-assumed', type=int, default=3000,
                         help='Assumed games per matchup in sweep data (default: 3000)')
 
+    # H1-H5 hypothesis tests
+    parser.add_argument('--integrity', nargs=3, metavar=('A', 'B', 'N'),
+                        help='H1: Reciprocity test — deck_a deck_b n_matches')
+    parser.add_argument('--play-draw', nargs=3, metavar=('PROTO', 'ANT', 'N'),
+                        help='H2: Play/draw advantage — protagonist antagonist n_games')
+    parser.add_argument('--mulligan', nargs=3, metavar=('PROTO', 'ANT', 'N'),
+                        help='H3: Mulligan penalty — protagonist antagonist n_games')
+    parser.add_argument('--archetype', type=int, metavar='N',
+                        help='H4: Archetype dominance (combo vs fair vs prison) — n_matches per pairing')
+    parser.add_argument('--kill-turn', type=int, metavar='N',
+                        help='H5: Kill turn comparison (combo vs fair speed) — n_games per deck')
+
     args = parser.parse_args()
 
-    if not any([args.from_json, args.live, args.compare, args.sample_size, args.meta_ev]):
+    has_action = any([args.from_json, args.live, args.compare, args.sample_size,
+                      args.meta_ev, args.integrity, args.play_draw, args.mulligan,
+                      args.archetype, args.kill_turn])
+    if not has_action:
         parser.print_help()
         return
 
@@ -485,6 +911,24 @@ Examples:
     if args.compare:
         proto, a, b, n = args.compare
         run_live_comparison(proto, a, b, int(n), args.confidence)
+
+    if args.integrity:
+        a, b, n = args.integrity
+        test_reciprocity(a, b, int(n), args.confidence)
+
+    if args.play_draw:
+        proto, ant, n = args.play_draw
+        test_play_draw(proto, ant, int(n), args.confidence)
+
+    if args.mulligan:
+        proto, ant, n = args.mulligan
+        test_mulligan_penalty(proto, ant, int(n), args.confidence)
+
+    if args.archetype:
+        test_archetype_dominance(args.archetype, args.confidence)
+
+    if args.kill_turn:
+        test_kill_turn(args.kill_turn, args.confidence)
 
 
 if __name__ == '__main__':

@@ -3495,18 +3495,22 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     # → can cast Cabal Ritual (costs 3) → +2 more net → etc.
     # Model: ritual chain is feasible if we have any starting mana + 1 ritual.
     def _ritual_cost(c): return sum(c.mana_cost.values())
+    # Chalice check: rituals blocked by Chalice can't be cast
+    def _chalice_blocks(c): return gs.spell_blocked_by_chalice(c.cmc)
     # Simulate mana available after casting affordable rituals
     # LED can be cracked in response to any spell for 3 mana of any color
     led_mana = 3 if player.find_tag('led') else 0  # LED crack bonus
     sim_mana = total_mana + led_mana
-    # First pass: rituals affordable from land mana
+    # First pass: rituals affordable from land mana (exclude Chalice-blocked)
     def _is_ritual(c): return c.mana_ritual or c.tag in ('darkrit','cabalrit')
-    rituals = [c for c in player.hand if _is_ritual(c) and _ritual_cost(c) <= sim_mana]
+    rituals = [c for c in player.hand if _is_ritual(c) and _ritual_cost(c) <= sim_mana
+               and not _chalice_blocks(c)]
     # Second pass: rituals affordable after netting mana from first rituals
     for r in rituals:
         net = sum(r.mana_produced.values()) - _ritual_cost(r) if hasattr(r,'mana_produced') else 2
         sim_mana += net
-    rituals2 = [c for c in player.hand if _is_ritual(c) and c not in rituals and _ritual_cost(c) <= sim_mana]
+    rituals2 = [c for c in player.hand if _is_ritual(c) and c not in rituals
+                and _ritual_cost(c) <= sim_mana and not _chalice_blocks(c)]
     rituals = rituals + rituals2
     # Infernal Tutor acts as a ritual proxy: if in hand and mana available, 
     # it can fetch a ritual or kill spell
@@ -3531,11 +3535,17 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── Kill-hand heuristics (any one = enough to assemble lethal storm) ────
     # Each criterion represents a known ANT goldfish line that reaches storm ≥9
-    kill_A = bool(led and len(rituals) >= 1 and (tendrils or itutor))  # LED+R+win
-    kill_B = bool(len(rituals) >= 2 and led and (tendrils or itutor))   # R×2+LED
-    kill_C = bool(adnaus and sim_mana >= 3)                              # Ad Nauseam with mana
-    kill_D = bool(pif and len(player.graveyard) >= 4 and sim_mana >= 4)     # Past in Flames
-    kill_E = bool(len(rituals) >= 3 and (tendrils or itutor) and sim_mana >= 2)  # R×3
+    # Chalice blocks spells with matching CMC — check each kill component
+    tendrils_blocked = tendrils and _chalice_blocks(tendrils)
+    itutor_blocked = itutor and _chalice_blocks(itutor)
+    adnaus_blocked = adnaus and _chalice_blocks(adnaus)
+    pif_blocked = pif and _chalice_blocks(pif)
+    win_available = ((tendrils and not tendrils_blocked) or (itutor and not itutor_blocked))
+    kill_A = bool(led and len(rituals) >= 1 and win_available)  # LED+R+win
+    kill_B = bool(len(rituals) >= 2 and led and win_available)   # R×2+LED
+    kill_C = bool(adnaus and not adnaus_blocked and sim_mana >= 3)  # Ad Nauseam with mana
+    kill_D = bool(pif and not pif_blocked and len(player.graveyard) >= 4 and sim_mana >= 4)  # Past in Flames
+    kill_E = bool(len(rituals) >= 3 and win_available and sim_mana >= 2)  # R×3
     kill_F = bool(itutor_proxy and len(rituals) >= 2 and sim_mana >= 3)  # Tutor+R×2
     can_kill = kill_A or kill_B or kill_C or kill_D or kill_E or kill_F
 
