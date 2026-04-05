@@ -200,7 +200,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.draw(draws)
                 log_fn(f"{cantrip.name} (draw {draws}, mana={mana})")
                 bowmasters_triggers(draws, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
+                                    controller='o' if player is gs.p1 else 'b')
                 gs.check_life_totals()
                 if gs.game_over:
                     return
@@ -223,7 +223,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.draw(draws)
                 log_fn(f"{cantrip.name} (draw {draws}, mana={mana})")
                 bowmasters_triggers(draws, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
+                                    controller='o' if player is gs.p1 else 'b')
                 gs.check_life_totals()
                 if gs.game_over:
                     return
@@ -255,7 +255,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"Emrakul attacks for 15! Opponent at {opponent.life}", True)
                 if opponent.life <= 0:
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.winner = 'bug' if player is gs.p1 else 'opp'
                     gs.win_reason = "Sneak & Show: Show and Tell -> Emrakul lethal"
                     gs.kill_turn = gs.turn
             elif best.tag == 'atraxa':
@@ -266,12 +266,12 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.life += 3  # approximate lifelink value
                 log_fn(f"Atraxa ETB: drew cards, life={player.life}")
                 bowmasters_triggers(3, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
+                                    controller='o' if player is gs.p1 else 'b')
             elif best.tag == 'omni':
                 player.add_to_grave(best)  # enchantment goes to "in play" conceptually
                 log_fn(f"Show and Tell -> Omniscience! (cast anything for free)", True)
                 gs.game_over = True
-                gs.winner = 'bug' if player is gs.bug else 'opp'
+                gs.winner = 'bug' if player is gs.p1 else 'opp'
                 gs.win_reason = "Sneak & Show: Omniscience in play"
                 gs.kill_turn = gs.turn
             elif best.tag == 'sneak':
@@ -291,7 +291,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                         log_fn(f"Emrakul attacks for 15! Opponent at {opponent.life}", True)
                         if opponent.life <= 0:
                             gs.game_over = True
-                            gs.winner = 'bug' if player is gs.bug else 'opp'
+                            gs.winner = 'bug' if player is gs.p1 else 'opp'
                             gs.win_reason = "Sneak & Show: Sneak Attack -> Emrakul lethal"
                             gs.kill_turn = gs.turn
                     else:
@@ -300,11 +300,11 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                         log_fn(f"Sneak Attack -> Atraxa (7/7 haste)!", True)
                         player.draw(3)
                         bowmasters_triggers(3, gs, log_entries,
-                                            controller='o' if player is gs.bug else 'b')
+                                            controller='o' if player is gs.p1 else 'b')
                 else:
                     # Sneak Attack in play but no creature — still strong position
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.winner = 'bug' if player is gs.p1 else 'opp'
                     gs.win_reason = "Sneak & Show: Sneak Attack in play"
                     gs.kill_turn = gs.turn + 1
         else:
@@ -332,7 +332,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.life -= 15
                 if opponent.life <= 0:
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.winner = 'bug' if player is gs.p1 else 'opp'
                     gs.win_reason = "Sneak & Show: Sneak Attack -> Emrakul"
                     gs.kill_turn = gs.turn
             else:
@@ -341,7 +341,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"Sneak Attack -> Atraxa (7/7 haste)!", True)
                 player.draw(3)
                 bowmasters_triggers(3, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
+                                    controller='o' if player is gs.p1 else 'b')
 
     # -- Step 5: Combat with any creatures in play -----------------------------
     if not gs.game_over:

@@ -137,15 +137,15 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
     pro_goes_first = random.random() < 0.5
 
     gs = GameState(
-        bug=PlayerState(name='b', hand=list(pro_hand), library=list(pro_lib)),
-        opp=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-        bug_goes_first=pro_goes_first)
+        p1=PlayerState(name='b', hand=list(pro_hand), library=list(pro_lib)),
+        p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
+        p1_goes_first=pro_goes_first)
     gs.matchup = matchup
 
     pro_label = protagonist.upper().replace('_', ' ')
     meta_name = matchup.replace('_', ' ').title()
-    pro_open = fmt_hand(gs.bug)
-    opp_open = fmt_hand(gs.opp)
+    pro_open = fmt_hand(gs.p1)
+    opp_open = fmt_hand(gs.p2)
 
     turns_data = []
     display_turn = 0
@@ -160,8 +160,8 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
             nonlocal display_turn
             display_turn += 1
             is_pro = (label == 'PRO')
-            player = gs.bug if is_pro else gs.opp
-            opponent = gs.opp if is_pro else gs.bug
+            player = gs.p1 if is_pro else gs.p2
+            opponent = gs.p2 if is_pro else gs.p1
             hand_before = fmt_hand(player)
             life_before = player.life
 
@@ -199,8 +199,8 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
                 'plays': plays,
             }
             turns_data.append(td)
-            life_pro.append(gs.bug.life)
-            life_opp.append(gs.opp.life)
+            life_pro.append(gs.p1.life)
+            life_opp.append(gs.p2.life)
             return gs.game_over
 
         if pro_goes_first:
@@ -212,9 +212,9 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
 
     winner = pro_label if gs.winner == 'bug' else 'OPP'
     if not gs.game_over:
-        pp = sum(c.power for c in gs.bug.creatures)
-        ap = sum(c.power for c in gs.opp.creatures)
-        winner = pro_label if (pp > ap or gs.bug.life > gs.opp.life + 3) else 'OPP'
+        pp = sum(c.power for c in gs.p1.creatures)
+        ap = sum(c.power for c in gs.p2.creatures)
+        winner = pro_label if (pp > ap or gs.p1.life > gs.p2.life + 3) else 'OPP'
 
     return {
         'matchup': matchup, 'meta_name': meta_name, 'seed': seed,
@@ -224,8 +224,8 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
         'bug_open': pro_open, 'opp_open': opp_open,
         'turns_data': turns_data, 'life_bug': life_pro, 'life_opp': life_opp,
         'display_turn': display_turn, 'winner': winner, 'win_reason': gs.win_reason or '',
-        'bug_life': gs.bug.life, 'opp_life': gs.opp.life,
-        'bug_board': fmt_creatures(gs.bug), 'opp_board': fmt_creatures(gs.opp),
+        'bug_life': gs.p1.life, 'opp_life': gs.p2.life,
+        'bug_board': fmt_creatures(gs.p1), 'opp_board': fmt_creatures(gs.p2),
     }
 
 

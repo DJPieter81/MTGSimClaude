@@ -183,7 +183,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
                     drawn = player.library.pop(0)
                     player.hand.append(drawn)
                     log_fn(f"{cantrip.name} — draw")
-                    bowmasters_triggers(1, gs, log_entries, controller='o' if player is gs.bug else 'b')
+                    bowmasters_triggers(1, gs, log_entries, controller='o' if player is gs.p1 else 'b')
                 else:
                     log_fn(f"{cantrip.name} — library empty")
             else:
@@ -215,7 +215,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
                 # Put directly into play as a land
                 from rules import LandPermanent
                 lp = LandPermanent(card=found,
-                                   controller='b' if player is gs.bug else 'o')
+                                   controller='b' if player is gs.p1 else 'o')
                 player.lands.append(lp)
                 log_fn(f"Crop Rotation — sac {sac_land.card.name}, tutor Inkmoth Nexus", True)
             else:
@@ -245,7 +245,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
                                  base_power=1, base_toughness=1, gy_type='land')
         ink_creature_card.flying = True
         perm = Permanent(card=ink_creature_card,
-                         controller='b' if player is gs.bug else 'o',
+                         controller='b' if player is gs.p1 else 'o',
                          summoning_sick=False)  # lands don't have summoning sickness
         perm._is_animated_land = True
         player.creatures.append(perm)
@@ -421,7 +421,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
 
         if poison >= 10:
             gs.game_over = True
-            gs.winner = 'bug' if player is gs.bug else 'opp'
+            gs.winner = 'bug' if player is gs.p1 else 'opp'
             gs.win_reason = f"Infect: {poison} poison counters"
             gs.kill_turn = gs.turn
             log_fn(f"★★★ LETHAL — {poison} poison counters on turn {gs.turn}!", True)

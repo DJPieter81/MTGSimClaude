@@ -177,9 +177,9 @@ def run_table_game(matchup, seed=None):
     bug_goes_first = random.random() < 0.5
 
     gs = GameState(
-        bug=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
-        opp=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-        bug_goes_first=bug_goes_first)
+        p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
+        p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
+        p1_goes_first=bug_goes_first)
     gs.matchup = matchup
 
     meta_name = matchup.replace('_', ' ').title()
@@ -190,8 +190,8 @@ def run_table_game(matchup, seed=None):
     print(f"  ║  BUG Tempo  vs  {meta_name:<46} ║")
     print(f"  ║  BUG is {'ON THE PLAY' if bug_goes_first else 'ON THE DRAW':<54} ║")
     print(f"  ╠══════════════════════════════════════════════════════════════════╣")
-    print(f"  ║  BUG hand (mull {bug_mulls}): {fmt_hand(gs.bug):<42} ║")
-    print(f"  ║  OPP hand (mull {opp_mulls}): {fmt_hand(gs.opp):<42} ║")
+    print(f"  ║  BUG hand (mull {bug_mulls}): {fmt_hand(gs.p1):<42} ║")
+    print(f"  ║  OPP hand (mull {opp_mulls}): {fmt_hand(gs.p2):<42} ║")
     print(f"  ╚══════════════════════════════════════════════════════════════════╝")
     print()
 
@@ -206,8 +206,8 @@ def run_table_game(matchup, seed=None):
             nonlocal display_turn
             display_turn += 1
 
-            player = gs.bug if label == 'BUG' else gs.opp
-            opponent = gs.opp if label == 'BUG' else gs.bug
+            player = gs.p1 if label == 'BUG' else gs.p2
+            opponent = gs.p2 if label == 'BUG' else gs.p1
             life_before = player.life
 
             # Snapshot hand before turn
@@ -266,12 +266,12 @@ def run_table_game(matchup, seed=None):
 
     # ── Timeout heuristic ──
     if not gs.game_over:
-        bug_power = sum(c.power for c in gs.bug.creatures)
-        opp_power = sum(c.power for c in gs.opp.creatures)
-        bug_score = (bug_power * 2 + len(gs.bug.creatures) * 3
-                     + len(gs.bug.lands) + max(0, gs.bug.life - gs.opp.life))
-        opp_score = (opp_power * 2 + len(gs.opp.creatures) * 3
-                     + len(gs.opp.lands) + max(0, gs.opp.life - gs.bug.life))
+        bug_power = sum(c.power for c in gs.p1.creatures)
+        opp_power = sum(c.power for c in gs.p2.creatures)
+        bug_score = (bug_power * 2 + len(gs.p1.creatures) * 3
+                     + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life))
+        opp_score = (opp_power * 2 + len(gs.p2.creatures) * 3
+                     + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life))
         if bug_score >= opp_score:
             gs.winner = 'bug'
             gs.win_reason = f"Board/life advantage after T{display_turn}"
@@ -283,9 +283,9 @@ def run_table_game(matchup, seed=None):
     winner = 'BUG' if gs.winner == 'bug' else 'OPP'
     print(f"  ══════════════════════════════════════════════════════════════════")
     print(f"  ★ {winner} WINS  │  {gs.win_reason}")
-    print(f"    Life: BUG {gs.bug.life}  OPP {gs.opp.life}  │  Game length: T{display_turn}")
-    print(f"    BUG board: {fmt_creatures(gs.bug)}")
-    print(f"    OPP board: {fmt_creatures(gs.opp)}")
+    print(f"    Life: BUG {gs.p1.life}  OPP {gs.p2.life}  │  Game length: T{display_turn}")
+    print(f"    BUG board: {fmt_creatures(gs.p1)}")
+    print(f"    OPP board: {fmt_creatures(gs.p2)}")
     print(f"  ══════════════════════════════════════════════════════════════════")
     print()
 
@@ -300,14 +300,14 @@ def run_game_data(matchup, seed=None):
     bug_goes_first = random.random() < 0.5
 
     gs = GameState(
-        bug=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
-        opp=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-        bug_goes_first=bug_goes_first)
+        p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
+        p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
+        p1_goes_first=bug_goes_first)
     gs.matchup = matchup
 
     meta_name = matchup.replace('_', ' ').title()
-    bug_open = fmt_hand(gs.bug)
-    opp_open = fmt_hand(gs.opp)
+    bug_open = fmt_hand(gs.p1)
+    opp_open = fmt_hand(gs.p2)
 
     turns = []
     display_turn = 0
@@ -320,8 +320,8 @@ def run_game_data(matchup, seed=None):
         def do_one(label):
             nonlocal display_turn
             display_turn += 1
-            player = gs.bug if label == 'BUG' else gs.opp
-            opponent = gs.opp if label == 'BUG' else gs.bug
+            player = gs.p1 if label == 'BUG' else gs.p2
+            opponent = gs.p2 if label == 'BUG' else gs.p1
             hand_before = fmt_hand(player)
             life_before = player.life
 
@@ -358,12 +358,12 @@ def run_game_data(matchup, seed=None):
 
     # Timeout heuristic — if game didn't end, score board position
     if not gs.game_over:
-        bug_power = sum(c.power for c in gs.bug.creatures)
-        opp_power = sum(c.power for c in gs.opp.creatures)
-        bug_score = (bug_power * 2 + len(gs.bug.creatures) * 3
-                     + len(gs.bug.lands) + max(0, gs.bug.life - gs.opp.life))
-        opp_score = (opp_power * 2 + len(gs.opp.creatures) * 3
-                     + len(gs.opp.lands) + max(0, gs.opp.life - gs.bug.life))
+        bug_power = sum(c.power for c in gs.p1.creatures)
+        opp_power = sum(c.power for c in gs.p2.creatures)
+        bug_score = (bug_power * 2 + len(gs.p1.creatures) * 3
+                     + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life))
+        opp_score = (opp_power * 2 + len(gs.p2.creatures) * 3
+                     + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life))
         if bug_score >= opp_score:
             gs.winner = 'bug'
             gs.win_reason = f"Board/life advantage after T{display_turn}"
@@ -379,9 +379,9 @@ def run_game_data(matchup, seed=None):
         'bug_open': bug_open, 'opp_open': opp_open,
         'turns': turns, 'display_turn': display_turn,
         'winner': winner, 'win_reason': gs.win_reason or '',
-        'bug_life': gs.bug.life, 'opp_life': gs.opp.life,
-        'bug_board': fmt_creatures(gs.bug),
-        'opp_board': fmt_creatures(gs.opp),
+        'bug_life': gs.p1.life, 'opp_life': gs.p2.life,
+        'bug_board': fmt_creatures(gs.p1),
+        'opp_board': fmt_creatures(gs.p2),
     }
 
 
@@ -549,9 +549,9 @@ def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False):
         # Run the game
         bf = random.random() < 0.5
         gs = GameState(
-            bug=PlayerState(name='b', hand=list(bh), library=list(bl)),
-            opp=PlayerState(name='o', hand=list(oh), library=list(ol)),
-            bug_goes_first=bf)
+            p1=PlayerState(name='b', hand=list(bh), library=list(bl)),
+            p2=PlayerState(name='o', hand=list(oh), library=list(ol)),
+            p1_goes_first=bf)
         gs.matchup = matchup
         try:
             for t in range(1, 16):

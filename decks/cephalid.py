@@ -178,7 +178,7 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
         log_fn("  Narcomoebas enter play → Dread Return → Thassa's Oracle wins",
                True)
         gs.game_over = True
-        gs.winner = 'bug' if player is gs.bug else 'opp'
+        gs.winner = 'bug' if player is gs.p1 else 'opp'
         gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
         gs.kill_turn = gs.turn
         return
@@ -209,7 +209,7 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"{cantrip.name} — dig for combo")
             if hasattr(gs, 'bowmasters_on_board') and gs.bowmasters_on_board:
                 bowmasters_triggers(1, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
+                                    controller='o' if player is gs.p1 else 'b')
             gs.check_life_totals()
             if gs.game_over:
                 return
@@ -247,7 +247,7 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn("  Narcomoebas → Dread Return → Thassa's Oracle wins",
                        True)
                 gs.game_over = True
-                gs.winner = 'bug' if player is gs.bug else 'opp'
+                gs.winner = 'bug' if player is gs.p1 else 'opp'
                 gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
                 gs.kill_turn = gs.turn
                 return
@@ -273,7 +273,7 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn("  Narcomoebas → Dread Return → Thassa's Oracle wins",
                        True)
                 gs.game_over = True
-                gs.winner = 'bug' if player is gs.bug else 'opp'
+                gs.winner = 'bug' if player is gs.p1 else 'opp'
                 gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
                 gs.kill_turn = gs.turn
                 return
@@ -300,7 +300,7 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn("  Narcomoebas → Dread Return → Thassa's Oracle wins",
                        True)
                 gs.game_over = True
-                gs.winner = 'bug' if player is gs.bug else 'opp'
+                gs.winner = 'bug' if player is gs.p1 else 'opp'
                 gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
                 gs.kill_turn = gs.turn
                 return

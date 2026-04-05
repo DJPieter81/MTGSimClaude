@@ -165,7 +165,7 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
             drawn = player.draw(1)
             log_fn(f"{cantrip.name} — cantrip")
             bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
             break  # one cantrip per turn is usually enough
 
     # ── 3. Expressive Iteration — card advantage (T3+) ─────────────────────
@@ -178,7 +178,7 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
         drawn = player.draw(1)
         log_fn("Expressive Iteration — draw + exile selection")
         bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.bug else 'b')
+                            controller='o' if player is gs.p1 else 'b')
 
     # ── 4. Lightning Bolt — removal or face burn ────────────────────────────
 

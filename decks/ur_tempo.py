@@ -172,7 +172,7 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
         drawn = player.draw(1)
         log_fn("Mishra's Bauble — cantrip")
         bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.bug else 'b')
+                            controller='o' if player is gs.p1 else 'b')
         if gs.game_over:
             return
 
@@ -185,7 +185,7 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
             drawn = player.draw(1)
             log_fn(f"{cantrip.name} — cantrip")
             bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+                                controller='o' if player is gs.p1 else 'b')
             if gs.game_over:
                 return
             break  # one cantrip per turn

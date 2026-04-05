@@ -304,7 +304,7 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
                               colors=set(), tag='karnstruct', gy_type='creature',
                               subtypes={'Construct'}, base_power=0, base_toughness=0)
             perm = Permanent(card=karn_card,
-                             controller='b' if player is gs.bug else 'o',
+                             controller='b' if player is gs.p1 else 'o',
                              summoning_sick=True)
             perm.is_artifact = True
             player.creatures.append(perm)
@@ -358,7 +358,7 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"Thought Monitor (2/2 flying, affinity {eff_cost}) — draws 2")
                 from engine import bowmasters_triggers
                 bowmasters_triggers(2, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
+                                    controller='o' if player is gs.p1 else 'b')
             else:
                 player.add_to_grave(monitor)
 

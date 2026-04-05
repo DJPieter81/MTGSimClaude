@@ -352,7 +352,7 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
         log_fn(f"★ Sling-Gang drains {drain} — opp at {opponent.life}", True)
         if opponent.life <= 0:
             gs.game_over = True
-            gs.winner = 'bug' if player is gs.bug else 'opp'
+            gs.winner = 'bug' if player is gs.p1 else 'opp'
             gs.win_reason = f"Goblins: Sling-Gang drain for {drain}"
             gs.kill_turn = gs.turn
         gs.check_life_totals()

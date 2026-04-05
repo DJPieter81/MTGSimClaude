@@ -67,8 +67,8 @@ def _eidolon_trigger(gs: GameState, card, log_fn) -> None:
         return
     if card is None or card.cmc < 2:
         return
-    gs.bug.life -= 2
-    log_fn(f"Eidolon trigger — {card.name} (CMC {card.cmc}) deals 2 to BUG ({gs.bug.life})", True)
+    gs.p1.life -= 2
+    log_fn(f"Eidolon trigger — {card.name} (CMC {card.cmc}) deals 2 to BUG ({gs.p1.life})", True)
     gs.check_life_totals()
 
 
@@ -80,23 +80,23 @@ def cast_obj(card: Card, controller: str) -> StackObject:
 
 def opp_can_cast(card: Card, om: int, gs: GameState, caster=None) -> bool:
     """Single mana+colour gateway for any player casting a spell.
-    caster: the PlayerState casting the spell. Defaults to gs.opp for backward compat.
+    caster: the PlayerState casting the spell. Defaults to gs.p2 for backward compat.
     Checks: quantity (om), colour (can_afford), Chalice, Trinisphere."""
     if gs.spell_blocked_by_chalice(card.cmc):
         return False
     effective = max(card.cmc, 3 if gs.trinisphere_active else 0)
     if om < effective:
         return False
-    caster = caster if caster is not None else gs.opp
+    caster = caster if caster is not None else gs.p2
     return can_afford(caster, card.mana_cost)
 
 
 def update_goyf(gs: GameState):
     # Tarmogoyf / Barrowgoyf: P/T = card types in ALL graveyards
-    pw, pt = MTGRules.tarmogoyf_pt(gs.bug.graveyard, gs.opp.graveyard)
+    pw, pt = MTGRules.tarmogoyf_pt(gs.p1.graveyard, gs.p2.graveyard)
     # Nethergoyf: P/T = types in CONTROLLER's own GY / same+1 (static ability)
 
-    for c in gs.bug.creatures + gs.opp.creatures:
+    for c in gs.p1.creatures + gs.p2.creatures:
         if c.card.tag == 'goyf':
             c.power_mod = pw - c.card.base_power
             c.toughness_mod = pt - c.card.base_toughness
@@ -108,9 +108,9 @@ def update_goyf(gs: GameState):
             # Nethergoyf Oracle: P/T = */1+* where * = card types in controller's GY.
             # tarmogoyf_pt(gy, []) already returns (types, types+1) — no extra +1 needed.
             if c.controller == 'b':
-                n_pw, n_pt = MTGRules.tarmogoyf_pt(gs.bug.graveyard, [])
+                n_pw, n_pt = MTGRules.tarmogoyf_pt(gs.p1.graveyard, [])
             else:
-                n_pw, n_pt = MTGRules.tarmogoyf_pt(gs.opp.graveyard, [])
+                n_pw, n_pt = MTGRules.tarmogoyf_pt(gs.p2.graveyard, [])
             c.power_mod = n_pw - c.card.base_power
             c.toughness_mod = n_pt - c.card.base_toughness
 
@@ -120,20 +120,20 @@ def bowmasters_triggers(n_draws: int, gs: GameState, log_list: List[str],
     """
     CR 603 — one trigger per draw event (NOT the first draw-step draw).
     Each trigger: deal 1 damage to any target; amass Orcs 1 (grow Orc Army token).
-    controller='b': BUG controls Bowmasters (default) — checks gs.bug.creatures, pings gs.opp.
-    controller='o': OPP controls Bowmasters — checks gs.opp.creatures, pings gs.bug.
+    controller='b': BUG controls Bowmasters (default) — checks gs.p1.creatures, pings gs.p2.
+    controller='o': OPP controls Bowmasters — checks gs.p2.creatures, pings gs.p1.
     This allows the function to work when Elves is the protagonist (controller='o').
     """
     # Select which side has Bowmasters and who gets pinged
     if controller == 'b':
-        has_bowm = any(c.card.tag == 'bowm' for c in gs.bug.creatures)
-        victim = gs.opp
-        army_owner = gs.bug
+        has_bowm = any(c.card.tag == 'bowm' for c in gs.p1.creatures)
+        victim = gs.p2
+        army_owner = gs.p1
         army_ctrl = 'b'
     else:
-        has_bowm = any(c.card.tag == 'bowm' for c in gs.opp.creatures)
-        victim = gs.bug
-        army_owner = gs.opp
+        has_bowm = any(c.card.tag == 'bowm' for c in gs.p2.creatures)
+        victim = gs.p1
+        army_owner = gs.p2
         army_ctrl = 'o'
 
     if not has_bowm:
@@ -167,7 +167,7 @@ def _try_counter(gs: GameState, spell_obj: StackObject, log_list: List[str],
         log_list.append(f"  {spell_obj.name} countered by Chalice={gs.chalice_x}")
         return True
     ctr = []
-    if MTGRules.best_counter(spell_obj, gs.bug.hand, gs.bug.lands, ctr,
+    if MTGRules.best_counter(spell_obj, gs.p1.hand, gs.p1.lands, ctr,
                               is_opponents_turn=is_opponents_turn):
         for m in ctr: log_list.append(f"  ★ {m}")
         log_list.append(f"  {spell_obj.name} countered!")
@@ -244,14 +244,14 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
     # Condition: Vial has matching counters, opp has a creature in hand at that CMC,
     # and the ambush creature can survive or trade favourably with an attacker.
     if MC.is_vial(gs) and attackers:
-        o = (gs.opp if defender_player is gs.bug else gs.bug)
-        if o is gs.opp:  # only fire when DnT/Boros is the defender
-            vial_perm = next((p for p in gs.opp.artifacts if p.card.tag == 'vial'), None)
+        o = (gs.p2 if defender_player is gs.p1 else gs.p1)
+        if o is gs.p2:  # only fire when DnT/Boros is the defender
+            vial_perm = next((p for p in gs.p2.artifacts if p.card.tag == 'vial'), None)
             if vial_perm and gs.vial_counters > 0:
                 ambush_tags = ('flickerwisp','skyclave','thalia','phelia',
                                'recruiter','solitude','orchid','dungeoneer','minsc')
                 for tag in ambush_tags:
-                    crea = gs.opp.find_tag(tag)
+                    crea = gs.p2.find_tag(tag)
                     if not crea or crea.cmc != gs.vial_counters:
                         continue
                     # Check if this creature can profitably block any attacker:
@@ -266,27 +266,27 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
                         if not a.card.flying or crea.flying or getattr(crea, 'reach', False)
                     )
                     if can_trade:
-                        gs.opp.remove_from_hand(crea)
-                        new_perm = gs.opp.put_creature_in_play(crea)
+                        gs.p2.remove_from_hand(crea)
+                        new_perm = gs.p2.put_creature_in_play(crea)
                         new_perm.summoning_sick = False  # instant-speed = can block immediately
                         # ETB effects
-                        if tag == 'skyclave' and gs.bug.creatures:
-                            tgt = next((c for c in gs.bug.creatures if c.card.cmc <= 4), None)
+                        if tag == 'skyclave' and gs.p1.creatures:
+                            tgt = next((c for c in gs.p1.creatures if c.card.cmc <= 4), None)
                             if tgt:
-                                gs.bug.remove_creature(tgt)
+                                gs.p1.remove_creature(tgt)
                                 log_list.append(f"  Skyclave Apparition (Vial ambush) exiles {tgt.card.name}")
                                 update_goyf(gs)
-                        if tag == 'solitude' and gs.bug.creatures:
-                            tgt = gs.bug.creatures[-1]
-                            gs.bug.remove_creature(tgt)
+                        if tag == 'solitude' and gs.p1.creatures:
+                            tgt = gs.p1.creatures[-1]
+                            gs.p1.remove_creature(tgt)
                             log_list.append(f"  Solitude (Vial ambush) exiles {tgt.card.name}")
                             update_goyf(gs)
                         if tag == 'recruiter':
                             for ft in ('thalia','phelia','flickerwisp','skyclave'):
-                                found = next((c for c in gs.opp.library if c.tag == ft), None)
+                                found = next((c for c in gs.p2.library if c.tag == ft), None)
                                 if found:
-                                    gs.opp.library.remove(found)
-                                    gs.opp.hand.append(found)
+                                    gs.p2.library.remove(found)
+                                    gs.p2.hand.append(found)
                                     log_list.append(f"  Recruiter (ambush) tutors {found.name}")
                                     break
                         can_block.append(new_perm)
@@ -454,7 +454,7 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
     Uses opp's FoW/FoN/Daze/Consign from the opponent hand.
     Priority mirrors BUG's: counter high-value threats, not cantrips.
     """
-    o, b = gs.opp, gs.bug
+    o, b = gs.p2, gs.p1
     matchup = gs.matchup if hasattr(gs, 'matchup') else ''
 
     # Veil of Summer: "Spells you control can't be countered this turn." (CR 702.86)
@@ -602,8 +602,8 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
 
 
 def bug_turn(gs: GameState, turn: int):
-    b = gs.bug
-    o = gs.opp
+    b = gs.p1
+    o = gs.p2
     log_entries = []
 
     def log(msg, key=False):
@@ -655,7 +655,7 @@ def bug_turn(gs: GameState, turn: int):
     b._narset_lock = any(p.card.tag == 'narset' for p in o.planeswalkers)
 
     # ── Draw (first player skips T1 draw — CR 103.8a) ──
-    if not (turn == 1 and gs.bug_goes_first):
+    if not (turn == 1 and gs.p1_goes_first):
         drawn = b.draw(1, is_draw_step=True)  # draw step
         if drawn:
             log(f"Draw: {drawn[0].name}")
@@ -1098,7 +1098,7 @@ def bug_turn(gs: GameState, turn: int):
     # Endurance (flash, ETB: exile all GYs) — vs Reanimator/Doomsday/Oops
     endurance_card = b.find_tag('endurance')
     if endurance_card and not gs.spell_blocked_by_chalice(endurance_card.cmc):
-        opp_gy_size = len(gs.opp.graveyard)
+        opp_gy_size = len(gs.p2.graveyard)
         can_evoke = any('G' in c.colors for c in b.hand if c.tag != 'endurance')
         # Evoke (free): exile a green card from hand — ETB triggers, then creature sacrificed
         # Full cast (1GG): enters as a 3/4 reach creature
@@ -1112,11 +1112,11 @@ def bug_turn(gs: GameState, turn: int):
                 # ETB: target OPP graveyard — put all cards on BOTTOM of their library (random order)
                 # Oracle: "up to one target player puts all cards from their graveyard on
                 # the bottom of their library in a random order"
-                gy_count = len(gs.opp.graveyard)
-                shuffled = list(gs.opp.graveyard)
+                gy_count = len(gs.p2.graveyard)
+                shuffled = list(gs.p2.graveyard)
                 random.shuffle(shuffled)
-                gs.opp.graveyard = []
-                gs.opp.library.extend(shuffled)   # bottom of library
+                gs.p2.graveyard = []
+                gs.p2.library.extend(shuffled)   # bottom of library
                 # Endurance is sacrificed immediately (evoke) — does NOT enter creatures list
                 log(f"★ Endurance (EVOKE, exiles {green_pitch.name}) — {gy_count} opp GY cards"
                     f" put on bottom of library in random order", key=True)
@@ -1127,11 +1127,11 @@ def bug_turn(gs: GameState, turn: int):
                 perm = b.put_creature_in_play(endurance_card)
                 # Reach keyword — can block flyers
                 perm.card.flying = False   # endurance doesn't fly, but has reach
-                gy_count = len(gs.opp.graveyard)
-                shuffled = list(gs.opp.graveyard)
+                gy_count = len(gs.p2.graveyard)
+                shuffled = list(gs.p2.graveyard)
                 random.shuffle(shuffled)
-                gs.opp.graveyard = []
-                gs.opp.library.extend(shuffled)
+                gs.p2.graveyard = []
+                gs.p2.library.extend(shuffled)
                 log(f"★ Endurance 3/4 Reach (full cast) — {gy_count} opp GY cards"
                     f" put on bottom of library in random order", key=True)
                 update_goyf(gs)
@@ -1142,7 +1142,7 @@ def bug_turn(gs: GameState, turn: int):
     if fov_paid and b_budget[0] >= 3 and (gs.trinisphere_active or gs.chalice_x is not None or gs.bridge_on_board):
         has_green_src = any('G' in l.effective_produces() for l in b.lands if not l.tapped)
         if has_green_src:
-            targets = [p for p in gs.opp.artifacts + gs.opp.enchantments
+            targets = [p for p in gs.p2.artifacts + gs.p2.enchantments
                        if p.card.lock_piece][:2]
             if targets:
                 _deduct(b_budget, 3, fov_paid)
@@ -1150,10 +1150,10 @@ def bug_turn(gs: GameState, turn: int):
                 b.add_to_grave(fov_paid)
                 names = []
                 for t in targets:
-                    tlist = gs.opp.artifacts if t in gs.opp.artifacts else gs.opp.enchantments
+                    tlist = gs.p2.artifacts if t in gs.p2.artifacts else gs.p2.enchantments
                     if t in tlist:
                         tlist.remove(t)
-                        gs.opp.add_to_grave(t.card)
+                        gs.p2.add_to_grave(t.card)
                         names.append(t.name)
                         if t.card.tag == 'chalice': gs.chalice_x = None
                         elif t.card.tag == 'bridge': gs.bridge_on_board = False
@@ -1168,25 +1168,25 @@ def bug_turn(gs: GameState, turn: int):
     if pyro_card and b_budget[0] >= 1 and can_afford(b, pyro_card.mana_cost):
         target_color = 'R' if pyro_card.tag == 'hydro' else 'U'
         color_name = 'red' if pyro_card.tag == 'hydro' else 'blue'
-        target_perm = next((c for c in gs.opp.creatures if target_color in c.card.colors), None)
+        target_perm = next((c for c in gs.p2.creatures if target_color in c.card.colors), None)
         if target_perm:
             _deduct(b_budget, 1, pyro_card)
             b.remove_from_hand(pyro_card)
             b.add_to_grave(pyro_card)
-            gs.opp.remove_creature(target_perm)
-            gs.opp.revolt_this_turn = True
+            gs.p2.remove_creature(target_perm)
+            gs.p2.revolt_this_turn = True
             log(f"{pyro_card.name} → destroys {target_perm.name} ({color_name} permanent)")
             update_goyf(gs)
 
     # Toxic Deluge — vs wide aggro boards
     deluge_card = b.find_tag('deluge')
-    if deluge_card and len(gs.opp.creatures) >= 2:
+    if deluge_card and len(gs.p2.creatures) >= 2:
         if b_budget[0] >= effective_cmc(deluge_card) and can_afford(b, deluge_card.mana_cost):
             # Oracle: ALL creatures get -X/-X until EOT (including BUG's own)
             # Choose X = smallest value that wipes opp board without wiping BUG board
             # If BUG has no creatures, use max opp toughness
             # If BUG has creatures, use min X that kills opp board but not BUG's key creatures
-            opp_max_t = max((c.toughness for c in gs.opp.creatures), default=1)
+            opp_max_t = max((c.toughness for c in gs.p2.creatures), default=1)
             bug_min_t = min((c.toughness for c in b.creatures), default=99) if b.creatures else 99
             x = opp_max_t
             # Check if Deluge would kill BUG's own board too
@@ -1198,10 +1198,10 @@ def bug_turn(gs: GameState, turn: int):
                 b.add_to_grave(deluge_card)
                 b.life -= life_cost
                 # Kill opp creatures
-                killed_opp = [c for c in gs.opp.creatures if c.toughness <= x]
+                killed_opp = [c for c in gs.p2.creatures if c.toughness <= x]
                 for c in killed_opp:
-                    gs.opp.remove_creature(c)
-                    gs.opp.revolt_this_turn = True
+                    gs.p2.remove_creature(c)
+                    gs.p2.revolt_this_turn = True
                 # Kill BUG's own creatures too (oracle: ALL creatures)
                 killed_bug = [c for c in b.creatures if c.toughness <= x]
                 for c in killed_bug:
@@ -1215,23 +1215,23 @@ def bug_turn(gs: GameState, turn: int):
     surgical_card = b.find_tag('surgical')
     if surgical_card:
         # Oracle: target must already be IN a graveyard (not proactive)
-        target_card = next((c for c in gs.opp.graveyard
+        target_card = next((c for c in gs.p2.graveyard
                             if c.is_combo_piece), None)
         if target_card:
             b.cast_spell(surgical_card, log_fn=log)  # pays life_cost=2, logs
             target_name = target_card.name
             removed = 0
             # Exile from OPP GY (the target itself and same-name copies)
-            for c in [c for c in gs.opp.graveyard if c.name == target_name]:
-                gs.opp.graveyard.remove(c); gs.bug.exile.append(c); removed += 1
+            for c in [c for c in gs.p2.graveyard if c.name == target_name]:
+                gs.p2.graveyard.remove(c); gs.p1.exile.append(c); removed += 1
             # Exile from OPP hand
-            for c in [c for c in gs.opp.hand if c.name == target_name]:
-                gs.opp.hand.remove(c); gs.bug.exile.append(c); removed += 1
+            for c in [c for c in gs.p2.hand if c.name == target_name]:
+                gs.p2.hand.remove(c); gs.p1.exile.append(c); removed += 1
             # Exile from OPP library
-            for c in [c for c in gs.opp.library if c.name == target_name]:
-                gs.opp.library.remove(c); gs.bug.exile.append(c); removed += 1
+            for c in [c for c in gs.p2.library if c.name == target_name]:
+                gs.p2.library.remove(c); gs.p1.exile.append(c); removed += 1
             # Oracle: ONLY the target card's owner shuffles their library
-            random.shuffle(gs.opp.library)
+            random.shuffle(gs.p2.library)
             log(f"★ Surgical Extraction → exiles {removed} copies of {target_name}"
                 f" (opp shuffles library)", key=True)
             update_goyf(gs)
@@ -1297,9 +1297,9 @@ def bug_turn(gs: GameState, turn: int):
             else:
                 perm = b.put_creature_in_play(goyf)
                 if goyf.tag == 'nether':
-                    pw, pt = MTGRules.tarmogoyf_pt(gs.bug.graveyard, [])
+                    pw, pt = MTGRules.tarmogoyf_pt(gs.p1.graveyard, [])
                 else:
-                    pw, pt = MTGRules.tarmogoyf_pt(gs.bug.graveyard, gs.opp.graveyard)
+                    pw, pt = MTGRules.tarmogoyf_pt(gs.p1.graveyard, gs.p2.graveyard)
                 perm.power_mod = pw - goyf.base_power
                 perm.toughness_mod = pt - goyf.base_toughness
                 threats_this_turn[0] += 1
@@ -1480,85 +1480,85 @@ def bug_turn(gs: GameState, turn: int):
 # ─────────────────────────────────────────────
 
 def _opp_dimir(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_dimir(player, opponent, gs, om, _logfn, le)
 
 
 def _opp_dimir_flash(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_dimir_flash(player, opponent, gs, om, _logfn, le)
 
 
 def _opp_elves(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_elves(player, opponent, gs, om, _l, le)
 
 def _opp_dnt(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_dnt(player, opponent, gs, om, _l, le)
 
 def _opp_mono_black(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_mono_black(player, opponent, gs, om, _l, le)
 
 def _opp_boros(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_boros(player, opponent, gs, om, _l, le)
 
 def _opp_prison(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_prison(player, opponent, gs, om, _l, le)
 
 def _opp_eldrazi(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_eldrazi(player, opponent, gs, om, _l, le)
 
 def _opp_show(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_show(player, opponent, gs, om, _l, le)
 
 def _opp_lands(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_lands(player, opponent, gs, om, _l, le)
 
 def _opp_oops(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_oops(player, opponent, gs, om, _l, le)
 
 def _opp_doomsday(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_doomsday(player, opponent, gs, om, _l, le)
 
 def _opp_uwx(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_uwx(player, opponent, gs, om, _l, le)
 
 def _opp_painter(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_painter(player, opponent, gs, om, _l, le)
 
 def _opp_storm(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_storm(player, opponent, gs, om, _l, le)
 
 def opp_turn(gs: GameState, turn: int, matchup: str):
-    o = gs.opp
-    b = gs.bug
+    o = gs.p2
+    b = gs.p1
     log_entries = []
     gs.opp_spells_cast_this_turn = 0
     gs.veil_active = False  # reset at start of each turn  # Mindbreak Trap: track spells cast this turn
@@ -1579,7 +1579,7 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     o.clear_summoning_sickness()
 
     # ── Draw (first player on play skips T1 draw) ──
-    if not (turn == 1 and not gs.bug_goes_first):
+    if not (turn == 1 and not gs.p1_goes_first):
         drawn = o.draw(1, is_draw_step=True)  # first draw step card — Bowmasters exempt
         if drawn:
             log(f"Draw: {drawn[0].name}")
@@ -1653,7 +1653,7 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
         from deck_registry import get_strategy
         strategy_fn = get_strategy(matchup)
         if strategy_fn:
-            player, opponent = gs.opp, gs.bug
+            player, opponent = gs.p2, gs.p1
             def _plugin_log(msg, key=False):
                 gs.log_event('o', 'main', msg, key)
                 log_entries.append(msg)
@@ -1670,9 +1670,9 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
 def opp_to_grave_or_exile(gs, card):
     """Route opp card to GY or exile depending on Leyline of the Void."""
     if gs.leyline_active:
-        gs.opp.exile.append(card)
+        gs.p2.exile.append(card)
     else:
-        gs.opp.add_to_grave(card)
+        gs.p2.add_to_grave(card)
 
 
 def _opp_cast(card, o, gs):
@@ -1680,7 +1680,7 @@ def _opp_cast(card, o, gs):
     o.spells_cast_this_turn += 1
     # Flag if the spell is blue or black (for Veil of Summer draw condition)
     if 'U' in card.colors or 'B' in card.colors:
-        gs.bug.opp_cast_blue_black_this_turn = True
+        gs.p1.opp_cast_blue_black_this_turn = True
 
 
 
@@ -1690,12 +1690,12 @@ def _bug_force_of_vigor(gs, target_tags, log_list):
     Oracle: "If it's not your turn, you may exile a green card from your hand rather than pay."
     Called from opp strategy functions (opponent's turn only).
     """
-    b = gs.bug
+    b = gs.p1
     fov = b.find_tag('fov')
     if not fov: return False
     green_pitch = next((c for c in b.hand if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
     if not green_pitch: return False
-    targets = [p for p in gs.opp.artifacts + gs.opp.enchantments
+    targets = [p for p in gs.p2.artifacts + gs.p2.enchantments
                if p.card.tag in target_tags][:2]
     if not targets: return False
     b.remove_from_hand(fov)
@@ -1703,10 +1703,10 @@ def _bug_force_of_vigor(gs, target_tags, log_list):
     b.exile.append(green_pitch)
     names = []
     for t in targets:
-        tlist = gs.opp.artifacts if t in gs.opp.artifacts else gs.opp.enchantments
+        tlist = gs.p2.artifacts if t in gs.p2.artifacts else gs.p2.enchantments
         if t in tlist:
             tlist.remove(t)
-            gs.opp.add_to_grave(t.card)
+            gs.p2.add_to_grave(t.card)
             names.append(t.name)
             if t.card.tag == 'chalice': gs.chalice_x = None
             elif t.card.tag == 'bridge': gs.bridge_on_board = False
@@ -1726,7 +1726,7 @@ def _opp_vial_tick_and_deploy(gs, log, le, creature_tags_in_priority, max_counte
     - Real players stop incrementing when they reach a useful CMC — cap at max_counters
     Returns True if a creature was vialed in.
     """
-    o = gs.opp
+    o = gs.p2
     vial_perm = next((p for p in o.artifacts if p.card.tag == 'vial'), None)
     if not vial_perm:
         return False
@@ -1753,7 +1753,7 @@ def _opp_vial_tick_and_deploy(gs, log, le, creature_tags_in_priority, max_counte
             o.remove_from_hand(crea)
             o.put_creature_in_play(crea)
             log(f"Aether Vial [{gs.vial_counters}] → {crea.name} enters (uncounterable)", True)
-            b = gs.bug
+            b = gs.p1
             if crea.tag == 'skyclave' and b.creatures:
                 target = next((c for c in b.creatures if c.card.cmc <= 4), None)
                 if target:
@@ -1782,15 +1782,15 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
     Single source of truth for Elves strategic decisions.
     Called by both elves_turn (protagonist) and _opp_elves (antagonist).
 
-    player   = Elves PlayerState (gs.bug when protagonist, gs.opp when antagonist)
+    player   = Elves PlayerState (gs.p1 when protagonist, gs.p2 when antagonist)
     opponent = the other PlayerState
     total_mana = mana available this turn (caller computes Cradle + land mana)
 
     Bowmasters direction: when player draws, opponent's Bowmasters fires.
-      bowm_ctrl = 'o' if player is gs.bug (opp has Bowmasters, pings gs.bug)
-                = 'b' if player is gs.opp (bug has Bowmasters, pings gs.opp)
+      bowm_ctrl = 'o' if player is gs.p1 (opp has Bowmasters, pings gs.p1)
+                = 'b' if player is gs.p2 (bug has Bowmasters, pings gs.p2)
     """
-    bowm_ctrl = 'o' if player is gs.bug else 'b'
+    bowm_ctrl = 'o' if player is gs.p1 else 'b'
     mana_ref  = [total_mana]   # mutable so do_natural_order can deduct
 
     def elf_count():
@@ -1980,11 +1980,11 @@ def elves_turn(gs: GameState, turn: int):
 
 def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
     """
-    BUG (gs.bug) tries to counter an antagonist spell reactively.
+    BUG (gs.p1) tries to counter an antagonist spell reactively.
     Called when the protagonist is NOT BUG — e.g. Elves, Dimir, Storm as protagonist.
-    Mirrors _opp_reactive_counter but uses gs.bug hand for counters.
+    Mirrors _opp_reactive_counter but uses gs.p1 hand for counters.
     """
-    b = gs.bug
+    b = gs.p1
     matchup = getattr(gs, 'matchup', '')
 
     # Veil of Summer protection
@@ -2088,10 +2088,10 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
 def _try_counter_any(player, opponent, gs: GameState, spell_card, log_list: list) -> bool:
     """
     Unified counter attempt — works regardless of which role the deck plays.
-    player is gs.bug  → protagonist casting spell, opponent (gs.opp) tries to counter.
-    player is gs.opp  → antagonist casting spell, BUG (gs.bug) tries to counter.
+    player is gs.p1  → protagonist casting spell, opponent (gs.p2) tries to counter.
+    player is gs.p2  → antagonist casting spell, BUG (gs.p1) tries to counter.
     """
-    if player is gs.bug:
+    if player is gs.p1:
         return _opp_reactive_counter(gs, spell_card, log_list)
     else:
         return _opp_try_counter(gs, spell_card, log_list)
@@ -2178,7 +2178,7 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                             opponent.lands.remove(tgt_land)
                             opponent.revolt_this_turn = True
                             from rules import LandPermanent
-                            new_land = LandPermanent(card=tgt_land.card, controller=('b' if player is gs.bug else 'o'), tapped=True)
+                            new_land = LandPermanent(card=tgt_land.card, controller=('b' if player is gs.p1 else 'o'), tapped=True)
                             opponent.lands.append(new_land)
                             log_fn(f"  Flickerwisp blinks {tgt_land.card.name} (re-enters tapped)")
                     if tag == 'recruiter':
@@ -2767,7 +2767,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ {win_card.name} enters through Veil (haste)" if getattr(win_card,'haste',False) else f"★ {win_card.name} enters through Veil", True)
             if win_card.is_creature():
                 player.put_creature_in_play(win_card)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
             gs.win_reason = f"Show+Veil: {win_card.name}"
         else:
             player.remove_from_hand(sat)
@@ -2791,7 +2791,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
                         log_fn(f"★ {win_card.name} attacks — {win_card.base_power} damage, opp at {opponent.life}", True)
                         # Win if lethal, or if Emrakul (annihilator 6 strips 30+ points of permanents)
                         if opponent.life <= 0 or win_card.tag == 'emrakul':
-                            gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+                            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
                             gs.win_reason = f"Show+Tell: {win_card.name} (annihilator+attack)"
                     else:
                         # No haste — mark for next turn
@@ -2814,7 +2814,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
                             log_fn(f"★ {chain_target.name} attacks for {chain_target.base_power}", True)
                             if opponent.life <= 0 or chain_target.tag == 'emrakul':
                                 gs.game_over = True
-                                gs.winner = 'bug' if player is gs.bug else 'opp'
+                                gs.winner = 'bug' if player is gs.p1 else 'opp'
                                 gs.win_reason = f"Omniscience+{chain_target.name}"
                         else:
                             gs.show_creature_in_play = chain_target.name
@@ -2828,7 +2828,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
         if emy and om_eff >= 4:  # Sneak costs {R} + creature CMC colourless
             player.remove_from_hand(emy)
             log_fn(f"★ Sneak Attack → {emy.name} attacks for lethal — game over", True)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
             gs.win_reason = f"Sneak Attack: {emy.name}"
 
     # ── Put Sneak Attack into play if SaT already resolved ──
@@ -2857,7 +2857,7 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
             found = next((c for c in player.library if c.tag == want), None)
             if found:
                 player.library.remove(found)
-                player.lands.append(LandPermanent(card=found, controller=('b' if player is gs.bug else 'o')))
+                player.lands.append(LandPermanent(card=found, controller=('b' if player is gs.p1 else 'o')))
                 log_fn(f"Crop Rotation → {found.name}")
         else: player.add_to_grave(crop)
     has_depths = any(l.card.tag == 'depths' for l in player.lands)
@@ -2865,14 +2865,14 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
     if has_depths and has_stage and not gs.game_over:
         from rules import Card as RCard
         trigger = StackObject(name="Marit Lage token",
-                              stack_type=MTGRules.marit_lage_stack_type(), controller=('b' if player is gs.bug else 'o'),
+                              stack_type=MTGRules.marit_lage_stack_type(), controller=('b' if player is gs.p1 else 'o'),
                               trigger_source='Dark Depths')
         log_fn(f"Dark Depths combo → triggered ability (StackType: {trigger.stack_type.name})", True)
         log_fn("★ RULES: Triggered ability — FoW/Daze/Counterspell CANNOT counter CR 113.9", True)
         ml_card = RCard(name='Marit Lage', card_type=CardType.CREATURE, cmc=0, mana_cost={},
                         colors={'B'}, base_power=20, base_toughness=20,
                         flying=True, indestructible=True, tag='marit', gy_type='creature')
-        ml = Permanent(card=ml_card, controller=('b' if player is gs.bug else 'o'), summoning_sick=True)
+        ml = Permanent(card=ml_card, controller=('b' if player is gs.p1 else 'o'), summoning_sick=True)
         player.creatures.append(ml)
         player.lands = [l for l in player.lands if l.card.tag not in ('depths','stage')]
         borrow = opponent.find_tag('borrow')
@@ -2994,7 +2994,7 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             if random.random() < _oops_veil_rate:
                 player.remove_from_hand(oops); player.add_to_grave(oops)
                 log_fn("★ Oops through Veil — wins", True)
-                gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+                gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
                 gs.win_reason = "Oops + Veil — BUG blue interaction blanked"
             else:
                 player.remove_from_hand(oops); player.add_to_grave(oops)
@@ -3011,7 +3011,7 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             if not _try_counter_any(player, opponent, gs, oops, log_entries):
                 player.add_to_grave(oops)
                 log_fn("★ Oops resolves — wins", True)
-                gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+                gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
                 gs.win_reason = "Oops resolves uncountered"
             else: player.add_to_grave(oops)
 
@@ -3050,14 +3050,14 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True  # protect all spells this turn; log_fn("Veil of Summer")
             player.remove_from_hand(dd); player.add_to_grave(dd)
             log_fn("★ Doomsday through Veil", True)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
             gs.win_reason = "Doomsday + Veil of Summer"
         else:
             player.remove_from_hand(dd)
             if not _try_counter_any(player, opponent, gs, dd, log_entries):
                 player.add_to_grave(dd)
                 log_fn("★ Doomsday resolves", True)
-                gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+                gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
                 gs.win_reason = "Doomsday resolves uncountered"
             else: player.add_to_grave(dd)
 
@@ -3385,7 +3385,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
                     player.graveyard.remove(fb); player.exile.append(fb)
                     drawn = player.draw(MTGRules.brainstorm_draws())
                     log_fn(f"  Snapcaster flashback Brainstorm ({len(drawn)} draw)")
-                    bowmasters_triggers(len(drawn), gs, log_entries, controller='o' if player is gs.bug else 'b')
+                    bowmasters_triggers(len(drawn), gs, log_entries, controller='o' if player is gs.p1 else 'b')
             else:
                 player.add_to_grave(snap)
 
@@ -3422,7 +3422,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
         draws = MTGRules.brainstorm_draws() if can_c.tag == 'bs' else 1
         log_fn(f"{can_c.name} ({draws} draw{'s' if draws>1 else ''})")
         player.draw(draws)
-        bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.bug else 'b')
+        bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.p1 else 'b')
         mentor_trigger()
 
     # ── Combat ──
@@ -3497,7 +3497,7 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(grind)
         if not _try_counter_any(player, opponent, gs, grind, log_entries):
             log_fn("★ Painter + Grindstone — BUG library milled", True)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+            gs.game_over = True; gs.winner = ('bug' if player is gs.p1 else 'opp')
             gs.win_reason = "Painter+Grindstone combo resolves"
         else: player.add_to_grave(grind)
     # UWx selective combat: only attack with creatures that can deal unblocked damage
@@ -3656,7 +3656,7 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                 if _rr2.random() >= _fizzle:  # fizzle_rate = P(fail), so succeed if >= fizzle
                     log_fn(f"★ Storm {kill_type} — wins (storm count ≥ 9)", True)
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.winner = 'bug' if player is gs.p1 else 'opp'
                     gs.win_reason = f"ANT combo ({kill_type})"
                 else:
                     log_fn(f"Storm {kill_type} fizzles (BUG had backup interaction)")
@@ -3789,7 +3789,7 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
                 # Griselbrand win: draw 7, gain 7 life (simplified: mark game over)
                 if gy_target.tag in ('gris', 'archon'):
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.winner = 'bug' if player is gs.p1 else 'opp'
                     gs.win_reason = f"Reanimator: {gy_target.name} resolves uncountered"
                     gs.kill_turn = gs.turn
                     log_fn(f"★ {gy_target.name} wins the game", True)
@@ -3801,7 +3801,7 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _opp_reanimator(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_reanimator(player, opponent, gs, om, _logfn, le)
 
@@ -3883,7 +3883,7 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _opp_ur_aggro(gs, om, log, le):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_ur_aggro(player, opponent, gs, om, _logfn, le)
 
@@ -4043,7 +4043,7 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _opp_mardu(gs, om, log, le, turn):
-    player, opponent = gs.opp, gs.bug
+    player, opponent = gs.p2, gs.p1
     def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
     _strategy_mardu(player, opponent, gs, om, _logfn, le)
 
