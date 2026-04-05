@@ -1594,9 +1594,8 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
 
     # ── Matchup dispatch ──
     if   matchup == 'prison':    _opp_prison(gs, om, log, log_entries)
-    elif matchup == 'eldrazi':   _opp_eldrazi(gs, om, log, log_entries)
     elif matchup == 'show':      _opp_show(gs, om, log, log_entries)
-    elif matchup == 'lands':     _opp_lands(gs, om, log, log_entries, turn)
+    # lands: dispatched via registry (decks/lands.py)
     elif matchup == 'oops':      _opp_oops(gs, om, log, log_entries)
     elif matchup == 'doomsday':  _opp_doomsday(gs, om, log, log_entries, turn)
     elif matchup in MC.DIMIR_ONLY: _opp_dimir(gs, om, log, log_entries)
