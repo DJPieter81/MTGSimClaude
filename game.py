@@ -591,8 +591,8 @@ def _colour_feasible(hand: List[Card]) -> bool:
     available: set = set()
     for land in lands:
         if land.is_fetch:
-            # BUG fetches can find Underground Sea (UB), Tropical Island (UG), Swamp (B)
-            available.update({'U', 'B', 'G'})
+            # Fetches can find any dual — assume access to all 5 colours
+            available.update({'U', 'B', 'G', 'R', 'W'})
         else:
             available.update(land.produces)
 
@@ -757,6 +757,66 @@ def opp_keep(hand: List[Card], matchup: str = '') -> bool:
         threats = sum(1 for c in nonlands if c.is_creature())
         cantrips = sum(1 for c in nonlands if c.tag in ('bs','ponder','pre'))
         return 1 <= lc <= 3 and threats >= 1 and (cantrips >= 1 or len(hand) <= 5)
+
+    # Sneak & Show: needs mana (land/petal/tomb) + combo piece (SnT) or payoff + cantrip
+    if matchup in ('sneak_a', 'sneak_b'):
+        tags = {c.tag for c in hand}
+        has_sat = 'sat' in tags  # Show and Tell
+        has_payoff = any(t in tags for t in ('emrakul', 'atraxa', 'omni', 'sneak'))
+        has_cantrip = any(c.is_cantrip for c in nonlands)
+        fast_mana = sum(1 for c in hand if c.tag in ('petal', 'tomb', 'city'))
+        mana_ok = lc >= 1 or fast_mana >= 1
+        if len(hand) <= 5:
+            # Small hands: keep any hand with mana + either combo or cantrip
+            return mana_ok and (has_sat or has_payoff or has_cantrip)
+        # 6-7 cards: need mana + (combo piece or cantrip to find one)
+        # Sneak & Show keeps most hands with a land and something to do
+        has_action = has_sat or has_payoff or has_cantrip
+        return mana_ok and 1 <= lc <= 5 and has_action
+
+    # Affinity / 8-Cast variant: needs fast mana + artifacts + threat/engine
+    if matchup == 'affinity':
+        tags = {c.tag for c in hand}
+        fast_mana = sum(1 for c in hand if c.tag in ('petal', 'opal', 'tomb', 'seat'))
+        threats = sum(1 for c in nonlands if c.is_creature())
+        engine = any(t in tags for t in ('emry', 'monitor', 'automaton', 'cannoneer', 'saga'))
+        return fast_mana >= 1 and (threats >= 1 or engine)
+
+    # UR Tempo: needs land + threat + action
+    if matchup == 'ur_tempo':
+        threats = sum(1 for c in nonlands if c.is_creature())
+        cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder', 'bauble'))
+        return 1 <= lc <= 3 and threats >= 1 and (cantrips >= 1 or len(hand) <= 5)
+
+    # Dimir C/D: same as BUG — need mana + action
+    if matchup in ('dimir_c', 'dimir_d'):
+        blue_access = any('U' in l.produces or l.is_fetch for l in lands)
+        threats = sum(1 for c in nonlands if c.is_creature())
+        cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
+        counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
+        action = threats + cantrips + counters
+        if action == 0: return False
+        if lc == 1: return blue_access and cantrips >= 1
+        return 2 <= lc <= 4 and action >= 2
+
+    # Cephalid Breakfast: needs mana + combo piece or cantrip to find it
+    if matchup == 'cephalid':
+        tags = {c.tag for c in hand}
+        has_combo = any(t in tags for t in ('illusionist', 'nomads', 'shuko'))
+        has_cantrip = any(c.is_cantrip for c in nonlands)
+        has_protection = any(t in tags for t in ('fow', 'daze', 'chant'))
+        if len(hand) <= 5: return lc >= 1 and (has_combo or has_cantrip)
+        return 1 <= lc <= 4 and (has_combo or has_cantrip) and (has_combo or has_protection)
+
+    # Cloudpost: needs lands (especially Locus/Tron) + payoff or ramp spell
+    if matchup == 'cloudpost':
+        tags = {c.tag for c in hand}
+        locus = sum(1 for c in lands if c.tag in ('post', 'glimmer', 'nexus'))
+        tron = sum(1 for c in lands if c.tag in ('tower', 'mine', 'plant'))
+        has_ramp = any(t in tags for t in ('crop', 'map', 'petal'))
+        has_payoff = any(t in tags for t in ('karn', 'ring', 'ugin', 'ulamog', 'koz_cmd'))
+        if len(hand) <= 5: return lc >= 1 and (has_ramp or has_payoff)
+        return lc >= 2 and (locus >= 1 or tron >= 1 or has_ramp) and (has_payoff or has_ramp)
 
     # Fair decks: need 2 lands and meaningful action
     threats  = [c for c in nonlands if c.is_creature()]
