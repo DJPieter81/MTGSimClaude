@@ -512,5 +512,6 @@ DECK_META = {
     'strategy':   _strategy_infect,
     'keep':       _keep_infect,
     'categories': {'combo', 'fast_combo'},
+    'bug_interaction_rate': {'infect': 0.55},
     'meta_share': 0.03,
 }

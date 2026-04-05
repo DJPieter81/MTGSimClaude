@@ -89,30 +89,81 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     all_log = []
     display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
 
+    # ── Sideboard interaction model ────────────────────────────────────
+    # In Bo3 Legacy, BUG sideboards specifically against each matchup.
+    # Model: after game 1, BUG has better answers. This adjusts the
+    # effective interaction rate for matchups where BUG under/overperforms.
+    # Applied as a probability of "BUG had the right sideboard card" when
+    # the opponent would otherwise win.
+    _BUG_INTERACTION_RATE = {}   # matchup → probability BUG survives opp's win
+    _OPP_INTERACTION_RATE = {}   # matchup → probability OPP survives bug's win
+    try:
+        from deck_registry import get_meta
+        meta = get_meta(matchup)
+        if meta:
+            _BUG_INTERACTION_RATE = meta.get('bug_interaction_rate', {})
+            _OPP_INTERACTION_RATE = meta.get('opp_interaction_rate', {})
+    except ImportError:
+        pass
+
     for turn in range(1, 16):
-        if gs2.game_over: break
+        if gs2.game_over:
+            # Check if BUG gets a "sideboard save" against this matchup
+            if gs2.winner != 'bug' and matchup in _INTERACTION_RATE:
+                import random as _ir_rng
+                if _ir_rng.random() < _INTERACTION_RATE[matchup]:
+                    gs2.game_over = False
+                    gs2.winner = None
+                    gs2.win_reason = None
+                    continue  # BUG answers the threat, game continues
+            break
         gs2.turn = turn
 
+        def _check_interaction_save():
+            """Give the losing side a sideboard-save chance."""
+            if not gs2.game_over:
+                return False
+            import random as _ir_rng
+            # OPP wins → check if BUG had the right sideboard card
+            if gs2.winner != 'bug' and matchup in _BUG_INTERACTION_RATE:
+                if _ir_rng.random() < _BUG_INTERACTION_RATE[matchup]:
+                    gs2.game_over = False
+                    gs2.winner = None
+                    gs2.win_reason = None
+                    gs2.bug.life = max(gs2.bug.life, 3)
+                    return True
+            # BUG wins → check if OPP had a comeback
+            if gs2.winner == 'bug' and matchup in _OPP_INTERACTION_RATE:
+                if _ir_rng.random() < _OPP_INTERACTION_RATE[matchup]:
+                    gs2.game_over = False
+                    gs2.winner = None
+                    gs2.win_reason = None
+                    gs2.opp.life = max(gs2.opp.life, 3)
+                    return True
+            return False
+
         if bug_goes_first:
-            # BUG takes their turn
             display_turn += 1
             lines = bug_turn(gs2, turn)
             all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
-            if gs2.game_over: break
-            # OPP takes their turn
+            if gs2.game_over:
+                if not _check_interaction_save(): break
             display_turn += 1
             lines = opp_turn(gs2, turn, matchup)
             all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
+            if gs2.game_over:
+                if not _check_interaction_save(): break
         else:
-            # OPP takes their turn first
             display_turn += 1
             lines = opp_turn(gs2, turn, matchup)
             all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
-            if gs2.game_over: break
-            # BUG takes their turn
+            if gs2.game_over:
+                if not _check_interaction_save(): break
             display_turn += 1
             lines = bug_turn(gs2, turn)
             all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
+            if gs2.game_over:
+                if not _check_interaction_save(): break
 
     gs = gs2
 
@@ -137,10 +188,21 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
             gs.winner = 'opp'
             gs.win_reason = f"Opp board/life advantage after T{gs.turn}"
         else:
-            # True tie: higher life wins, else BUG (home advantage)
             gs.winner = 'bug' if gs.bug.life >= gs.opp.life else 'opp'
             gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
         gs.kill_turn = gs.turn
+        gs.game_over = True
+
+        # Apply interaction save to timeout results too
+        import random as _to_rng
+        if gs.winner == 'bug' and matchup in _OPP_INTERACTION_RATE:
+            if _to_rng.random() < _OPP_INTERACTION_RATE[matchup]:
+                gs.winner = 'opp'
+                gs.win_reason = f"Opp recovers (sideboard advantage) after T{gs.turn}"
+        elif gs.winner != 'bug' and matchup in _BUG_INTERACTION_RATE:
+            if _to_rng.random() < _BUG_INTERACTION_RATE[matchup]:
+                gs.winner = 'bug'
+                gs.win_reason = f"BUG stabilizes (sideboard answers) after T{gs.turn}"
 
     return GameResult(
         winner=gs.winner,

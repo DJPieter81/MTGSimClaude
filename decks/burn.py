@@ -430,5 +430,6 @@ DECK_META = {
     'strategy':   _strategy_burn,
     'keep':       _keep_burn,
     'categories': {'aggro'},
+    'bug_interaction_rate': {'burn': 0.75},
     'meta_share': 0.04,
 }

@@ -39,5 +39,6 @@ DECK_META = {
     'strategy':   _strategy_ur_aggro,
     'keep':       _keep_ur_aggro,
     'categories': {'aggro', 'bowm_decks'},
+    'opp_interaction_rate': {'ur_aggro': 0.65},
     'meta_share': 0.03,
 }

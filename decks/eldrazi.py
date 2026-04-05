@@ -41,5 +41,6 @@ DECK_META = {
     'strategy':   _strategy_eldrazi,
     'keep':       _keep_eldrazi,
     'categories': {'aggro'},
+    'opp_interaction_rate': {'eldrazi': 0.73},
     'meta_share': 0.03,
 }

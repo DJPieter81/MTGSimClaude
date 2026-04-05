@@ -42,5 +42,6 @@ DECK_META = {
     'strategy':   _strategy_oops,
     'keep':       _keep_oops,
     'categories': {'combo', 'gy_combo', 'fast_combo'},
+    'bug_interaction_rate': {'oops': 0.15},
     'meta_share': 0.04,
 }

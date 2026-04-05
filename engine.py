@@ -1881,12 +1881,10 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
             and can_afford(player, natorder.mana_cost)):
         do_natural_order(natorder)
 
-    # ── Priority 4: Build phase (ramp-first, hold combo fuel for Glimpse) ──
-    hold_for_chain = (player.find_tag('glimpse') is not None
-                      or player.find_tag('natorder') is not None)
+    # ── Priority 4: Build phase — deploy all affordable elves each turn ──
     ramp_tags  = ['llanowar', 'mystic', 'heritage', 'shepherd']
     combo_tags = ['nettle', 'visionary', 'symbiote', 'qranger', 'recsage']
-    deploy_tags = ramp_tags + ([] if hold_for_chain else combo_tags)
+    deploy_tags = ramp_tags + combo_tags
 
     for tag in deploy_tags:
         elf_card = player.find_tag(tag)
@@ -1904,7 +1902,6 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
             vis = player.draw(1)
             if vis:
                 bowmasters_triggers(1, gs, log_entries, controller=bowm_ctrl)
-        break
 
     # ── Priority 5: GSZ ──
     gsz = player.find_tag('gsz')
@@ -2632,26 +2629,35 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn("Chalice on 1", True)
         else: player.add_to_grave(ch)
     # ── Threats ──
-    # Eldrazi threats: find any creature opp can afford
-    thr = next((c for c in player.hand
-                if c.is_creature() and opp_can_cast(c, total_mana, gs, caster=player)), None)
-    if thr:
-            player.remove_from_hand(thr)
-            if not _try_counter_any(player, opponent, gs, thr, log_entries):
-                player.put_creature_in_play(thr)
-                log_fn(f"{thr.name} ({thr.base_power}/{thr.base_toughness})")
-            else: player.add_to_grave(thr)
+    # ── Threats — deploy all affordable creatures each turn (biggest first) ──
+    # TKS first (hand disruption is high-value)
     tks = player.find_tag('tks')
-    if tks and total_mana >= 4:
+    if tks and opp_can_cast(tks, total_mana, gs, caster=player):
         player.remove_from_hand(tks)
         if not _try_counter_any(player, opponent, gs, tks, log_entries):
             player.put_creature_in_play(tks)
+            total_mana -= tks.cmc
             if opponent.hand:
                 nonlands = [c for c in opponent.hand if not c.is_land()]
                 if nonlands:
                     ex = random.choice(nonlands); opponent.hand.remove(ex); opponent.exile.append(ex)
                     log_fn(f"TKS exiles {ex.name}", True)
         else: player.add_to_grave(tks)
+
+    # Deploy remaining creatures, biggest-first
+    while True:
+        affordable = [c for c in player.hand
+                      if c.is_creature() and opp_can_cast(c, total_mana, gs, caster=player)]
+        if not affordable:
+            break
+        thr = max(affordable, key=lambda c: c.cmc)
+        player.remove_from_hand(thr)
+        if not _try_counter_any(player, opponent, gs, thr, log_entries):
+            player.put_creature_in_play(thr)
+            log_fn(f"{thr.name} ({thr.base_power}/{thr.base_toughness})")
+        else:
+            player.add_to_grave(thr)
+        total_mana -= thr.cmc
 
     # Wasteland — only when 3+ lands (Eldrazi needs mana for CMC 3-4 threats)
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
@@ -2938,12 +2944,19 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
     if oops and total_mana >= 2 and has_green and not gs.leyline_active:
         vos = player.find_tag('vos') if vos_castable else None
         if vos:
-            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True  # protect all spells this turn
+            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
             log_fn("Veil of Summer — blue blanked")
-            player.remove_from_hand(oops); player.add_to_grave(oops)
-            log_fn("★ Oops through Veil — wins", True)
-            gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
-            gs.win_reason = "Oops + Veil — BUG blue interaction blanked"
+            # Veil + Oops is strong but not guaranteed — BUG may have had Thoughtseize
+            # or graveyard hate. Model as ~70% success rate.
+            import random
+            if random.random() < 0.70:
+                player.remove_from_hand(oops); player.add_to_grave(oops)
+                log_fn("★ Oops through Veil — wins", True)
+                gs.game_over = True; gs.winner = ('bug' if player is gs.bug else 'opp')
+                gs.win_reason = "Oops + Veil — BUG blue interaction blanked"
+            else:
+                player.remove_from_hand(oops); player.add_to_grave(oops)
+                log_fn("Oops fizzles (BUG had graveyard hate)")
         else:
             mindbreak_o = opponent.find_tag('mindbreak')
             if mindbreak_o and player.spells_cast_this_turn >= 3:
@@ -3583,10 +3596,16 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(kill_spell)
                 for r in list(rituals): player.remove_from_hand(r); player.add_to_grave(r)
                 kill_type = 'Ad Nauseam' if kill_C else 'Past in Flames' if kill_D else 'Tendrils chain'
-                log_fn(f"★ Storm {kill_type} — wins (storm count ≥ 9)", True)
-                gs.game_over = True
-                gs.winner = 'bug' if player is gs.bug else 'opp'
-                gs.win_reason = f"ANT combo ({kill_type})"
+                # Storm success rate: BUG may have Surgical, Mindbreak, or SB hate
+                import random as _rr2
+                success_rate = 0.80 if veil_up else 0.65
+                if _rr2.random() < success_rate:
+                    log_fn(f"★ Storm {kill_type} — wins (storm count ≥ 9)", True)
+                    gs.game_over = True
+                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.win_reason = f"ANT combo ({kill_type})"
+                else:
+                    log_fn(f"Storm {kill_type} fizzles (BUG had backup interaction)")
             else:
                 player.add_to_grave(kill_spell)
 
@@ -3735,57 +3754,69 @@ def _opp_reanimator(gs, om, log, le, turn):
 def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
     """UR Delver/Aggro: Delver of Secrets, Ragavan, Dragon's Rage Channeler, Murktide.
     Strategy: deploy cheap threats T1-2, protect with Daze/FoW, Bolt face to close."""
-    
+
+    # Cantrips — dig for threats early
+    can = next((c for c in player.hand if c.is_cantrip and total_mana >= 1), None)
+    if can and len(player.creatures) < 2:
+        player.remove_from_hand(can); player.add_to_grave(can)
+        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
+        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
+        player.draw(draws)
+        total_mana -= 1
+        if gs.bowmasters_on_board:
+            ctr = []; bowmasters_triggers(draws, gs, ctr)
+            for m in ctr: log_entries.append(m)
+
     # Ragavan — haste, highest priority T1
     rag = player.find_tag('ragavan')
     if rag and not any(c.card.tag == 'ragavan' for c in player.creatures):
         player.remove_from_hand(rag)
         if not _try_counter_any(player, opponent, gs, rag, log_entries):
             player.put_creature_in_play(rag)
+            total_mana -= 1
             log_fn("Ragavan, Nimble Pilferer (haste)")
         else:
             player.add_to_grave(rag)
 
-    # Dragon's Rage Channeler / Delver — cheap threats
+    # Deploy ALL affordable threats (no break — deploy as many as mana allows)
     for tag in ('drc', 'delver', 'murk'):
         threat = player.find_tag(tag)
         if threat and opp_can_cast(threat, total_mana, gs, caster=player):
             player.remove_from_hand(threat)
             if not _try_counter_any(player, opponent, gs, threat, log_entries):
                 player.put_creature_in_play(threat)
+                total_mana -= threat.cmc
                 log_fn(f"{threat.name}")
             else:
                 player.add_to_grave(threat)
-            break
 
-    # Lightning Bolt — kill blockers or go face when opponent low
+    # Lightning Bolt — kill key blockers (Bowmasters, Goyf) or go face
     bolt = player.find_tag('bolt')
     if bolt:
         def bolt_priority(c):
             if c.card.tag == 'tamiyo':  return 0
             if c.card.tag == 'bowm':    return 1
-            if c.toughness <= 2:        return 2
-            if c.toughness == 3:        return 3
+            if c.card.tag == 'goyf':    return 2
+            if c.toughness <= 2:        return 3
+            if c.toughness == 3:        return 4
             return 99
         candidates = [c for c in opponent.creatures if bolt_priority(c) < 99]
         target = min(candidates, key=bolt_priority) if candidates else None
-        go_face = (target is None and opponent.life <= 9 and len(player.creatures) > 0)
-        player.remove_from_hand(bolt); player.add_to_grave(bolt)
-        if target:
-            opponent.remove_creature(target)
-            log_fn(f"Lightning Bolt → {target.card.name}", True); update_goyf(gs)
-        elif go_face:
-            opponent.life -= 3
-            log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
-            gs.check_life_totals()
-        else:
-            player.hand.append(bolt)
-            if bolt in player.graveyard: player.graveyard.remove(bolt)
+        go_face = (target is None and opponent.life <= 15 and len(player.creatures) > 0)
+        if target or go_face:
+            player.remove_from_hand(bolt); player.add_to_grave(bolt)
+            if target:
+                opponent.remove_creature(target)
+                log_fn(f"Lightning Bolt → {target.card.name}", True); update_goyf(gs)
+            else:
+                opponent.life -= 3
+                log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
+                gs.check_life_totals()
 
     # Daze — hold up on key turns
     # (handled reactively by _try_counter_any)
 
-    # Combat
+    # Combat — attack with everything
     attackers = [c for c in player.creatures if not c.summoning_sick]
     combat_declare(player, opponent, gs, log_entries, attackers)
 

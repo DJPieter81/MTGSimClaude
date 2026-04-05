@@ -583,5 +583,6 @@ DECK_META = {
     'strategy':   _strategy_depths,
     'keep':       _keep_depths,
     'categories': {'combo', 'land_combo'},
+    'bug_interaction_rate': {'depths': 0.88},
     'meta_share': 0.04,
 }

@@ -349,5 +349,6 @@ DECK_META = {
     'strategy':   _strategy_ur_delver,
     'keep':       _keep_ur_delver,
     'categories': {'aggro', 'tempo_mirror'},
+    'bug_interaction_rate': {'ur_delver': 0.70},
     'meta_share': 0.04,
 }
