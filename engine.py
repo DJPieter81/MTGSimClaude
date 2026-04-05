@@ -499,7 +499,8 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
         spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
     )
     # Mirror/flash: Bowmasters + Nethergoyf are key threats worth FoWing
-    is_mirror_or_flash = matchup in ('dimir', 'dimir_b', 'dimir_flash')
+    from deck_registry import is_in_category
+    is_mirror_or_flash = is_in_category(matchup, 'mirror') or is_in_category(matchup, 'dimir_only')
     if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
         is_major_threat = True
     # Control decks (UWx — runs STP) should NOT FoW cheap creatures — STP them later
@@ -1984,32 +1985,36 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
             b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
             ctr.append(f"Force of Negation counters {spell_card.name} (exiles {blue_pitch.name})")
 
-    # FoW — counter rate depends on spell importance and matchup speed
+    # FoW — counter rate: P(BUG commits FoW) based on spell importance
+    # Win conditions/combo pieces: ~P(4 FoW in ~10 cards seen) ≈ 50%
+    # Other spells: lower commitment (BUG saves FoW for bigger threats)
     if fow and not ctr:
         blue_pitch = _select_fow_pitch(b.hand, fow)
         if blue_pitch:
             import random
-            # Win conditions: always try. Other spells: rate scales with speed.
-            # Faster combo decks = BUG more desperate to counter everything.
+            from interaction_model import _prob_at_least_one
+            # P(BUG has FoW ready) = hypergeometric(4 copies, cards_seen)
+            # cards_seen approximated from turn number
+            cards_seen = 7 + gs.turn * 1.5
+            fow_prob = _prob_at_least_one(4, int(cards_seen))
+            # BUG only commits FoW to important spells
             if spell_card.win_condition or spell_card.is_combo_piece:
-                counter_prob = 0.85
+                commit_rate = fow_prob
             else:
-                opp_speed = _int.get('speed', 3) if '_int' in dir() else 3
-                # Speed 1-2 (fast combo): 50% counter non-win-conds (save for kill spell)
-                # Speed 3-4: 65% counter (moderate urgency)
-                # Speed 5: 75% counter (slow, BUG is proactive)
-                counter_prob = 0.40 + opp_speed * 0.08
-            if random.random() < counter_prob:
+                commit_rate = fow_prob * 0.5  # save for bigger threats
+            if random.random() < commit_rate:
                 b.remove_from_hand(fow); b.add_to_grave(fow)
                 b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
                 ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
 
-    # Daze
+    # Daze — opponent pays {1} to counter: depends on whether they have spare mana
+    # Combo decks often tap out (high pay chance); fair decks hold up mana (low pay)
     if daze and not ctr and is_major:
         blue_land = next((l for l in b.lands if not l.tapped and 'U' in l.effective_produces()), None)
         if blue_land:
-            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator', 'tes', 'belcher')
-            pay_prob = 0.55 if matchup in combo_decks else 0.30
+            from deck_registry import is_in_category
+            is_combo = is_in_category(matchup, 'combo') or is_in_category(matchup, 'fast_combo')
+            pay_prob = 0.55 if is_combo else 0.30
             import random
             if gs.turn >= 3 and random.random() < pay_prob:
                 log_list.append(f"  Daze attempted on {spell_card.name} — caster pays {{1}}, spell resolves")

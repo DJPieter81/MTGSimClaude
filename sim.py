@@ -520,12 +520,12 @@ def protagonist_turn(gs, turn, matchup):
                           if l.tapped and l.card.tag in ('ancient_tomb','city')
                           and l.effective_produces())
 
-    # ── Strategy ──
-    strategy_fn = STRATEGIES.get(matchup)
+    # ── Strategy (from registry, fallback to STRATEGIES dict) ──
+    from deck_registry import get_strategy
+    strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
     if strategy_fn:
         strategy_fn(b, o, gs, total_mana, log, log_entries)
     else:
-        # Fallback: no strategy (treat as pass)
         log(f"No strategy for {matchup} — passing")
 
     update_goyf(gs)
