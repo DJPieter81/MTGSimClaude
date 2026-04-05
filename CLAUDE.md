@@ -60,6 +60,22 @@ python3 run_meta.py --matrix bug storm dimir -n 50    # Custom deck matrix
 python3 run_meta.py --verbose storm burn -s 42        # Single game log
 ```
 
+## HTML Game Replay
+
+Interactive turn-by-turn replay with board state, life totals, and play-by-play log.
+Outputs to `results/game_replay.html`.
+
+```bash
+python3 game_replay.py storm 42                       # Single game (seed 42)
+python3 game_replay.py dimir --bo3 1 3 5              # Bo3 with seeds 1,3,5
+python3 game_replay.py storm --bo3 4 9 1              # Bo3 Storm as opponent
+python3 game_replay.py dimir 42 --pro ur_delver       # UR Delver vs Dimir
+python3 game_replay.py sneak_a --bo3 1 3 5 --pro storm  # Storm vs Sneak Bo3
+```
+
+Note: `game_replay.py` uses its own game loop (not `play_turn`). The `--pro` flag
+selects the protagonist deck (default: BUG).
+
 ## Import a New Deck
 
 Paste a raw decklist (MTGGoldfish/Moxfield format) to auto-generate a deck module:
