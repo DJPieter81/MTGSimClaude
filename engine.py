@@ -1979,6 +1979,14 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
     if spell_card.tag == 'ts':
         return False
 
+    # Against fair/aggro decks: don't waste FoW on cheap creatures (CMC ≤ 2)
+    # Real BUG saves counters for must-answer threats, uses Push/removal for small stuff
+    from deck_registry import is_in_category
+    is_fair = (is_in_category(matchup, 'aggro') or is_in_category(matchup, 'tribal')
+               or matchup in ('mardu', 'mono_black', 'ur_aggro', 'boros'))
+    if is_fair and spell_card.cmc <= 2 and not spell_card.lock_piece and not spell_card.win_condition:
+        return False  # don't FoW a Goblin Guide or Llanowar Elves
+
     # Shepherd: green spells uncounterable
     if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card, 'colors', set()):
         return False

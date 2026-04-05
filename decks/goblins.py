@@ -448,8 +448,10 @@ def _keep_goblins(hand, matchup=''):
     tags = {c.tag for c in hand}
     has_t1 = 'lackey' in tags or 'vial' in tags
     threats = sum(1 for c in nonlands if c.is_creature())
-    return 2 <= lc <= 4 and (has_t1 or threats >= 2)
-
+    # Lackey/Vial hands keep on 1 land. Otherwise need 2.
+    if has_t1: return lc >= 1 and threats >= 1
+    if len(hand) <= 5: return lc >= 1 and threats >= 1
+    return 1 <= lc <= 4 and threats >= 2
 
 DECK_META = {
     'key':        'goblins',

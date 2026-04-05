@@ -21,14 +21,19 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
 # ─── Mulligan ────────────────────────────────────────────────────────────────
 
 def _keep_lands(hand, matchup=''):
+    """Lands keeps most hands — 45 lands in deck means 5+ land hands are normal."""
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
-    threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
-    return 2 <= lc <= 5 and any(c.is_combo_piece for c in nonlands)
+    # Lands wants: combo pieces (Depths/Stage) OR utility lands + a spell
+    combo_lands = sum(1 for c in lands if c.is_combo_piece)
+    has_spell = len(nonlands) >= 1
+    has_combo = combo_lands >= 1
+    has_engine = any(c.tag in ('loam', 'crop', 'reclaimer') for c in nonlands)
+    # Keep almost any hand with lands + something to do
+    if len(hand) <= 5:
+        return lc >= 2  # just need lands
+    return lc >= 2 and (has_combo or has_engine or has_spell)
 
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────

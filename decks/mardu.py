@@ -25,12 +25,10 @@ def _keep_mardu(hand, matchup=''):
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
     threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
-    threats = sum(1 for c in nonlands if c.is_creature())
-    return 2 <= lc <= 4 and threats >= 1
-
+    disruption = sum(1 for c in nonlands if c.tag in ('seize', 'grief'))
+    # Mardu wants land + threats or disruption
+    if len(hand) <= 5: return lc >= 1 and (threats >= 1 or disruption >= 1)
+    return 1 <= lc <= 4 and threats >= 1
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
 

@@ -24,14 +24,13 @@ def _keep_eldrazi(hand, matchup=''):
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
-    threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
-    lock = [c for c in nonlands if c.tag in ('chalice', 'bridge', 'trini')]
-    thr = [c for c in nonlands if c.is_creature()]
-    return 2 <= lc <= 4 and (lock or thr)
-
+    tags = {c.tag for c in hand}
+    lock = any(t in tags for t in ('chalice', 'bridge', 'trini'))
+    thr = sum(1 for c in nonlands if c.is_creature())
+    fast = any(c.tag in ('tomb', 'city', 'temple') for c in lands)
+    # Eldrazi wants fast mana + lock or threat
+    if len(hand) <= 5: return lc >= 1 and (lock or thr >= 1)
+    return 1 <= lc <= 4 and (lock or (fast and thr >= 1) or thr >= 2)
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
 
