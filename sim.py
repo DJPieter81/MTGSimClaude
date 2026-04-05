@@ -484,12 +484,14 @@ def protagonist_turn(gs, turn, matchup):
     # Land drop: prefer non-fetch to avoid wasting the crack
     # But if only fetch available, play and crack it for mana immediately.
     def _pick_land():
-        # 8-Cast: prefer Ancient Tomb/City T1 when Chalice in hand (need 2 mana T1)
-        if matchup == 'eight_cast':
-            has_chalice = any(c.tag == 'chalice' for c in b.hand)
-            if has_chalice:
-                fast = b.find_any(lambda c: c.is_land() and c.tag in ('ancient_tomb','city'))
-                if fast: return fast
+        # Prefer Ancient Tomb/City T1 when a 2-mana play is in hand (Chalice, etc.)
+        has_2drop = any(c.tag in ('chalice', 'trini', 'null_rod') or
+                        (not c.is_land() and sum(c.mana_cost.values()) == 2)
+                        for c in b.hand)
+        if has_2drop:
+            fast = b.find_any(lambda c: c.is_land() and c.tag in ('ancient_tomb', 'tomb', 'city'))
+            if fast:
+                return fast
         non_fetch = b.find_any(lambda c: c.is_land() and not getattr(c,'is_fetch',False))
         if non_fetch: return non_fetch
         return b.find_any(lambda c: c.is_land())
@@ -513,12 +515,16 @@ def protagonist_turn(gs, turn, matchup):
             total_mana += len(b.creatures)
             l.tapped = True
 
-    # 8-Cast: Ancient Tomb / City of Traitors each produce 2 mana not 1
-    # protagonist_turn already tapped the land, so add 1 bonus per fast land played
-    if matchup == 'eight_cast':
-        total_mana += sum(1 for l in b.lands
-                          if l.tapped and l.card.tag in ('ancient_tomb','city')
-                          and l.effective_produces())
+    # Ancient Tomb / City of Traitors each produce 2 mana not 1
+    # available_mana_count() counts 1 per land; add the bonus +1 for each
+    tomb_count = sum(1 for l in b.lands
+                     if not l.tapped and l.card.tag in ('ancient_tomb', 'tomb', 'city'))
+    total_mana += tomb_count
+    # Tomb deals 2 damage when tapped for mana (CR 702.9)
+    b.life -= tomb_count * 2
+
+    # Lotus Petal: sac for any color mana (+1 each)
+    total_mana += sum(1 for c in b.hand if c.tag == 'petal')
 
     # ── Strategy (from registry, fallback to STRATEGIES dict) ──
     from deck_registry import get_strategy
