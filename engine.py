@@ -612,7 +612,23 @@ def play_turn(gs: GameState, turn: int, who: str = 'p1'):
     Unified turn entry point — dispatches to the appropriate turn function.
     who='p1': protagonist's turn (bug_turn for BUG deck, protagonist_turn for others)
     who='p2': antagonist's turn (opp_turn)
+
+    Also enforces universal rules that apply regardless of strategy:
+    - Narset lock (opponent's Narset prevents extra draws)
     """
+    # ── Universal pre-turn rules ──
+    player = gs.p1 if who == 'p1' else gs.p2
+    opponent = gs.p2 if who == 'p1' else gs.p1
+    # Narset: if opponent controls Narset, this player can't draw extra cards
+    player._narset_lock = any(
+        c.card.tag == 'narset' for c in
+        (getattr(opponent, 'planeswalkers', []) + [c for c in opponent.creatures if c.card.tag == 'narset'])
+    )
+    # Leyline of the Void: if opponent has Leyline, this player's cards → exile
+    opponent.leyline_exile = gs.leyline_active and any(
+        p.card.tag == 'leyline' for p in player.enchantments
+    )
+
     if who == 'p1':
         p1_deck = getattr(gs, 'p1_deck', 'bug')
         if p1_deck == 'bug' or p1_deck == '':
@@ -1685,11 +1701,8 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
             log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(blocked_names))}")
 
     # Trinisphere: all spells cost at least 3. Reduce effective mana budget.
+    _trini_blocked = []
     if gs.trinisphere_active:
-        # Strategy sees om but individual spells need to cost >= 3.
-        # We can't easily adjust per-spell costs, but we can block cheap spells
-        # by removing CMC < 3 nonland cards from hand (they can't be cast for < 3).
-        _trini_blocked = []
         for card in list(o.hand):
             if not card.is_land() and card.cmc < 3 and card not in _chalice_blocked:
                 # Check if player can't afford the trinisphere tax (3 mana min)

@@ -1654,6 +1654,7 @@ def run_match(matchup: str, verbose: bool = False):
                 __import__('rules').Permanent(card=leyline, controller='b', summoning_sick=False)
             )
             gs.leyline_active = True  # replacement effect: opp cards → exile instead of GY
+            opp_player.leyline_exile = True  # opponent's add_to_grave → exile
 
         all_log = []
         for turn in range(1, 16):

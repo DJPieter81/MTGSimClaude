@@ -46,6 +46,7 @@ class PlayerState:
     draws_this_turn: int = 0  # track for Tamiyo flip (3rd draw) and Bowmasters
     spells_cast_this_turn: int = 0  # for Mindbreak Trap free condition
     opp_cast_blue_black_this_turn: bool = False  # for Veil of Summer conditional draw
+    leyline_exile: bool = False  # if True, cards go to exile instead of GY (Leyline of the Void)
 
     @property
     def all_permanents(self):
@@ -69,7 +70,10 @@ class PlayerState:
         return drawn
 
     def add_to_grave(self, card: Card):
-        self.graveyard.append(card)
+        if self.leyline_exile:
+            self.exile.append(card)
+        else:
+            self.graveyard.append(card)
 
     def tap_lands_for_mana(self):
         """Tap all available lands for their best mana color."""
