@@ -638,6 +638,14 @@ def protagonist_turn(gs, turn, matchup):
         gs.opp_goal = None
 
     # ── Strategy dispatch ──
+    # The generic_tempo_strategy was tested but performs WORSE than the simple
+    # deck strategy (70.3% → 66-68%). The simple strategy's one-spell-per-turn
+    # approach naturally conserves mana for reactive counters (FoW/Daze fire
+    # during opp_turn), which is the correct tempo play pattern.
+    # Use generic_tempo_strategy only when explicitly requested via the deck's
+    # interaction profile (future: set 'use_tempo_ai': True in DECK_META).
+    from engine import generic_tempo_strategy, is_tempo_deck
+
     from deck_registry import get_strategy
     strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
     if strategy_fn:
