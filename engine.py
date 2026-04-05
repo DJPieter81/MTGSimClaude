@@ -3466,36 +3466,49 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     itutor_proxy = player.find_tag('itutor') and sim_mana >= 2
     tendrils = player.find_tag('tendrils')
     # Storm should only go off when safe: Veil active, opp has no FoW, or desperate
-    opp_mana_up = sum(1 for l in opponent.lands if not l.tapped)
     veil_protecting = getattr(gs, 'veil_active', False)
-    storm_desperate = player.life <= 4  # opponent about to kill us
+    opp_clock = sum(c.power for c in opponent.creatures if not c.summoning_sick)
+    storm_desperate = opp_clock > 0 and player.life <= opp_clock * 2  # dead in ~2 attacks
     # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
     opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
-    opp_blue_pitch = sum(1 for c in opponent.hand if 'U' in getattr(c, 'colors', set())) >= 2  # FoW itself + pitch
+    opp_blue_pitch = sum(1 for c in opponent.hand if 'U' in getattr(c, 'colors', set())) >= 2
     opp_has_free_counter = opp_fow and opp_blue_pitch
-    # Safe if: Veil protects, opp has no free counter, desperate, or late game (must race BUG clock)
-    storm_late = gs.turn >= 4  # can't wait forever — BUG's creatures will kill us
-    safe_to_combo = (veil_protecting or storm_desperate or storm_late or
-                     not opp_has_free_counter)
+    # Need enough mana sources to support a ritual chain (land mana, not just LED)
+    has_mana_base = total_mana >= 2 or len(rituals) >= 2
+    safe_to_combo = (veil_protecting or storm_desperate or
+                     (has_mana_base and not opp_has_free_counter))
     itutor   = player.find_tag('itutor')
     led      = player.find_tag('led')
     adnaus   = player.find_tag('adnauseam')
     pif      = player.find_tag('pif')
 
     # ── Kill-hand heuristics (any one = enough to assemble lethal storm) ────
-    # Each criterion represents a known ANT goldfish line that reaches storm ≥9
-    # Chalice blocks spells with matching CMC — check each kill component
+    # Each criterion represents a known ANT goldfish line that reaches storm ≥9.
+    # Storm count estimate: each ritual/LED/tutor = +1 spell cast before Tendrils.
+    # Lethal Tendrils needs storm ≥ 9 (10 copies × 2 damage = 20).
+    # Chalice blocks spells with matching CMC — check each kill component.
     tendrils_blocked = tendrils and _chalice_blocks(tendrils)
     itutor_blocked = itutor and _chalice_blocks(itutor)
     adnaus_blocked = adnaus and _chalice_blocks(adnaus)
     pif_blocked = pif and _chalice_blocks(pif)
     win_available = ((tendrils and not tendrils_blocked) or (itutor and not itutor_blocked))
-    kill_A = bool(led and len(rituals) >= 1 and win_available)  # LED+R+win
-    kill_B = bool(len(rituals) >= 2 and led and win_available)   # R×2+LED
-    kill_C = bool(adnaus and not adnaus_blocked and sim_mana >= 3)  # Ad Nauseam with mana
-    kill_D = bool(pif and not pif_blocked and len(player.graveyard) >= 4 and sim_mana >= 4)  # Past in Flames
-    kill_E = bool(len(rituals) >= 3 and win_available and sim_mana >= 2)  # R×3
-    kill_F = bool(itutor_proxy and len(rituals) >= 2 and sim_mana >= 3)  # Tutor+R×2
+
+    # Estimate storm count from castable spells before Tendrils resolves.
+    # Tendrils = 2 damage per copy (1 original + N storm copies).
+    # Lethal needs storm >= ceil(opponent.life / 2) - 1, typically 9 for 20 life.
+    est_storm = len(rituals) + (1 if led else 0) + (1 if itutor_proxy else 0)
+    lethal_storm = max(1, (opponent.life + 1) // 2 - 1)  # storm copies needed for lethal
+    # Ad Nauseam / Past in Flames self-generate storm during resolution (draw 15+ / replay GY)
+    self_assembles = False
+
+    kill_A = bool(led and len(rituals) >= 2 and win_available and est_storm >= lethal_storm)
+    kill_B = bool(len(rituals) >= 3 and led and win_available and est_storm >= lethal_storm)
+    kill_C = bool(adnaus and not adnaus_blocked and sim_mana >= 3 and
+                  (len(rituals) >= 1 or sim_mana >= 5))  # Ad Nauseam self-assembles
+    kill_D = bool(pif and not pif_blocked and len(player.graveyard) >= 4 and sim_mana >= 4)  # PiF replays GY
+    kill_E = bool(len(rituals) >= 3 and win_available and est_storm >= lethal_storm)
+    kill_F = bool(itutor_proxy and len(rituals) >= 2 and sim_mana >= 3 and est_storm >= lethal_storm)
+    self_assembles = kill_C or kill_D  # these generate their own storm count
     can_kill = kill_A or kill_B or kill_C or kill_D or kill_E or kill_F
 
     if can_kill and safe_to_combo:
@@ -3550,7 +3563,7 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                 _fizzle = compute_combo_fizzle_rate(_storm_int, veil_active=veil_up)
                 import random as _rr2
                 if _rr2.random() >= _fizzle:  # fizzle_rate = P(fail), so succeed if >= fizzle
-                    log_fn(f"★ Storm {kill_type} — wins (storm count ≥ 9)", True)
+                    log_fn(f"★ Storm {kill_type} — wins (est. storm ~{est_storm + len(rituals)})", True)
                     gs.game_over = True
                     gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = f"ANT combo ({kill_type})"
