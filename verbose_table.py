@@ -273,14 +273,14 @@ def run_table_game(matchup, seed=None):
         opp_score = (opp_power * 2 + len(gs.p2.creatures) * 3
                      + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life))
         if bug_score >= opp_score:
-            gs.winner = 'bug'
+            gs.winner = 'p1'
             gs.win_reason = f"Board/life advantage after T{display_turn}"
         else:
-            gs.winner = 'opp'
+            gs.winner = 'p2'
             gs.win_reason = f"Opp board/life advantage after T{display_turn}"
 
     # ── Result ──
-    winner = 'BUG' if gs.winner == 'bug' else 'OPP'
+    winner = 'BUG' if gs.winner == 'p1' else 'OPP'
     print(f"  ══════════════════════════════════════════════════════════════════")
     print(f"  ★ {winner} WINS  │  {gs.win_reason}")
     print(f"    Life: BUG {gs.p1.life}  OPP {gs.p2.life}  │  Game length: T{display_turn}")
@@ -365,13 +365,13 @@ def run_game_data(matchup, seed=None):
         opp_score = (opp_power * 2 + len(gs.p2.creatures) * 3
                      + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life))
         if bug_score >= opp_score:
-            gs.winner = 'bug'
+            gs.winner = 'p1'
             gs.win_reason = f"Board/life advantage after T{display_turn}"
         else:
-            gs.winner = 'opp'
+            gs.winner = 'p2'
             gs.win_reason = f"Opp board/life advantage after T{display_turn}"
 
-    winner = 'BUG' if gs.winner == 'bug' else 'OPP'
+    winner = 'BUG' if gs.winner == 'p1' else 'OPP'
     return {
         'matchup': matchup, 'meta_name': meta_name, 'seed': seed,
         'bug_goes_first': bug_goes_first,
@@ -571,7 +571,7 @@ def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False):
         except Exception:
             continue
 
-        w = 'BUG' if gs.winner == 'bug' else 'OPP'
+        w = 'BUG' if gs.winner == 'p1' else 'OPP'
         game_len = gs.turn
         entry = (seed, game_len, bm, om, gs.win_reason or '')
 

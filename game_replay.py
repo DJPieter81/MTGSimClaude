@@ -210,7 +210,7 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
             if do_one('OPP'): break
             if do_one('PRO'): break
 
-    winner = pro_label if gs.winner == 'bug' else 'OPP'
+    winner = pro_label if gs.winner == 'p1' else 'OPP'
     if not gs.game_over:
         pp = sum(c.power for c in gs.p1.creatures)
         ap = sum(c.power for c in gs.p2.creatures)

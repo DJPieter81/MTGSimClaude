@@ -438,7 +438,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
                     player.life += final_dmg
                     log_fn(f"★ Veil + combo chain → Tendrils storm {final_storm}, {final_dmg} dmg, opp at {opponent.life}", True)
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.p1 else 'opp'
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = f"TES: Veil + Tendrils storm={final_storm} deals {final_dmg}"
                     gs.kill_turn = gs.turn
                     return
@@ -628,7 +628,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"★ Tendrils — storm {storm}, {final_damage} dmg, opp at {opponent.life}", True)
                 if opponent.life <= 0:
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.p1 else 'opp'
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = f"TES: Tendrils storm={storm} deals {final_damage}"
                     gs.kill_turn = gs.turn
                 else:
@@ -647,7 +647,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ Empty the Warrens — storm {storm}, {token_count} Goblins", True)
             if token_count >= 6:
                 gs.game_over = True
-                gs.winner = 'bug' if player is gs.p1 else 'opp'
+                gs.winner = 'p1' if player is gs.p1 else 'p2'
                 gs.win_reason = f"TES: Empty the Warrens ({token_count} goblins)"
                 gs.kill_turn = gs.turn + 1
         else:

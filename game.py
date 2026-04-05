@@ -303,11 +303,11 @@ class GameState:
     def check_life_totals(self):
         if self.p1.life <= 0 and not self.game_over:
             self.game_over = True
-            self.winner = 'opp'
+            self.winner = 'p2'
             self.win_reason = f'BUG life reaches {self.p1.life} on turn {self.turn}'
         if self.p2.life <= 0 and not self.game_over:
             self.game_over = True
-            self.winner = 'bug'
+            self.winner = 'p1'
             self.win_reason = f'Opp life reaches {self.p2.life} on turn {self.turn}'
             self.kill_turn = self.turn
 

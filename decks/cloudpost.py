@@ -217,7 +217,7 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
         # Karn + Mycosynth Lattice = hard lock. Opponent's lands don't work.
         log_fn("★ Karn + Mycosynth Lattice lock — opponent locked out", True)
         gs.game_over = True
-        gs.winner = 'bug' if player is gs.p1 else 'opp'
+        gs.winner = 'p1' if player is gs.p1 else 'p2'
         gs.win_reason = "Cloudpost: Karn Lattice lock"
         gs.kill_turn = gs.turn
         return

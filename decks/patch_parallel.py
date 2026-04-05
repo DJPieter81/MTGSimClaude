@@ -84,7 +84,7 @@ def patch_tes():
 
         pw, aw, _, grs = run_any_match('tes', 'mardu')
         for gr in grs:
-            if gr.winner == 'bug':
+            if gr.winner == 'p1':
                 log.append(f"✓ TES wins G{grs.index(gr)+1} at T{gr.game_length} (seed {attempt*7})")
                 for line in gr.log_lines:
                     if any(x in line for x in ['Tendrils','★','storm','LED','Wish','Ritual','Petal']):

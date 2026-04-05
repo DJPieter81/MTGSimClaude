@@ -2698,7 +2698,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
                             log_fn(f"★ {chain_target.name} attacks for {chain_target.base_power}", True)
                             if opponent.life <= 0 or chain_target.tag == 'emrakul':
                                 gs.game_over = True
-                                gs.winner = 'bug' if player is gs.p1 else 'opp'
+                                gs.winner = 'p1' if player is gs.p1 else 'p2'
                                 gs.win_reason = f"Omniscience+{chain_target.name}"
                         else:
                             gs.show_creature_in_play = chain_target.name
@@ -3540,7 +3540,7 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                 if _rr2.random() >= _fizzle:  # fizzle_rate = P(fail), so succeed if >= fizzle
                     log_fn(f"★ Storm {kill_type} — wins (storm count ≥ 9)", True)
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.p1 else 'opp'
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = f"ANT combo ({kill_type})"
                 else:
                     log_fn(f"Storm {kill_type} fizzles (BUG had backup interaction)")
@@ -3673,7 +3673,7 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
                 # Griselbrand win: draw 7, gain 7 life (simplified: mark game over)
                 if gy_target.tag in ('gris', 'archon'):
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.p1 else 'opp'
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = f"Reanimator: {gy_target.name} resolves uncountered"
                     gs.kill_turn = gs.turn
                     log_fn(f"★ {gy_target.name} wins the game", True)
