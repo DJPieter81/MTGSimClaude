@@ -15,7 +15,7 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
     def _log(msg, key=False):
         gs.log_event('o', 'main', msg, key)
         log_entries.append(msg)
-    _opp_mono_black(gs, total_mana, _log, log_entries)
+    _opp_mono_black(gs, total_mana, _log, log_entries, gs.turn)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────

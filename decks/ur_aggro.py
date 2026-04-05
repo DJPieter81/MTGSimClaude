@@ -39,6 +39,6 @@ DECK_META = {
     'strategy':   _strategy_ur_aggro,
     'keep':       _keep_ur_aggro,
     'categories': {'aggro', 'bowm_decks'},
-    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'opp_calibration': 0.45},
+    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.03,
 }

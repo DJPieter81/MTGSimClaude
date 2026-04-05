@@ -349,6 +349,6 @@ DECK_META = {
     'strategy':   _strategy_ur_delver,
     'keep':       _keep_ur_delver,
     'categories': {'aggro', 'tempo_mirror'},
-    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'bug_calibration': 0.1},
+    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.04,
 }

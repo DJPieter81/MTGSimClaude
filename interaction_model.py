@@ -47,14 +47,11 @@ def compute_bug_save_rate(interaction):
     soft_wl = interaction.get('soft_to_wasteland', False)
     creature = interaction.get('creature_based', False)
 
-    calibration = interaction.get('bug_calibration', 0.0)  # per-matchup fine-tune
-
     rate = 0.20                          # base: BUG always has some chance
     rate += (speed - 1) * 0.14           # slower = more time to find answers
     rate += 0.12 if uses_gy else 0.0     # Surgical / Leyline
     rate += 0.10 if soft_wl else 0.0     # Wasteland
     rate += 0.08 if creature else 0.0    # Fatal Push / removal
-    rate += calibration                  # matchup-specific fine-tuning
     return max(0.0, min(rate, 0.85))     # clamp 0-85%
 
 
@@ -68,12 +65,9 @@ def compute_opp_save_rate(interaction):
     resilience = interaction.get('resilience', 3)
     speed = interaction.get('speed', 3)
 
-    calibration = interaction.get('opp_calibration', 0.0)  # per-matchup fine-tune
-
     rate = 0.0                           # base: BUG's win is usually real
     rate += (resilience - 2) * 0.15      # only resilience 3+ gives comeback chance
     rate += max(0, 3 - speed) * 0.08     # very fast decks sometimes re-combo
-    rate += calibration                  # matchup-specific fine-tuning
     return max(0.0, min(rate, 0.70))     # floor 0, cap 70%
 
 

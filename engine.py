@@ -1592,29 +1592,10 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     else:
         gs.opp_goal = None
 
-    # ── Matchup dispatch ──
-    if   matchup == 'prison':    _opp_prison(gs, om, log, log_entries)
-    elif matchup == 'show':      _opp_show(gs, om, log, log_entries)
-    # lands: dispatched via registry (decks/lands.py)
-    elif matchup == 'oops':      _opp_oops(gs, om, log, log_entries)
-    elif matchup == 'doomsday':  _opp_doomsday(gs, om, log, log_entries, turn)
-    elif matchup in MC.DIMIR_ONLY: _opp_dimir(gs, om, log, log_entries)
-    elif matchup == 'dimir_flash': _opp_dimir_flash(gs, om, log, log_entries)
-    elif matchup == 'uwx_real':   _opp_real_uwx(gs, om, log, log_entries, turn)
-    elif matchup == 'uwx':       _opp_uwx(gs, om, log, log_entries)
-    elif matchup == 'painter':   _opp_painter(gs, om, log, log_entries)
-    elif matchup == 'storm':     _opp_storm(gs, om, log, log_entries, turn)
-    elif matchup == 'reanimator':_opp_reanimator(gs, om, log, log_entries, turn)
-    elif matchup == 'ur_aggro':  _opp_ur_aggro(gs, om, log, log_entries)
-    elif matchup == 'mardu':     _opp_mardu(gs, om, log, log_entries, turn)
-    elif matchup == 'dnt':         _opp_dnt(gs, om, log, log_entries, turn)
-    elif matchup == 'mono_black':  _opp_mono_black(gs, om, log, log_entries, turn)
-    elif matchup == 'boros':       _opp_boros(gs, om, log, log_entries, turn)
-    elif matchup == 'elves':       _opp_elves(gs, om, log, log_entries, turn)
-    elif matchup in ('bug', 'bug_sb'):  # BUG as antagonist — use dimir strategy
-        _opp_dimir(gs, om, log, log_entries)
+    # ── Matchup dispatch (all decks via registry) ──
+    if matchup in ('bug', 'bug_sb'):
+        _opp_dimir(gs, om, log, log_entries)  # BUG mirror uses Dimir strategy
     else:
-        # ── Auto-dispatch via deck_registry (all plugin decks) ──
         from deck_registry import get_strategy
         strategy_fn = get_strategy(matchup)
         if strategy_fn:

@@ -583,6 +583,6 @@ DECK_META = {
     'strategy':   _strategy_depths,
     'keep':       _keep_depths,
     'categories': {'combo', 'land_combo'},
-    'interaction': {'speed': 2, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': True, 'creature_based': False, 'bug_calibration': 0.4},
+    'interaction': {'speed': 2, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': True, 'creature_based': False},
     'meta_share': 0.04,
 }
