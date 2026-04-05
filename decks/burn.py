@@ -430,5 +430,6 @@ DECK_META = {
     'strategy':   _strategy_burn,
     'keep':       _keep_burn,
     'categories': {'aggro'},
+    'interaction': {'speed': 1, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'bug_answers': 10},
     'meta_share': 0.04,
 }

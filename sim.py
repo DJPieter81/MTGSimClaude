@@ -89,30 +89,72 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     all_log = []
     display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
 
+    # ── Interaction model (derived from deck properties, not magic numbers) ──
+    from interaction_model import get_or_infer_interaction, compute_bug_save_rate, compute_opp_save_rate
+    _interaction = get_or_infer_interaction(matchup)
+    _bug_save = compute_bug_save_rate(_interaction)
+    _opp_save = compute_opp_save_rate(_interaction)
+
     for turn in range(1, 16):
-        if gs2.game_over: break
+        if gs2.game_over:
+            # Check if BUG gets a "sideboard save" against this matchup
+            if gs2.winner != 'bug' and matchup in _INTERACTION_RATE:
+                import random as _ir_rng
+                if _ir_rng.random() < _INTERACTION_RATE[matchup]:
+                    gs2.game_over = False
+                    gs2.winner = None
+                    gs2.win_reason = None
+                    continue  # BUG answers the threat, game continues
+            break
         gs2.turn = turn
 
+        def _check_interaction_save():
+            """Give the losing side a sideboard-save chance (rates from interaction model)."""
+            if not gs2.game_over:
+                return False
+            import random as _ir_rng
+            if gs2.winner != 'bug' and _bug_save > 0:
+                if _ir_rng.random() < _bug_save:
+                    gs2.game_over = False
+                    gs2.winner = None
+                    gs2.win_reason = None
+                    gs2.bug.life = max(gs2.bug.life, 3)
+                    # Remove the threat that killed BUG (Karakas, STP, etc.)
+                    if gs2.opp.creatures:
+                        biggest = max(gs2.opp.creatures, key=lambda c: c.power)
+                        gs2.opp.creatures.remove(biggest)
+                    return True
+            if gs2.winner == 'bug' and _opp_save > 0:
+                if _ir_rng.random() < _opp_save:
+                    gs2.game_over = False
+                    gs2.winner = None
+                    gs2.win_reason = None
+                    gs2.opp.life = max(gs2.opp.life, 3)
+                    return True
+            return False
+
         if bug_goes_first:
-            # BUG takes their turn
             display_turn += 1
             lines = bug_turn(gs2, turn)
             all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
-            if gs2.game_over: break
-            # OPP takes their turn
+            if gs2.game_over:
+                if not _check_interaction_save(): break
             display_turn += 1
             lines = opp_turn(gs2, turn, matchup)
             all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
+            if gs2.game_over:
+                if not _check_interaction_save(): break
         else:
-            # OPP takes their turn first
             display_turn += 1
             lines = opp_turn(gs2, turn, matchup)
             all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
-            if gs2.game_over: break
-            # BUG takes their turn
+            if gs2.game_over:
+                if not _check_interaction_save(): break
             display_turn += 1
             lines = bug_turn(gs2, turn)
             all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
+            if gs2.game_over:
+                if not _check_interaction_save(): break
 
     gs = gs2
 
@@ -137,10 +179,21 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
             gs.winner = 'opp'
             gs.win_reason = f"Opp board/life advantage after T{gs.turn}"
         else:
-            # True tie: higher life wins, else BUG (home advantage)
             gs.winner = 'bug' if gs.bug.life >= gs.opp.life else 'opp'
             gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
         gs.kill_turn = gs.turn
+        gs.game_over = True
+
+        # Apply interaction model to timeout results
+        import random as _to_rng
+        if gs.winner == 'bug' and _opp_save > 0:
+            if _to_rng.random() < _opp_save:
+                gs.winner = 'opp'
+                gs.win_reason = f"Opp recovers (resilience {_interaction.get('resilience',3)}) after T{gs.turn}"
+        elif gs.winner != 'bug' and _bug_save > 0:
+            if _to_rng.random() < _bug_save:
+                gs.winner = 'bug'
+                gs.win_reason = f"BUG answers (speed {_interaction.get('speed',3)}) after T{gs.turn}"
 
     return GameResult(
         winner=gs.winner,
@@ -467,12 +520,12 @@ def protagonist_turn(gs, turn, matchup):
                           if l.tapped and l.card.tag in ('ancient_tomb','city')
                           and l.effective_produces())
 
-    # ── Strategy ──
-    strategy_fn = STRATEGIES.get(matchup)
+    # ── Strategy (from registry, fallback to STRATEGIES dict) ──
+    from deck_registry import get_strategy
+    strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
     if strategy_fn:
         strategy_fn(b, o, gs, total_mana, log, log_entries)
     else:
-        # Fallback: no strategy (treat as pass)
         log(f"No strategy for {matchup} — passing")
 
     update_goyf(gs)

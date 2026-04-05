@@ -454,5 +454,6 @@ DECK_META = {
     'strategy':   _strategy_dimir_d,
     'keep':       _keep_dimir_d,
     'categories': {'mirror', 'tempo_mirror', 'dimir_only', 'bowm_decks'},
+    'interaction': {'speed': 4, 'resilience': 4, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.03,
 }

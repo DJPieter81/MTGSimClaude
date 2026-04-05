@@ -512,5 +512,6 @@ DECK_META = {
     'strategy':   _strategy_infect,
     'keep':       _keep_infect,
     'categories': {'combo', 'fast_combo'},
+    'interaction': {'speed': 1, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'bug_answers': 6},
     'meta_share': 0.03,
 }

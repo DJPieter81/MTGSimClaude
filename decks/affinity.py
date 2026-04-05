@@ -501,5 +501,6 @@ DECK_META = {
     'strategy':   _strategy_affinity,
     'keep':       _keep_affinity,
     'categories': {'aggro', 'prison'},
+    'interaction': {'speed': 3, 'resilience': 4, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.03,
 }

@@ -15,7 +15,7 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
     def _log(msg, key=False):
         gs.log_event('o', 'main', msg, key)
         log_entries.append(msg)
-    _opp_mono_black(gs, total_mana, _log, log_entries)
+    _opp_mono_black(gs, total_mana, _log, log_entries, gs.turn)
 
 
 # ─── Mulligan ────────────────────────────────────────────────────────────────
@@ -41,5 +41,6 @@ DECK_META = {
     'strategy':   _strategy_mono_black,
     'keep':       _keep_mono_black,
     'categories': {'aggro', 'bowm_decks'},
+    'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
     'meta_share': 0.03,
 }

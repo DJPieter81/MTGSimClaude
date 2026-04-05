@@ -1965,42 +1965,17 @@ DECKS = {
     'dimir_flash': make_dimir_flash_deck,
 }
 
-# Live meta shares — mtgtop8.com last 2 weeks, expanded (fetched 2026-04-04)
-MATCHUP_META = {
-    'dimir':      {'name': 'Dimir Tempo A (Nethergoyf)', 'share': 0.08},
-    'dimir_b':    {'name': 'Dimir Tempo B (Barrowgoyf)', 'share': 0.05},
-    'dimir_flash':{'name': 'Dimir Flash (Wan Shi Tong)',  'share': 0.03},
-    'ur_aggro':   {'name': 'UR Aggro',            'share': 0.03},
-    'ur_delver':  {'name': 'UR Delver',            'share': 0.04},
-    'mardu':      {'name': 'Mardu Aggro',          'share': 0.03},
-    'show':       {'name': 'Show and Tell',        'share': 0.06},
-    'lands':      {'name': 'Lands',                'share': 0.04},
-    'storm':      {'name': 'Storm (ANT)',          'share': 0.03},
-    'tes':        {'name': 'The Epic Storm',       'share': 0.02},
-    'oops':       {'name': 'Oops All Spells',      'share': 0.04},
-    'eldrazi':    {'name': 'Eldrazi Aggro',        'share': 0.03},
-    'reanimator': {'name': 'Reanimator',           'share': 0.03},
-    'doomsday':   {'name': 'Doomsday',             'share': 0.03},
-    'uwx':        {'name': 'UWx Control',          'share': 0.04},
-    'painter':    {'name': 'Painter',              'share': 0.03},
-    'prison':     {'name': 'Artifacts Prison',     'share': 0.04},
-    'dnt':        {'name': 'Death and Taxes',      'share': 0.03},
-    'mono_black': {'name': 'Mono Black Aggro',     'share': 0.03},
-    'boros':      {'name': 'Boros Aggro',          'share': 0.02},
-    'depths':     {'name': 'Dark Depths',          'share': 0.04},
-    'burn':       {'name': 'Burn',                 'share': 0.04},
-    'infect':     {'name': 'Infect',               'share': 0.03},
-    'goblins':    {'name': 'Goblins',              'share': 0.03},
-    'belcher':    {'name': 'Goblin Charbelcher',   'share': 0.02},
-    'sneak_a':    {'name': 'Sneak & Show A (rerere)',     'share': 0.03},
-    'sneak_b':    {'name': 'Sneak & Show B (JPA93)',      'share': 0.03},
-    'affinity':   {'name': 'Affinity (8-Cast variant)',   'share': 0.03},
-    'ur_tempo':   {'name': 'UR Tempo (Cori-Steel)',       'share': 0.03},
-    'dimir_c':    {'name': 'Dimir Tempo C (Barrowgoyf)',  'share': 0.03},
-    'dimir_d':    {'name': 'Dimir Tempo D (Kaito)',       'share': 0.03},
-    'cephalid':   {'name': 'Cephalid Breakfast',          'share': 0.02},
-    'cloudpost':  {'name': 'Cloudpost (12-Post)',         'share': 0.02},
+# MATCHUP_META: auto-built from deck_registry (each deck declares name + meta_share)
+# Fallback for built-in decks that don't have DECK_META yet
+_BUILTIN_META = {
+    'bug': {'name': 'BUG Tempo', 'share': 0.10},
 }
+try:
+    from deck_registry import build_matchup_meta
+    MATCHUP_META = build_matchup_meta()
+    MATCHUP_META.update(_BUILTIN_META)
+except ImportError:
+    MATCHUP_META = _BUILTIN_META
 
 
 # ─────────────────────────────────────────────
@@ -2031,29 +2006,10 @@ DECKS = {
     'elves':        make_elves_deck,
 }
 
-# Register plugin decks into DECKS
-_PLUGIN_DECKS = {
-    'eight_cast': ('decks.eight_cast', 'make_eight_cast_deck'),
-    'tes':        ('decks.tes',        'make_tes_deck'),
-    'depths':     ('decks.depths',     'make_depths_deck'),
-    'burn':       ('decks.burn',       'make_burn_deck'),
-    'infect':     ('decks.infect',     'make_infect_deck'),
-    'goblins':    ('decks.goblins',    'make_goblins_deck'),
-    'belcher':    ('decks.belcher',    'make_belcher_deck'),
-    'ur_delver':  ('decks.ur_delver',  'make_ur_delver_deck'),
-    'sneak_a':    ('decks.sneak_a',    'make_sneak_a_deck'),
-    'sneak_b':    ('decks.sneak_b',    'make_sneak_b_deck'),
-    'affinity':   ('decks.affinity',   'make_affinity_deck'),
-    'ur_tempo':   ('decks.ur_tempo',   'make_ur_tempo_deck'),
-    'dimir_c':    ('decks.dimir_c',    'make_dimir_c_deck'),
-    'dimir_d':    ('decks.dimir_d',    'make_dimir_d_deck'),
-    'cephalid':   ('decks.cephalid',   'make_cephalid_deck'),
-    'cloudpost':  ('decks.cloudpost',  'make_cloudpost_deck'),
-}
-for _key, (_mod, _fn) in _PLUGIN_DECKS.items():
-    try:
-        _m = __import__(_mod, fromlist=[_fn])
-        DECKS[_key] = getattr(_m, _fn)
-    except (ImportError, AttributeError):
-        pass
+# Register all deck constructors from deck_registry (replaces _PLUGIN_DECKS)
+try:
+    from deck_registry import register_into_decks_dict
+    register_into_decks_dict(DECKS)
+except ImportError:
+    pass
 
