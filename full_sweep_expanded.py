@@ -29,7 +29,7 @@ FIELD = {
 total = sum(FIELD.values())
 FIELD = {k: v / total for k, v in FIELD.items()}
 
-GAMES_PER_MATCHUP = 5000
+GAMES_PER_MATCHUP = 3000
 
 # All decks to sweep (protagonist role)
 ALL_PROTAGONISTS = [
