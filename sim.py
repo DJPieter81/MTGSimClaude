@@ -119,6 +119,10 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
                     gs2.winner = None
                     gs2.win_reason = None
                     gs2.bug.life = max(gs2.bug.life, 3)
+                    # Remove the threat that killed BUG (Karakas, STP, etc.)
+                    if gs2.opp.creatures:
+                        biggest = max(gs2.opp.creatures, key=lambda c: c.power)
+                        gs2.opp.creatures.remove(biggest)
                     return True
             if gs2.winner == 'bug' and _opp_save > 0:
                 if _ir_rng.random() < _opp_save:
