@@ -101,14 +101,44 @@ Verify with `python3 run_meta.py --deck my_deck`.
 
 ## Available Decks (36)
 
-```
-affinity, belcher, boros, bug, burn, cephalid, cloudpost,
-depths, dimir, dimir_b, dimir_c, dimir_d, dimir_flash,
-dnt, doomsday, eight_cast, eldrazi, elves, goblins,
-infect, lands, mardu, mono_black, oops, painter, prison,
-reanimator, show, sneak_a, sneak_b, storm, tes,
-ur_aggro, ur_delver, ur_tempo, uwx
-```
+| Key | Deck Name |
+|-----|-----------|
+| `affinity` | Affinity (8-Cast variant) |
+| `belcher` | Goblin Charbelcher |
+| `boros` | Boros Aggro |
+| `bug` | BUG Tempo |
+| `burn` | Burn |
+| `cephalid` | Cephalid Breakfast |
+| `cloudpost` | Cloudpost (12-Post) |
+| `depths` | Dark Depths |
+| `dimir` | Dimir Tempo A (Nethergoyf) |
+| `dimir_b` | Dimir Tempo B (Barrowgoyf) |
+| `dimir_c` | Dimir Tempo C (Barrowgoyf) |
+| `dimir_d` | Dimir Tempo D (Kaito) |
+| `dimir_flash` | Dimir Flash (Wan Shi Tong) |
+| `dnt` | Death and Taxes |
+| `doomsday` | Doomsday |
+| `eight_cast` | 8-Cast |
+| `eldrazi` | Eldrazi Aggro |
+| `elves` | Elves |
+| `goblins` | Goblins |
+| `infect` | Infect |
+| `lands` | Lands |
+| `mardu` | Mardu Aggro |
+| `mono_black` | Mono Black Aggro |
+| `oops` | Oops All Spells |
+| `painter` | Painter |
+| `prison` | Artifacts Prison |
+| `reanimator` | Reanimator |
+| `show` | Show and Tell |
+| `sneak_a` | Sneak & Show A (rerere) |
+| `sneak_b` | Sneak & Show B (JPA93) |
+| `storm` | Storm (ANT) |
+| `tes` | The Epic Storm |
+| `ur_aggro` | UR Aggro |
+| `ur_delver` | UR Delver |
+| `ur_tempo` | UR Tempo (Cori-Steel) |
+| `uwx` | UWx Control |
 
 ## GameResult Fields
 
