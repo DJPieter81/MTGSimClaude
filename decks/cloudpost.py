@@ -171,65 +171,254 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
     Cloudpost / 12-Post strategy — ramp into expensive haymakers.
 
     Priority:
-     1. Lotus Petal for early mana acceleration
-     2. Expedition Map (cast early, activate later to find Cloudpost / Tron)
-     3. Crop Rotation — instant-speed land tutor for Cloudpost
-     4. Lock pieces (Disruptor Flute, Pithing Needle) to slow opponent
-     5. Karn, the Great Creator (4 mana) — wish for artifacts
-     6. The One Ring (4 mana) — protection + card draw
-     7. Stock Up / Kozilek's Command — card draw / interaction
-     8. Ugin (6 mana) — board wipe for colored creatures
-     9. Ulamog (10 mana) — ultimate finisher, exile 2 permanents
-    10. Combat with any creatures
+     1. Crop Rotation — sac a land to tutor Cloudpost/Nexus to battlefield
+     2. Lotus Petal for mana acceleration
+     3. Expedition Map — tutor key lands
+     4. Deploy haymakers: Karn (4), The One Ring (4), Ugin (6), Ulamog (10)
+     5. Kozilek's Command for interaction / card advantage
+     6. Lock pieces (Flute, Needle) in spare mana slots
+     7. Stock Up for card draw
+     8. Combat with creatures
     """
     from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
+    from rules import Card as _Card, CardType as _CT, LandPermanent
 
     mana = _calc_effective_mana(player, total_mana)
 
+    # ── Helper: trigger bowmasters on draw ──────────────────────────────────
+    def _bowm_check(n):
+        if getattr(gs, 'bowmasters_on_board', False):
+            bowmasters_triggers(n, gs, log_entries,
+                                controller='o' if player is gs.bug else 'b')
+
+    # ── Track persistent effects ────────────────────────────────────────────
+    if not hasattr(gs, 'cloudpost_ring_counters'):
+        gs.cloudpost_ring_counters = 0
+    if not hasattr(gs, 'cloudpost_karn_active'):
+        gs.cloudpost_karn_active = False
+    if not hasattr(gs, 'cloudpost_ugin_active'):
+        gs.cloudpost_ugin_active = False
+
+    # ── The One Ring ongoing draw (if deployed on prior turn) ───────────────
+    if gs.cloudpost_ring_counters > 0:
+        gs.cloudpost_ring_counters += 1
+        draws = gs.cloudpost_ring_counters
+        player.draw(draws)
+        player.life -= draws  # burden counter damage
+        log_fn(f"The One Ring — draw {draws}, lose {draws} life ({player.life})")
+        _bowm_check(draws)
+        gs.check_life_totals()
+        if gs.game_over:
+            return
+
+    # ── Karn ongoing effect: opponent's artifacts are disabled ─────────���─────
+    # (Simplified: Karn creates a 4/4 construct each turn it's active)
+    if gs.cloudpost_karn_active and gs.turn >= 6:
+        # Karn + Mycosynth Lattice = hard lock. Opponent's lands don't work.
+        log_fn("★ Karn + Mycosynth Lattice lock — opponent locked out", True)
+        gs.game_over = True
+        gs.winner = 'bug' if player is gs.bug else 'opp'
+        gs.win_reason = "Cloudpost: Karn Lattice lock"
+        gs.kill_turn = gs.turn
+        return
+    elif gs.cloudpost_karn_active:
+        # Before T6 lock solidifies, Karn creates constructs
+        from cards import creature as _creature
+        construct = _creature('Karn Construct', 0, {}, set(), 4, 4, tag='karn_token')
+        player.put_creature_in_play(construct)
+        log_fn("Karn +1 — create 4/4 Construct")
+
+    # ── Ugin ongoing effect: exile-based card advantage ─────────────────────
+    if gs.cloudpost_ugin_active:
+        # Ugin draws a card equivalent each turn
+        player.draw(1)
+        log_fn("Ugin — card advantage (draw 1)")
+        _bowm_check(1)
+        gs.check_life_totals()
+        if gs.game_over:
+            return
+
+    # ── Crop Rotation (1 green mana) — the key ramp spell ──────────────────
+    # Sac a land, tutor any land directly to battlefield
+    crop = player.find_tag('crop')
+    if crop and mana >= 1:
+        # Need a land to sacrifice and a target to find
+        sac_land = None
+        for l in player.lands:
+            if l.card.tag not in ('post', 'nexus'):  # don't sac our best lands
+                sac_land = l
+                break
+        if not sac_land and player.lands:
+            sac_land = player.lands[-1]  # sac worst land if needed
+
+        target_land = (
+            next((c for c in player.library if c.tag == 'post'), None)
+            or next((c for c in player.library if c.tag == 'nexus'), None)
+            or next((c for c in player.library
+                     if c.tag in ('tower', 'mine', 'plant')), None)
+        )
+
+        if sac_land and target_land:
+            player.remove_from_hand(crop)
+            if not _try_counter_any(player, opponent, gs, crop, log_entries):
+                player.add_to_grave(crop)
+                # Sacrifice the land
+                player.lands.remove(sac_land)
+                player.add_to_grave(sac_land.card)
+                # Put target land directly onto battlefield
+                player.library.remove(target_land)
+                new_land = LandPermanent(target_land, controller='o' if player is gs.opp else 'b')
+                player.lands.append(new_land)
+                mana -= 1
+                # Recalculate mana with new land
+                mana = _calc_effective_mana(player,
+                    player.available_mana_count())
+                log_fn(f"★ Crop Rotation — sac {sac_land.card.name} → {target_land.name}",
+                       True)
+            else:
+                player.add_to_grave(crop)
+                # Still sacrifice the land (cost)
+                player.lands.remove(sac_land)
+                player.add_to_grave(sac_land.card)
+                mana = _calc_effective_mana(player,
+                    player.available_mana_count())
+                log_fn("Crop Rotation countered (land still sacrificed)")
+
     # ── Lotus Petal — free ramp ─────────────────────────────────────────────
-    petal = player.find_tag('petal')
-    if petal:
+    for petal in [c for c in player.hand if c.tag == 'petal']:
         player.remove_from_hand(petal)
         player.add_to_grave(petal)
         mana += 1
         log_fn("Lotus Petal → +1 mana")
 
-    # ── Expedition Map (1 mana to cast) ─────────────────────────────────────
+    # ── Expedition Map (1 to cast + 2 to activate = 3 total) ───────────────
     exp_map = player.find_tag('map')
-    if exp_map and mana >= 1:
+    if exp_map and mana >= 3:
+        player.remove_from_hand(exp_map)
+        player.add_to_grave(exp_map)
+        mana -= 3
+        target = (
+            next((c for c in player.library if c.tag == 'post'), None)
+            or next((c for c in player.library
+                     if c.tag in ('tower', 'mine', 'plant', 'nexus')), None)
+        )
+        if target:
+            player.library.remove(target)
+            player.hand.append(target)
+            log_fn(f"Expedition Map → {target.name} to hand")
+        else:
+            log_fn("Expedition Map — no useful land in library")
+    elif exp_map and mana >= 1:
+        # Just cast it, activate later
         player.remove_from_hand(exp_map)
         player.add_to_grave(exp_map)
         mana -= 1
-        # Simplified: immediate activation (2 mana) if affordable
-        if mana >= 2:
-            mana -= 2
-            # Tutor best land from library
-            target = (
-                next((c for c in player.library if c.tag == 'post'), None)
-                or next((c for c in player.library
-                         if c.tag in ('tower', 'mine', 'plant', 'nexus')), None)
-            )
-            if target:
-                player.library.remove(target)
-                player.hand.append(target)
-                log_fn(f"Expedition Map → {target.name} to hand")
+        log_fn("Expedition Map cast (will activate later)")
+
+    # ── Deploy haymakers by mana threshold ──────────────────────────────────
+
+    # Ulamog (10 mana) — ultimate finisher, try first
+    ulamog = player.find_tag('ulamog')
+    if ulamog and mana >= 10:
+        player.remove_from_hand(ulamog)
+        if not _try_counter_any(player, opponent, gs, ulamog, log_entries):
+            player.put_creature_in_play(ulamog)
+            mana -= 10
+            exiled = 0
+            for c in list(opponent.creatures[:2]):
+                opponent.creatures.remove(c)
+                exiled += 1
+            # Also exile lands
+            while exiled < 2 and opponent.lands:
+                lnd = opponent.lands[-1]
+                opponent.lands.remove(lnd)
+                exiled += 1
+            log_fn(f"★ Ulamog — exile {exiled} permanents, 10/10 indestructible",
+                   True)
+            update_goyf(gs)
+        else:
+            player.add_to_grave(ulamog)
+            mana -= 10
+            log_fn("Ulamog countered")
+
+    # Ugin (6 mana) — board wipe, fires when opponent has creatures
+    ugin = player.find_tag('ugin')
+    if ugin and mana >= 6 and opponent.creatures:
+        player.remove_from_hand(ugin)
+        if not _try_counter_any(player, opponent, gs, ugin, log_entries):
+            player.add_to_grave(ugin)
+            mana -= 6
+            colored = [c for c in opponent.creatures if c.card.colors]
+            for c in list(colored):
+                opponent.creatures.remove(c)
+            gs.cloudpost_ugin_active = True
+            log_fn(f"★ Ugin — exile {len(colored)} colored creatures + ongoing value",
+                   True)
+            update_goyf(gs)
+        else:
+            player.add_to_grave(ugin)
+            mana -= 6
+
+    # The One Ring (4 mana) — protection this turn + draw engine
+    ring = player.find_tag('ring')
+    if ring and mana >= 4 and gs.cloudpost_ring_counters == 0:
+        player.remove_from_hand(ring)
+        if not _try_counter_any(player, opponent, gs, ring, log_entries):
+            player.add_to_grave(ring)
+            mana -= 4
+            gs.cloudpost_ring_counters = 1  # starts drawing next turn
+            player.life += 8  # proxy for protection-from-everything (BUG can't attack)
+            log_fn(f"★ The One Ring — protection (life→{player.life}), draw engine on",
+                   True)
+        else:
+            player.add_to_grave(ring)
+            mana -= 4
+
+    # Karn (4 mana) — persistent threat factory
+    karn = player.find_tag('karn')
+    if karn and mana >= 4 and not gs.cloudpost_karn_active:
+        player.remove_from_hand(karn)
+        if not _try_counter_any(player, opponent, gs, karn, log_entries):
+            player.add_to_grave(karn)
+            mana -= 4
+            gs.cloudpost_karn_active = True
+            log_fn("★ Karn, the Great Creator — creates 4/4 each turn", True)
+        else:
+            player.add_to_grave(karn)
+            mana -= 4
+
+    # Kozilek's Command (4 mana) — removal + token or draw
+    koz = player.find_tag('koz_cmd')
+    if koz and mana >= 4:
+        player.remove_from_hand(koz)
+        if not _try_counter_any(player, opponent, gs, koz, log_entries):
+            player.add_to_grave(koz)
+            mana -= 4
+            # Mode 1: kill a small creature + create spawn token
+            small = [c for c in opponent.creatures if c.card.base_toughness <= 3]
+            if small:
+                target = max(small, key=lambda c: c.card.base_power)
+                opponent.creatures.remove(target)
+                # Create a 1/1 Eldrazi Spawn token
+                from cards import creature as _creature
+                spawn = _creature('Eldrazi Spawn', 0, {}, set(), 1, 1, tag='spawn')
+                player.put_creature_in_play(spawn)
+                log_fn(f"Kozilek's Command — kill {target.card.name} + Spawn token",
+                       True)
+                update_goyf(gs)
             else:
-                log_fn("Expedition Map — no useful land in library")
+                # Mode 2: draw 2 cards
+                player.draw(2)
+                log_fn("Kozilek's Command — draw 2", True)
+                _bowm_check(2)
+                gs.check_life_totals()
+                if gs.game_over:
+                    return
         else:
-            log_fn("Expedition Map cast (will activate later)")
+            player.add_to_grave(koz)
+            mana -= 4
 
-    # ── Lock pieces — Pithing Needle (1 mana), Disruptor Flute (2 mana) ────
-    needle = player.find_tag('needle')
-    if needle and mana >= 1:
-        player.remove_from_hand(needle)
-        if not _try_counter_any(player, opponent, gs, needle, log_entries):
-            player.add_to_grave(needle)
-            mana -= 1
-            log_fn("Pithing Needle — naming key card", True)
-        else:
-            player.add_to_grave(needle)
-            mana -= 1
-
+    # ── Lock pieces in spare mana slots ─────────────────────────────────────
     flute = player.find_tag('flute')
     if flute and mana >= 2:
         player.remove_from_hand(flute)
@@ -241,76 +430,16 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(flute)
             mana -= 2
 
-    # ── Karn, the Great Creator (4 mana) ────────────────────────────────────
-    karn = player.find_tag('karn')
-    if karn and mana >= 4:
-        player.remove_from_hand(karn)
-        if not _try_counter_any(player, opponent, gs, karn, log_entries):
-            player.add_to_grave(karn)
-            mana -= 4
-            log_fn("★ Karn, the Great Creator — wish for artifact", True)
+    needle = player.find_tag('needle')
+    if needle and mana >= 1:
+        player.remove_from_hand(needle)
+        if not _try_counter_any(player, opponent, gs, needle, log_entries):
+            player.add_to_grave(needle)
+            mana -= 1
+            log_fn("Pithing Needle — naming key card", True)
         else:
-            player.add_to_grave(karn)
-            mana -= 4
-
-    # ── The One Ring (4 mana) — protection + card draw ──────────────────────
-    ring = player.find_tag('ring')
-    if ring and mana >= 4:
-        player.remove_from_hand(ring)
-        if not _try_counter_any(player, opponent, gs, ring, log_entries):
-            player.add_to_grave(ring)
-            mana -= 4
-            player.draw(2)
-            log_fn("★ The One Ring — protection + draw 2", True)
-            if hasattr(gs, 'bowmasters_on_board') and gs.bowmasters_on_board:
-                bowmasters_triggers(2, gs, log_entries,
-                                    controller='o' if player is gs.bug else 'b')
-            gs.check_life_totals()
-            if gs.game_over:
-                return
-        else:
-            player.add_to_grave(ring)
-            mana -= 4
-
-    # ── Kozilek's Command (4 mana) — modal: 2 damage or draw + mill ────────
-    koz = player.find_tag('koz_cmd')
-    if koz and mana >= 4:
-        player.remove_from_hand(koz)
-        if not _try_counter_any(player, opponent, gs, koz, log_entries):
-            player.add_to_grave(koz)
-            mana -= 4
-            # Choose mode: 2 damage to creature + create token,
-            # or draw + mill if no creatures to hit
-            if opponent.creatures:
-                target = max(opponent.creatures, key=lambda c: c.card.base_power)
-                if target.card.base_toughness <= 2:
-                    opponent.creatures.remove(target)
-                    log_fn(f"Kozilek's Command — destroy {target.card.name} + token",
-                           True)
-                    update_goyf(gs)
-                else:
-                    player.draw(1)
-                    log_fn("Kozilek's Command — draw 1 + mill", True)
-                    if hasattr(gs, 'bowmasters_on_board') and gs.bowmasters_on_board:
-                        bowmasters_triggers(
-                            1, gs, log_entries,
-                            controller='o' if player is gs.bug else 'b')
-                    gs.check_life_totals()
-                    if gs.game_over:
-                        return
-            else:
-                player.draw(1)
-                log_fn("Kozilek's Command — draw 1 + mill", True)
-                if hasattr(gs, 'bowmasters_on_board') and gs.bowmasters_on_board:
-                    bowmasters_triggers(
-                        1, gs, log_entries,
-                        controller='o' if player is gs.bug else 'b')
-                gs.check_life_totals()
-                if gs.game_over:
-                    return
-        else:
-            player.add_to_grave(koz)
-            mana -= 4
+            player.add_to_grave(needle)
+            mana -= 1
 
     # ── Stock Up (2 mana) — draw 2 ─────────────────────────────────────────
     stock = player.find_tag('stock')
@@ -320,52 +449,10 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
         mana -= 2
         player.draw(2)
         log_fn("Stock Up — draw 2")
-        if hasattr(gs, 'bowmasters_on_board') and gs.bowmasters_on_board:
-            bowmasters_triggers(2, gs, log_entries,
-                                controller='o' if player is gs.bug else 'b')
+        _bowm_check(2)
         gs.check_life_totals()
         if gs.game_over:
             return
-
-    # ── Ugin, Eye of the Storms (6 mana) — board wipe ──────────────────────
-    ugin = player.find_tag('ugin')
-    if ugin and mana >= 6 and len(opponent.creatures) >= 2:
-        player.remove_from_hand(ugin)
-        if not _try_counter_any(player, opponent, gs, ugin, log_entries):
-            player.add_to_grave(ugin)
-            mana -= 6
-            colored = [c for c in opponent.creatures if c.card.colors]
-            for c in colored:
-                opponent.creatures.remove(c)
-            log_fn(f"★ Ugin — exile {len(colored)} colored creatures", True)
-            update_goyf(gs)
-        else:
-            player.add_to_grave(ugin)
-            mana -= 6
-
-    # ── Ulamog, the Ceaseless Hunger (10 mana) — finisher ──────────────────
-    ulamog = player.find_tag('ulamog')
-    if ulamog and mana >= 10:
-        player.remove_from_hand(ulamog)
-        if not _try_counter_any(player, opponent, gs, ulamog, log_entries):
-            player.put_creature_in_play(ulamog)
-            mana -= 10
-            # On cast trigger: exile up to 2 permanents
-            exiled = 0
-            while opponent.creatures and exiled < 2:
-                target = opponent.creatures[0]
-                opponent.creatures.remove(target)
-                exiled += 1
-            log_fn(f"★ Ulamog — exile {exiled} permanents, 10/10 indestructible",
-                   True)
-            update_goyf(gs)
-        else:
-            player.add_to_grave(ulamog)
-            mana -= 10
-            log_fn("Ulamog countered")
-
-    # ── Crop Rotation — not used as spell here, handled by land tutor above
-    #    (In a more detailed sim, would be cast in response to opponent's play)
 
     # ── Combat ──────────────────────────────────────────────────────────────
     if not gs.game_over:
