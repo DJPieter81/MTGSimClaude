@@ -87,6 +87,7 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
                     opp=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
                     bug_goes_first=bug_goes_first)
     all_log = []
+    display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
 
     for turn in range(1, 16):
         if gs2.game_over: break
@@ -94,20 +95,24 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
 
         if bug_goes_first:
             # BUG takes their turn
+            display_turn += 1
             lines = bug_turn(gs2, turn)
-            all_log += [f"T{turn}[BUG] {l}" for l in lines]
+            all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
             if gs2.game_over: break
             # OPP takes their turn
+            display_turn += 1
             lines = opp_turn(gs2, turn, matchup)
-            all_log += [f"T{turn}[OPP] {l}" for l in lines]
+            all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
         else:
             # OPP takes their turn first
+            display_turn += 1
             lines = opp_turn(gs2, turn, matchup)
-            all_log += [f"T{turn}[OPP] {l}" for l in lines]
+            all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
             if gs2.game_over: break
             # BUG takes their turn
+            display_turn += 1
             lines = bug_turn(gs2, turn)
-            all_log += [f"T{turn}[BUG] {l}" for l in lines]
+            all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
 
     gs = gs2
 

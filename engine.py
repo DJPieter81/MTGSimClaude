@@ -1652,6 +1652,36 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
         player, opponent = gs.opp, gs.bug
         def _udl(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
         _strategy_ur_delver(player, opponent, gs, om, _udl, log_entries)
+    elif matchup == 'sneak_a':
+        from decks.sneak_a import _strategy_sneak_a
+        player, opponent = gs.opp, gs.bug
+        def _sa(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_sneak_a(player, opponent, gs, om, _sa, log_entries)
+    elif matchup == 'sneak_b':
+        from decks.sneak_b import _strategy_sneak_b
+        player, opponent = gs.opp, gs.bug
+        def _sb(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_sneak_b(player, opponent, gs, om, _sb, log_entries)
+    elif matchup == 'affinity':
+        from decks.affinity import _strategy_affinity
+        player, opponent = gs.opp, gs.bug
+        def _af(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_affinity(player, opponent, gs, om, _af, log_entries)
+    elif matchup == 'ur_tempo':
+        from decks.ur_tempo import _strategy_ur_tempo
+        player, opponent = gs.opp, gs.bug
+        def _ut(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_ur_tempo(player, opponent, gs, om, _ut, log_entries)
+    elif matchup == 'cephalid':
+        from decks.cephalid import _strategy_cephalid
+        player, opponent = gs.opp, gs.bug
+        def _ce(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_cephalid(player, opponent, gs, om, _ce, log_entries)
+    elif matchup == 'cloudpost':
+        from decks.cloudpost import _strategy_cloudpost
+        player, opponent = gs.opp, gs.bug
+        def _cp(msg, key=False): gs.log_event('o','main',msg,key); log_entries.append(msg)
+        _strategy_cloudpost(player, opponent, gs, om, _cp, log_entries)
     elif matchup in ('bug', 'bug_sb'):  # BUG as antagonist — use dimir strategy (same archetype)
         _opp_dimir(gs, om, log, log_entries)
 

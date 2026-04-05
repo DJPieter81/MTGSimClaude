@@ -125,18 +125,23 @@ class MatchupCategory:
     """Named sets of matchup IDs by strategic category."""
 
     COMBO       = frozenset({'storm', 'oops', 'doomsday', 'reanimator', 'show',
-                              'belcher', 'tes', 'infect', 'depths'})
-    MIRROR      = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'uwx'})
-    TEMPO_MIRROR = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'ur_delver'})
+                              'belcher', 'tes', 'infect', 'depths',
+                              'sneak_a', 'sneak_b', 'cephalid'})
+    MIRROR      = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'uwx',
+                              'dimir_c', 'dimir_d'})
+    TEMPO_MIRROR = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'ur_delver',
+                              'dimir_c', 'dimir_d', 'ur_tempo'})
     AGGRO       = frozenset({'boros', 'ur_aggro', 'mardu', 'mono_black', 'eldrazi',
-                              'burn', 'goblins', 'ur_delver'})
-    PRISON      = frozenset({'prison', 'dnt', 'boros'})  # mana-denial / stax
-    GY_COMBO    = frozenset({'reanimator', 'oops', 'doomsday'})
-    LAND_COMBO  = frozenset({'lands', 'show', 'depths'})
+                              'burn', 'goblins', 'ur_delver', 'ur_tempo'})
+    PRISON      = frozenset({'prison', 'dnt', 'boros', 'cloudpost'})  # mana-denial / stax
+    GY_COMBO    = frozenset({'reanimator', 'oops', 'doomsday', 'cephalid'})
+    LAND_COMBO  = frozenset({'lands', 'show', 'depths', 'sneak_a', 'sneak_b',
+                              'cloudpost'})
     VIAL_DECKS  = frozenset({'dnt', 'boros', 'goblins'})
-    DIMIR_ONLY  = frozenset({'dimir', 'dimir_b'})  # matchups routed to _opp_dimir
+    DIMIR_ONLY  = frozenset({'dimir', 'dimir_b', 'dimir_c', 'dimir_d'})  # matchups routed to _opp_dimir
     BOWM_DECKS  = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'ur_aggro',
-                              'mardu', 'mono_black', 'uwx', 'ur_delver'})
+                              'mardu', 'mono_black', 'uwx', 'ur_delver',
+                              'dimir_c', 'dimir_d'})
     FAST_COMBO  = frozenset({'oops', 'belcher', 'tes', 'infect'})  # T1-2 kills
     TRIBAL      = frozenset({'goblins', 'elves'})  # creature-swarm decks
 
