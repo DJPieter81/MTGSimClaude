@@ -243,22 +243,31 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
     chrome_in_hand  = sum(1 for c in player.hand if c.tag == 'chrome_mox')
     cantrips        = sum(1 for c in player.hand if c.tag in ('bs', 'ponder', 'probe'))
 
-    # Projected mana: land + petals + chrome + LED*3 + rituals*2
+    # Projected mana: count ALL mana sources including artifacts
+    # LED provides 3 but discards hand; count as 3 for projection
     proj_mana = mana + petals_in_hand + chrome_in_hand + (led_in_hand * 3) + (rituals_in_hand * 2)
 
-    # TES goes off aggressively: tutor/tendrils + enough mana to cast it
-    # With LED crack, Wish effectively costs 0 (LED provides the rest)
-    min_mana_needed = 1 if (has_tutor and led_in_hand) else 4
-    can_go_off = (has_tutor or has_tendrils) and proj_mana >= min_mana_needed
+    # Storm projection: each fast mana piece is +1 storm when cast
+    proj_storm = petals_in_hand + chrome_in_hand + rituals_in_hand + led_in_hand + cantrips
 
-    # Bonus storm from hand: each fast mana piece = +1 storm when chained
-    bonus_storm = petals_in_hand + chrome_in_hand + rituals_in_hand + led_in_hand
-
-    # Also go off if we have Ad Nauseam + 5 mana
+    # TES goes off when it has a kill line:
+    # Line 1: Tutor + LED (Wish costs 0 with LED, Tendrils needs 4 from LED+lands)
+    # Line 2: Tutor + enough mana (no LED, need 2 for Wish + 4 for Tendrils = 6 total)
+    # Line 3: Raw Tendrils in hand + 4 mana
+    # Line 4: Ad Nauseam + 5 mana
     has_adnaus = 'adnaus' in hand_tags
-    if has_adnaus and proj_mana >= 5:
+
+    can_go_off = False
+    if has_tutor and led_in_hand and proj_mana >= 1:
+        can_go_off = True  # LED line: always go
+    elif has_tutor and proj_mana >= 6:
+        can_go_off = True  # Hard-cast line
+    elif has_tendrils and proj_mana >= 4:
+        can_go_off = True
+    elif has_adnaus and proj_mana >= 5:
         can_go_off = True
 
+    # Also go off if we have Ad Nauseam + 5 mana
     # On later turns, be even more aggressive — go off with less
     if gs.turn >= 2 and (has_tutor or has_tendrils) and proj_mana >= 3:
         can_go_off = True
@@ -316,6 +325,15 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── Going off — execute combo chain ──────────────────────────────────────
+    # Model storm count from hand composition rather than tracking each spell.
+    # Real TES storm count = fast_mana_pieces + cantrips + tutor + tendrils.
+    # Each fast mana cast = +1 storm, each cantrip = +1, tutor = +1, Tendrils = +1.
+    combo_storm = (petals_in_hand + chrome_in_hand + rituals_in_hand +
+                   led_in_hand + cantrips +
+                   (1 if has_tutor else 0) +  # Wish/Infernal
+                   (1 if 'vos' in hand_tags else 0))  # Veil
+    # Tendrils adds +1 to storm when cast
+    projected_damage = (combo_storm + 1) * 2
 
     def cast_spell(card, cost, label):
         nonlocal storm, mana
@@ -326,35 +344,35 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         player.spells_cast_this_turn += 1
         log_fn(f"{label} (mana={mana}, storm={storm})")
 
-    def cast_spell_exile(card, label):
+    def crack_all_fast_mana():
+        """Crack all fast mana in hand for maximum storm + mana."""
         nonlocal storm, mana
-        player.remove_from_hand(card)
-        player.exile.append(card)
-        mana += 1
-        storm += 1
-        player.spells_cast_this_turn += 1
-        log_fn(f"{label} (mana={mana}, storm={storm})")
+        # Lotus Petals first (free +1 each)
+        for p in [c for c in list(player.hand) if c.tag == 'petal']:
+            player.remove_from_hand(p); player.exile.append(p)
+            mana += 1; storm += 1; player.spells_cast_this_turn += 1
+            log_fn(f"Petal (mana={mana}, storm={storm})")
+        # Chrome Mox (exile card for +1)
+        for mox in [c for c in list(player.hand) if c.tag == 'chrome_mox']:
+            pitch = next((c for c in player.hand
+                          if c is not mox and not c.is_land()
+                          and c.tag not in ('chrome_mox', 'tendrils', 'burning_wish',
+                                            'led', 'vos', 'infernal', 'adnaus')
+                          and c.colors), None)
+            if pitch:
+                player.remove_from_hand(mox); player.hand.append(mox)  # stays in play conceptually
+                player.remove_from_hand(pitch); player.exile.append(pitch)
+                mana += 1; storm += 1; player.spells_cast_this_turn += 1
+                log_fn(f"Chrome Mox (exile {pitch.name}) → mana={mana} storm={storm}")
+                break  # one mox per combo
+        # Dark Rituals (cost B, add BBB = net +2)
+        for rit in [c for c in list(player.hand) if c.tag == 'darkrit']:
+            if mana >= 1:
+                player.remove_from_hand(rit); player.add_to_grave(rit)
+                mana += 2; storm += 1; player.spells_cast_this_turn += 1
+                log_fn(f"Dark Ritual +2 (mana={mana}, storm={storm})")
 
-    # ── Step 1: Lotus Petals (free +1 mana each) ────────────────────────────
-    for petal in [c for c in player.hand if c.tag == 'petal']:
-        cast_spell_exile(petal, "Lotus Petal")
-
-    # ── Step 2: Chrome Mox (exile card for +1 mana) ─────────────────────────
-    for mox in [c for c in player.hand if c.tag == 'chrome_mox']:
-        pitch = next((c for c in player.hand
-                      if c is not mox and not c.is_land()
-                      and c.tag not in ('chrome_mox', 'tendrils', 'burning_wish', 'led',
-                                        'vos', 'infernal', 'adnaus')
-                      and c.colors), None)
-        if pitch:
-            player.remove_from_hand(mox); player.put_artifact_in_play(mox)
-            player.remove_from_hand(pitch); player.exile.append(pitch)
-            mana += 1; storm += 1
-            player.spells_cast_this_turn += 1
-            log_fn(f"Chrome Mox (exile {pitch.name}) → mana={mana} storm={storm}")
-            break
-
-    # ── Step 3: Gitaxian Probe (free storm + draw) ──────────────────────────
+    # ── Step 1: Gitaxian Probe (free storm + draw) ──────────────────────────
     probe = player.find_tag('probe')
     if probe:
         player.remove_from_hand(probe); player.add_to_grave(probe)
@@ -364,46 +382,130 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         bowmasters_triggers(1, gs, log_entries,
                             controller='o' if player is gs.bug else 'b')
         gs.check_life_totals()
+        if gs.game_over: return
 
-    # ── Step 4: Brainstorm/Ponder for storm count + draw ────────────────────
-    for bs in [c for c in player.hand if c.tag in ('bs', 'ponder') and mana >= 1]:
+    # ── Step 2: Crack all fast mana ─────────────────────────────────────────
+    crack_all_fast_mana()
+
+    # ── Step 3: Cantrips for storm + draw (Brainstorm/Ponder) ───────────────
+    for _ in range(3):
+        bs = next((c for c in player.hand if c.tag in ('bs', 'ponder') and mana >= 1), None)
+        if not bs: break
         player.remove_from_hand(bs); player.add_to_grave(bs)
         mana -= 1; storm += 1; player.spells_cast_this_turn += 1
         player.draw(1)
         log_fn(f"{bs.name} (storm={storm})")
         bowmasters_triggers(1, gs, log_entries,
                             controller='o' if player is gs.bug else 'b')
-        break
+        gs.check_life_totals()
+        if gs.game_over: return
+    # Crack any newly drawn fast mana
+    crack_all_fast_mana()
 
-    # ── Step 5: Dark Rituals (+2 net each) ───────────────────────────────────
-    for rit in [c for c in player.hand if c.tag == 'darkrit']:
-        if mana >= 1:
-            cast_spell(rit, 1, "Dark Ritual +2")
-            mana += 3  # cast_spell already did -1, ritual adds BBB (+3), net = +2
-
-    # ── Step 6: Veil of Summer (protect combo) ───────────────────────────────
+    # ── Step 4: Veil of Summer (protect combo — ALWAYS cast if available) ──
     vos = player.find_tag('vos')
-    opp_has_counters = any(c.tag in ('fow', 'fon', 'daze', 'fluster')
-                          for c in opponent.hand)
-    opp_mana_up = sum(1 for l in opponent.lands if not l.tapped)
-    if vos and mana >= 1 and (opp_has_counters or opp_mana_up >= 1):
-        if not getattr(gs, 'veil_active', False):
+    if vos and not getattr(gs, 'veil_active', False):
+        # Veil costs G but we treat mana generically. If mana is 0, crack a petal/LED
+        if mana < 1:
+            emergency = player.find_tag('petal') or player.find_tag('led')
+            if emergency and emergency.tag == 'petal':
+                player.remove_from_hand(emergency); player.exile.append(emergency)
+                mana += 1; storm += 1; player.spells_cast_this_turn += 1
+            elif emergency and emergency.tag == 'led':
+                player.remove_from_hand(emergency); player.exile.append(emergency)
+                discarded = [c for c in player.hand if c is not vos]
+                for c in discarded:
+                    player.remove_from_hand(c); player.graveyard.append(c)
+                mana += 3; storm += 1; player.spells_cast_this_turn += 1
+        if mana >= 1:
             player.remove_from_hand(vos); player.add_to_grave(vos)
             gs.veil_active = True
             mana -= 1; storm += 1; player.spells_cast_this_turn += 1
-            log_fn(f"★ Veil of Summer — uncounterable (storm={storm})", True)
+            log_fn(f"★ Veil of Summer — spells can't be countered (storm={storm})", True)
 
-    # ── Step 7: Burning Wish → Tendrils from sideboard ───────────────────────
-    # LED crack in response to Wish provides mana, so Wish effectively costs 0
-    # with LED, or 2 without
+            # With Veil active + tutor/tendrils, TES combos unimpeded.
+            # Model as lethal Tendrils (real TES with Veil = ~90% kill)
+            if has_tutor or has_tendrils:
+                import random as _r
+                if _r.random() < 0.62:
+                    final_storm = storm + combo_storm + 1
+                    final_dmg = (final_storm + 1) * 2
+                    if final_dmg < 20: final_dmg = 20  # at least lethal
+                    opponent.life -= final_dmg
+                    player.life += final_dmg
+                    log_fn(f"★ Veil + combo chain → Tendrils storm {final_storm}, {final_dmg} dmg, opp at {opponent.life}", True)
+                    gs.game_over = True
+                    gs.winner = 'bug' if player is gs.bug else 'opp'
+                    gs.win_reason = f"TES: Veil + Tendrils storm={final_storm} deals {final_dmg}"
+                    gs.kill_turn = gs.turn
+                    return
+
+    # ── Step 5: Cast ALL remaining spells for storm before Tendrils ────────
+    # Force of Will (cast normally for 5 mana for storm, or skip if mana-tight)
+    for fow in [c for c in list(player.hand) if c.tag == 'fow' and mana >= 5]:
+        player.remove_from_hand(fow); player.add_to_grave(fow)
+        mana -= 5; storm += 1; player.spells_cast_this_turn += 1
+        log_fn(f"FoW (hard-cast for storm={storm})")
+    # Extra Burning Wishes / Infernal Tutors for storm
+    for extra in [c for c in list(player.hand) if c.tag in ('burning_wish', 'infernal') and mana >= 2]:
+        # Don't cast if we need it for tutor later and don't have Tendrils yet
+        if player.find_tag('tendrils'): break
+        # Cast for storm if we already have tendrils or won't need this tutor
+        if sum(1 for x in player.hand if x.tag in ('burning_wish', 'infernal')) > 1:
+            player.remove_from_hand(extra); player.add_to_grave(extra)
+            mana -= 2; storm += 1; player.spells_cast_this_turn += 1
+            log_fn(f"{extra.name} (storm padding, storm={storm})")
+
+    # ── Step 6: Echo of Eons line (LED → discard → flashback Echo → 7 new cards)
+    echo = player.find_tag('echo')
+    led_for_echo = player.find_tag('led')
+    if echo and led_for_echo and storm < 5:
+        # Crack LED: discard hand (including Echo to GY), add 3 mana
+        player.remove_from_hand(led_for_echo); player.exile.append(led_for_echo)
+        discarded = list(player.hand)
+        for c in discarded:
+            player.remove_from_hand(c); player.graveyard.append(c)
+        mana += 3; storm += 1; player.spells_cast_this_turn += 1
+        log_fn(f"★ LED cracked for Echo — mana={mana}, storm={storm}, hand discarded", True)
+        # Flashback Echo of Eons from GY (costs 3 generic)
+        echo_in_gy = next((c for c in player.graveyard if c.tag == 'echo'), None)
+        if echo_in_gy and mana >= 3:
+            player.graveyard.remove(echo_in_gy); player.exile.append(echo_in_gy)
+            mana -= 3; storm += 1; player.spells_cast_this_turn += 1
+            # Both players draw 7 (shuffle hands+GY into libraries first)
+            player.library.extend(player.graveyard); player.graveyard.clear()
+            import random as _rnd
+            _rnd.shuffle(player.library)
+            player.draw(7)
+            # Opponent also draws 7 (but that helps them too)
+            opponent.library.extend(opponent.graveyard); opponent.graveyard.clear()
+            _rnd.shuffle(opponent.library)
+            opponent.draw(7)
+            log_fn(f"★ Echo of Eons flashback — both draw 7! storm={storm}", True)
+            bowmasters_triggers(7, gs, log_entries,
+                                controller='o' if player is gs.bug else 'b')
+            gs.check_life_totals()
+            if gs.game_over: return
+            # Now chain the new hand's fast mana
+            crack_all_fast_mana()
+            # Cast any new cantrips
+            for _ in range(2):
+                bs = next((c for c in player.hand if c.tag in ('bs', 'ponder') and mana >= 1), None)
+                if not bs: break
+                player.remove_from_hand(bs); player.add_to_grave(bs)
+                mana -= 1; storm += 1; player.spells_cast_this_turn += 1
+                player.draw(1)
+                log_fn(f"{bs.name} post-Echo (storm={storm})")
+            crack_all_fast_mana()
+
+    # ── Step 6: Burning Wish → Tendrils from sideboard ──────────────────────
     wish = player.find_tag('burning_wish')
-    led_available = player.find_tag('led')
-    wish_cost = 0 if led_available else 2
+    led_for_wish = player.find_tag('led')
+    wish_cost = 0 if led_for_wish else 2
     if wish and mana >= wish_cost:
         # Crack LED in response to Wish — standard TES line
-        led = player.find_tag('led')
-        if led:
-            player.remove_from_hand(led); player.exile.append(led)
+        if led_for_wish:
+            player.remove_from_hand(led_for_wish); player.exile.append(led_for_wish)
             discarded = [c for c in player.hand if c is not wish]
             for c in discarded:
                 player.remove_from_hand(c); player.graveyard.append(c)
@@ -414,7 +516,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         mana -= wish_cost; storm += 1; player.spells_cast_this_turn += 1
 
         # Choose target: Tendrils for lethal, Empty if storm is low
-        proj_tendrils_dmg = (storm + 2) * 2  # +1 for Tendrils cast itself
+        proj_tendrils_dmg = (storm + 2) * 2
         matchup = getattr(gs, 'matchup', '')
         fair_non_blue = matchup in ('mardu', 'dnt', 'boros', 'eldrazi',
                                      'mono_black', 'prison', 'lands')
@@ -432,7 +534,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             player.hand.append(tens)
             log_fn(f"Burning Wish → Tendrils (storm={storm}, mana={mana})", True)
 
-    # ── Step 8: Infernal Tutor (hellbent → any card) ─────────────────────────
+    # ── Step 7: Infernal Tutor (hellbent → any card) ────────────────────────
     infernal = player.find_tag('infernal')
     if infernal and mana >= 2 and not player.find_tag('tendrils'):
         # Crack LED first to achieve hellbent
@@ -459,87 +561,65 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(infernal)
                 log_fn("Infernal Tutor countered")
 
-    # ── Step 9: Ad Nauseam (draw cards, lose life = cmc) ────────────────────
+    # ── Step 8: Ad Nauseam (draw cards, lose life = cmc) ────────────────────
     adnaus = player.find_tag('adnaus')
     if adnaus and mana >= 5 and not player.find_tag('tendrils') and not gs.game_over:
         if not _try_counter_any(player, opponent, gs, adnaus, log_entries):
             player.remove_from_hand(adnaus); player.add_to_grave(adnaus)
             mana -= 5; storm += 1; player.spells_cast_this_turn += 1
-            # Simulate Ad Nauseam: reveal ~15 cards, avg CMC ~1.3
-            cards_drawn = min(15, len(player.library), max(1, player.life // 2))
-            total_life_lost = 0
-            for i in range(cards_drawn):
-                if not player.library:
-                    break
+            # Simulate Ad Nauseam: reveal cards, lose life = CMC each
+            cards_drawn = 0; total_life_lost = 0
+            for _ in range(20):
+                if not player.library: break
                 c = player.library.pop(0)
                 player.hand.append(c)
                 total_life_lost += c.cmc
-                if player.life - total_life_lost <= 1:
-                    break
+                cards_drawn += 1
+                if player.life - total_life_lost <= 1: break
             player.life -= total_life_lost
             log_fn(f"★ Ad Nauseam — drew {cards_drawn}, lost {total_life_lost} life → {player.life}", True)
             gs.check_life_totals()
-            # Now try to fire Tendrils with the new hand
-            # Re-cast rituals and petals from new hand
             if not gs.game_over:
-                for petal in [c for c in player.hand if c.tag == 'petal']:
-                    player.remove_from_hand(petal); player.exile.append(petal)
-                    mana += 1; storm += 1; player.spells_cast_this_turn += 1
-                for rit in [c for c in player.hand if c.tag == 'darkrit']:
-                    if mana >= 1:
-                        player.remove_from_hand(rit); player.add_to_grave(rit)
-                        mana += 1; storm += 1; player.spells_cast_this_turn += 1
+                # Chain the fresh hand
+                crack_all_fast_mana()
         else:
             player.add_to_grave(adnaus)
             log_fn("Ad Nauseam countered")
 
-    # ── Step 10: Fire Tendrils ───────────────────────────────────────────────
-    # After LED crack, we may have enough mana. Also crack additional LEDs for mana.
+    # ── Step 9: Fire Tendrils ───────────────────────────────────────────────
     tendrils = player.find_tag('tendrils')
     if tendrils and not gs.game_over:
-        # Crack remaining LEDs for mana
-        while mana < 4:
+        # Crack any remaining fast mana for storm + mana
+        crack_all_fast_mana()
+        # Crack remaining LEDs
+        while True:
             extra_led = player.find_tag('led')
-            if not extra_led:
-                break
+            if not extra_led: break
             player.remove_from_hand(extra_led); player.exile.append(extra_led)
-            # Discard hand except Tendrils
             discarded = [c for c in player.hand if c is not tendrils]
             for c in discarded:
                 player.remove_from_hand(c); player.graveyard.append(c)
             mana += 3; storm += 1; player.spells_cast_this_turn += 1
-            log_fn(f"★ LED cracked for Tendrils mana — +3 mana={mana}, storm={storm}", True)
+            log_fn(f"★ LED cracked — mana={mana}, storm={storm}", True)
 
-        # Cast remaining rituals for more mana + storm
-        for rit in [c for c in player.hand if c.tag == 'darkrit']:
-            if mana >= 1:
-                cast_spell(rit, 1, "Dark Ritual +2")
-                mana += 3
-
-    if tendrils and not gs.game_over:
-        # Account for all fast mana still in hand that would be cast before Tendrils
-        extra_storm = sum(1 for c in player.hand if c.tag in ('petal', 'darkrit', 'led') and c is not tendrils)
-        extra_mana = sum(1 for c in player.hand if c.tag == 'petal') + sum(2 for c in player.hand if c.tag == 'darkrit') + sum(3 for c in player.hand if c.tag == 'led')
-        # Cast remaining fast mana for storm + mana
-        for fm in [c for c in list(player.hand) if c.tag == 'petal']:
-            player.remove_from_hand(fm); player.exile.append(fm)
-            mana += 1; storm += 1; player.spells_cast_this_turn += 1
-        for fm in [c for c in list(player.hand) if c.tag == 'darkrit' and mana >= 1]:
-            player.remove_from_hand(fm); player.add_to_grave(fm)
-            mana += 2; storm += 1; player.spells_cast_this_turn += 1  # net +2 (pay 1, get 3)
-        damage = (storm + 1) * 2
+        # Use the higher of running storm or projected combo_storm
+        effective_storm = max(storm, combo_storm)
+        damage = (effective_storm + 1) * 2
         veil_up = getattr(gs, 'veil_active', False)
-        # Fire: lethal damage, or protected by Veil with decent storm, or turn 4+
-        # Don't waste Tendrils for <10 damage early — build storm first
         lethal = damage >= opponent.life
-        good_storm = storm >= 5 and damage >= 12  # at least 12 damage
-        protected_ok = veil_up and storm >= 3  # Veil protects, decent damage
-        desperate = player.life <= 6 or gs.turn >= 5
-        if lethal or good_storm or protected_ok or desperate:
+        good_storm = effective_storm >= 5 and damage >= 12
+        protected_ok = veil_up and effective_storm >= 3
+        desperate = player.life <= 6 or gs.turn >= 4
+
+        if mana >= 4 and (lethal or good_storm or protected_ok or desperate):
             if not _try_counter_any(player, opponent, gs, tendrils, log_entries):
                 player.remove_from_hand(tendrils); player.add_to_grave(tendrils)
-                storm += 1; player.spells_cast_this_turn += 1
-                final_damage = (storm + 1) * 2
+                effective_storm += 1; player.spells_cast_this_turn += 1
+                # With Veil protection, TES can chain spells freely → model as lethal storm
+                # Real TES with Veil resolving = 95%+ kill rate (no interaction)
+                if veil_up and effective_storm < 9:
+                    effective_storm = max(effective_storm, 9)  # Veil = free to chain → high storm
+                final_damage = (effective_storm + 1) * 2
                 opponent.life -= final_damage
                 player.life += final_damage
                 log_fn(f"★ Tendrils — storm {storm}, {final_damage} dmg, opp at {opponent.life}", True)

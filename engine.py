@@ -574,7 +574,7 @@ def _opp_reactive_counter(gs: GameState, spell_card, log_list: list) -> bool:
             # Check if the caster can afford to pay {1} extra (pay through Daze)
             # Proxy: if it's turn 3+ AND the spell is CMC 1-2, caster likely has spare mana
             matchup = getattr(gs, 'matchup', '')
-            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator')
+            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator', 'tes', 'belcher')
             is_combo = matchup in combo_decks
             # Combo pays through Daze more readily (rituals give extra mana)
             # Fair decks pay through on T3+ with enough lands
@@ -2061,19 +2061,27 @@ def _opp_try_counter(gs: GameState, spell_card, log_list: list) -> bool:
             b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
             ctr.append(f"Force of Negation counters {spell_card.name} (exiles {blue_pitch.name})")
 
-    # FoW
+    # FoW — against fast combo, BUG sometimes hesitates (save for lethal spell?)
     if fow and not ctr:
         blue_pitch = _select_fow_pitch(b.hand, fow)
         if blue_pitch:
-            b.remove_from_hand(fow); b.add_to_grave(fow)
-            b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
-            ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+            # Against combo decks trying to win, sometimes BUG waits for the
+            # actual kill spell rather than countering setup. Model as 85%
+            # counter rate for win conditions, 60% for non-win-condition combos.
+            import random
+            counter_prob = 0.85 if spell_card.win_condition else 0.60
+            if matchup in ('tes', 'storm', 'belcher') and not spell_card.win_condition:
+                counter_prob = 0.50  # let rituals/wishes through more often
+            if random.random() < counter_prob:
+                b.remove_from_hand(fow); b.add_to_grave(fow)
+                b.remove_from_hand(blue_pitch); b.exile.append(blue_pitch)
+                ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
 
     # Daze
     if daze and not ctr and is_major:
         blue_land = next((l for l in b.lands if not l.tapped and 'U' in l.effective_produces()), None)
         if blue_land:
-            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator')
+            combo_decks = ('storm', 'show', 'oops', 'doomsday', 'reanimator', 'tes', 'belcher')
             pay_prob = 0.55 if matchup in combo_decks else 0.30
             import random
             if gs.turn >= 3 and random.random() < pay_prob:
