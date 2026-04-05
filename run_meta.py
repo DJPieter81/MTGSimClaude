@@ -11,6 +11,15 @@ Usage:
   python3 run_meta.py --matrix -n 50 bug storm dimir  Custom deck list matrix
   python3 run_meta.py --verbose storm burn -s 42      Game log (actions only)
   python3 run_meta.py --trace storm burn -s 42        Full log with hand state
+
+HTML replay (separate script):
+  python3 game_replay.py storm 42                     Single game replay
+  python3 game_replay.py dimir --bo3 1 3 5            Bo3 replay
+  python3 game_replay.py dimir 42 --pro ur_delver     Any deck as protagonist
+
+Import a new deck:
+  echo "4 Delver of Secrets ..." | python3 import_deck.py "My Deck" aggro,tempo_mirror
+  python3 import_deck.py --scan                       Batch import from decks/imports/*.txt
 """
 
 import argparse
@@ -344,6 +353,15 @@ Examples:
   python3 run_meta.py --matrix --decks 10 -n 100
   python3 run_meta.py --matrix -n 50 bug storm ur_delver dimir
   python3 run_meta.py --verbose storm burn -s 42
+
+HTML replay (separate script):
+  python3 game_replay.py storm 42
+  python3 game_replay.py dimir --bo3 1 3 5
+  python3 game_replay.py dimir 42 --pro ur_delver
+
+Import a new deck:
+  echo "4 Delver ..." | python3 import_deck.py "My Deck" aggro
+  python3 import_deck.py --scan
         """)
 
     parser.add_argument('--list', action='store_true',
