@@ -16,13 +16,11 @@ import sys
 from dataclasses import dataclass
 from typing import List, Optional
 
-from rules import MTGRules, StackType
+from rules import MTGRules, StackType, Card
 from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
                    instant, sorcery, artifact, creature)
-from rules import Card
-from typing import List
 from game import GameState, PlayerState, london_mulligan, bug_keep, opp_keep
-from engine import bug_turn, opp_turn, update_goyf, elves_turn
+from engine import bug_turn, opp_turn, play_turn, update_goyf
 
 
 @dataclass
@@ -52,40 +50,12 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
     bug_player = PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib))
     opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
 
-    gs = GameState(p1=bug_player, p2=opp_player, p1_goes_first=bug_goes_first)
-    gs.matchup = matchup
-    all_log = []
-
-    for turn in range(1, 16):
-        if gs.game_over:
-            break
-        gs.turn = turn
-
-        # Determine who acts this turn based on coin flip
-        if bug_goes_first:
-            # BUG acts on odd turns (1,3,5...), opp on even
-            if turn % 2 == 1:
-                lines = bug_turn(gs, turn)
-                all_log += [f"T{turn}[BUG] {l}" for l in lines]
-                if gs.game_over: break
-                lines = opp_turn(gs, turn, matchup)
-                all_log += [f"T{turn}[OPP] {l}" for l in lines]
-            # Both happen within same turn number but BUG goes first
-        else:
-            # OPP goes first
-            if turn % 2 == 1:
-                lines = opp_turn(gs, turn, matchup)
-                all_log += [f"T{turn}[OPP] {l}" for l in lines]
-                if gs.game_over: break
-                lines = bug_turn(gs, turn)
-                all_log += [f"T{turn}[BUG] {l}" for l in lines]
-
-    # Simplified: alternate BUG/OPP turns — BUG turn then OPP turn each round
-    # (The above structure is complex; revert to clean alternating)
-    # Actually rewrite this cleanly:
+    # ── Main game loop ──
     gs2 = GameState(p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
                     p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
                     p1_goes_first=bug_goes_first)
+    gs2.p1_deck = 'bug'
+    gs2.p2_deck = matchup
     all_log = []
     display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
 
@@ -105,7 +75,7 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
             if not gs2.game_over:
                 return False
             import random as _ir_rng
-            if gs2.winner != 'bug' and _bug_save > 0:
+            if gs2.winner != 'p1' and _bug_save > 0:
                 if _ir_rng.random() < _bug_save:
                     gs2.game_over = False
                     gs2.winner = None
@@ -116,7 +86,7 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
                         biggest = max(gs2.p2.creatures, key=lambda c: c.power)
                         gs2.p2.creatures.remove(biggest)
                     return True
-            if gs2.winner == 'bug' and _opp_save > 0:
+            if gs2.winner == 'p1' and _opp_save > 0:
                 if _ir_rng.random() < _opp_save:
                     gs2.game_over = False
                     gs2.winner = None
@@ -125,26 +95,12 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
                     return True
             return False
 
-        if bug_goes_first:
+        first, second = ('p1', 'p2') if bug_goes_first else ('p2', 'p1')
+        for who in (first, second):
             display_turn += 1
-            lines = bug_turn(gs2, turn)
-            all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
-            if gs2.game_over:
-                if not _check_interaction_save(): break
-            display_turn += 1
-            lines = opp_turn(gs2, turn, matchup)
-            all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
-            if gs2.game_over:
-                if not _check_interaction_save(): break
-        else:
-            display_turn += 1
-            lines = opp_turn(gs2, turn, matchup)
-            all_log += [f"  T{display_turn}[OPP] {l}" for l in lines]
-            if gs2.game_over:
-                if not _check_interaction_save(): break
-            display_turn += 1
-            lines = bug_turn(gs2, turn)
-            all_log += [f"  T{display_turn}[BUG] {l}" for l in lines]
+            lines = play_turn(gs2, turn, who)
+            label = 'BUG' if who == 'p1' else 'OPP'
+            all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
             if gs2.game_over:
                 if not _check_interaction_save(): break
 
@@ -164,27 +120,27 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
         opp_score = opp_power * 2 + opp_creatures * 3 + opp_lands + max(0, -life_edge)
 
         if bug_score > opp_score:
-            gs.winner = 'bug'
+            gs.winner = 'p1'
             gs.win_reason = f"Board/life advantage after T{gs.turn}"
             gs.kill_turn = gs.turn
         elif opp_score > bug_score:
-            gs.winner = 'opp'
+            gs.winner = 'p2'
             gs.win_reason = f"Opp board/life advantage after T{gs.turn}"
         else:
-            gs.winner = 'bug' if gs.p1.life >= gs.p2.life else 'opp'
+            gs.winner = 'p1' if gs.p1.life >= gs.p2.life else 'p2'
             gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
         gs.kill_turn = gs.turn
         gs.game_over = True
 
         # Apply interaction model to timeout results
         import random as _to_rng
-        if gs.winner == 'bug' and _opp_save > 0:
+        if gs.winner == 'p1' and _opp_save > 0:
             if _to_rng.random() < _opp_save:
-                gs.winner = 'opp'
+                gs.winner = 'p2'
                 gs.win_reason = f"Opp recovers (resilience {_interaction.get('resilience',3)}) after T{gs.turn}"
-        elif gs.winner != 'bug' and _bug_save > 0:
+        elif gs.winner != 'p1' and _bug_save > 0:
             if _to_rng.random() < _bug_save:
-                gs.winner = 'bug'
+                gs.winner = 'p1'
                 gs.win_reason = f"BUG answers (speed {_interaction.get('speed',3)}) after T{gs.turn}"
 
     return GameResult(
@@ -201,6 +157,167 @@ def run_game(matchup: str, verbose: bool = False) -> GameResult:
         final_opp_life=gs.p2.life,
         bug_went_first=bug_goes_first,
     )
+
+
+def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameResult:
+    """
+    Run a single game between any two decks with equal AI quality.
+    deck1 is p1 (protagonist), deck2 is p2 (antagonist).
+    Both sides use play_turn() which dispatches to the best available AI.
+
+    Usage:
+        run_symmetric_game('ur_delver', 'dimir')
+        run_symmetric_game('storm', 'burn')
+        run_symmetric_game('bug', 'eldrazi')  # equivalent to run_game('eldrazi')
+    """
+    if deck1 not in DECKS:
+        raise ValueError(f"Unknown deck: {deck1}. Available: {sorted(DECKS.keys())}")
+    if deck2 not in DECKS:
+        raise ValueError(f"Unknown deck: {deck2}. Available: {sorted(DECKS.keys())}")
+
+    # Mulligan: each deck uses its own keep logic
+    # BUG has a specialized keep function; all others use opp_keep
+    p1_keep = bug_keep if deck1 == 'bug' else opp_keep
+    p2_keep = bug_keep if deck2 == 'bug' else opp_keep
+
+    p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1 if deck1 != 'bug' else '')
+    p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2 if deck2 != 'bug' else '')
+
+    p1_goes_first = random.random() < 0.5
+
+    gs = GameState(
+        p1=PlayerState(name='b', hand=list(p1_hand), library=list(p1_lib)),
+        p2=PlayerState(name='o', hand=list(p2_hand), library=list(p2_lib)),
+        p1_goes_first=p1_goes_first)
+    gs.p1_deck = deck1
+    gs.p2_deck = deck2
+    gs.matchup = deck2  # backward compat: matchup = antagonist deck
+
+    all_log = []
+    display_turn = 0
+
+    for turn in range(1, 16):
+        if gs.game_over:
+            break
+        gs.turn = turn
+
+        first, second = ('p1', 'p2') if p1_goes_first else ('p2', 'p1')
+        for who in (first, second):
+            display_turn += 1
+            lines = play_turn(gs, turn, who)
+            label = deck1.upper() if who == 'p1' else deck2.upper()
+            all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
+            if gs.game_over: break
+
+    # Timeout resolution: score board position
+    if not gs.game_over:
+        p1_power = sum(c.power for c in gs.p1.creatures)
+        p2_power = sum(c.power for c in gs.p2.creatures)
+        p1_score = p1_power * 2 + len(gs.p1.creatures) * 3 + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life)
+        p2_score = p2_power * 2 + len(gs.p2.creatures) * 3 + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life)
+
+        if p1_score > p2_score:
+            gs.winner = 'p1'
+            gs.win_reason = f"Board/life advantage after T{gs.turn}"
+        elif p2_score > p1_score:
+            gs.winner = 'p2'
+            gs.win_reason = f"Board/life advantage after T{gs.turn}"
+        else:
+            gs.winner = 'p1' if gs.p1.life >= gs.p2.life else 'p2'
+            gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
+        gs.kill_turn = gs.turn
+        gs.game_over = True
+
+    return GameResult(
+        winner=gs.winner,
+        win_reason=gs.win_reason or '',
+        kill_turn=gs.kill_turn,
+        game_length=gs.turn,
+        bug_mulls=p1_mulls,
+        opp_mulls=p2_mulls,
+        bug_opening_hand=[c.name for c in p1_hand],
+        opp_opening_hand=[c.name for c in p2_hand],
+        log_lines=all_log,
+        final_bug_life=gs.p1.life,
+        final_opp_life=gs.p2.life,
+        bug_went_first=p1_goes_first,
+    )
+
+
+def run_symmetric_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
+    """
+    Run n_games between deck1 and deck2, return stats.
+    Returns dict with: p1_wins, p2_wins, p1_wr, avg_length, avg_kill_turn
+    """
+    results = [run_symmetric_game(deck1, deck2) for _ in range(n_games)]
+    p1_wins = sum(1 for r in results if r.winner == 'p1')
+    p2_wins = n_games - p1_wins
+    kill_turns = [r.kill_turn for r in results if r.kill_turn]
+    return {
+        'deck1': deck1, 'deck2': deck2,
+        'p1_wins': p1_wins, 'p2_wins': p2_wins,
+        'p1_wr': p1_wins / n_games,
+        'n_games': n_games,
+        'avg_length': sum(r.game_length for r in results) / n_games,
+        'avg_kill': sum(kill_turns) / len(kill_turns) if kill_turns else 0,
+    }
+
+
+def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -> dict:
+    """
+    Run every deck vs every deck and return a matrix of win rates.
+    Returns dict of {(deck1, deck2): p1_win_rate}.
+
+    Args:
+        decks: explicit list of deck keys. Overrides top_tier.
+        n_games: games per matchup pair.
+        top_tier: if > 0 and decks is None, pick this many random decks
+                  from the highest meta-share decks (always includes 'bug').
+
+    Usage:
+        matrix = run_meta_matrix(['bug', 'dimir', 'ur_delver', 'storm'], n_games=200)
+        matrix = run_meta_matrix(top_tier=5, n_games=100)  # 5 random top-meta decks
+    """
+    if decks is None:
+        if top_tier > 0:
+            # Sort decks by meta share descending, pick top_tier randomly
+            def _get_share(k):
+                meta = MATCHUP_META.get(k, {})
+                if isinstance(meta, dict) and 'share' in meta:
+                    return meta['share']
+                return 0.0  # unknown decks get 0 share, not included
+            ranked = sorted(
+                ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
+                key=lambda x: -x[1]
+            )
+            # Always include 'bug' as reference deck
+            pool = [k for k, _ in ranked[:max(top_tier * 2, 10)]]
+            if 'bug' not in pool:
+                pool.append('bug')
+            chosen = ['bug'] if 'bug' in pool else []
+            others = [k for k in pool if k not in chosen]
+            random.shuffle(others)
+            chosen += others[:top_tier - len(chosen)]
+            decks = sorted(chosen)
+            print(f"Top-tier selection ({top_tier}): {', '.join(decks)}")
+        else:
+            decks = sorted(DECKS.keys())
+
+    matrix = {}
+    total = len(decks) * (len(decks) - 1)
+    done = 0
+
+    for d1 in decks:
+        for d2 in decks:
+            if d1 == d2:
+                continue
+            stats = run_symmetric_sweep(d1, d2, n_games)
+            matrix[(d1, d2)] = stats['p1_wr']
+            done += 1
+            if done % 10 == 0:
+                print(f"  {done}/{total} matchups complete...")
+
+    return matrix
 
 
 def run_matchup(matchup: str, n_games: int, verbose: bool = False) -> dict:
@@ -223,20 +340,20 @@ def run_matchup(matchup: str, n_games: int, verbose: bool = False) -> dict:
             if result.opp_mulls: print(f"Opp mulled {result.opp_mulls}x")
             for line in result.log_lines:
                 print(f"  {line}")
-            print(f"\n{'BUG WINS' if result.winner == 'bug' else 'OPP WINS'} — {result.win_reason}")
+            print(f"\n{'BUG WINS' if result.winner == 'p1' else 'OPP WINS'} — {result.win_reason}")
             print(f"Life: BUG {result.final_bug_life} — Opp {result.final_opp_life}")
         elif (i + 1) % max(1, n_games // 20) == 0:
-            wins = sum(1 for r in results if r.winner == 'bug')
+            wins = sum(1 for r in results if r.winner == 'p1')
             print(f"  {i+1}/{n_games} ({(i+1)/n_games*100:.0f}%) — BUG {wins/(i+1)*100:.1f}%")
 
-    bug_wins = sum(1 for r in results if r.winner == 'bug')
+    bug_wins = sum(1 for r in results if r.winner == 'p1')
     win_rate = bug_wins / n_games
     kill_turns = [r.kill_turn for r in results if r.kill_turn]
     avg_kill = sum(kill_turns) / len(kill_turns) if kill_turns else 0
     avg_len  = sum(r.game_length for r in results) / n_games
-    bug_first_wr = (sum(1 for r in results if r.winner == 'bug' and r.bug_went_first) /
+    bug_first_wr = (sum(1 for r in results if r.winner == 'p1' and r.bug_went_first) /
                     max(1, sum(1 for r in results if r.bug_went_first)))
-    bug_second_wr = (sum(1 for r in results if r.winner == 'bug' and not r.bug_went_first) /
+    bug_second_wr = (sum(1 for r in results if r.winner == 'p1' and not r.bug_went_first) /
                      max(1, sum(1 for r in results if not r.bug_went_first)))
 
     print(f"\nRESULTS: BUG Tempo vs {opp_name}")
@@ -335,34 +452,30 @@ def run_elves_match(opp_matchup: str, verbose: bool = False):
         elves_player = PlayerState(name='b', hand=list(elves_hand), library=list(elves_lib))
         opp_player   = PlayerState(name='o', hand=list(opp_hand),   library=list(opp_lib))
         gs = GameState(p1=elves_player, p2=opp_player, p1_goes_first=elves_goes_first)
-        gs.matchup = opp_deck_key   # opponent matchup key for opp_turn dispatch
+        gs.matchup = opp_deck_key
+        gs.p1_deck = 'elves'
+        gs.p2_deck = opp_deck_key
 
         all_log = []
         for turn in range(1, 16):
             if gs.game_over: break
             gs.turn = turn
 
-            if elves_goes_first:
-                lines = elves_turn(gs, turn)
-                all_log += [f"G{game_num}T{turn}[ELV] {l}" for l in lines]
+            first, second = ('p1', 'p2') if elves_goes_first else ('p2', 'p1')
+            for who in (first, second):
+                lines = play_turn(gs, turn, who)
+                label = 'ELV' if who == 'p1' else 'OPP'
+                all_log += [f"G{game_num}T{turn}[{label}] {l}" for l in lines]
                 if gs.game_over: break
-                lines = opp_turn(gs, turn, opp_deck_key)
-                all_log += [f"G{game_num}T{turn}[OPP] {l}" for l in lines]
-            else:
-                lines = opp_turn(gs, turn, opp_deck_key)
-                all_log += [f"G{game_num}T{turn}[OPP] {l}" for l in lines]
-                if gs.game_over: break
-                lines = elves_turn(gs, turn)
-                all_log += [f"G{game_num}T{turn}[ELV] {l}" for l in lines]
 
         if not gs.game_over:
             elves_power = sum(c.power for c in gs.p1.creatures)
             opp_power   = sum(c.power for c in gs.p2.creatures)
             if elves_power > opp_power or gs.p1.life > gs.p2.life + 3:
-                gs.winner = 'bug'; gs.win_reason = f"Elves board advantage G{game_num}"
+                gs.winner = 'p1'; gs.win_reason = f"Elves board advantage G{game_num}"
                 gs.kill_turn = gs.turn
             else:
-                gs.winner = 'opp'; gs.win_reason = f"Opp advantage G{game_num}"
+                gs.winner = 'p2'; gs.win_reason = f"Opp advantage G{game_num}"
 
         result = GameResult(
             winner=gs.winner, win_reason=gs.win_reason or '',
@@ -376,12 +489,12 @@ def run_elves_match(opp_matchup: str, verbose: bool = False):
         )
         results.append(result)
 
-        if gs.winner == 'bug': elves_wins += 1
+        if gs.winner == 'p1': elves_wins += 1
         else: opp_wins += 1
 
         if verbose:
             for line in all_log: print(f"  {line}")
-            print(f"{'ELVES WINS' if gs.winner=='bug' else 'OPP WINS'} G{game_num} — {gs.win_reason}")
+            print(f"{'ELVES WINS' if gs.winner=='p1' else 'OPP WINS'} G{game_num} — {gs.win_reason}")
 
     return elves_wins, opp_wins, games_played, results
 
@@ -396,7 +509,7 @@ def run_elves_bo3(opp_matchup: str, n_matches: int) -> dict:
         ew, ow, _, grs = run_elves_match(opp_matchup)
         if ew > ow: elves_match_wins += 1
         all_results.extend(grs)
-    game_wins = sum(1 for r in all_results if r.winner == 'bug')
+    game_wins = sum(1 for r in all_results if r.winner == 'p1')
     total_games = len(all_results)
     match_wr = elves_match_wins / n_matches
     game_wr  = game_wins / total_games if total_games else 0
@@ -709,45 +822,29 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         ant_player = PlayerState(name='o', hand=list(ant_hand), library=list(ant_lib))
         gs = GameState(p1=pro_player, p2=ant_player, p1_goes_first=pro_goes_first)
         gs.matchup = antagonist
+        gs.p1_deck = protagonist
+        gs.p2_deck = antagonist
 
         all_log = []
         for turn in range(1, 16):
             if gs.game_over: break
             gs.turn = turn
 
-            if pro_goes_first:
-                # Protagonist turn
-                if protagonist == 'bug':
-                    lines = bug_turn(gs, turn)
-                elif protagonist == 'elves':
-                    lines = elves_turn(gs, turn)
-                else:
-                    lines = protagonist_turn(gs, turn, protagonist)
-                all_log += [f"G{game_num}T{turn}[PRO] {l}" for l in lines]
+            first, second = ('p1', 'p2') if pro_goes_first else ('p2', 'p1')
+            for who in (first, second):
+                lines = play_turn(gs, turn, who)
+                label = 'PRO' if who == 'p1' else 'ANT'
+                all_log += [f"G{game_num}T{turn}[{label}] {l}" for l in lines]
                 if gs.game_over: break
-                # Antagonist turn
-                lines = opp_turn(gs, turn, antagonist)
-                all_log += [f"G{game_num}T{turn}[ANT] {l}" for l in lines]
-            else:
-                lines = opp_turn(gs, turn, antagonist)
-                all_log += [f"G{game_num}T{turn}[ANT] {l}" for l in lines]
-                if gs.game_over: break
-                if protagonist == 'bug':
-                    lines = bug_turn(gs, turn)
-                elif protagonist == 'elves':
-                    lines = elves_turn(gs, turn)
-                else:
-                    lines = protagonist_turn(gs, turn, protagonist)
-                all_log += [f"G{game_num}T{turn}[PRO] {l}" for l in lines]
 
         if not gs.game_over:
             pro_power = sum(c.power for c in gs.p1.creatures)
             ant_power = sum(c.power for c in gs.p2.creatures)
             if pro_power > ant_power or gs.p1.life > gs.p2.life + 3:
-                gs.winner = 'bug'; gs.win_reason = f"Board advantage G{game_num}"
+                gs.winner = 'p1'; gs.win_reason = f"Board advantage G{game_num}"
                 gs.kill_turn = gs.turn
             else:
-                gs.winner = 'opp'; gs.win_reason = f"Opp board advantage G{game_num}"
+                gs.winner = 'p2'; gs.win_reason = f"Opp board advantage G{game_num}"
 
         result = GameResult(
             winner=gs.winner, win_reason=gs.win_reason or '',
@@ -760,7 +857,7 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
             bug_went_first=pro_goes_first,
         )
         results.append(result)
-        if gs.winner == 'bug': protagonist_wins += 1
+        if gs.winner == 'p1': protagonist_wins += 1
         else: antagonist_wins += 1
 
     return protagonist_wins, antagonist_wins, games_played, results
@@ -774,7 +871,7 @@ def run_any_bo3(protagonist: str, antagonist: str, n_matches: int) -> dict:
         pw, aw, _, grs = run_any_match(protagonist, antagonist)
         if pw > aw: wins += 1
         all_results.extend(grs)
-    game_wins = sum(1 for r in all_results if r.winner == 'bug')
+    game_wins = sum(1 for r in all_results if r.winner == 'p1')
     total_games = len(all_results)
     return {
         'match_wr': wins / n_matches,
@@ -1618,6 +1715,8 @@ def run_match(matchup: str, verbose: bool = False):
         opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
         gs = GameState(p1=bug_player, p2=opp_player, p1_goes_first=bug_goes_first)
         gs.matchup = matchup
+        gs.p1_deck = 'bug'
+        gs.p2_deck = matchup
         # Leyline of the Void: if in BUG's opening hand, place on battlefield pre-game
         # Oracle: "If this card is in your opening hand, you may begin the game with it on the battlefield"
         leyline = next((c for c in bug_player.hand if c.tag == 'leyline'), None)
@@ -1632,25 +1731,19 @@ def run_match(matchup: str, verbose: bool = False):
         for turn in range(1, 16):
             if gs.game_over: break
             gs.turn = turn
-            if bug_goes_first:
-                lines = bug_turn(gs, turn)
-                all_log += [f"G{game_num}T{turn}[BUG] {l}" for l in lines]
+            first, second = ('p1', 'p2') if bug_goes_first else ('p2', 'p1')
+            for who in (first, second):
+                lines = play_turn(gs, turn, who)
+                label = 'BUG' if who == 'p1' else 'OPP'
+                all_log += [f"G{game_num}T{turn}[{label}] {l}" for l in lines]
                 if gs.game_over: break
-                lines = opp_turn(gs, turn, matchup)
-                all_log += [f"G{game_num}T{turn}[OPP] {l}" for l in lines]
-            else:
-                lines = opp_turn(gs, turn, matchup)
-                all_log += [f"G{game_num}T{turn}[OPP] {l}" for l in lines]
-                if gs.game_over: break
-                lines = bug_turn(gs, turn)
-                all_log += [f"G{game_num}T{turn}[BUG] {l}" for l in lines]
 
         if not gs.game_over:
             if sum(c.power for c in gs.p1.creatures) > sum(c.power for c in gs.p2.creatures) or gs.p1.life > gs.p2.life + 3:
-                gs.winner = 'bug'; gs.win_reason = f"Board advantage G{game_num}"
+                gs.winner = 'p1'; gs.win_reason = f"Board advantage G{game_num}"
                 gs.kill_turn = gs.turn
             else:
-                gs.winner = 'opp'; gs.win_reason = f"Opp advantage G{game_num}"
+                gs.winner = 'p2'; gs.win_reason = f"Opp advantage G{game_num}"
 
         result = GameResult(
             winner=gs.winner, win_reason=gs.win_reason or '',
@@ -1664,7 +1757,7 @@ def run_match(matchup: str, verbose: bool = False):
         )
         results.append(result)
 
-        if gs.winner == 'bug': bug_match_wins += 1
+        if gs.winner == 'p1': bug_match_wins += 1
         else: opp_match_wins += 1
 
         if verbose:
@@ -1675,7 +1768,7 @@ def run_match(matchup: str, verbose: bool = False):
             if result.bug_mulls: print(f"BUG mulled {result.bug_mulls}x")
             for line in result.log_lines:
                 print(f"  {line}")
-            print(f"{'BUG WINS' if gs.winner == 'bug' else 'OPP WINS'} — {gs.win_reason}")
+            print(f"{'BUG WINS' if gs.winner == 'p1' else 'OPP WINS'} — {gs.win_reason}")
             print(f"Life: BUG {gs.p1.life} — Opp {gs.p2.life}")
 
     return bug_match_wins, opp_match_wins, games_played, results
@@ -1700,12 +1793,12 @@ def run_matchup_bo3(matchup: str, n_matches: int, verbose: bool = False) -> dict
 
         # Game 1 stats
         if results:
-            if results[0].winner == 'bug': g1_wins += 1
+            if results[0].winner == 'p1': g1_wins += 1
             g1_total += 1
 
         # Games 2/3 stats
         for r in results[1:]:
-            if r.winner == 'bug': g23_wins += 1
+            if r.winner == 'p1': g23_wins += 1
             g23_total += 1
 
         if not verbose and (i + 1) % max(1, n_matches // 10) == 0:

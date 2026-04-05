@@ -504,7 +504,7 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                 # If Marit Lage connected, opponent should be dead (20 >= 20 life)
                 if opponent.life <= 0:
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.p1 else 'opp'
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = "Dark Depths: Marit Lage 20/20 lethal"
                     gs.kill_turn = gs.turn
 

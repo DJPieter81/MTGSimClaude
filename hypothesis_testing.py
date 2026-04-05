@@ -509,11 +509,11 @@ def test_play_draw(protagonist: str, antagonist: str, n_games: int = 500,
         for r in results:
             if r.bug_went_first:
                 play_total += 1
-                if r.winner == 'bug':
+                if r.winner == 'p1':
                     play_wins += 1
             else:
                 draw_total += 1
-                if r.winner == 'bug':
+                if r.winner == 'p1':
                     draw_wins += 1
 
     play_wr = play_wins / play_total if play_total else 0
@@ -588,11 +588,11 @@ def test_mulligan_penalty(protagonist: str, antagonist: str, n_games: int = 500,
             mull_counts[mulls] = mull_counts.get(mulls, 0) + 1
             if mulls == 0:
                 keep7_total += 1
-                if r.winner == 'bug':
+                if r.winner == 'p1':
                     keep7_wins += 1
             else:
                 mull_total += 1
-                if r.winner == 'bug':
+                if r.winner == 'p1':
                     mull_wins += 1
 
     keep7_wr = keep7_wins / keep7_total if keep7_total else 0
@@ -772,7 +772,7 @@ def test_kill_turn(n_games: int = 300, confidence: float = 0.95):
         for _ in range(n_games):
             pw, aw, gp, results = run_any_match(deck, opponent)
             for r in results:
-                if r.winner == 'bug' and r.kill_turn:
+                if r.winner == 'p1' and r.kill_turn:
                     deck_turns.append(r.kill_turn)
         avg = sum(deck_turns) / len(deck_turns) if deck_turns else 0
         combo_turns.extend(deck_turns)
@@ -783,7 +783,7 @@ def test_kill_turn(n_games: int = 300, confidence: float = 0.95):
         for _ in range(n_games):
             pw, aw, gp, results = run_any_match(deck, opponent)
             for r in results:
-                if r.winner == 'bug' and r.kill_turn:
+                if r.winner == 'p1' and r.kill_turn:
                     deck_turns.append(r.kill_turn)
         avg = sum(deck_turns) / len(deck_turns) if deck_turns else 0
         fair_turns.extend(deck_turns)

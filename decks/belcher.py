@@ -160,7 +160,7 @@ def _activate_charbelcher(player, opponent, gs, log_fn, log_entries):
 
     if opponent.life <= 0:
         gs.game_over = True
-        gs.winner = 'bug' if player is gs.p1 else 'opp'
+        gs.winner = 'p1' if player is gs.p1 else 'p2'
         gs.win_reason = f"Belcher: Charbelcher deals {damage} damage"
         gs.kill_turn = gs.turn
     else:
@@ -402,7 +402,7 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ Empty the Warrens — storm {storm}, {token_count} Goblins", True)
             if token_count >= 6:
                 gs.game_over = True
-                gs.winner = 'bug' if player is gs.p1 else 'opp'
+                gs.winner = 'p1' if player is gs.p1 else 'p2'
                 gs.win_reason = f"Belcher: Empty the Warrens ({token_count} goblins)"
                 gs.kill_turn = gs.turn + 1
         else:

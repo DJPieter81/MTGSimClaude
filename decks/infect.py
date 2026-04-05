@@ -421,7 +421,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
 
         if poison >= 10:
             gs.game_over = True
-            gs.winner = 'bug' if player is gs.p1 else 'opp'
+            gs.winner = 'p1' if player is gs.p1 else 'p2'
             gs.win_reason = f"Infect: {poison} poison counters"
             gs.kill_turn = gs.turn
             log_fn(f"★★★ LETHAL — {poison} poison counters on turn {gs.turn}!", True)

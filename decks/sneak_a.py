@@ -255,7 +255,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"Emrakul attacks for 15! Opponent at {opponent.life}", True)
                 if opponent.life <= 0:
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.p1 else 'opp'
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = "Sneak & Show: Show and Tell -> Emrakul lethal"
                     gs.kill_turn = gs.turn
             elif best.tag == 'atraxa':
@@ -271,7 +271,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(best)  # enchantment goes to "in play" conceptually
                 log_fn(f"Show and Tell -> Omniscience! (cast anything for free)", True)
                 gs.game_over = True
-                gs.winner = 'bug' if player is gs.p1 else 'opp'
+                gs.winner = 'p1' if player is gs.p1 else 'p2'
                 gs.win_reason = "Sneak & Show: Omniscience in play"
                 gs.kill_turn = gs.turn
             elif best.tag == 'sneak':
@@ -291,7 +291,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                         log_fn(f"Emrakul attacks for 15! Opponent at {opponent.life}", True)
                         if opponent.life <= 0:
                             gs.game_over = True
-                            gs.winner = 'bug' if player is gs.p1 else 'opp'
+                            gs.winner = 'p1' if player is gs.p1 else 'p2'
                             gs.win_reason = "Sneak & Show: Sneak Attack -> Emrakul lethal"
                             gs.kill_turn = gs.turn
                     else:
@@ -304,7 +304,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 else:
                     # Sneak Attack in play but no creature — still strong position
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.p1 else 'opp'
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = "Sneak & Show: Sneak Attack in play"
                     gs.kill_turn = gs.turn + 1
         else:
@@ -332,7 +332,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.life -= 15
                 if opponent.life <= 0:
                     gs.game_over = True
-                    gs.winner = 'bug' if player is gs.p1 else 'opp'
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = "Sneak & Show: Sneak Attack -> Emrakul"
                     gs.kill_turn = gs.turn
             else:
