@@ -3528,13 +3528,17 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     # with 1 land (1 mana): cast Dark Ritual (costs 1) → +2 net → now have 3 mana
     # → can cast Cabal Ritual (costs 3) → +2 more net → etc.
     # Model: ritual chain is feasible if we have any starting mana + 1 ritual.
-    def _ritual_cost(c): return sum(c.mana_cost.values())
+    def _ritual_cost(c): return max(sum(c.mana_cost.values()), c.cmc)  # respects Trinisphere via raised cmc
     # Chalice check: rituals blocked by Chalice can't be cast
     def _chalice_blocks(c): return gs.spell_blocked_by_chalice(c.cmc)
     # Simulate mana available after casting affordable rituals
     # LED can be cracked in response to any spell for 3 mana of any color
-    led_mana = 3 if player.find_tag('led') else 0  # LED crack bonus
-    sim_mana = total_mana + led_mana
+    # Under Trinisphere, LED costs 3 to cast (artifact spell, CMC 0 → taxed to 3)
+    led = player.find_tag('led')
+    led_castable = led and total_mana >= led.cmc  # cmc already raised to 3 by Trini
+    led_mana = 3 if led_castable else 0
+    led_cost = led.cmc if led_castable else 0
+    sim_mana = total_mana - led_cost + led_mana  # pay to cast LED, then crack for 3
     # First pass: rituals affordable from land mana (exclude Chalice-blocked)
     def _is_ritual(c): return c.mana_ritual or c.tag in ('darkrit','cabalrit')
     rituals = [c for c in player.hand if _is_ritual(c) and _ritual_cost(c) <= sim_mana
@@ -3586,10 +3590,10 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     # Ad Nauseam / Past in Flames self-generate storm during resolution (draw 15+ / replay GY)
     self_assembles = False
 
-    kill_A = bool(led and len(rituals) >= 2 and win_available and est_storm >= lethal_storm)
-    kill_B = bool(len(rituals) >= 3 and led and win_available and est_storm >= lethal_storm)
-    kill_C = bool(adnaus and not adnaus_blocked and sim_mana >= 3 and
-                  (len(rituals) >= 1 or sim_mana >= 5))  # Ad Nauseam self-assembles
+    kill_A = bool(led_castable and len(rituals) >= 2 and win_available and est_storm >= lethal_storm)
+    kill_B = bool(len(rituals) >= 3 and led_castable and win_available and est_storm >= lethal_storm)
+    kill_C = bool(adnaus and not adnaus_blocked and sim_mana >= adnaus.cmc and
+                  (len(rituals) >= 1 or sim_mana >= adnaus.cmc + 2))  # Ad Nauseam self-assembles
     kill_D = bool(pif and not pif_blocked and len(player.graveyard) >= 4 and sim_mana >= 4)  # PiF replays GY
     kill_E = bool(len(rituals) >= 3 and win_available and est_storm >= lethal_storm)
     kill_F = bool(itutor_proxy and len(rituals) >= 2 and sim_mana >= 3 and est_storm >= lethal_storm)
