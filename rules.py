@@ -157,6 +157,7 @@ class Card:
 
     # Strategic role properties — set in cards.py from oracle text, used in engine/interaction.
     # These replace tag-based frozenset membership checks with property-based decisions.
+    is_mdfc_land: bool = False    # modal double-faced card (spell front, land back) — Oops uses these
     lock_piece: bool = False       # locks the game state (Chalice, Bridge, Moon, Trinisphere, B2B)
     engine: bool = False           # ongoing value each turn if it sticks (Vial, Kaito, WST, Narset)
     is_removal: bool = False       # destroys/exiles permanents or deals damage (Push, STP, Terminus)

@@ -346,29 +346,45 @@ def make_lands_deck() -> List[Card]:
 
 
 # ── Oops All Spells (60) ────────────────────────────────────────
+# KEY: real Oops runs ZERO lands. MDFCs (Agadeem's Awakening, Turntimber Symbiosis)
+# are spells that can be played as lands. Balustrade Spy/Undercity Informer mill
+# entire deck because there are no land cards, then Thassa's Oracle wins.
 
 def make_oops_deck() -> List[Card]:
     d = []
-    d += [sorcery('Oops, All Spells', 2, {'U':1,'G':1}, {'U','G'}, tag='oops',
-                  is_combo_piece=True, win_condition=True)] * 4
-    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
-    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 4
+    # Combo pieces: mill self, then win
+    d += [creature('Balustrade Spy', 4, {'B':1,'generic':3}, {'B'}, 2, 3, tag='spy',
+                    is_combo_piece=True)] * 4
+    d += [creature('Undercity Informer', 3, {'B':1,'generic':2}, {'B'}, 2, 3, tag='informer',
+                    is_combo_piece=True)] * 4
+    d += [creature("Thassa's Oracle", 2, {'U':1,'generic':1}, {'U'}, 1, 3, tag='oracle',
+                    win_condition=True)] * 1
+    d += [creature('Narcomoeba', 2, {'U':1,'generic':1}, {'U'}, 1, 1, tag='narco')] * 4
+    d += [sorcery('Dread Return', 4, {'B':1,'generic':3}, {'B'}, tag='dread',
+                   is_combo_piece=True)] * 1
+    # Free mana
+    d += [creature('Elvish Spirit Guide', 3, {'G':1,'generic':2}, {'G'}, 2, 2, tag='esg',
+                    mana_ritual=True)] * 4
+    d += [creature('Simian Spirit Guide', 3, {'R':1,'generic':2}, {'R'}, 2, 2, tag='ssg',
+                    mana_ritual=True)] * 4
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    d += [artifact('Chrome Mox', 0, {}, tag='cmox', mana_ritual=True)] * 2
+    # Rituals
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit', mana_ritual=True)] * 4
+    d += [instant('Cabal Ritual', 2, {'B':1,'generic':1}, {'B'}, tag='cabalrit', mana_ritual=True)] * 3
+    # Protection
     d += [instant('Pact of Negation', 0, {}, {'U'}, tag='pact', free_cast_if_blue=True)] * 4
-    d += [instant('Cabal Ritual', 2, {'B':1,'generic':1}, {'B'}, tag='ritual', mana_ritual=True)] * 4
-    d += [sorcery('Unmask', 4, {'B':1,'generic':3}, {'B'}, tag='unmask')] * 2
-    d += [creature('Balustrade Spy', 4, {'B':1,'generic':3}, {'B'}, 2, 3, tag='spy')] * 2
-    # 28 lands
-    d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
-    d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 4
-    d += [fetch_land('Verdant Catacombs', ['Swamp','Forest'])] * 2
-    d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
-    d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 3
-    d += [dual_land('Bayou', ['B','G'], ['Swamp','Forest'])] * 2
-    d += [basic_land('Island', 'U', 'Island')] * 5
-    d += [basic_land('Swamp', 'B', 'Swamp')] * 4
-    d += [basic_land('Forest', 'G', 'Forest')] * 1
+    d += [instant("Summoner's Pact", 0, {}, {'G'}, tag='spact')] * 4
+    # Disruption
+    d += [creature('Grief', 4, {'B':1,'generic':3}, {'B'}, 3, 2, tag='grief')] * 4
+    d += [sorcery('Cabal Therapy', 1, {'B':1}, {'B'}, tag='therapy')] * 2
+    # MDFC "lands" (spell side: these count as spells, not lands in the library)
+    d += [sorcery("Agadeem's Awakening", 3, {'B':1,'generic':2}, {'B'}, tag='agadeem',
+                   is_mdfc_land=True)] * 4
+    d += [sorcery('Turntimber Symbiosis', 7, {'G':1,'generic':6}, {'G'}, tag='turntimber',
+                   is_mdfc_land=True)] * 4
+    d += [enchantment('Bridge from Below', 3, {'B':1,'generic':2}, {'B'}, tag='bfb')] * 1
+    d += [creature('Wild Cantor', 1, {'R':1}, {'R','G'}, 1, 1, tag='cantor', mana_ritual=True)] * 2
     assert len(d) == 60, f"Oops deck: {len(d)}"
     return d
 

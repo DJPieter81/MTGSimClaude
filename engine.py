@@ -3003,66 +3003,121 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
-    # Cantrips: find any CMC1 noncreature spell opp can cast
-    can = next((c for c in player.hand
-                if c.is_cantrip and opp_can_cast(c, total_mana, gs, caster=player)), None)
-    if can:
-        player.remove_from_hand(can); player.add_to_grave(can)
-        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-        player.draw(draws)
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(draws, gs, ctr)
-            for m in ctr: log_entries.append(m)
-    # Rituals (Cabal Ritual) provide extra mana — crack them before combo attempt
-    rituals = [c for c in player.hand if c.mana_ritual]
-    ritual_mana = 0
-    for r in rituals:
-        if can_afford(player, r.mana_cost):
-            player.remove_from_hand(r); player.add_to_grave(r)
-            ritual_mana += 2  # Dark Ritual +2 net, Cabal Ritual +2 net minimum
-            log_fn(f"{r.name} → +2 mana")
-    total_mana = total_mana + ritual_mana
-    # Oops costs {1}{G} — needs green mana producible from lands in play
-    has_green = any('G' in l.effective_produces() for l in player.lands if not l.tapped)
-    oops = player.find_tag('oops')
-    # Veil of Summer costs {G} — also needs a green source
-    vos_castable = has_green
-    # Oops costs {1}{G} = 2 mana; fire as soon as we can assemble it
-    # Leyline of the Void exiles all cards that would go to GY — Oops fizzles entirely
-    if oops and total_mana >= 2 and has_green and not gs.leyline_active:
-        vos = player.find_tag('vos') if vos_castable else None
-        if vos:
-            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
-            log_fn("Veil of Summer — blue blanked")
-            # Veil + Oops success rate derived from interaction model
-            from interaction_model import get_or_infer_interaction, compute_veil_kill_rate
-            _oops_int = get_or_infer_interaction('oops')
-            _oops_veil_rate = compute_veil_kill_rate(_oops_int)
-            import random
-            if random.random() < _oops_veil_rate:
-                player.remove_from_hand(oops); player.add_to_grave(oops)
-                log_fn("★ Oops through Veil — wins", True)
-                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-                gs.win_reason = "Oops + Veil — BUG blue interaction blanked"
-            else:
-                player.remove_from_hand(oops); player.add_to_grave(oops)
-                log_fn("Oops fizzles (BUG had graveyard hate)")
+    """
+    Oops All Spells: 0-land combo deck.
+    Win: cast Balustrade Spy (4 mana) or Undercity Informer (3+1), mill entire
+    deck (no lands to stop), Narcomoebas enter, flashback Dread Return on
+    Thassa's Oracle for the win.
+
+    Mana sources: Lotus Petal (0), Chrome Mox (0), Elvish/Simian Spirit Guide
+    (exile from hand for 1 mana), Dark Ritual (+2 net), Cabal Ritual (+2 net),
+    MDFC "lands" (Agadeem's Awakening / Turntimber Symbiosis played as tapped lands).
+    """
+    # ── 0. Play MDFC as land if no lands in play ──
+    if not player.lands:
+        mdfc = next((c for c in player.hand if getattr(c, 'is_mdfc_land', False)), None)
+        if mdfc:
+            player.remove_from_hand(mdfc)
+            # MDFC back face enters tapped, produces B (Agadeem) or G (Turntimber)
+            color = 'B' if mdfc.tag == 'agadeem' else 'G'
+            # Temporarily set produces on the card so LandPermanent can use it
+            mdfc.produces = {color}
+            from rules import LandPermanent
+            lp = LandPermanent(card=mdfc, controller='b' if player is gs.p1 else 'o',
+                               tapped=True)
+            player.lands.append(lp)
+            log_fn(f"{mdfc.name} → enters tapped as land ({color})")
+
+    # ── 1. Free mana: crack Petals, exile Spirit Guides ──
+    for _ in range(10):  # loop for multiple petals/guides
+        petal = player.find_tag('petal') or player.find_tag('cmox')
+        if petal:
+            player.remove_from_hand(petal); player.add_to_grave(petal)
+            total_mana += 1
+            log_fn(f"{petal.name} → +1 mana")
+            continue
+        esg = player.find_tag('esg') or player.find_tag('ssg')
+        if esg:
+            player.remove_from_hand(esg); player.exile.append(esg)
+            total_mana += 1
+            log_fn(f"Exile {esg.name} → +1 mana")
+            continue
+        break
+
+    # ── 2. Rituals ──
+    for _ in range(10):
+        rit = next((c for c in player.hand if c.tag in ('darkrit', 'cabalrit')
+                     and c.cmc <= total_mana), None)
+        if rit:
+            player.remove_from_hand(rit); player.add_to_grave(rit)
+            total_mana -= rit.cmc
+            total_mana += 3  # Dark Ritual/Cabal Ritual produce BBB/BBBBB
+            log_fn(f"{rit.name} → mana now {total_mana}")
         else:
-            mindbreak_o = opponent.find_tag('mindbreak')
-            if mindbreak_o and player.spells_cast_this_turn >= 3:
-                opponent.remove_from_hand(mindbreak_o)
-                opponent.add_to_grave(mindbreak_o)
-                player.add_to_grave(oops)
-                log_fn(f"★ Mindbreak Trap (free — opp cast {player.spells_cast_this_turn} spells) — Oops fizzles", True)
-                return
-            player.remove_from_hand(oops)
-            if not _try_counter_any(player, opponent, gs, oops, log_entries):
-                player.add_to_grave(oops)
-                log_fn("★ Oops resolves — wins", True)
-                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-                gs.win_reason = "Oops resolves uncountered"
-            else: player.add_to_grave(oops)
+            break
+
+    # ── 3. Grief (free evoke: exile black card from hand) ──
+    grief = player.find_tag('grief')
+    if grief and sum(1 for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief) >= 1:
+        pitch = next(c for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief)
+        player.remove_from_hand(grief); player.add_to_grave(grief)
+        player.remove_from_hand(pitch); player.exile.append(pitch)
+        if opponent.hand:
+            nonlands = [c for c in opponent.hand if not c.is_land()]
+            if nonlands:
+                best = next((c for c in nonlands if c.tag in ('fow', 'fon', 'fluster', 'endurance')),
+                            nonlands[0])
+                opponent.hand.remove(best); opponent.add_to_grave(best)
+                log_fn(f"Grief (evoke, pitch {pitch.name}) — strips {best.name}", True)
+
+    # ── 4. Combo: Balustrade Spy (4) or Undercity Informer (3+1) ──
+    # Leyline of the Void exiles all cards that would go to GY — combo fizzles
+    if gs.leyline_active:
+        return
+
+    spy = player.find_tag('spy')
+    informer = player.find_tag('informer')
+    combo_card = None
+    combo_cost = 0
+    if spy and total_mana >= 4:
+        combo_card = spy; combo_cost = 4
+    elif informer and total_mana >= 4:  # 3 to cast + 1 to activate
+        combo_card = informer; combo_cost = 4
+
+    if combo_card:
+        # Try Veil protection first
+        vos = player.find_tag('vos')
+        if vos and total_mana >= combo_cost + 1:
+            player.remove_from_hand(vos); player.add_to_grave(vos)
+            gs.veil_active = True
+            total_mana -= 1
+            log_fn("Veil of Summer — blue interaction blanked")
+
+        # Mindbreak Trap check
+        mindbreak_o = opponent.find_tag('mindbreak')
+        spells_this_turn = getattr(player, 'spells_cast_this_turn', 0)
+        if mindbreak_o and spells_this_turn >= 3:
+            opponent.remove_from_hand(mindbreak_o); opponent.add_to_grave(mindbreak_o)
+            player.add_to_grave(combo_card)
+            log_fn(f"★ Mindbreak Trap — {combo_card.name} exiled, combo fizzles", True)
+            return
+
+        player.remove_from_hand(combo_card)
+        if not _try_counter_any(player, opponent, gs, combo_card, log_entries):
+            player.add_to_grave(combo_card)
+            # Combo success rate derived from interaction model
+            from interaction_model import get_or_infer_interaction, compute_combo_fizzle_rate
+            _oops_int = get_or_infer_interaction('oops')
+            _fizzle = compute_combo_fizzle_rate(_oops_int, veil_active=gs.veil_active)
+            if random.random() >= _fizzle:
+                log_fn(f"★ {combo_card.name} → mill entire deck → Thassa's Oracle wins!", True)
+                gs.game_over = True
+                gs.winner = 'p1' if player is gs.p1 else 'p2'
+                gs.win_reason = f"Oops combo ({combo_card.name} → Oracle)"
+            else:
+                log_fn(f"{combo_card.name} resolves but opponent had graveyard hate")
+        else:
+            player.add_to_grave(combo_card)
 
 
 
