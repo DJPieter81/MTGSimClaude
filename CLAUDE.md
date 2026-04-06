@@ -193,6 +193,68 @@ r.p2_deck
 
 3. **Adding a new deck** requires only creating a file in `decks/` with a `DECK_META` dict. No edits to engine.py, sim.py, or cards.py needed.
 
+## Lessons Learned (Strategy & Rules Audit)
+
+### Trinisphere Enforcement (Critical Pattern)
+
+Strategies use local `mana` variables and `card.cmc` for cost checks. Tax effects
+like Trinisphere must be enforced **before** strategy dispatch, not inside strategies.
+
+**Problem:** `opp_can_cast()` correctly applied Trinisphere, but strategies bypass it
+entirely — they check `mana >= card.cmc` and deduct `card.cmc` directly. With 4+ mana,
+cheap spells were cast at original cost, making Trinisphere useless.
+
+**Solution:** In `play_turn()` and `protagonist_turn()`, temporarily raise `card.cmc`
+to `max(cmc, 3)` for all cheap spells in hand before strategy dispatch, restore after.
+This way ALL strategy functions automatically pay the Trinisphere tax without any
+per-strategy changes.
+
+**Also watch for:**
+- `mana_cost` dict vs `cmc` — some code reads `sum(mana_cost.values())` instead of
+  `cmc`. The `_ritual_cost()` fix uses `max(sum(mana_cost), cmc)` to respect both.
+- Alternate costs (FoW, FoN, Daze) — must be blocked under Trinisphere since they
+  pay 0 mana, not meeting the 3-mana minimum (CR 601.2f).
+- LED costs 3 under Trinisphere (artifact spell, CMC 0 → taxed to 3). Kill conditions
+  must check `led_castable` (can afford the taxed cost), not just `led` (in hand).
+- Any new tax effect (e.g. Thalia, Sphere of Resistance) needs the same pre-dispatch
+  CMC adjustment pattern. Do NOT rely on strategies calling `opp_can_cast()`.
+
+### Strategy Must Model Win Conditions
+
+**Problem:** Prison had Painter's Servant + Grindstone in the decklist but the strategy
+never deployed them. Prison could only win via TKS beatdown or T15 timeout.
+WR was 5-34% across matchups.
+
+**Solution:** Added Painter + Grindstone combo deployment and Karn wishes for combo
+pieces. WR jumped to 17-65%.
+
+**Rule:** Every deck's strategy function MUST actively deploy its win conditions.
+If a card is in the decklist, the strategy must know how to cast it. Audit checklist:
+- Does the strategy deploy every nonland card in the deck?
+- Does the strategy have a path to actually win (not just lock/stall)?
+- Are combo pieces deployed in the correct order?
+- Does Karn/tutor fetch the right piece based on board state?
+
+### Decklist Realism
+
+**Problem:** Prison ran 36 lands (24 Wastes) and only 24 nonlands — no real Legacy
+deck runs that ratio. Result: flooded every game, couldn't assemble lock + combo.
+
+**Solution:** Reduced to 24 lands / 36 nonlands with fast mana (Lotus Petal, Grim
+Monolith) enabling T1-T2 lock pieces.
+
+**Rule:** Decklists should approximate real tournament lists:
+- 20-24 lands for most decks (combo decks can go lower with fast mana)
+- Cross-check against mtgtop8.com / mtggoldfish.com for realistic ratios
+
+### Meta Share Tiers
+
+Meta-weighted WR uses only T1+T2 opponents, weighted by meta share:
+- **T1 (>=5%):** doomsday (14%), ur_delver (8%), eldrazi (6%), dimir (5%), oops (5%)
+- **T2 (4%):** eight_cast, prison, dimir_b, uwx, depths, lands, show
+- `top_tier=N` is deterministic: always takes the top N decks by meta share
+- Shares based on mtgtop8/aetherhub Legacy data (2026-04)
+
 ## Reproducibility
 
 Use `random.seed(N)` or `-s N` flag for deterministic results:
