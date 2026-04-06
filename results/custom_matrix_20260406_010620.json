@@ -1,0 +1,38 @@
+{
+  "type": "matrix",
+  "tag": "custom_matrix",
+  "timestamp": "2026-04-06T01:06:20.216905",
+  "n_games": 5,
+  "decks": [
+    "bug",
+    "burn",
+    "dimir",
+    "ur_delver"
+  ],
+  "matchups": {
+    "bug_vs_dimir": 0.6,
+    "bug_vs_ur_delver": 0.4,
+    "bug_vs_burn": 0.0,
+    "dimir_vs_bug": 1.0,
+    "dimir_vs_ur_delver": 0.8,
+    "dimir_vs_burn": 0.0,
+    "ur_delver_vs_bug": 0.8,
+    "ur_delver_vs_dimir": 0.6,
+    "ur_delver_vs_burn": 0.2,
+    "burn_vs_bug": 0.8,
+    "burn_vs_dimir": 1.0,
+    "burn_vs_ur_delver": 0.6
+  },
+  "meta_ev": {
+    "bug": 0.4,
+    "burn": 0.8363636363636362,
+    "dimir": 0.7333333333333333,
+    "ur_delver": 0.6181818181818183
+  },
+  "rankings": [
+    "burn",
+    "dimir",
+    "ur_delver",
+    "bug"
+  ]
+}

@@ -594,5 +594,5 @@ DECK_META = {
     'keep':       _keep_cloudpost,
     'categories': {'prison', 'land_combo'},
     'interaction': {'speed': 4, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': True, 'creature_based': False},
-    'meta_share': 0.02,
+    'meta_share': 0.01,
 }

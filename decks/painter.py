@@ -38,5 +38,5 @@ DECK_META = {
     'keep':       _keep_painter,
     'categories': {'combo'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.03,
+    'meta_share': 0.02,
 }

@@ -723,5 +723,5 @@ DECK_META = {
     'keep':       _keep_tes,
     'categories': {'combo', 'fast_combo'},
     'interaction': {'speed': 2, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.02,
+    'meta_share': 0.01,
 }

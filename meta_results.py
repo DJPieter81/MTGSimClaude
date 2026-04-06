@@ -38,11 +38,17 @@ def save_matrix(matrix, decks=None, n_games=None, tag='matrix'):
     if decks is None:
         decks = sorted(set(d for pair in matrix for d in pair))
 
-    # Compute meta EV
+    # Compute meta-weighted EV (T1+T2 only: meta_share >= 0.04)
+    from deck_registry import get_meta_share
+    t1t2 = {d for d in decks if get_meta_share(d) >= 0.04}
     evs = {}
     for d in decks:
-        rates = [matrix[(d, d2)] for d2 in decks if d != d2 and (d, d2) in matrix]
-        evs[d] = sum(rates) / len(rates) if rates else 0
+        opps = [(d2, get_meta_share(d2)) for d2 in t1t2 if d2 != d and (d, d2) in matrix]
+        if not opps:
+            evs[d] = 0
+            continue
+        total_share = sum(s for _, s in opps)
+        evs[d] = sum(matrix[(d, d2)] * s for d2, s in opps) / total_share
 
     data = {
         'type': 'matrix',
@@ -165,10 +171,12 @@ def print_matrix(data):
                 row += f'{wr:>8.0%} '
         print(row)
 
-    print('\nMeta EV:')
+    print('\nMeta-Weighted WR (T1+T2):')
     rankings = data.get('rankings', [])
     evs = data.get('meta_ev', {})
+    from deck_registry import get_meta_share
     for i, d in enumerate(rankings):
         ev = evs.get(d, 0)
+        tier = 'T1' if get_meta_share(d) >= 0.05 else 'T2' if get_meta_share(d) >= 0.04 else '  '
         bar = '#' * int(ev * 40)
-        print(f'  {i+1:2d}. {d:15s} {ev:5.1%}  {bar}')
+        print(f'  {i+1:2d}. {d:15s} {ev:5.1%}  {tier}  {bar}')

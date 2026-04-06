@@ -259,15 +259,11 @@ def cmd_matrix(decks, n_games, top_tier, seed=None, decks_arg=None):
                 return 0.0
             ranked = sorted(
                 ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
-                key=lambda x: -x[1])
-            pool = [k for k, _ in ranked[:max(top_tier * 2, 10)]]
-            if 'bug' not in pool: pool.append('bug')
-            chosen = ['bug'] if 'bug' in pool else []
-            others = [k for k in pool if k not in chosen]
-            random.shuffle(others)
-            chosen += others[:top_tier - len(chosen)]
-            decks = sorted(chosen)
-            print(f"Top-tier selection ({top_tier}): {', '.join(decks)}")
+                key=lambda x: (-x[1], x[0]))
+            decks = sorted(k for k, _ in ranked[:top_tier])
+            if 'bug' not in decks and any(k == 'bug' for k, _ in ranked):
+                decks = sorted(decks + ['bug'])
+            print(f"Top-{top_tier} by meta share: {', '.join(decks)}")
         else:
             decks = sorted(DECKS.keys())
 
@@ -297,16 +293,24 @@ def cmd_matrix(decks, n_games, top_tier, seed=None, decks_arg=None):
                 row += f'{wr:>8.0%} '
         print(row)
 
-    print('\nMeta EV (avg win rate):')
+    # Meta-weighted WR (T1+T2 only: meta_share >= 0.04)
+    from deck_registry import get_meta_share
+    t1t2 = {d for d in all_decks if get_meta_share(d) >= 0.04}
+    print(f'\nMeta-Weighted WR (T1+T2: {len(t1t2)} decks):')
     evs = []
     for d in all_decks:
-        rates = [matrix[(d, d2)] for d2 in all_decks if d != d2]
-        avg = sum(rates) / len(rates)
-        evs.append((avg, d))
+        opps = [(d2, get_meta_share(d2)) for d2 in t1t2 if d2 != d and (d, d2) in matrix]
+        if not opps:
+            evs.append((0.0, d))
+            continue
+        total_share = sum(s for _, s in opps)
+        weighted = sum(matrix[(d, d2)] * s for d2, s in opps) / total_share
+        evs.append((weighted, d))
     evs.sort(reverse=True)
     for i, (avg, d) in enumerate(evs):
+        tier = 'T1' if get_meta_share(d) >= 0.05 else 'T2' if get_meta_share(d) >= 0.04 else '  '
         bar = '#' * int(avg * 40)
-        print(f'  {i+1:2d}. {d:15s} {avg:5.1%}  {bar}')
+        print(f'  {i+1:2d}. {d:15s} {avg:5.1%}  {tier}  {bar}')
 
     # Auto-save results
     from meta_results import save_matrix

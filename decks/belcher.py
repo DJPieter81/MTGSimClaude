@@ -533,5 +533,5 @@ DECK_META = {
     'keep':       _keep_belcher,
     'categories': {'combo', 'fast_combo'},
     'interaction': {'speed': 1, 'resilience': 1, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.02,
+    'meta_share': 0.01,
 }

@@ -1968,7 +1968,7 @@ DECKS = {
 # MATCHUP_META: auto-built from deck_registry (each deck declares name + meta_share)
 # Fallback for built-in decks that don't have DECK_META yet
 _BUILTIN_META = {
-    'bug': {'name': 'BUG Tempo', 'share': 0.10},
+    'bug': {'name': 'BUG Tempo', 'share': 0.02},
 }
 try:
     from deck_registry import build_matchup_meta

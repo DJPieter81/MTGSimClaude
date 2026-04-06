@@ -178,7 +178,7 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
     """
     if decks is None:
         if top_tier > 0:
-            # Sort decks by meta share descending, pick top_tier randomly
+            # Sort decks by meta share descending, take top N deterministically
             def _get_share(k):
                 meta = MATCHUP_META.get(k, {})
                 if isinstance(meta, dict) and 'share' in meta:
@@ -186,18 +186,12 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
                 return 0.0  # unknown decks get 0 share, not included
             ranked = sorted(
                 ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
-                key=lambda x: -x[1]
+                key=lambda x: (-x[1], x[0])
             )
-            # Always include 'bug' as reference deck
-            pool = [k for k, _ in ranked[:max(top_tier * 2, 10)]]
-            if 'bug' not in pool:
-                pool.append('bug')
-            chosen = ['bug'] if 'bug' in pool else []
-            others = [k for k in pool if k not in chosen]
-            random.shuffle(others)
-            chosen += others[:top_tier - len(chosen)]
-            decks = sorted(chosen)
-            print(f"Top-tier selection ({top_tier}): {', '.join(decks)}")
+            decks = sorted(k for k, _ in ranked[:top_tier])
+            if 'bug' not in decks and any(k == 'bug' for k, _ in ranked):
+                decks = sorted(decks + ['bug'])
+            print(f"Top-{top_tier} by meta share: {', '.join(decks)}")
         else:
             decks = sorted(DECKS.keys())
 
