@@ -18,7 +18,7 @@ from typing import List, Optional
 from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
                    StackObject, StackType, MTGRules)
 from game import GameState, PlayerState, LogEntry, can_afford, tap_for_cost
-from cards import DECKS
+from cards import DECKS, artifact
 from gameplan import GAMEPLANS, assess, active_goal, Goal
 from interaction import (best_reactive_answer, best_proactive_target,
                          should_push_now, classify_threat, ThreatLevel)
@@ -2493,17 +2493,28 @@ def _resolve_lock(gs, card, log_fn):
 def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     """
     Artifacts Prison strategy. Priority order:
-    1. Trinisphere T1/T2 (Ancient Tomb → T1 Trini locks all cheap spells to 3 mana)
-    2. Chalice on 1 (stops Brainstorm/Ponder/Push/Tamiyo/Daze)
-    3. Karn (tutors any artifact lock piece from sideboard)
-    4. Ensnaring Bridge (stops attacks once hand is depleted)
-    5. TKS (strips best card, 4/4 body)
-    6. Null Rod (shuts off fetch lands)
+    1. Chalice on 1 T1 (Ancient Tomb → shuts off Brainstorm/Ponder/Daze)
+    2. Trinisphere — locks all cheap spells to 3 mana
+    3. Painter's Servant + Grindstone combo (instant mill kill)
+    4. Karn (tutors any artifact lock/combo piece from sideboard)
+    5. Ensnaring Bridge (stops attacks once hand is depleted)
+    6. TKS (strips best card, 4/4 body)
+    7. Null Rod (shuts off fetch lands)
     """
 
+    # ── 0. Fast mana: Lotus Petal and Grim Monolith ──
+    petal = player.find_tag('petal')
+    if petal and petal.cmc <= total_mana:
+        player.remove_from_hand(petal); player.add_to_grave(petal)
+        total_mana += 1
+        log_fn("Lotus Petal → +1 mana")
+    mono = player.find_tag('monolith')
+    if mono and total_mana >= 2:
+        player.remove_from_hand(mono); player.put_artifact_in_play(mono)
+        total_mana += 1  # Grim Monolith: costs 2, taps for 3 (net +1 same turn)
+        log_fn("Grim Monolith → +3 mana")
+
     # ── 1. Chalice of the Void on 1 — T1 priority with Ancient Tomb ──
-    # Chalice on 1 costs 2 mana (exactly Tomb output) and shuts off most BUG interaction.
-    # Deploy BEFORE Trinisphere — Chalice is castable T1 with Tomb, Trini needs 3 mana.
     ch = player.find_tag('chalice')
     if ch and gs.chalice_x is None and total_mana >= 2:
         player.remove_from_hand(ch)
@@ -2527,15 +2538,72 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(tri)
 
     # FoV reactive: destroy Trinisphere + Chalice + Bridge
-    # Trinisphere was previously missing from target list — BUG never answered T1 Trini
     if gs.chalice_x is not None or gs.bridge_on_board or gs.trinisphere_active:
         _bug_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
 
-    # ── 3. Karn, the Great Creator — recurring +1 each turn ──
+    # ── 3. Painter's Servant + Grindstone combo — instant mill kill ──
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
+
+    # If both pieces in play → win
+    if painter_in_play and grind_in_play:
+        # Grindstone activation: tap + 3 mana to mill. With Painter naming a color,
+        # the two cards always share a color → repeat until library is empty.
+        if total_mana >= 3:
+            log_fn("★ Painter + Grindstone — mills entire library!", True)
+            gs.game_over = True
+            gs.winner = 'p1' if player is gs.p1 else 'p2'
+            gs.win_reason = "Painter + Grindstone combo"
+            return
+
+    # Deploy Painter's Servant (CMC 2)
+    painter = player.find_tag('painter')
+    if painter and not painter_in_play and total_mana >= 2:
+        player.remove_from_hand(painter)
+        if not _try_counter_any(player, opponent, gs, painter, log_entries):
+            player.put_artifact_in_play(painter)
+            total_mana -= 2
+            log_fn("Painter's Servant (naming blue)", True)
+        else:
+            player.add_to_grave(painter)
+
+    # Deploy Grindstone (CMC 1)
+    grind = player.find_tag('grind')
+    if grind and not grind_in_play and total_mana >= 1:
+        player.remove_from_hand(grind)
+        if not _try_counter_any(player, opponent, gs, grind, log_entries):
+            player.put_artifact_in_play(grind)
+            total_mana -= 1
+            log_fn("Grindstone", True)
+        else:
+            player.add_to_grave(grind)
+
+    # Check combo again after deploying pieces
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
+    if painter_in_play and grind_in_play and total_mana >= 3:
+        log_fn("★ Painter + Grindstone — mills entire library!", True)
+        gs.game_over = True
+        gs.winner = 'p1' if player is gs.p1 else 'p2'
+        gs.win_reason = "Painter + Grindstone combo"
+        return
+
+    # ── 4. Karn, the Great Creator — recurring +1 each turn ──
     karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
     def _karn_wish():
-        """Karn +1: wish for the most impactful missing lock piece."""
-        if not gs.bridge_on_board and opponent.creatures:
+        """Karn +1: wish for the most impactful missing piece."""
+        # Priority: combo piece > lock piece
+        if not grind_in_play and painter_in_play:
+            log_fn("  Karn +1: wishes for Grindstone", True)
+            # Create a grindstone in play
+            from rules import Card
+            gs_card = artifact('Grindstone', 1, {'generic':1}, tag='grind', win_condition=True)
+            player.put_artifact_in_play(gs_card)
+        elif not painter_in_play and grind_in_play:
+            log_fn("  Karn +1: wishes for Painter's Servant", True)
+            ps_card = artifact("Painter's Servant", 2, {'generic':2}, tag='painter', is_combo_piece=True)
+            player.put_artifact_in_play(ps_card)
+        elif not gs.bridge_on_board and opponent.creatures:
             log_fn("  Karn +1: wishes for Ensnaring Bridge", True)
             gs.bridge_on_board = True
         elif not gs.trinisphere_active:
@@ -2555,12 +2623,13 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(karn)
         if not _try_counter_any(player, opponent, gs, karn, log_entries):
             player.put_artifact_in_play(karn)
+            total_mana -= 4
             log_fn("Karn, the Great Creator (static: opp artifacts lose abilities)", True)
             _karn_wish()
         else:
             player.add_to_grave(karn)
 
-    # ── 4. Ensnaring Bridge ──
+    # ── 5. Ensnaring Bridge ──
     br = player.find_tag('bridge')
     if br and not gs.bridge_on_board and total_mana >= 3:
         player.remove_from_hand(br)
@@ -2574,7 +2643,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(br)
 
-    # ── 5. TKS ──
+    # ── 6. TKS ──
     tks = player.find_tag('tks')
     if tks and total_mana >= 4:
         player.remove_from_hand(tks)
@@ -2588,7 +2657,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(tks)
 
-    # ── 6. Null Rod (if no Karn already providing similar effect) ──
+    # ── 7. Null Rod (if no Karn already providing similar effect) ──
     nr = player.find_tag('nullrod')
     if nr and total_mana >= 2 and not any(p.card.tag == 'karn' for p in player.artifacts):
         player.remove_from_hand(nr)
@@ -2599,9 +2668,8 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(nr)
 
     # Bridge hand-dump: reduce hand to 0-1 to block most creatures.
-    # Keep 1 card if it's a useful lock piece, otherwise dump to 0.
     if gs.bridge_on_board and len(player.hand) > 1:
-        useful_tags = {'chalice', 'trini', 'bridge', 'karn', 'tks', 'nullrod'}
+        useful_tags = {'chalice', 'trini', 'bridge', 'karn', 'tks', 'nullrod', 'painter', 'grind'}
         while len(player.hand) > 1:
             non_useful = next((c for c in player.hand if c.tag not in useful_tags), None)
             if non_useful:

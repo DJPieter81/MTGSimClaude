@@ -382,14 +382,18 @@ def make_prison_deck() -> List[Card]:
     d += [artifact('Ensnaring Bridge', 3, {'generic':3}, tag='bridge',  lock_piece=True)] * 3
     d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(), tag='karn', engine=True, lock_piece=True)] * 4
     d += [creature('Thought-Knot Seer', 4, {'C':1,'generic':3}, set(), 4, 4, tag='tks')] * 4
-    d += [artifact("Painter's Servant", 2, {'generic':2}, tag='painter', is_combo_piece=True)] * 2
-    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', win_condition=True)] * 2
+    d += [artifact("Painter's Servant", 2, {'generic':2}, tag='painter', is_combo_piece=True)] * 3
+    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', win_condition=True)] * 3
     d += [artifact('Null Rod', 2, {'generic':2}, tag='nullrod')] * 2
-    # 36 lands
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    d += [artifact('Grim Monolith', 2, {'generic':2}, tag='monolith', mana_ritual=True)] * 4
+    d += [instant('Pyroblast', 1, {'R':1}, {'R'}, tag='pyro')] * 2
+    # 24 lands (sol lands + utility)
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 4
     d += [utility_land('City of Traitors', ['C','C'], 'cot', mana_ritual=True)] * 4
-    d += [utility_land('Eldrazi Temple', ['C'], 'temple')] * 4
-    d += [basic_land('Wastes', 'C', 'Wastes')] * 24
+    d += [utility_land('Eldrazi Temple', ['C'], 'temple')] * 2
+    d += [utility_land('Urza\'s Saga', ['C'], 'saga')] * 4
+    d += [basic_land('Wastes', 'C', 'Wastes')] * 10
     assert len(d) == 60, f"Prison deck: {len(d)}"
     return d
 
