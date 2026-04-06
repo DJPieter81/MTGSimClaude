@@ -483,6 +483,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     if gs.trinisphere_active:
         d_fow = None
         d_fon = None
+        d_daze = None  # Daze alternate cost = 0 mana, doesn't meet Trini minimum
 
     if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro]):
         return False
@@ -1700,17 +1701,16 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
             blocked_names = [c.name for c in _chalice_blocked]
             log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(blocked_names))}")
 
-    # Trinisphere: all spells cost at least 3. Reduce effective mana budget.
-    _trini_blocked = []
+    # Trinisphere: all spells cost at least 3 (CR 601.2f).
+    # Temporarily raise cmc of cheap spells so strategies naturally pay the tax.
+    _trini_adjusted = []  # (card, original_cmc) pairs to restore after
     if gs.trinisphere_active:
-        for card in list(o.hand):
-            if not card.is_land() and card.cmc < 3 and card not in _chalice_blocked:
-                # Check if player can't afford the trinisphere tax (3 mana min)
-                if om < 3:
-                    _trini_blocked.append(card)
-                    o.hand.remove(card)
-        if _trini_blocked:
-            log(f"Trinisphere — cheap spells blocked (need 3 mana, have {om})")
+        for card in o.hand:
+            if not card.is_land() and card.cmc < 3:
+                _trini_adjusted.append((card, card.cmc))
+                card.cmc = 3
+        if _trini_adjusted:
+            log(f"Trinisphere active — {len(_trini_adjusted)} spells taxed to 3 mana")
 
     # ── Matchup dispatch (all decks via registry) ──
     if matchup in ('bug', 'bug_sb'):
@@ -1725,10 +1725,10 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
                 log_entries.append(msg)
             strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
 
-    # Restore Chalice/Trinisphere-blocked cards to hand (they were never actually removed)
+    # Restore Chalice-blocked cards and Trinisphere-adjusted CMCs
     o.hand.extend(_chalice_blocked)
-    if gs.trinisphere_active:
-        o.hand.extend(_trini_blocked)
+    for card, orig_cmc in _trini_adjusted:
+        card.cmc = orig_cmc
 
     gs.state_based_actions()
     return log_entries
@@ -3528,13 +3528,17 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     # with 1 land (1 mana): cast Dark Ritual (costs 1) → +2 net → now have 3 mana
     # → can cast Cabal Ritual (costs 3) → +2 more net → etc.
     # Model: ritual chain is feasible if we have any starting mana + 1 ritual.
-    def _ritual_cost(c): return sum(c.mana_cost.values())
+    def _ritual_cost(c): return max(sum(c.mana_cost.values()), c.cmc)  # respects Trinisphere via raised cmc
     # Chalice check: rituals blocked by Chalice can't be cast
     def _chalice_blocks(c): return gs.spell_blocked_by_chalice(c.cmc)
     # Simulate mana available after casting affordable rituals
     # LED can be cracked in response to any spell for 3 mana of any color
-    led_mana = 3 if player.find_tag('led') else 0  # LED crack bonus
-    sim_mana = total_mana + led_mana
+    # Under Trinisphere, LED costs 3 to cast (artifact spell, CMC 0 → taxed to 3)
+    led = player.find_tag('led')
+    led_castable = led and total_mana >= led.cmc  # cmc already raised to 3 by Trini
+    led_mana = 3 if led_castable else 0
+    led_cost = led.cmc if led_castable else 0
+    sim_mana = total_mana - led_cost + led_mana  # pay to cast LED, then crack for 3
     # First pass: rituals affordable from land mana (exclude Chalice-blocked)
     def _is_ritual(c): return c.mana_ritual or c.tag in ('darkrit','cabalrit')
     rituals = [c for c in player.hand if _is_ritual(c) and _ritual_cost(c) <= sim_mana
@@ -3586,10 +3590,10 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     # Ad Nauseam / Past in Flames self-generate storm during resolution (draw 15+ / replay GY)
     self_assembles = False
 
-    kill_A = bool(led and len(rituals) >= 2 and win_available and est_storm >= lethal_storm)
-    kill_B = bool(len(rituals) >= 3 and led and win_available and est_storm >= lethal_storm)
-    kill_C = bool(adnaus and not adnaus_blocked and sim_mana >= 3 and
-                  (len(rituals) >= 1 or sim_mana >= 5))  # Ad Nauseam self-assembles
+    kill_A = bool(led_castable and len(rituals) >= 2 and win_available and est_storm >= lethal_storm)
+    kill_B = bool(len(rituals) >= 3 and led_castable and win_available and est_storm >= lethal_storm)
+    kill_C = bool(adnaus and not adnaus_blocked and sim_mana >= adnaus.cmc and
+                  (len(rituals) >= 1 or sim_mana >= adnaus.cmc + 2))  # Ad Nauseam self-assembles
     kill_D = bool(pif and not pif_blocked and len(player.graveyard) >= 4 and sim_mana >= 4)  # PiF replays GY
     kill_E = bool(len(rituals) >= 3 and win_available and est_storm >= lethal_storm)
     kill_F = bool(itutor_proxy and len(rituals) >= 2 and sim_mana >= 3 and est_storm >= lethal_storm)

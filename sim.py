@@ -456,15 +456,16 @@ def protagonist_turn(gs, turn, matchup):
                 b.hand.remove(card)
         if _chalice_blocked:
             log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(c.name for c in _chalice_blocked))}")
-    _trini_blocked = []
+    # Trinisphere: all spells cost at least 3 (CR 601.2f).
+    # Temporarily raise cmc of cheap spells so strategies naturally pay the tax.
+    _trini_adjusted = []  # (card, original_cmc) pairs to restore after
     if gs.trinisphere_active:
-        for card in list(b.hand):
-            if not card.is_land() and card.cmc < 3 and card not in _chalice_blocked:
-                if total_mana < 3:
-                    _trini_blocked.append(card)
-                    b.hand.remove(card)
-        if _trini_blocked:
-            log(f"Trinisphere — cheap spells blocked (need 3 mana, have {total_mana})")
+        for card in b.hand:
+            if not card.is_land() and card.cmc < 3:
+                _trini_adjusted.append((card, card.cmc))
+                card.cmc = 3
+        if _trini_adjusted:
+            log(f"Trinisphere active — {len(_trini_adjusted)} spells taxed to 3 mana")
 
     # ── Strategy dispatch ──
     from deck_registry import get_strategy
@@ -474,9 +475,10 @@ def protagonist_turn(gs, turn, matchup):
     else:
         log(f"No strategy for {matchup} — passing")
 
-    # Restore blocked cards
+    # Restore blocked cards and Trinisphere-adjusted CMCs
     b.hand.extend(_chalice_blocked)
-    b.hand.extend(_trini_blocked)
+    for card, orig_cmc in _trini_adjusted:
+        card.cmc = orig_cmc
 
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
     combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
