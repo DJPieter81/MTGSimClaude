@@ -259,15 +259,11 @@ def cmd_matrix(decks, n_games, top_tier, seed=None, decks_arg=None):
                 return 0.0
             ranked = sorted(
                 ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
-                key=lambda x: -x[1])
-            pool = [k for k, _ in ranked[:max(top_tier * 2, 10)]]
-            if 'bug' not in pool: pool.append('bug')
-            chosen = ['bug'] if 'bug' in pool else []
-            others = [k for k in pool if k not in chosen]
-            random.shuffle(others)
-            chosen += others[:top_tier - len(chosen)]
-            decks = sorted(chosen)
-            print(f"Top-tier selection ({top_tier}): {', '.join(decks)}")
+                key=lambda x: (-x[1], x[0]))
+            decks = sorted(k for k, _ in ranked[:top_tier])
+            if 'bug' not in decks and any(k == 'bug' for k, _ in ranked):
+                decks = sorted(decks + ['bug'])
+            print(f"Top-{top_tier} by meta share: {', '.join(decks)}")
         else:
             decks = sorted(DECKS.keys())
 
