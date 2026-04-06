@@ -40,5 +40,5 @@ DECK_META = {
     'keep':       _keep_prison,
     'categories': {'prison'},
     'interaction': {'speed': 3, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False, 'opp_threats': 12},
-    'meta_share': 0.04,
+    'meta_share': 0.06,
 }

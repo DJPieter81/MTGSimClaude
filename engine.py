@@ -18,7 +18,7 @@ from typing import List, Optional
 from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
                    StackObject, StackType, MTGRules)
 from game import GameState, PlayerState, LogEntry, can_afford, tap_for_cost
-from cards import DECKS, artifact
+from cards import DECKS, artifact, creature
 from gameplan import GAMEPLANS, assess, active_goal, Goal
 from interaction import (best_reactive_answer, best_proactive_target,
                          should_push_now, classify_threat, ThreatLevel)
@@ -3547,89 +3547,131 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
-    # FoV reactive: destroy existing Moon or anticipate Painter+Grindstone
-    if gs.moon_on_board:
-        _bug_force_of_vigor(gs, ['moon','painter','grind'], log_entries)
-    moon = player.find_tag('moon')
-    if moon and not gs.moon_on_board and opp_can_cast(moon, total_mana, gs, caster=player):
-        player.remove_from_hand(moon)
-        if not _try_counter_any(player, opponent, gs, moon, log_entries):
-            player.put_enchantment_in_play(moon)
-            gs.set_moon(True)  # S3: all nonbasic lands now produce R only
-            log_fn("★ Blood Moon — BUG nonbasic lands → Mountains, R only", True)
-        else: player.add_to_grave(moon)
-    pyro = player.find_tag('pyro')
-    if pyro and total_mana >= 1:
-        blue_tgt = next((c for c in opponent.creatures if 'U' in c.card.colors), None)
-        if blue_tgt:
-            player.remove_from_hand(pyro); player.add_to_grave(pyro)
-            opponent.remove_creature(blue_tgt)
-            log_fn(f"Pyroblast → destroys {blue_tgt.name}")
-            update_goyf(gs)
-    # Imperial Recruiter: tutors Painter's Servant (power ≤ 1) or Grindstone (power 0)
-    # Priority: find Painter first (needs Painter to win), then Grindstone if Painter already out
-    painter_on_board = next((c for c in player.artifacts if c.card.tag == 'painter'), None)
-    rec = player.find_tag('recruiter')
-    if rec and opp_can_cast(rec, total_mana, gs, caster=player):
-        # Decide what to tutor
-        has_painter_hand = player.find_tag('painter') is not None
-        has_grind_hand   = player.find_tag('grind') is not None
-        if not painter_on_board and not has_painter_hand:
-            # Tutor Painter's Servant from library
-            target = next((c for c in player.library if c.tag == 'painter'), None)
-            if target:
-                player.remove_from_hand(rec); player.add_to_grave(rec)
-                player.library.remove(target); player.hand.append(target)
-                log_fn(f"Imperial Recruiter → tutors Painter's Servant")
-        elif painter_on_board and not has_grind_hand:
-            # Painter already out — tutor Grindstone
-            target = next((c for c in player.library if c.tag == 'grind'), None)
-            if target:
-                player.remove_from_hand(rec); player.add_to_grave(rec)
-                player.library.remove(target); player.hand.append(target)
-                log_fn(f"Imperial Recruiter → tutors Grindstone")
+    """
+    Painter (Tron/Karn shell) — based on XanaZero 1st Legacy Challenge 2026-04-04.
+    Win: Painter's Servant + Grindstone (mill entire library).
+    Plan: fast mana → Karn wishes for combo pieces → assemble and win.
+    The One Ring provides card draw + protection. Tezzeret recurs artifacts.
+    """
 
-    painter = next((c for c in player.artifacts if c.card.tag == 'painter'), None)
+    # ── 0. Fast mana: Lotus Petal, Mox Opal, Grim Monolith ──
+    for _ in range(6):
+        petal = player.find_tag('petal') or player.find_tag('opal')
+        if petal:
+            player.remove_from_hand(petal); player.add_to_grave(petal)
+            total_mana += 1
+            log_fn(f"{petal.name} → +1 mana")
+            continue
+        mono = player.find_tag('monolith')
+        if mono and total_mana >= 2:
+            player.remove_from_hand(mono); player.put_artifact_in_play(mono)
+            total_mana += 1  # costs 2, taps for 3 (net +1 same turn)
+            log_fn("Grim Monolith → +3 mana")
+            continue
+        break
+
+    # ── 1. Check if combo is already assembled ──
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
+
+    if painter_in_play and grind_in_play and total_mana >= 3:
+        log_fn("★ Painter + Grindstone — mills entire library!", True)
+        gs.game_over = True
+        gs.winner = 'p1' if player is gs.p1 else 'p2'
+        gs.win_reason = "Painter + Grindstone combo"
+        return
+
+    # ── 2. Deploy combo pieces from hand ──
     p_card = player.find_tag('painter')
-    if not painter and p_card and opp_can_cast(p_card, total_mana, gs, caster=player):
+    if p_card and not painter_in_play and total_mana >= 2:
         player.remove_from_hand(p_card)
         if not _try_counter_any(player, opponent, gs, p_card, log_entries):
-            player.put_artifact_in_play(p_card); log_fn("Painter's Servant (all cards become blue)")
-        else: player.add_to_grave(p_card)
-    grind = player.find_tag('grind')
-    if painter and grind and total_mana >= 1:
-        player.remove_from_hand(grind)
-        if not _try_counter_any(player, opponent, gs, grind, log_entries):
-            log_fn("★ Painter + Grindstone — BUG library milled", True)
-            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-            gs.win_reason = "Painter+Grindstone combo resolves"
-        else: player.add_to_grave(grind)
-    # UWx selective combat: only attack with creatures that can deal unblocked damage
-    # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    bug_max_blocker_power     = max((c.power     for c in opponent.creatures), default=0)
-
-    # Combat: decide which Mardu creatures attack
-    # Bowmasters: VALUE engine — pings opponent every draw step.
-    # Never trade it in combat unless the board is desperate.
-    # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
-    # or if Mardu is so far behind it must race.
-    opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
-    attackers_this_turn = []
-    for c in player.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm':
-            # Hold Bowmasters back unless unblocked or desperate
-            if not opp_has_blockers or mardu_desperate:
-                attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
-        elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
+            player.put_artifact_in_play(p_card)
+            total_mana -= 2
+            painter_in_play = True
+            log_fn("Painter's Servant (naming blue)", True)
         else:
-            attackers_this_turn.append(c)
+            player.add_to_grave(p_card)
 
-    combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
+    grind_card = player.find_tag('grind')
+    if grind_card and not grind_in_play and total_mana >= 1:
+        player.remove_from_hand(grind_card)
+        if not _try_counter_any(player, opponent, gs, grind_card, log_entries):
+            player.put_artifact_in_play(grind_card)
+            total_mana -= 1
+            grind_in_play = True
+            log_fn("Grindstone", True)
+        else:
+            player.add_to_grave(grind_card)
+
+    # Check combo again after deploying
+    if painter_in_play and grind_in_play and total_mana >= 3:
+        log_fn("★ Painter + Grindstone — mills entire library!", True)
+        gs.game_over = True
+        gs.winner = 'p1' if player is gs.p1 else 'p2'
+        gs.win_reason = "Painter + Grindstone combo"
+        return
+
+    # ── 3. The One Ring — card draw + protection ──
+    ring = player.find_tag('ring')
+    if ring and total_mana >= 4:
+        player.remove_from_hand(ring)
+        if not _try_counter_any(player, opponent, gs, ring, log_entries):
+            player.put_artifact_in_play(ring)
+            total_mana -= 4
+            player.draw(2)  # approximate: Ring draws cards over time
+            log_fn("The One Ring — protection + draw 2", True)
+        else:
+            player.add_to_grave(ring)
+
+    # ── 4. Karn, the Great Creator — wish for combo/lock pieces ──
+    karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
+
+    def _karn_wish():
+        nonlocal painter_in_play, grind_in_play
+        if not grind_in_play and painter_in_play:
+            gs_card = artifact('Grindstone', 1, {'generic':1}, tag='grind', win_condition=True)
+            player.put_artifact_in_play(gs_card)
+            grind_in_play = True
+            log_fn("  Karn +1: wishes for Grindstone", True)
+        elif not painter_in_play:
+            ps_card = creature("Painter's Servant", 2, {'generic':2}, set(), 1, 3,
+                               tag='painter', is_combo_piece=True)
+            player.put_artifact_in_play(ps_card)
+            painter_in_play = True
+            log_fn("  Karn +1: wishes for Painter's Servant", True)
+        elif not gs.bridge_on_board and opponent.creatures:
+            gs.bridge_on_board = True
+            log_fn("  Karn +1: wishes for Ensnaring Bridge", True)
+
+    if karn_on_board:
+        _karn_wish()
+
+    karn = player.find_tag('karn')
+    if karn and total_mana >= 4 and not karn_on_board:
+        player.remove_from_hand(karn)
+        if not _try_counter_any(player, opponent, gs, karn, log_entries):
+            player.put_artifact_in_play(karn)
+            total_mana -= 4
+            log_fn("Karn, the Great Creator", True)
+            _karn_wish()
+        else:
+            player.add_to_grave(karn)
+
+    # Check combo once more after Karn wish
+    if painter_in_play and grind_in_play and total_mana >= 3:
+        log_fn("★ Painter + Grindstone — mills entire library!", True)
+        gs.game_over = True
+        gs.winner = 'p1' if player is gs.p1 else 'p2'
+        gs.win_reason = "Painter + Grindstone combo"
+        return
+
+    # ── 5. Disruptor Flute (name a key card) ──
+    flute = player.find_tag('flute')
+    if flute and total_mana >= 3:
+        player.remove_from_hand(flute); player.put_artifact_in_play(flute)
+        total_mana -= 3
+        log_fn("Disruptor Flute — names opponent's key card", True)
 
 
 

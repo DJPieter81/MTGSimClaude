@@ -584,5 +584,5 @@ DECK_META = {
     'keep':       _keep_depths,
     'categories': {'combo', 'land_combo'},
     'interaction': {'speed': 2, 'resilience': 1, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': True, 'creature_based': False, 'bug_answers': 6},
-    'meta_share': 0.03,
+    'meta_share': 0.02,
 }

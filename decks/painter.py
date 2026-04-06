@@ -21,11 +21,9 @@ def _keep_painter(hand, matchup=''):
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
-    threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
-    return 2 <= lc <= 4 and action >= 2
+    fast_mana = sum(1 for c in nonlands if c.mana_ritual)
+    action = sum(1 for c in nonlands if c.tag in ('karn', 'tezzeret', 'ring', 'painter', 'monolith'))
+    return (lc + fast_mana) >= 2 and action >= 1
 
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
@@ -38,5 +36,5 @@ DECK_META = {
     'keep':       _keep_painter,
     'categories': {'combo'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.02,
+    'meta_share': 0.03,
 }

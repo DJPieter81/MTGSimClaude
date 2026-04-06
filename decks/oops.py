@@ -37,5 +37,5 @@ DECK_META = {
     'keep':       _keep_oops,
     'categories': {'combo', 'gy_combo', 'fast_combo'},
     'interaction': {'speed': 1, 'resilience': 1, 'uses_graveyard': True, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.05,
+    'meta_share': 0.06,
 }
