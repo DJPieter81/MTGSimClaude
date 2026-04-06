@@ -58,6 +58,16 @@ python3 run_meta.py --field bug -n 50                 # One deck vs all others
 python3 run_meta.py --matrix --decks 8 -n 30          # Top-8 meta matrix
 python3 run_meta.py --matrix bug storm dimir -n 50    # Custom deck matrix
 python3 run_meta.py --verbose storm burn -s 42        # Single game log
+python3 run_meta.py --results                         # List saved result files
+python3 run_meta.py --load                            # Display latest saved matrix
+python3 run_meta.py --load custom_matrix              # Display specific saved result
+```
+
+Matrix and field results are auto-saved as JSON to `results/`. Load in any session:
+```python
+from meta_results import load_matrix, print_matrix
+data = load_matrix()        # latest matrix
+print_matrix(data)          # pretty-print it
 ```
 
 ## HTML Game Replay

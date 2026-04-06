@@ -240,7 +240,7 @@ def cmd_field(deck, n_games, seed=None):
     print(f"\n  Overall: {total_wins}/{total_games} ({overall:.1%})")
 
 
-def cmd_matrix(decks, n_games, top_tier, seed=None):
+def cmd_matrix(decks, n_games, top_tier, seed=None, decks_arg=None):
     """Run NxN meta matrix (parallelized at matchup level)."""
     from cards import DECKS, MATCHUP_META
     if seed is not None:
@@ -304,6 +304,11 @@ def cmd_matrix(decks, n_games, top_tier, seed=None):
     for i, (avg, d) in enumerate(evs):
         bar = '#' * int(avg * 40)
         print(f'  {i+1:2d}. {d:15s} {avg:5.1%}  {bar}')
+
+    # Auto-save results
+    from meta_results import save_matrix
+    tag = 'matrix' if not decks_arg else 'custom_matrix'
+    save_matrix(matrix, decks=all_decks, n_games=n_games, tag=tag)
 
 
 def cmd_verbose(deck1, deck2, seed=None):
@@ -385,12 +390,24 @@ Import a new deck:
                         help='Random seed for reproducibility')
     parser.add_argument('--decks', type=int, default=0,
                         help='For --matrix: pick N top-tier decks (default: use positional args)')
+    parser.add_argument('--load', metavar='TAG', nargs='?', const='matrix',
+                        help='Load and display saved results (default tag: matrix)')
+    parser.add_argument('--results', action='store_true',
+                        help='List all saved result files')
     parser.add_argument('deck_list', nargs='*',
                         help='For --matrix: explicit deck list')
 
     args = parser.parse_args()
 
-    if args.list:
+    if args.results:
+        from meta_results import list_results
+        list_results()
+    elif args.load:
+        from meta_results import load_matrix, print_matrix
+        data = load_matrix(args.load)
+        if data:
+            print_matrix(data)
+    elif args.list:
         cmd_list()
     elif args.deck:
         cmd_deck(args.deck)
@@ -400,7 +417,7 @@ Import a new deck:
         cmd_field(args.field, args.n, args.seed)
     elif args.matrix:
         decks = args.deck_list if args.deck_list else None
-        cmd_matrix(decks, args.n, args.decks or 8, args.seed)
+        cmd_matrix(decks, args.n, args.decks or 8, args.seed, decks_arg=decks)
     elif args.verbose:
         cmd_verbose(args.verbose[0], args.verbose[1], args.seed)
     elif args.trace:
