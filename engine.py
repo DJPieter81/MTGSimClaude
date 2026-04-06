@@ -18,7 +18,7 @@ from typing import List, Optional
 from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
                    StackObject, StackType, MTGRules)
 from game import GameState, PlayerState, LogEntry, can_afford, tap_for_cost
-from cards import DECKS
+from cards import DECKS, artifact
 from gameplan import GAMEPLANS, assess, active_goal, Goal
 from interaction import (best_reactive_answer, best_proactive_target,
                          should_push_now, classify_threat, ThreatLevel)
@@ -2493,17 +2493,28 @@ def _resolve_lock(gs, card, log_fn):
 def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     """
     Artifacts Prison strategy. Priority order:
-    1. Trinisphere T1/T2 (Ancient Tomb → T1 Trini locks all cheap spells to 3 mana)
-    2. Chalice on 1 (stops Brainstorm/Ponder/Push/Tamiyo/Daze)
-    3. Karn (tutors any artifact lock piece from sideboard)
-    4. Ensnaring Bridge (stops attacks once hand is depleted)
-    5. TKS (strips best card, 4/4 body)
-    6. Null Rod (shuts off fetch lands)
+    1. Chalice on 1 T1 (Ancient Tomb → shuts off Brainstorm/Ponder/Daze)
+    2. Trinisphere — locks all cheap spells to 3 mana
+    3. Painter's Servant + Grindstone combo (instant mill kill)
+    4. Karn (tutors any artifact lock/combo piece from sideboard)
+    5. Ensnaring Bridge (stops attacks once hand is depleted)
+    6. TKS (strips best card, 4/4 body)
+    7. Null Rod (shuts off fetch lands)
     """
 
+    # ── 0. Fast mana: Lotus Petal and Grim Monolith ──
+    petal = player.find_tag('petal')
+    if petal and petal.cmc <= total_mana:
+        player.remove_from_hand(petal); player.add_to_grave(petal)
+        total_mana += 1
+        log_fn("Lotus Petal → +1 mana")
+    mono = player.find_tag('monolith')
+    if mono and total_mana >= 2:
+        player.remove_from_hand(mono); player.put_artifact_in_play(mono)
+        total_mana += 1  # Grim Monolith: costs 2, taps for 3 (net +1 same turn)
+        log_fn("Grim Monolith → +3 mana")
+
     # ── 1. Chalice of the Void on 1 — T1 priority with Ancient Tomb ──
-    # Chalice on 1 costs 2 mana (exactly Tomb output) and shuts off most BUG interaction.
-    # Deploy BEFORE Trinisphere — Chalice is castable T1 with Tomb, Trini needs 3 mana.
     ch = player.find_tag('chalice')
     if ch and gs.chalice_x is None and total_mana >= 2:
         player.remove_from_hand(ch)
@@ -2527,15 +2538,72 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(tri)
 
     # FoV reactive: destroy Trinisphere + Chalice + Bridge
-    # Trinisphere was previously missing from target list — BUG never answered T1 Trini
     if gs.chalice_x is not None or gs.bridge_on_board or gs.trinisphere_active:
         _bug_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
 
-    # ── 3. Karn, the Great Creator — recurring +1 each turn ──
+    # ── 3. Painter's Servant + Grindstone combo — instant mill kill ──
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
+
+    # If both pieces in play → win
+    if painter_in_play and grind_in_play:
+        # Grindstone activation: tap + 3 mana to mill. With Painter naming a color,
+        # the two cards always share a color → repeat until library is empty.
+        if total_mana >= 3:
+            log_fn("★ Painter + Grindstone — mills entire library!", True)
+            gs.game_over = True
+            gs.winner = 'p1' if player is gs.p1 else 'p2'
+            gs.win_reason = "Painter + Grindstone combo"
+            return
+
+    # Deploy Painter's Servant (CMC 2)
+    painter = player.find_tag('painter')
+    if painter and not painter_in_play and total_mana >= 2:
+        player.remove_from_hand(painter)
+        if not _try_counter_any(player, opponent, gs, painter, log_entries):
+            player.put_artifact_in_play(painter)
+            total_mana -= 2
+            log_fn("Painter's Servant (naming blue)", True)
+        else:
+            player.add_to_grave(painter)
+
+    # Deploy Grindstone (CMC 1)
+    grind = player.find_tag('grind')
+    if grind and not grind_in_play and total_mana >= 1:
+        player.remove_from_hand(grind)
+        if not _try_counter_any(player, opponent, gs, grind, log_entries):
+            player.put_artifact_in_play(grind)
+            total_mana -= 1
+            log_fn("Grindstone", True)
+        else:
+            player.add_to_grave(grind)
+
+    # Check combo again after deploying pieces
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
+    if painter_in_play and grind_in_play and total_mana >= 3:
+        log_fn("★ Painter + Grindstone — mills entire library!", True)
+        gs.game_over = True
+        gs.winner = 'p1' if player is gs.p1 else 'p2'
+        gs.win_reason = "Painter + Grindstone combo"
+        return
+
+    # ── 4. Karn, the Great Creator — recurring +1 each turn ──
     karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
     def _karn_wish():
-        """Karn +1: wish for the most impactful missing lock piece."""
-        if not gs.bridge_on_board and opponent.creatures:
+        """Karn +1: wish for the most impactful missing piece."""
+        # Priority: combo piece > lock piece
+        if not grind_in_play and painter_in_play:
+            log_fn("  Karn +1: wishes for Grindstone", True)
+            # Create a grindstone in play
+            from rules import Card
+            gs_card = artifact('Grindstone', 1, {'generic':1}, tag='grind', win_condition=True)
+            player.put_artifact_in_play(gs_card)
+        elif not painter_in_play and grind_in_play:
+            log_fn("  Karn +1: wishes for Painter's Servant", True)
+            ps_card = artifact("Painter's Servant", 2, {'generic':2}, tag='painter', is_combo_piece=True)
+            player.put_artifact_in_play(ps_card)
+        elif not gs.bridge_on_board and opponent.creatures:
             log_fn("  Karn +1: wishes for Ensnaring Bridge", True)
             gs.bridge_on_board = True
         elif not gs.trinisphere_active:
@@ -2555,12 +2623,13 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(karn)
         if not _try_counter_any(player, opponent, gs, karn, log_entries):
             player.put_artifact_in_play(karn)
+            total_mana -= 4
             log_fn("Karn, the Great Creator (static: opp artifacts lose abilities)", True)
             _karn_wish()
         else:
             player.add_to_grave(karn)
 
-    # ── 4. Ensnaring Bridge ──
+    # ── 5. Ensnaring Bridge ──
     br = player.find_tag('bridge')
     if br and not gs.bridge_on_board and total_mana >= 3:
         player.remove_from_hand(br)
@@ -2574,7 +2643,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(br)
 
-    # ── 5. TKS ──
+    # ── 6. TKS ──
     tks = player.find_tag('tks')
     if tks and total_mana >= 4:
         player.remove_from_hand(tks)
@@ -2588,7 +2657,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(tks)
 
-    # ── 6. Null Rod (if no Karn already providing similar effect) ──
+    # ── 7. Null Rod (if no Karn already providing similar effect) ──
     nr = player.find_tag('nullrod')
     if nr and total_mana >= 2 and not any(p.card.tag == 'karn' for p in player.artifacts):
         player.remove_from_hand(nr)
@@ -2599,9 +2668,8 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(nr)
 
     # Bridge hand-dump: reduce hand to 0-1 to block most creatures.
-    # Keep 1 card if it's a useful lock piece, otherwise dump to 0.
     if gs.bridge_on_board and len(player.hand) > 1:
-        useful_tags = {'chalice', 'trini', 'bridge', 'karn', 'tks', 'nullrod'}
+        useful_tags = {'chalice', 'trini', 'bridge', 'karn', 'tks', 'nullrod', 'painter', 'grind'}
         while len(player.hand) > 1:
             non_useful = next((c for c in player.hand if c.tag not in useful_tags), None)
             if non_useful:
@@ -2935,66 +3003,121 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
-    # Cantrips: find any CMC1 noncreature spell opp can cast
-    can = next((c for c in player.hand
-                if c.is_cantrip and opp_can_cast(c, total_mana, gs, caster=player)), None)
-    if can:
-        player.remove_from_hand(can); player.add_to_grave(can)
-        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-        player.draw(draws)
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(draws, gs, ctr)
-            for m in ctr: log_entries.append(m)
-    # Rituals (Cabal Ritual) provide extra mana — crack them before combo attempt
-    rituals = [c for c in player.hand if c.mana_ritual]
-    ritual_mana = 0
-    for r in rituals:
-        if can_afford(player, r.mana_cost):
-            player.remove_from_hand(r); player.add_to_grave(r)
-            ritual_mana += 2  # Dark Ritual +2 net, Cabal Ritual +2 net minimum
-            log_fn(f"{r.name} → +2 mana")
-    total_mana = total_mana + ritual_mana
-    # Oops costs {1}{G} — needs green mana producible from lands in play
-    has_green = any('G' in l.effective_produces() for l in player.lands if not l.tapped)
-    oops = player.find_tag('oops')
-    # Veil of Summer costs {G} — also needs a green source
-    vos_castable = has_green
-    # Oops costs {1}{G} = 2 mana; fire as soon as we can assemble it
-    # Leyline of the Void exiles all cards that would go to GY — Oops fizzles entirely
-    if oops and total_mana >= 2 and has_green and not gs.leyline_active:
-        vos = player.find_tag('vos') if vos_castable else None
-        if vos:
-            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
-            log_fn("Veil of Summer — blue blanked")
-            # Veil + Oops success rate derived from interaction model
-            from interaction_model import get_or_infer_interaction, compute_veil_kill_rate
-            _oops_int = get_or_infer_interaction('oops')
-            _oops_veil_rate = compute_veil_kill_rate(_oops_int)
-            import random
-            if random.random() < _oops_veil_rate:
-                player.remove_from_hand(oops); player.add_to_grave(oops)
-                log_fn("★ Oops through Veil — wins", True)
-                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-                gs.win_reason = "Oops + Veil — BUG blue interaction blanked"
-            else:
-                player.remove_from_hand(oops); player.add_to_grave(oops)
-                log_fn("Oops fizzles (BUG had graveyard hate)")
+    """
+    Oops All Spells: 0-land combo deck.
+    Win: cast Balustrade Spy (4 mana) or Undercity Informer (3+1), mill entire
+    deck (no lands to stop), Narcomoebas enter, flashback Dread Return on
+    Thassa's Oracle for the win.
+
+    Mana sources: Lotus Petal (0), Chrome Mox (0), Elvish/Simian Spirit Guide
+    (exile from hand for 1 mana), Dark Ritual (+2 net), Cabal Ritual (+2 net),
+    MDFC "lands" (Agadeem's Awakening / Turntimber Symbiosis played as tapped lands).
+    """
+    # ── 0. Play MDFC as land if no lands in play ──
+    if not player.lands:
+        mdfc = next((c for c in player.hand if getattr(c, 'is_mdfc_land', False)), None)
+        if mdfc:
+            player.remove_from_hand(mdfc)
+            # MDFC back face enters tapped, produces B (Agadeem) or G (Turntimber)
+            color = 'B' if mdfc.tag == 'agadeem' else 'G'
+            # Temporarily set produces on the card so LandPermanent can use it
+            mdfc.produces = {color}
+            from rules import LandPermanent
+            lp = LandPermanent(card=mdfc, controller='b' if player is gs.p1 else 'o',
+                               tapped=True)
+            player.lands.append(lp)
+            log_fn(f"{mdfc.name} → enters tapped as land ({color})")
+
+    # ── 1. Free mana: crack Petals, exile Spirit Guides ──
+    for _ in range(10):  # loop for multiple petals/guides
+        petal = player.find_tag('petal') or player.find_tag('cmox')
+        if petal:
+            player.remove_from_hand(petal); player.add_to_grave(petal)
+            total_mana += 1
+            log_fn(f"{petal.name} → +1 mana")
+            continue
+        esg = player.find_tag('esg') or player.find_tag('ssg')
+        if esg:
+            player.remove_from_hand(esg); player.exile.append(esg)
+            total_mana += 1
+            log_fn(f"Exile {esg.name} → +1 mana")
+            continue
+        break
+
+    # ── 2. Rituals ──
+    for _ in range(10):
+        rit = next((c for c in player.hand if c.tag in ('darkrit', 'cabalrit')
+                     and c.cmc <= total_mana), None)
+        if rit:
+            player.remove_from_hand(rit); player.add_to_grave(rit)
+            total_mana -= rit.cmc
+            total_mana += 3  # Dark Ritual/Cabal Ritual produce BBB/BBBBB
+            log_fn(f"{rit.name} → mana now {total_mana}")
         else:
-            mindbreak_o = opponent.find_tag('mindbreak')
-            if mindbreak_o and player.spells_cast_this_turn >= 3:
-                opponent.remove_from_hand(mindbreak_o)
-                opponent.add_to_grave(mindbreak_o)
-                player.add_to_grave(oops)
-                log_fn(f"★ Mindbreak Trap (free — opp cast {player.spells_cast_this_turn} spells) — Oops fizzles", True)
-                return
-            player.remove_from_hand(oops)
-            if not _try_counter_any(player, opponent, gs, oops, log_entries):
-                player.add_to_grave(oops)
-                log_fn("★ Oops resolves — wins", True)
-                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-                gs.win_reason = "Oops resolves uncountered"
-            else: player.add_to_grave(oops)
+            break
+
+    # ── 3. Grief (free evoke: exile black card from hand) ──
+    grief = player.find_tag('grief')
+    if grief and sum(1 for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief) >= 1:
+        pitch = next(c for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief)
+        player.remove_from_hand(grief); player.add_to_grave(grief)
+        player.remove_from_hand(pitch); player.exile.append(pitch)
+        if opponent.hand:
+            nonlands = [c for c in opponent.hand if not c.is_land()]
+            if nonlands:
+                best = next((c for c in nonlands if c.tag in ('fow', 'fon', 'fluster', 'endurance')),
+                            nonlands[0])
+                opponent.hand.remove(best); opponent.add_to_grave(best)
+                log_fn(f"Grief (evoke, pitch {pitch.name}) — strips {best.name}", True)
+
+    # ── 4. Combo: Balustrade Spy (4) or Undercity Informer (3+1) ──
+    # Leyline of the Void exiles all cards that would go to GY — combo fizzles
+    if gs.leyline_active:
+        return
+
+    spy = player.find_tag('spy')
+    informer = player.find_tag('informer')
+    combo_card = None
+    combo_cost = 0
+    if spy and total_mana >= 4:
+        combo_card = spy; combo_cost = 4
+    elif informer and total_mana >= 4:  # 3 to cast + 1 to activate
+        combo_card = informer; combo_cost = 4
+
+    if combo_card:
+        # Try Veil protection first
+        vos = player.find_tag('vos')
+        if vos and total_mana >= combo_cost + 1:
+            player.remove_from_hand(vos); player.add_to_grave(vos)
+            gs.veil_active = True
+            total_mana -= 1
+            log_fn("Veil of Summer — blue interaction blanked")
+
+        # Mindbreak Trap check
+        mindbreak_o = opponent.find_tag('mindbreak')
+        spells_this_turn = getattr(player, 'spells_cast_this_turn', 0)
+        if mindbreak_o and spells_this_turn >= 3:
+            opponent.remove_from_hand(mindbreak_o); opponent.add_to_grave(mindbreak_o)
+            player.add_to_grave(combo_card)
+            log_fn(f"★ Mindbreak Trap — {combo_card.name} exiled, combo fizzles", True)
+            return
+
+        player.remove_from_hand(combo_card)
+        if not _try_counter_any(player, opponent, gs, combo_card, log_entries):
+            player.add_to_grave(combo_card)
+            # Combo success rate derived from interaction model
+            from interaction_model import get_or_infer_interaction, compute_combo_fizzle_rate
+            _oops_int = get_or_infer_interaction('oops')
+            _fizzle = compute_combo_fizzle_rate(_oops_int, veil_active=gs.veil_active)
+            if random.random() >= _fizzle:
+                log_fn(f"★ {combo_card.name} → mill entire deck → Thassa's Oracle wins!", True)
+                gs.game_over = True
+                gs.winner = 'p1' if player is gs.p1 else 'p2'
+                gs.win_reason = f"Oops combo ({combo_card.name} → Oracle)"
+            else:
+                log_fn(f"{combo_card.name} resolves but opponent had graveyard hate")
+        else:
+            player.add_to_grave(combo_card)
 
 
 
