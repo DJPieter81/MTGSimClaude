@@ -291,30 +291,40 @@ def make_dimir_b_deck() -> List[Card]:
     assert len(d) == 60, f"Dimir B deck: {len(d)}"
     return d
 
-# ── Show and Tell (60) ─────────────────────────────────────────
+# ── Show and Tell (60) — updated for 2026 meta ───────────────
 
 def make_show_deck() -> List[Card]:
     d = []
+    # Combo (14)
     d += [sorcery('Show and Tell', 3, {'U':1,'generic':2}, {'U'}, tag='sat', is_combo_piece=True, win_condition=True)] * 4
-    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
-    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'}, tag='fon', free_cast_if_blue=True)] * 2
-    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 3
+    d += [creature('Atraxa, Grand Unifier', 7, {'G':1,'W':1,'U':1,'B':1,'generic':3}, {'G','W','U','B'}, 7, 7,
+                   tag='atraxa', flying=True, lifelink=True, win_condition=True)] * 4
     d += [creature('Emrakul, the Aeons Torn', 15, {'generic':15}, set(), 15, 15,
                    tag='emrakul', flying=True, trample=True, haste=True,
-                   win_condition=True)] * 2  # haste simulates extra turn attack
+                   win_condition=True)] * 2
     d += [enchantment('Omniscience', 10, {'U':1,'generic':9}, {'U'}, tag='omni', win_condition=True)] * 2
     d += [enchantment('Sneak Attack', 4, {'R':1,'generic':3}, {'R'}, tag='sneak', is_combo_piece=True, win_condition=True)] * 2
-    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 3
-    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='pre', is_cantrip=True)] * 2
-    d += [sorcery('Cunning Wish', 3, {'U':1,'generic':2}, {'U'}, tag='wish')] * 1
-    # 27 lands
+    # Cantrips (10)
+    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
+    d += [instant('Stock Up', 2, {'U':1,'generic':1}, {'U'}, tag='stockup', is_cantrip=True)] * 2
+    # Protection (8)
+    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
+    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos')] * 2
+    d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'}, tag='fon', free_cast_if_blue=True)] * 2
+    # Fast mana (4)
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    # Daze (2)
+    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 2
+    # Lands (22)
+    d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 4
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
-    d += [fetch_land('Scalding Tarn', ['Island','Mountain'])] * 4
-    d += [dual_land('Volcanic Island', ['U','R'], ['Island','Mountain'])] * 3
-    d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 2
-    d += [basic_land('Island', 'U', 'Island')] * 14
+    d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 4
+    d += [dual_land('Volcanic Island', ['U','R'], ['Island','Mountain'])] * 2
+    d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 2
+    d += [basic_land('Island', 'U', 'Island')] * 4
+    d += [utility_land('City of Traitors', ['C','C'], 'cot', mana_ritual=True)] * 1
+    d += [utility_land('Boseiju, Who Endures', ['G'], 'boseiju')] * 1
     assert len(d) == 60, f"Show deck: {len(d)}"
     return d
 
