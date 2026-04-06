@@ -483,6 +483,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     if gs.trinisphere_active:
         d_fow = None
         d_fon = None
+        d_daze = None  # Daze alternate cost = 0 mana, doesn't meet Trini minimum
 
     if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro]):
         return False
@@ -1700,17 +1701,16 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
             blocked_names = [c.name for c in _chalice_blocked]
             log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(blocked_names))}")
 
-    # Trinisphere: all spells cost at least 3. Reduce effective mana budget.
-    _trini_blocked = []
+    # Trinisphere: all spells cost at least 3 (CR 601.2f).
+    # Temporarily raise cmc of cheap spells so strategies naturally pay the tax.
+    _trini_adjusted = []  # (card, original_cmc) pairs to restore after
     if gs.trinisphere_active:
-        for card in list(o.hand):
-            if not card.is_land() and card.cmc < 3 and card not in _chalice_blocked:
-                # Check if player can't afford the trinisphere tax (3 mana min)
-                if om < 3:
-                    _trini_blocked.append(card)
-                    o.hand.remove(card)
-        if _trini_blocked:
-            log(f"Trinisphere — cheap spells blocked (need 3 mana, have {om})")
+        for card in o.hand:
+            if not card.is_land() and card.cmc < 3:
+                _trini_adjusted.append((card, card.cmc))
+                card.cmc = 3
+        if _trini_adjusted:
+            log(f"Trinisphere active — {len(_trini_adjusted)} spells taxed to 3 mana")
 
     # ── Matchup dispatch (all decks via registry) ──
     if matchup in ('bug', 'bug_sb'):
@@ -1725,10 +1725,10 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
                 log_entries.append(msg)
             strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
 
-    # Restore Chalice/Trinisphere-blocked cards to hand (they were never actually removed)
+    # Restore Chalice-blocked cards and Trinisphere-adjusted CMCs
     o.hand.extend(_chalice_blocked)
-    if gs.trinisphere_active:
-        o.hand.extend(_trini_blocked)
+    for card, orig_cmc in _trini_adjusted:
+        card.cmc = orig_cmc
 
     gs.state_based_actions()
     return log_entries
