@@ -510,5 +510,5 @@ DECK_META = {
     'keep':       _keep_sneak_b,
     'categories': {'combo', 'land_combo'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.01,
+    'meta_share': 0.03,
 }

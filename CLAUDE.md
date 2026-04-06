@@ -250,10 +250,11 @@ Monolith) enabling T1-T2 lock pieces.
 ### Meta Share Tiers
 
 Meta-weighted WR uses only T1+T2 opponents, weighted by meta share:
-- **T1 (>=5%):** doomsday (14%), ur_delver (8%), eldrazi (6%), dimir (5%), oops (5%)
-- **T2 (4%):** eight_cast, prison, dimir_b, uwx, depths, lands, show
+- **T1 (>=5%):** ocelot (12%), dimir (6%), dimir_b (5%), lands (6%), oops (6%),
+  doomsday (6%), prison (6%), ur_delver (6%)
+- **T2 (3-4%):** sneak_a, sneak_b, show, painter, eight_cast, uwx
 - `top_tier=N` is deterministic: always takes the top N decks by meta share
-- Shares based on mtgtop8/aetherhub Legacy data (2026-04)
+- Shares based on Legacy Showcase Qualifier + Challenge 32 (2026-04-04/05)
 
 ## Reproducibility
 

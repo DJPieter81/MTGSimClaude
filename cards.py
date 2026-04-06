@@ -319,28 +319,36 @@ def make_show_deck() -> List[Card]:
     return d
 
 
-# ── Lands (60) ─────────────────────────────────────────────────
+# ── Lands (60) — based on storm994 4th Legacy Showcase 2026-04-05 ──
 
 def make_lands_deck() -> List[Card]:
     d = []
-    d += [sorcery('Life from the Loam', 3, {'G':1,'generic':2}, {'G'}, tag='loam',      engine=True)] * 4
-    d += [instant('Crop Rotation', 1, {'G':1}, {'G'}, tag='crop',      is_combo_piece=True)] * 4
-    d += [creature('Elvish Reclaimer', 1, {'G':1}, {'G'}, 1, 2, tag='reclaimer')] * 3
-    d += [instant('Punishing Fire', 2, {'R':1,'generic':1}, {'R'}, tag='pfire')] * 2
-    d += [creature('Endurance', 3, {'G':1,'generic':2}, {'G'}, 3, 4, tag='endurance', flash=True, reach=True)] * 2
-    # 45 lands
-    d += [utility_land('Dark Depths', [], 'depths', is_combo_piece=True)] * 3
-    d += [utility_land("Thespian's Stage", ['C'], 'stage', is_combo_piece=True)] * 3
+    # Spells (30)
+    d += [enchantment('Exploration', 1, {'G':1}, {'G'}, tag='exploration', engine=True)] * 4
+    d += [sorcery('Life from the Loam', 2, {'G':1,'generic':1}, {'G'}, tag='loam', engine=True)] * 4
+    d += [instant('Crop Rotation', 1, {'G':1}, {'G'}, tag='crop', is_combo_piece=True)] * 4
+    d += [sorcery('Malevolent Rumble', 2, {'G':1,'generic':1}, {'G'}, tag='rumble')] * 4
+    d += [artifact('Mox Diamond', 0, {}, tag='moxd', mana_ritual=True)] * 4
+    d += [artifact('Disruptor Flute', 3, {'generic':3}, tag='flute', lock_piece=True)] * 3
+    d += [instant('Once Upon a Time', 2, {'G':1,'generic':1}, {'G'}, tag='ouat', is_cantrip=True)] * 3
+    d += [artifact('Expedition Map', 1, {'generic':1}, tag='map')] * 1
+    d += [artifact("Grafdigger's Cage", 1, {'generic':1}, tag='cage')] * 1
+    d += [artifact('Pithing Needle', 1, {'generic':1}, tag='needle')] * 1
+    d += [artifact('Skateboard', 1, {'generic':1}, tag='skateboard')] * 1
+    # Lands (30)
+    d += [utility_land('Dark Depths', [], 'depths', is_combo_piece=True)] * 4
+    d += [utility_land("Thespian's Stage", ['C'], 'stage', is_combo_piece=True)] * 4
+    d += [utility_land("Urza's Saga", ['C'], 'saga')] * 4
     d += [utility_land('Wasteland', [], 'wl')] * 4
-    d += [utility_land('Rishadan Port', ['C'], 'port')] * 4
-    d += [utility_land('Maze of Ith', [], 'maze')] * 3
-    d += [utility_land('The Tabernacle at Pendrell Vale', [], 'tab')] * 2
-    d += [utility_land('Grove of the Burnwillows', ['G','R'], 'grove')] * 4
-    d += [fetch_land('Windswept Heath', ['Forest','Plains'])] * 4
-    d += [fetch_land('Verdant Catacombs', ['Swamp','Forest'])] * 4
-    d += [dual_land('Bayou', ['B','G'], ['Swamp','Forest'])] * 2
-    d += [dual_land('Taiga', ['R','G'], ['Mountain','Forest'])] * 2
-    d += [basic_land('Forest', 'G', 'Forest')] * 10
+    d += [utility_land('Yavimaya, Cradle of Growth', ['G'], 'yavimaya')] * 4
+    d += [utility_land('Boseiju, Who Endures', ['G'], 'boseiju')] * 3
+    d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 1
+    d += [utility_land('Bojuka Bog', ['B'], 'bog')] * 1
+    d += [basic_land('Forest', 'G', 'Forest')] * 1
+    d += [utility_land('Ghost Quarter', [], 'gq')] * 1
+    d += [utility_land('Karakas', ['W'], 'karakas')] * 1
+    d += [utility_land('Maze of Ith', [], 'maze')] * 1
+    d += [utility_land('The Tabernacle at Pendrell Vale', [], 'tab')] * 1
     assert len(d) == 60, f"Lands deck: {len(d)}"
     return d
 
@@ -499,25 +507,35 @@ def make_eldrazi_deck() -> List[Card]:
     assert len(d) == 60, f"Eldrazi deck: {len(d)}"
     return d
 
-# ── Painter Combo (60) ─────────────────────────────────────────
+# ── Painter Combo (60) — based on XanaZero 1st Legacy Challenge 2026-04-04 ──
 
 def make_painter_deck() -> List[Card]:
     d = []
-    d += [artifact("Painter's Servant", 2, {'generic':2}, tag='painter', is_combo_piece=True)] * 4
-    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', is_combo_piece=True, win_condition=True)] * 4
-    d += [instant('Pyroblast', 1, {'R':1}, {'R'}, tag='pyro')] * 4
-    d += [instant('Red Elemental Blast', 1, {'R':1}, {'R'}, tag='reb')] * 4
-    d += [creature('Imperial Recruiter', 3, {'R':1,'generic':2}, {'R'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
-    d += [enchantment('Blood Moon', 3, {'R':1,'generic':2}, {'R'}, tag='moon',    lock_piece=True)] * 3
-    d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(), tag='karn', engine=True, lock_piece=True)] * 2
-    d += [artifact('Ensnaring Bridge', 3, {'generic':3}, tag='bridge',  lock_piece=True)] * 2
-    d += [creature('Walking Ballista', 0, {}, set(), 0, 0, tag='ballista')] * 2
-    # 31 lands
+    # Combo
+    d += [creature("Painter's Servant", 2, {'generic':2}, set(), 1, 3, tag='painter', is_combo_piece=True)] * 3
+    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', is_combo_piece=True, win_condition=True)] * 1
+    # Planeswalkers
+    d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(), tag='karn', engine=True, lock_piece=True)] * 4
+    d += [planeswalker('Tezzeret, Cruel Captain', 3, {'generic':3}, set(), tag='tezzeret', engine=True)] * 4
+    # Artifacts
+    d += [artifact('The One Ring', 4, {'generic':4}, tag='ring', engine=True)] * 4
+    d += [artifact('Grim Monolith', 2, {'generic':2}, tag='monolith', mana_ritual=True)] * 4
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    d += [instant("Kozilek's Command", 4, {'C':2,'generic':2}, set(), tag='kozcommand')] * 4
+    d += [artifact('Manifold Key', 1, {'generic':1}, tag='mfkey')] * 3
+    d += [artifact("Mishra's Research Desk", 1, {'generic':1}, tag='desk', is_cantrip=True)] * 3
+    d += [artifact('Disruptor Flute', 3, {'generic':3}, tag='flute', lock_piece=True)] * 1
+    d += [artifact('Mox Opal', 0, {}, tag='opal', mana_ritual=True)] * 1
+    d += [artifact('Pithing Needle', 1, {'generic':1}, tag='needle')] * 1
+    d += [artifact('Portable Hole', 1, {'W':1}, tag='hole', is_removal=True)] * 1
+    d += [artifact('Soul-Guide Lantern', 1, {'generic':1}, tag='lantern')] * 1
+    d += [artifact('Voltaic Key', 1, {'generic':1}, tag='vkey')] * 1
+    # 20 lands (Tron + sol lands + Urza's Saga)
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 4
-    d += [utility_land('City of Traitors', ['C','C'], 'cot', mana_ritual=True)] * 4
-    d += [fetch_land('Arid Mesa', ['Mountain','Plains'])] * 4
-    d += [dual_land('Volcanic Island', ['U','R'], ['Island','Mountain'])] * 2
-    d += [basic_land('Mountain', 'R', 'Mountain')] * 17
+    d += [utility_land('Planar Nexus', ['C','C','C'], 'nexus')] * 4
+    d += [utility_land("Urza's Saga", ['C'], 'saga')] * 4
+    d += [utility_land("Urza's Tower", ['C','C','C'], 'tower')] * 4
+    d += [utility_land("Urza's Workshop", ['C','C','C'], 'workshop')] * 4
     assert len(d) == 60, f"Painter deck: {len(d)}"
     return d
 

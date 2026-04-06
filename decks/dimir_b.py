@@ -38,5 +38,5 @@ DECK_META = {
     'keep':       _keep_dimir_b,
     'categories': {'dimir_only', 'mirror', 'bowm_decks'},
     'interaction': {'speed': 3, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'opp_threats': 8},
-    'meta_share': 0.04,
+    'meta_share': 0.05,
 }
