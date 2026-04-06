@@ -698,14 +698,6 @@ PROTAGONIST_SB_SWAPS = {
         'doomsday':   ([('snap',2)],                   [('fon',2)]),
         'lands':      ([('narset',1)],                 [('pyro',1)]),
     },
-    'storm': {
-        'dimir':      ([('bs',1)],                     [('vos',1)]),
-        'uwx':        ([('bs',1)],                     [('vos',1)]),
-        'dnt':        ([('bs',1)],                     [('vos',1)]),
-        'mardu':      ([('bs',1)],                     [('vos',1)]),
-        'reanimator': ([('bs',1)],                     [('nihil',1)]),
-        'eldrazi':    ([('bs',1)],                     [('vos',1)]),
-    },
     'show': {
         'dimir':      ([('daze',2)],                   [('vos',2)]),
         'uwx':        ([('daze',2)],                   [('vos',2)]),
@@ -903,6 +895,220 @@ PROTAGONIST_SB_SWAPS = {
         'uwx':        ([('shadowspear',1)],              [('fon',1)]),
         'prison':     ([('shadowspear',1)],              [('fon',1)]),
         'elves':      ([('shadowspear',1)],              [('nihil',1)]),
+    },
+
+    # ── UR Delver protagonist SB ─────────────────────────────────────────────
+    # Delver boards Pyroblast vs blue mirrors; Surgical vs GY combo;
+    # extra removal vs creature decks; FoN vs fast combo
+    'ur_delver': {
+        'dimir':      ([('pierce',1)],                    [('pyro',1)]),
+        'dimir_b':    ([('pierce',1)],                    [('pyro',1)]),
+        'dimir_flash':([('pierce',1)],                    [('pyro',1)]),
+        'uwx':        ([('pierce',1)],                    [('pyro',1)]),
+        'bug':        ([('pierce',1)],                    [('pyro',1)]),
+        'storm':      ([('bolt',1)],                      [('fon',1)]),
+        'oops':       ([('bolt',1)],                      [('fon',1)]),
+        'doomsday':   ([('bolt',1)],                      [('fon',1)]),
+        'show':       ([('bolt',1)],                      [('fon',1)]),
+        'reanimator': ([('bolt',1)],                      [('surgical',1)]),
+        'dnt':        ([('pierce',1)],                    [('heat',1)]),
+        'eldrazi':    ([('pierce',1)],                    [('heat',1)]),
+        'elves':      ([('pierce',1)],                    [('heat',1)]),
+        'lands':      ([('heat',1)],                      [('pyro',1)]),
+        'sneak_a':    ([('bolt',1)],                      [('fon',1)]),
+        'tes':        ([('bolt',1)],                      [('fon',1)]),
+    },
+
+    # ── Burn protagonist SB ──────────────────────────────────────────────────
+    # Burn boards Smash to Smithereens vs artifacts; Pyrostatic Pillar vs combo;
+    # Searing Blood vs creature decks
+    'burn': {
+        'dimir':      ([('spike',1)],                     [('sblood',1)]),
+        'bug':        ([('spike',1)],                     [('sblood',1)]),
+        'uwx':        ([('spike',1)],                     [('sblood',1)]),
+        'storm':      ([('spike',1)],                     [('eidolon',1)]),
+        'oops':       ([('spike',1)],                     [('eidolon',1)]),
+        'doomsday':   ([('spike',1)],                     [('eidolon',1)]),
+        'show':       ([('spike',1)],                     [('eidolon',1)]),
+        'reanimator': ([('spike',1)],                     [('eidolon',1)]),
+        'dnt':        ([('spike',1)],                     [('sblood',1)]),
+        'eldrazi':    ([('spike',1)],                     [('sblood',1)]),
+        'prison':     ([('spike',1)],                     [('smash',1)]),
+        'eight_cast': ([('spike',1)],                     [('smash',1)]),
+        'affinity':   ([('spike',1)],                     [('smash',1)]),
+    },
+
+    # ── Sneak & Show A protagonist SB ────────────────────────────────────────
+    # Sneak boards Veil vs interaction; FoN vs other combo
+    'sneak_a': {
+        'dimir':      ([('daze',1)],                      [('vos',1)]),
+        'bug':        ([('daze',1)],                      [('vos',1)]),
+        'uwx':        ([('daze',1)],                      [('vos',1)]),
+        'storm':      ([('daze',1)],                      [('fon',1)]),
+        'oops':       ([('daze',1)],                      [('fon',1)]),
+        'doomsday':   ([('daze',1)],                      [('fon',1)]),
+        'reanimator': ([('daze',1)],                      [('surgical',1)]),
+        'dnt':        ([('daze',1)],                      [('vos',1)]),
+        'eldrazi':    ([('daze',1)],                      [('vos',1)]),
+    },
+    'sneak_b': {
+        'dimir':      ([('daze',1)],                      [('vos',1)]),
+        'bug':        ([('daze',1)],                      [('vos',1)]),
+        'uwx':        ([('daze',1)],                      [('vos',1)]),
+        'storm':      ([('daze',1)],                      [('fon',1)]),
+        'reanimator': ([('daze',1)],                      [('surgical',1)]),
+    },
+
+    # ── The Epic Storm protagonist SB ────────────────────────────────────────
+    # TES boards Veil vs interaction; Galvanic Relay vs grindy matchups
+    'tes': {
+        'dimir':      ([('petal',1)],                     [('vos',1)]),
+        'bug':        ([('petal',1)],                     [('vos',1)]),
+        'uwx':        ([('petal',1)],                     [('vos',1)]),
+        'dnt':        ([('petal',1)],                     [('vos',1)]),
+        'storm':      ([('petal',1)],                     [('fon',1)]),
+        'reanimator': ([('petal',1)],                     [('nihil',1)]),
+        'eldrazi':    ([('petal',1)],                     [('vos',1)]),
+    },
+
+    # ── Infect protagonist SB ────────────────────────────────────────────────
+    # Infect boards Veil vs interaction; Force vs combo; extra pump vs removal
+    'infect': {
+        'dimir':      ([('become',1)],                    [('vos',1)]),
+        'bug':        ([('become',1)],                    [('vos',1)]),
+        'uwx':        ([('become',1)],                    [('vos',1)]),
+        'storm':      ([('become',1)],                    [('fon',1)]),
+        'oops':       ([('become',1)],                    [('fon',1)]),
+        'doomsday':   ([('become',1)],                    [('fon',1)]),
+        'reanimator': ([('become',1)],                    [('surgical',1)]),
+        'dnt':        ([('become',1)],                    [('vos',1)]),
+        'eldrazi':    ([('become',1)],                    [('vos',1)]),
+    },
+
+    # ── Dark Depths protagonist SB ───────────────────────────────────────────
+    # Depths boards Surgical vs GY combo; extra discard vs combo; Abrupt Decay vs prison
+    'depths': {
+        'storm':      ([('push',1)],                      [('surgical',1)]),
+        'oops':       ([('push',1)],                      [('surgical',1)]),
+        'doomsday':   ([('push',1)],                      [('surgical',1)]),
+        'reanimator': ([('push',1)],                      [('surgical',1)]),
+        'show':       ([('push',1)],                      [('surgical',1)]),
+        'dimir':      ([('push',1)],                      [('abrupt',1)]),
+        'bug':        ([('push',1)],                      [('abrupt',1)]),
+        'prison':     ([('push',1)],                      [('abrupt',1)]),
+    },
+
+    # ── BUG protagonist SB ───────────────────────────────────────────────────
+    # BUG boards FoN vs combo; Surgical vs GY; Massacre vs white weenie
+    'bug': {
+        'storm':      ([('push',2)],                      [('fon',2)]),
+        'oops':       ([('push',2)],                      [('fon',2)]),
+        'doomsday':   ([('push',2)],                      [('fon',1),('nihil',1)]),
+        'show':       ([('push',2)],                      [('fon',2)]),
+        'reanimator': ([('push',2)],                      [('nihil',1),('surgical',1)]),
+        'sneak_a':    ([('push',2)],                      [('fon',2)]),
+        'dnt':        ([('ts',2)],                        [('massacre',2)]),
+        'boros':      ([('ts',2)],                        [('massacre',2)]),
+        'eldrazi':    ([('ts',1)],                        [('fon',1)]),
+        'dimir':      ([('push',1)],                      [('pyro',1)]),
+        'uwx':        ([('push',1)],                      [('pyro',1)]),
+        'lands':      ([('push',1)],                      [('fon',1)]),
+        'prison':     ([('push',1)],                      [('fon',1)]),
+    },
+
+    # ── UR Aggro protagonist SB ──────────────────────────────────────────────
+    'ur_aggro': {
+        'dimir':      ([('pierce',1)],                    [('pyro',1)]),
+        'bug':        ([('pierce',1)],                    [('pyro',1)]),
+        'uwx':        ([('pierce',1)],                    [('pyro',1)]),
+        'storm':      ([('bolt',1)],                      [('fon',1)]),
+        'oops':       ([('bolt',1)],                      [('fon',1)]),
+        'doomsday':   ([('bolt',1)],                      [('fon',1)]),
+        'reanimator': ([('bolt',1)],                      [('surgical',1)]),
+        'dnt':        ([('pierce',1)],                    [('heat',1)]),
+    },
+
+    # ── UR Tempo protagonist SB ──────────────────────────────────────────────
+    'ur_tempo': {
+        'dimir':      ([('pierce',1)],                    [('pyro',1)]),
+        'bug':        ([('pierce',1)],                    [('pyro',1)]),
+        'uwx':        ([('pierce',1)],                    [('pyro',1)]),
+        'storm':      ([('bolt',1)],                      [('fon',1)]),
+        'oops':       ([('bolt',1)],                      [('fon',1)]),
+        'reanimator': ([('bolt',1)],                      [('surgical',1)]),
+    },
+
+    # ── Dimir variants — inherit from dimir with minor tweaks ────────────────
+    'dimir_b': {
+        'uwx':        ([('push',2),('ts',1)],             [('fon',2),('pyro',1)]),
+        'storm':      ([('push',3),('daze',1)],            [('fon',2),('fluster',1),('mindbreak',1)]),
+        'show':       ([('push',3),('daze',2)],            [('fon',2),('nihil',1),('snuffout',1)]),
+        'reanimator': ([('push',2),('daze',1)],            [('fon',2),('nihil',1)]),
+        'dnt':        ([('ts',2)],                         [('massacre',2)]),
+        'oops':       ([('push',3)],                       [('fon',3)]),
+    },
+    'dimir_c': {
+        'storm':      ([('push',2)],                       [('fon',2)]),
+        'show':       ([('push',2)],                       [('fon',2)]),
+        'reanimator': ([('push',2)],                       [('fon',1),('nihil',1)]),
+        'dnt':        ([('ts',2)],                         [('massacre',2)]),
+    },
+    'dimir_d': {
+        'storm':      ([('push',2)],                       [('fon',2)]),
+        'show':       ([('push',2)],                       [('fon',2)]),
+        'reanimator': ([('push',2)],                       [('fon',1),('nihil',1)]),
+        'dnt':        ([('ts',2)],                         [('massacre',2)]),
+    },
+    'dimir_flash': {
+        'storm':      ([('push',2)],                       [('fon',2)]),
+        'show':       ([('push',2)],                       [('fon',2)]),
+        'reanimator': ([('push',2)],                       [('fon',1),('nihil',1)]),
+    },
+
+    # ── Goblins protagonist SB ───────────────────────────────────────────────
+    'goblins': {
+        'storm':      ([('lackey',1)],                     [('mindbreak',1)]),
+        'oops':       ([('lackey',1)],                     [('nihil',1)]),
+        'doomsday':   ([('lackey',1)],                     [('nihil',1)]),
+        'reanimator': ([('lackey',1)],                     [('nihil',1)]),
+        'show':       ([('lackey',1)],                     [('mindbreak',1)]),
+        'dimir':      ([('lackey',1)],                     [('pyro',1)]),
+        'bug':        ([('lackey',1)],                     [('pyro',1)]),
+        'uwx':        ([('lackey',1)],                     [('pyro',1)]),
+    },
+
+    # ── Belcher protagonist SB ───────────────────────────────────────────────
+    'belcher': {
+        'dimir':      ([('probe',1)],                      [('vos',1)]),
+        'bug':        ([('probe',1)],                      [('vos',1)]),
+        'uwx':        ([('probe',1)],                      [('vos',1)]),
+        'storm':      ([('probe',1)],                      [('fon',1)]),
+    },
+
+    # ── Affinity protagonist SB ──────────────────────────────────────────────
+    'affinity': {
+        'storm':      ([('bauble',1)],                     [('fon',1)]),
+        'oops':       ([('bauble',1)],                     [('nihil',1)]),
+        'doomsday':   ([('bauble',1)],                     [('nihil',1)]),
+        'reanimator': ([('bauble',1)],                     [('nihil',1)]),
+        'dimir':      ([('bauble',1)],                     [('fon',1)]),
+        'bug':        ([('bauble',1)],                     [('fon',1)]),
+    },
+
+    # ── Cephalid Breakfast protagonist SB ────────────────────────────────────
+    'cephalid': {
+        'dimir':      ([('daze',1)],                       [('vos',1)]),
+        'bug':        ([('daze',1)],                       [('vos',1)]),
+        'storm':      ([('daze',1)],                       [('fon',1)]),
+        'reanimator': ([('daze',1)],                       [('surgical',1)]),
+    },
+
+    # ── Cloudpost protagonist SB ─────────────────────────────────────────────
+    'cloudpost': {
+        'storm':      ([('map',1)],                        [('fon',1)]),
+        'oops':       ([('map',1)],                        [('fon',1)]),
+        'dimir':      ([('map',1)],                        [('fon',1)]),
+        'reanimator': ([('map',1)],                        [('nihil',1)]),
     },
 }
 
