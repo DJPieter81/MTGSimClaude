@@ -182,6 +182,8 @@ r.p2_deck
 - `run_meta.py` — CLI for all meta analysis commands
 - `import_deck.py` — Decklist parser and deck module generator
 - `parallel.py` — Multiprocessing for matrix and field runs (~3x speedup)
+- `meta_results.py` — Save/load simulation results as JSON for cross-session use
+- `game_replay.py` — HTML turn-by-turn game replay generator
 
 ## Key Design Principles
 

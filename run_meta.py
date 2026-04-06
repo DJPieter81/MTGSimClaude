@@ -11,6 +11,9 @@ Usage:
   python3 run_meta.py --matrix -n 50 bug storm dimir  Custom deck list matrix
   python3 run_meta.py --verbose storm burn -s 42      Game log (actions only)
   python3 run_meta.py --trace storm burn -s 42        Full log with hand state
+  python3 run_meta.py --results                       List saved result files
+  python3 run_meta.py --load                          Display latest saved matrix
+  python3 run_meta.py --load custom_matrix            Display specific saved result
 
 HTML replay (separate script):
   python3 game_replay.py storm 42                     Single game replay
