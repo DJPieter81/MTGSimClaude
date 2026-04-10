@@ -144,7 +144,7 @@ def make_tes_sideboard():
     for _ in range(2):
         sb.append(instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos'))
     for _ in range(2):
-        sb.append(sorcery('Grapeshot', 2, {'R':1,'generic':1}, {'R'}, tag='grape'))
+        sb.append(sorcery('Grapeshot', 2, {'R':1,'generic':1}, {'R'}, tag='grape', win_condition=True))
     for _ in range(6):
         sb.append(instant('Galvanic Relay', 2, {'R':1,'generic':1}, {'R'}, tag='relay'))
     return sb
@@ -612,7 +612,12 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         lethal = damage >= opponent.life
         good_storm = effective_storm >= 5 and damage >= 12
         protected_ok = veil_up and effective_storm >= 3
-        desperate = player.life <= 6 or gs.turn >= 4
+        life_lost = 20 - player.life
+        opp_has_counters = any(c.tag in ('fow', 'fon', 'daze', 'fluster', 'counter')
+                               for c in opponent.hand)
+        desperate = (player.life <= 6 or gs.turn >= 4 or
+                     player.life <= 10 or
+                     (life_lost >= 5 and not opp_has_counters))
 
         if mana >= 4 and (lethal or good_storm or protected_ok or desperate):
             if not _try_counter_any(player, opponent, gs, tendrils, log_entries):

@@ -528,7 +528,9 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     has_removal = any(c.tag == 'stp' for c in defender.hand)
     is_major_threat = (
         spell_card.win_condition or spell_card.is_combo_piece or
-        spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
+        spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4 or
+        getattr(spell_card, 'lock_piece', False) or  # lock pieces shut down entire strategies
+        getattr(spell_card, 'engine', False)          # engines snowball if not answered
     )
 
     # Burn spells: major threat when defender is at low life or spell is lethal
@@ -560,8 +562,11 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
         is_major_threat = True
     # Control decks (runs STP) should NOT FoW cheap creatures — STP them later
-    # But always counter Eidolon (it punishes every spell you cast)
-    if spell_card.cmc <= 2 and has_removal and not spell_card.win_condition and spell_card.tag != 'eidolon':
+    # But always counter Eidolon, lock pieces, and engines (can't STP those)
+    if (spell_card.cmc <= 2 and has_removal and not spell_card.win_condition
+            and spell_card.tag != 'eidolon'
+            and not getattr(spell_card, 'lock_piece', False)
+            and not getattr(spell_card, 'engine', False)):
         is_major_threat = False
 
     is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
@@ -1821,6 +1826,7 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
             log(f"Trinisphere active — {len(_trini_adjusted)} spells taxed to 3 mana")
 
     # ── Matchup dispatch (all decks via registry) ──
+    spells_before = o.spells_cast_this_turn
     if matchup in ('bug', 'bug_sb'):
         _opp_dimir(gs, om, log, log_entries)  # BUG mirror uses Dimir strategy
     else:
@@ -1832,6 +1838,15 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
                 gs.log_event('o', 'main', msg, key)
                 log_entries.append(msg)
             strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
+
+    # ── Eidolon of the Great Revel: 2 damage per spell cast (CMC ≤3) ──
+    if gs.eidolon_active and not gs.game_over:
+        spells_cast = o.spells_cast_this_turn - spells_before
+        if spells_cast > 0:
+            eidolon_dmg = spells_cast * 2
+            o.life -= eidolon_dmg
+            log(f"Eidolon trigger — {spells_cast} spell(s) cast, {eidolon_dmg} damage to P2 ({o.life})")
+            gs.check_life_totals()
 
     # Restore Chalice-blocked cards and Trinisphere-adjusted CMCs
     o.hand.extend(_chalice_blocked)
