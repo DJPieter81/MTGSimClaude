@@ -1,0 +1,782 @@
+══════════════════════════════════════════════════════════════════════
+  UR_TEMPO vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  UR_TEMPO (P1):
+  Draw 7:
+    1. Mishra's Bauble (artifact, CMC 0)
+    2. Island (basic)
+    3. Mishra's Bauble (artifact, CMC 0)
+    4. Cori-Steel Cutter (creature 3/1, CMC 2)
+    5. Dragon's Rage Channeler (creature 3/3, CMC 1)
+    6. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 1  Creatures: 3  Cantrips: 1  Other: 2]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; 3 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Underground Sea (dual)
+    3. Ponder (sorcery, CMC 1, cantrip)
+    4. Ponder (sorcery, CMC 1, cantrip)
+    5. Orcish Bowmasters (creature 1/1, CMC 2)
+    6. Polluted Delta (fetch)
+    7. Orcish Bowmasters (creature 1/1, CMC 2)
+    [Lands: 2  Creatures: 2  Cantrips: 3]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (6): Brainstorm, Ponder, Ponder, Orcish Bowmasters, Polluted Delta, Orcish Bowmasters
+    Mana available: 1
+  Brainstorm (3 draws)
+  Mishra's Bauble (sac, artifact in GY, +1 draw next upkeep)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 7  Lib: 50  GY: 2        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Mishra's Bauble          │   Hand: Ponder, Ponder           │
+  │         Island                   │         Orcish Bowmasters        │
+  │         Mishra's Bauble          │         Polluted Delta           │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Dragon's Rage Channeler, │         Scalding Tarn            │
+  │         Tamiyo                   │         Nethergoyf               │
+  │         Inquisitive Student      │                                  │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Polluted Delta
+  Land: Island (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Mishra's Bauble, Mishra's Bauble, Cori-Steel Cutter, Dragon's Rage Channeler, Tamiyo, Inquisitive Student, Brainstorm, Polluted Delta
+      → Dragon's Rage Channeler goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Dragon's Rage Channeler RESOLVES
+  Dragon's Rage Channeler
+  Mishra's Bauble — cantrip
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 51  GY: 1        │   Hand: 7  Lib: 50  GY: 2        │
+  │   Lands: Island                  │   Lands: Underground Sea         │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Mishra's Bauble          │   Hand: Ponder, Ponder           │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Tamiyo                   │         Polluted Delta           │
+  │         Inquisitive Student      │         Orcish Bowmasters        │
+  │         Brainstorm               │         Scalding Tarn            │
+  │         Polluted Delta           │         Nethergoyf               │
+  │         Misty Rainforest         │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Brazen Borrower
+  Play+crack Polluted Delta (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (7): Ponder, Ponder, Orcish Bowmasters, Orcish Bowmasters, Scalding Tarn, Nethergoyf, Brazen Borrower
+    Mana available: 2
+  Ponder (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 51  GY: 1        │   Hand: 7  Lib: 47  GY: 5        │
+  │   Lands: Island                  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Mishra's Bauble          │   Hand: Ponder                   │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Tamiyo                   │         Orcish Bowmasters        │
+  │         Inquisitive Student      │         Scalding Tarn            │
+  │         Brainstorm               │         Nethergoyf               │
+  │         Polluted Delta           │         Brazen Borrower          │
+  │         Misty Rainforest         │         Brazen Borrower          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | dimir 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Ponder
+  Play+crack Polluted Delta (−1 life, 19) → Volcanic Island
+  ── Main ── Mana: 2
+    Hand (6): Mishra's Bauble, Cori-Steel Cutter, Tamiyo, Inquisitive Student, Brainstorm, Misty Rainforest, Ponder
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student
+  Mishra's Bauble — cantrip
+  Brainstorm — cantrip
+  Attack: Dragon's Rage Channeler — 3 unblocked → o at 16
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 19                       │   Life: 16                       │
+  │   Hand: 5  Lib: 47  GY: 5        │   Hand: 7  Lib: 47  GY: 5        │
+  │   Lands: Island, Volcanic Island │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Cori-Steel Cutter        │   Hand: Ponder                   │
+  │         Misty Rainforest         │         Orcish Bowmasters        │
+  │         Ponder, Wasteland        │         Orcish Bowmasters        │
+  │         Mishra's Bauble          │         Scalding Tarn            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Brazen Borrower          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | dimir 16
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Force of Will
+  Play+crack Scalding Tarn (−1 life, 15) → Underground Sea
+  ── Main ──
+    Hand (7): Ponder, Orcish Bowmasters, Orcish Bowmasters, Nethergoyf, Brazen Borrower, Brazen Borrower, Force of Will
+    Mana available: 3
+  Ponder (1 draw)
+      → Nethergoyf goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO has no counters — passes priority
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 19                       │   Life: 15                       │
+  │   Hand: 5  Lib: 47  GY: 5        │   Hand: 6  Lib: 44  GY: 8        │
+  │   Lands: Island, Volcanic Island │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (0/1)    │
+  │   Hand: Cori-Steel Cutter        │   Hand: Orcish Bowmasters        │
+  │         Misty Rainforest         │         Orcish Bowmasters        │
+  │         Ponder, Wasteland        │         Brazen Borrower          │
+  │         Mishra's Bauble          │         Brazen Borrower          │
+  │                                  │         Force of Will, Tamiyo    │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | dimir 15
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Ponder
+  Play+crack Misty Rainforest (−1 life, 18) → Volcanic Island
+  ── Main ── Mana: 3
+    Hand (5): Cori-Steel Cutter, Ponder, Wasteland, Mishra's Bauble, Ponder
+      → Cori-Steel Cutter goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Cori-Steel Cutter RESOLVES
+  Cori-Steel Cutter (3/1 haste)
+  Mishra's Bauble — cantrip
+  Ponder — cantrip
+  ── Combat ── (3 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 4  Lib: 43  GY: 9        │   Hand: 6  Lib: 44  GY: 8        │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Wasteland, Ponder        │   Hand: Orcish Bowmasters        │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Dragon's Rage Channeler  │         Brazen Borrower          │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will, Tamiyo    │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Brazen Borrower, Force of Will, Tamiyo, Inquisitive Student, Nethergoyf
+    Mana available: 3
+      → Brazen Borrower goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO has no counters — passes priority
+      → Brazen Borrower RESOLVES
+  Brazen Borrower (3/1)
+  Attack: Nethergoyf — Tamiyo, Inquisitive Student blocks Nethergoyf. Nethergoyf deals 4, Tamiyo, Inquisitive Student deals 0 back. 0 unblocked damage to player (b at 18)
+      Tamiyo, Inquisitive Student dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 4  Lib: 43  GY: 10       │   Hand: 6  Lib: 43  GY: 8        │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5), Brazen ... │
+  │   Hand: Wasteland, Ponder        │   Hand: Orcish Bowmasters        │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Dragon's Rage Channeler  │         Brazen Borrower          │
+  │                                  │         Force of Will, Tamiyo    │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Nethergoyf               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Cori-Steel Cutter
+  Land: Wasteland (4 lands)
+  ── Main ── Mana: 4
+    Hand (4): Ponder, Cori-Steel Cutter, Dragon's Rage Channeler, Cori-Steel Cutter
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+      → Dragon's Rage Channeler goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Dragon's Rage Channeler RESOLVES
+  Dragon's Rage Channeler
+  Ponder — cantrip
+  Lightning Bolt -> Brazen Borrower
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 2  Lib: 41  GY: 12       │   Hand: 6  Lib: 43  GY: 10       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (5/6)    │
+  │   Hand: Cori-Steel Cutter        │   Hand: Orcish Bowmasters        │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will, Tamiyo    │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Nethergoyf               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Tamiyo, Inquisitive Student, Nethergoyf, Thoughtseize
+    Mana available: 2
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Attack: Nethergoyf — Dragon's Rage Channeler blocks Nethergoyf. Nethergoyf deals 5, Dragon's Rage Channeler deals 3 back. 0 unblocked damage to player (b at 18)
+      Dragon's Rage Channeler dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 2  Lib: 41  GY: 13       │   Hand: 6  Lib: 42  GY: 10       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Cori-Steel Cutter (3/1), ... │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Cori-Steel Cutter        │   Hand: Orcish Bowmasters        │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf, Thoughtseize │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Daze
+  ── Main ── Mana: 4
+    Hand (3): Cori-Steel Cutter, Cori-Steel Cutter, Daze
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+      → Cori-Steel Cutter goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Cori-Steel Cutter RESOLVES
+  Cori-Steel Cutter (3/1 haste)
+  ── Combat ── (3 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 2  Lib: 40  GY: 13       │   Hand: 6  Lib: 42  GY: 11       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea         │
+  │   Creatures: Cori-Steel Cutter (3/1), ... │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Cori-Steel Cutter, Daze  │   Hand: Orcish Bowmasters        │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf, Thoughtseize │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Nethergoyf, Thoughtseize, Fatal Push
+    Mana available: 1
+  Fatal Push [CMC≤2] → kills Cori-Steel Cutter
+  Attack: Nethergoyf — Dragon's Rage Channeler blocks Nethergoyf. Nethergoyf deals 5, Dragon's Rage Channeler deals 3 back. 0 unblocked damage to player (b at 18)
+      Dragon's Rage Channeler dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 2  Lib: 40  GY: 15       │   Hand: 6  Lib: 41  GY: 12       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea         │
+  │   Creatures: Cori-Steel Cutter (3/1) │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Cori-Steel Cutter, Daze  │   Hand: Orcish Bowmasters        │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf, Thoughtseize │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ── Mana: 4
+    Hand (3): Cori-Steel Cutter, Daze, Brainstorm
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+      → Cori-Steel Cutter goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Cori-Steel Cutter RESOLVES
+  Cori-Steel Cutter (3/1 haste)
+  Brainstorm — cantrip
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 2  Lib: 38  GY: 16       │   Hand: 6  Lib: 41  GY: 13       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: Cori-Steel Cutter (3/1), ... │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf, Thoughtseize │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Land: Wasteland (1 lands)
+  ── Main ──
+    Hand (6): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Nethergoyf, Thoughtseize
+    Mana available: 1
+  Wasteland [ACTIVATED-uncounterable] → Volcanic Island
+  Attack: Nethergoyf — Cori-Steel Cutter blocks Nethergoyf. Nethergoyf deals 5, Cori-Steel Cutter deals 3 back. 0 unblocked damage to player (b at 18)
+      Cori-Steel Cutter dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 2  Lib: 38  GY: 18       │   Hand: 6  Lib: 40  GY: 14       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: Cori-Steel Cutter (3/1) │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf, Thoughtseize │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Daze
+  ── Main ── Mana: 3
+    Hand (3): Daze, Force of Will, Daze
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 3  Lib: 37  GY: 18       │   Hand: 6  Lib: 40  GY: 14       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: Cori-Steel Cutter (3/1) │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze                     │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf, Thoughtseize │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 15
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Nethergoyf, Thoughtseize, Nethergoyf
+    Mana available: 0
+  Attack: Nethergoyf — 5 unblocked → b at 13
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 13                       │   Life: 15                       │
+  │   Hand: 3  Lib: 37  GY: 18       │   Hand: 7  Lib: 39  GY: 14       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: Cori-Steel Cutter (3/1) │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze                     │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize, Nethergoyf │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 13 | dimir 15
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Flooded Strand
+  Play+crack Flooded Strand (−1 life, 12) → Volcanic Island
+  ── Main ── Mana: 4
+    Hand (3): Daze, Force of Will, Daze
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 12                       │   Life: 15                       │
+  │   Hand: 3  Lib: 35  GY: 20       │   Hand: 7  Lib: 39  GY: 14       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: Cori-Steel Cutter (3/1) │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze                     │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize, Nethergoyf │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 12 | dimir 15
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  ── Main ──
+    Hand (8): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Nethergoyf, Thoughtseize, Nethergoyf, Tamiyo, Inquisitive Student
+    Mana available: 0
+  Attack: Nethergoyf — 5 unblocked → b at 7
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 7                        │   Life: 15                       │
+  │   Hand: 3  Lib: 35  GY: 20       │   Hand: 8  Lib: 38  GY: 14       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: Cori-Steel Cutter (3/1) │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze                     │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 18 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 7 | dimir 15
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 4
+    Hand (4): Daze, Force of Will, Daze, Force of Will
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 7                        │   Life: 15                       │
+  │   Hand: 4  Lib: 34  GY: 20       │   Hand: 8  Lib: 38  GY: 14       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: Cori-Steel Cutter (3/1) │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze, Force of Will      │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 19 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 7 | dimir 15
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  ── Main ──
+    Hand (9): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Nethergoyf, Thoughtseize, Nethergoyf, Tamiyo, Inquisitive Student, Tamiyo, Inquisitive Student
+    Mana available: 0
+  Attack: Nethergoyf — Cori-Steel Cutter blocks Nethergoyf. Nethergoyf deals 5, Cori-Steel Cutter deals 3 back. 0 unblocked damage to player (b at 7)
+      Cori-Steel Cutter dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 7                        │   Life: 15                       │
+  │   Hand: 4  Lib: 34  GY: 21       │   Hand: 9  Lib: 37  GY: 14       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze, Force of Will      │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 20 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 7 | dimir 15
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Ponder
+  ── Main ── Mana: 4
+    Hand (5): Daze, Force of Will, Daze, Force of Will, Ponder
+  Ponder — cantrip
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 7                        │   Life: 15                       │
+  │   Hand: 5  Lib: 32  GY: 22       │   Hand: 9  Lib: 37  GY: 14       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze, Force of Will      │         Orcish Bowmasters        │
+  │         Murktide Regent          │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 21 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 7 | dimir 15
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ──
+    Hand (10): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Nethergoyf, Thoughtseize, Nethergoyf, Tamiyo, Inquisitive Student, Tamiyo, Inquisitive Student, Thoughtseize
+    Mana available: 0
+  Attack: Nethergoyf — 5 unblocked → b at 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 2                        │   Life: 15                       │
+  │   Hand: 5  Lib: 32  GY: 22       │   Hand: 10  Lib: 36  GY: 14      │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze, Force of Will      │         Orcish Bowmasters        │
+  │         Murktide Regent          │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 22 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 2 | dimir 15
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Thundering Falls
+  Land: Thundering Falls (5 lands)
+  ── Main ── Mana: 5
+    Hand (5): Daze, Force of Will, Daze, Force of Will, Murktide Regent
+      → Murktide Regent goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has counters but cannot use them (conditions not met)
+      → Murktide Regent RESOLVES
+  Murktide Regent (delve 6, paid 2)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 2                        │   Life: 15                       │
+  │   Hand: 4  Lib: 31  GY: 16       │   Hand: 10  Lib: 36  GY: 14      │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Daze, Force of Will      │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 23 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 2 | dimir 15
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Polluted Delta (−1 life, 14) → Underground Sea
+  ── Main ──
+    Hand (10): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Nethergoyf, Thoughtseize, Nethergoyf, Tamiyo, Inquisitive Student, Tamiyo, Inquisitive Student, Thoughtseize
+    Mana available: 1
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO evaluates: minor threat — responds!
+    ★ UR_TEMPO Force of Will counters Tamiyo, Inquisitive Student (exiles Daze)
+    Tamiyo, Inquisitive Student COUNTERED — goes to graveyard
+  Attack: Nethergoyf — Murktide Regent blocks Nethergoyf. Nethergoyf deals 5, Murktide Regent deals 5 back. 0 unblocked damage to player (b at 2)
+      Murktide Regent dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 2                        │   Life: 14                       │
+  │   Hand: 2  Lib: 31  GY: 18       │   Hand: 9  Lib: 34  GY: 17       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 24 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 2 | dimir 14
+
+  ── Untap ── (5 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 5
+    Hand (3): Daze, Force of Will, Force of Will
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 2                        │   Life: 14                       │
+  │   Hand: 3  Lib: 30  GY: 18       │   Hand: 9  Lib: 34  GY: 18       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Force of Will            │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 25 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 2 | dimir 14
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Kaito, Bane of Nightmares
+  ── Main ──
+    Hand (10): Orcish Bowmasters, Orcish Bowmasters, Brazen Borrower, Force of Will, Nethergoyf, Thoughtseize, Nethergoyf, Tamiyo, Inquisitive Student, Thoughtseize, Kaito, Bane of Nightmares
+    Mana available: 0
+  Attack: Nethergoyf — 5 unblocked → b at -3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: -3                       │   Life: 14                       │
+  │   Hand: 3  Lib: 30  GY: 18       │   Hand: 10  Lib: 33  GY: 18      │
+  │   Lands: Island, Volcanic Island, ... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Force of Will            │         Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Nethergoyf, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Thoughtseize, Kaito      │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DIMIR — BUG life reaches -3 on turn 13
+  Final life: ur_tempo -3 | dimir 14
+══════════════════════════════════════════════════════════════════════
