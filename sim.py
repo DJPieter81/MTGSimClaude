@@ -585,6 +585,11 @@ def protagonist_turn(gs, turn, matchup):
     apply_eidolon_damage(gs, b, spells_before, log)
     restore_lock_effects(b, _adjustments)
 
+    # ── Tamiyo flip check — oracle: flip when you draw your 3rd card in a turn ──
+    # Centralized here so it works for ALL decks, not just BUG.
+    from engine import _check_tamiyo_flip
+    _check_tamiyo_flip(gs, b, log)
+
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
     combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
     if gs.trace:
