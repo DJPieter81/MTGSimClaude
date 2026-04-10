@@ -3483,7 +3483,39 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     rem = total_mana  # remaining mana this gs.turn — deduct after each spell cast
-    can = next((c for c in player.hand if c.is_cantrip and rem>=1), None)
+
+    # ── 0. Deploy T1 threats FIRST (Tamiyo is the best T1 play) ──
+    # Real Dimir plays T1 Tamiyo (starts flip clock, 0/3 blocks) or T1 Thoughtseize.
+    # Cantrips are better held for later turns when there's more info.
+    # Priority: Tamiyo > Nethergoyf > other cheap creatures
+    _deploy_priority = {'tamiyo': 0, 'nether': 1, 'barrow': 1, 'borrow': 3}
+    cheap_threats = [(c, _deploy_priority.get(c.tag, 2))
+                     for c in player.hand
+                     if c.is_creature() and c.cmc <= rem
+                     and c.tag not in ('bowm', 'snuffout', 'murk')]
+    cheap_threats.sort(key=lambda x: x[1])
+
+    for thr, _ in cheap_threats[:1]:  # deploy one creature
+        player.remove_from_hand(thr)
+        if not _try_counter_any(player, opponent, gs, thr, log_entries):
+            player.put_creature_in_play(thr)
+            log_fn(f"{thr.name} ({thr.base_power}/{thr.base_toughness})")
+            rem -= thr.cmc
+            if getattr(thr, 'engine', False) and thr.cmc == 2:
+                drawn = player.draw(1)
+                if drawn: log_fn(f"  Strix ETB → draws {drawn[0].name}")
+                if gs.bowmasters_on_board:
+                    ctr = []; bowmasters_triggers(1, gs, ctr)
+                    for m in ctr: log_entries.append(m)
+            elif thr.tag == 'barrow':
+                update_goyf(gs)
+                log_fn(f"  Barrowgoyf P/T: {player.creatures[-1].power}/{player.creatures[-1].toughness}")
+        else:
+            player.add_to_grave(thr)
+        break
+
+    # ── 1. Cantrips — cast with remaining mana ──
+    can = next((c for c in player.hand if c.is_cantrip and rem >= 1), None)
     if can:
         player.remove_from_hand(can); player.add_to_grave(can)
         rem -= 1  # spent 1 mana on cantrip
@@ -3502,26 +3534,17 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.pending_bauble_draws = getattr(gs, 'pending_bauble_draws', 0) + 1
             update_goyf(gs)
             log_fn(f"Mishra\'s Bauble (sac, artifact in GY, +1 draw next upkeep)")
-    # Deploy non-Bowmasters creatures first (Nethergoyf, Brazen Borrower, etc.)
-    thr = player.find_any(lambda c: c.is_creature() and c.cmc <= rem and c.tag not in ('bowm','snuffout'))
-    if thr:
-        player.remove_from_hand(thr)
-        if not _try_counter_any(player, opponent, gs, thr, log_entries):
-            player.put_creature_in_play(thr)
-            log_fn(f"{thr.name} ({thr.base_power}/{thr.base_toughness})")
-            rem -= thr.cmc
-            # Baleful Strix ETB: draw a card
-            if getattr(thr, 'engine', False) and thr.cmc == 2:
-                drawn = player.draw(1)
-                if drawn: log_fn(f"  Strix ETB → draws {drawn[0].name}")
-                if gs.bowmasters_on_board:
-                    ctr = []; bowmasters_triggers(1, gs, ctr)
-                    for m in ctr: log_entries.append(m)
-            # Barrowgoyf: P/T computed at runtime
-            elif thr.tag == 'barrow':
+    # Deploy second creature if mana permits (moved primary deploy to top)
+    thr2 = player.find_any(lambda c: c.is_creature() and c.cmc <= rem and c.tag not in ('bowm','snuffout','murk'))
+    if thr2 and rem >= thr2.cmc:
+        player.remove_from_hand(thr2)
+        if not _try_counter_any(player, opponent, gs, thr2, log_entries):
+            player.put_creature_in_play(thr2)
+            log_fn(f"{thr2.name} ({thr2.base_power}/{thr2.base_toughness})")
+            rem -= thr2.cmc
+            if thr2.tag == 'barrow':
                 update_goyf(gs)
-                log_fn(f"  Barrowgoyf P/T: {player.creatures[-1].power}/{player.creatures[-1].toughness}")
-        else: player.add_to_grave(thr)
+        else: player.add_to_grave(thr2)
 
     # Deploy Bowmasters: flash creature that provides a blocker and pings on draws.
     # In real Legacy, Bowmasters is cast on opponent's turn (flash), but since
