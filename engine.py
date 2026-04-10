@@ -2269,6 +2269,11 @@ def _strategy_elves(player, opponent, gs, total_mana, log_fn, log_entries):
 def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     """Death and Taxes: Aether Vial + tax creatures + land denial.
 
+    Mother of Runes: if untapped on board, protects most valuable creature
+    from targeted removal. Modeled as gs._mom_protected_tag — the tag of
+    the creature MoR is protecting this turn. Removal targeting that
+    creature fails (checked in opp_can_remove).
+
     Priority vs aggro (creatures on opponent's board):
       1. Swords to Plowshares (exile + life gain)
       2. Solitude (free evoke exile + life gain)
@@ -2282,6 +2287,22 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
       3. Stoneforge Mystic (tutor equipment)
       4. Wasteland + Port (deny mana)
     """
+
+    # ── Mother of Runes: protect most valuable creature ──
+    # MoR taps to give protection from a color → prevents targeted removal.
+    # Model: flag the most important creature as protected for this turn cycle.
+    mom_perm = next((c for c in player.creatures
+                     if c.card.tag == 'mom' and not c.summoning_sick), None)
+    gs._mom_protected_tag = None
+    if mom_perm and len(player.creatures) >= 2:
+        # Protect the most valuable non-MoR creature
+        protect_priority = {'thalia': 10, 'sfm': 8, 'skyclave': 7, 'phelia': 6,
+                            'flickerwisp': 5, 'solitude': 5, 'recruiter': 3}
+        best = max((c for c in player.creatures if c.card.tag != 'mom'),
+                   key=lambda c: protect_priority.get(c.card.tag, 1), default=None)
+        if best:
+            gs._mom_protected_tag = best.card.tag
+            log_fn(f"Mother of Runes protects {best.card.name}")
 
     # ── 0. Swords to Plowshares — FIRST PRIORITY vs any creature ──
     # Real DnT always fires STP before deploying own threats.
@@ -2362,12 +2383,12 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     deploy_priority = ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp',
                        'orchid', 'mom', 'recruiter']
 
-    # Hard cast creatures (multiple if mana permits, no Vial)
-    # Also cast via Vial if on board but deploy extras with mana
+    # Hard cast creatures — always deploy when mana available.
+    # Vial handles EXTRA deployments at instant speed (EOT/combat),
+    # but main phase should still hard-cast with available mana.
     deployed_this_turn = 0
-    max_deploys = 1 if not vial_perm else 0  # hard cast 1 if no Vial, Vial handles rest
-    if total_mana >= 4: max_deploys = 2  # with 4+ mana, can double-deploy
-    if not vial_perm or total_mana >= 2:
+    max_deploys = 2 if total_mana >= 4 else 1
+    if True:
         for tag in deploy_priority:
             crea = player.find_tag(tag)
             if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):

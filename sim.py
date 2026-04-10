@@ -514,12 +514,16 @@ def protagonist_turn(gs, turn, matchup):
                 b.add_to_grave(ts)
 
     # ── Removal: kill opponent's biggest threat ──
+    # Mother of Runes: if opponent has MoR protecting a creature, skip that target
+    _mom_protected = getattr(gs, '_mom_protected_tag', None)
+
     if o.creatures and total_mana >= 1:
         push = b.find_tag('push') or b.find_tag('fatal_push')
         if push and not gs.spell_blocked_by_chalice(push.cmc):
             revolt = b.revolt_this_turn
             valid_targets = [c for c in o.creatures
-                             if MTGRules.fatal_push_valid_target(c, revolt)]
+                             if MTGRules.fatal_push_valid_target(c, revolt)
+                             and c.card.tag != _mom_protected]
             if valid_targets:
                 target = max(valid_targets, key=lambda c: c.power)
                 b.remove_from_hand(push)
@@ -535,8 +539,9 @@ def protagonist_turn(gs, turn, matchup):
 
         stp = b.find_tag('stp')
         if stp and o.creatures and total_mana >= 1 and not gs.spell_blocked_by_chalice(stp.cmc):
-            target = max(o.creatures, key=lambda c: c.power)
-            if target.power >= 2:
+            valid_stp = [c for c in o.creatures if c.card.tag != _mom_protected]
+            target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
+            if target and target.power >= 2:
                 b.remove_from_hand(stp)
                 countered = _try_counter_any(b, o, gs, stp, log_entries)
                 if not countered:

@@ -149,7 +149,7 @@ def make_bug_deck() -> List[Card]:
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 1
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 4
     d += [dual_land_tapped('Undercity Sewers', ['U','B'], ['Island','Swamp'], tag='sewers')] * 1
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [basic_land('Island', 'U', 'Island')] * 1
     d += [basic_land('Swamp', 'B', 'Swamp')] * 1
     assert len(d) == 60, f"BUG deck has {len(d)} cards"
@@ -237,7 +237,7 @@ def make_dimir_deck() -> List[Card]:
     d += [fetch_land('Bloodstained Mire',['Swamp','Mountain'])]  * 2
     d += [fetch_land('Scalding Tarn',    ['Island','Mountain'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 4
-    d += [utility_land('Wasteland', [], 'wl')]                   * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')]                   * 4
     d += [dual_land_tapped('Undercity Sewers', ['U','B'], ['Island','Swamp'])] * 1
     d += [basic_land('Island', 'U', 'Island')]                   * 1
     d += [basic_land('Swamp',  'B', 'Swamp')]                    * 1
@@ -284,7 +284,7 @@ def make_dimir_b_deck() -> List[Card]:
     d += [fetch_land('Bloodstained Mire', ['Swamp','Mountain'])] * 1
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
     d += [dual_land_tapped('Undercity Sewers', ['U','B'], ['Island','Swamp'])] * 2
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [basic_land('Island', 'U', 'Island')] * 1
     d += [basic_land('Swamp', 'B', 'Swamp')] * 1
 
@@ -349,13 +349,13 @@ def make_lands_deck() -> List[Card]:
     d += [utility_land('Dark Depths', [], 'depths', is_combo_piece=True)] * 4
     d += [utility_land("Thespian's Stage", ['C'], 'stage', is_combo_piece=True)] * 4
     d += [utility_land("Urza's Saga", ['C'], 'saga')] * 4
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [utility_land('Yavimaya, Cradle of Growth', ['G'], 'yavimaya')] * 4
     d += [utility_land('Boseiju, Who Endures', ['G'], 'boseiju')] * 3
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 1
     d += [utility_land('Bojuka Bog', ['B'], 'bog')] * 1
     d += [basic_land('Forest', 'G', 'Forest')] * 1
-    d += [utility_land('Ghost Quarter', [], 'gq')] * 1
+    d += [utility_land('Ghost Quarter', ['C'], 'gq')] * 1
     d += [utility_land('Karakas', ['W'], 'karakas')] * 1
     d += [utility_land('Maze of Ith', [], 'maze')] * 1
     d += [utility_land('The Tabernacle at Pendrell Vale', [], 'tab')] * 1
@@ -508,11 +508,11 @@ def make_eldrazi_deck() -> List[Card]:
     # City of Traitors: {T}→{CC}, sacrifices itself when next land played
     d += [utility_land('City of Traitors',['C','C'], 'city',  sac_on_land=True)] * 3
     # Eye of Ugin: {T}→nothing, but reduces Eldrazi costs by 2
-    d += [utility_land('Eye of Ugin',     ['C'],     'eye')] * 1
+    d += [utility_land('Eye of Ugin',     [],     'eye')] * 1
     # Abundant Countryside: enters tapped, fetches any basic type
     d += [fetch_land('Abundant Countryside', ['Forest','Plains','Island','Swamp','Mountain'])] * 4
     # Wasteland: destroy target nonbasic
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
 
     assert len(d) == 60, f"Eldrazi deck: {len(d)}"
     return d
@@ -602,8 +602,8 @@ def make_dnt_deck() -> List[Card]:
     d += [artifact('Pre-War Formalwear', 4, {'generic':4}, tag='equipment')] * 1
     d += [artifact('Batterskull', 5, {'generic':5}, tag='equipment')] * 1
     # Lands (27 — DnT runs lots of utility lands)
-    d += [utility_land('Rishadan Port', [], 'port')] * 4
-    d += [utility_land('Wasteland',     [], 'wl')]   * 4
+    d += [utility_land('Rishadan Port', ['C'], 'port')] * 4
+    d += [utility_land('Wasteland',     ['C'], 'wl')]   * 4
     d += [utility_land('Karakas',       ['W'], 'karakas')] * 3
     d += [fetch_land('Flooded Strand', ['Plains'])]  * 2
     d += [fetch_land('Arid Mesa',      ['Plains'])]  * 2
@@ -629,7 +629,7 @@ def make_mono_black_deck() -> List[Card]:
     d += [instant('Snuff Out', 4, {'B':1,'generic':3}, {'B'}, tag='snuffout', life_cost=4)] * 4  # free if Swamp
     d += [sorcery('Hymn to Tourach', 2, {'B':2}, {'B'}, tag='hymn')] * 4
     # Lands (24)
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [fetch_land('Polluted Delta',   ['Swamp'])] * 4
     d += [fetch_land('Marsh Flats',      ['Swamp'])] * 4
     d += [basic_land('Swamp', 'B', 'Swamp')]          * 12
@@ -661,8 +661,8 @@ def make_boros_deck() -> List[Card]:
     d += [fetch_land('Arid Mesa',      ['Plains','Mountain'])] * 4
     d += [fetch_land('Flooded Strand', ['Plains'])]             * 2
     d += [dual_land('Plateau', ['W','R'], ['Plains','Mountain'])] * 2
-    d += [utility_land('Wasteland', [], 'wl')]  * 4
-    d += [utility_land('Rishadan Port', [], 'port')] * 2
+    d += [utility_land('Wasteland', ['C'], 'wl')]  * 4
+    d += [utility_land('Rishadan Port', ['C'], 'port')] * 2
     d += [basic_land('Plains',   'W', 'Plains')]  * 6
     d += [basic_land('Mountain', 'R', 'Mountain')] * 4
     assert len(d) == 60, f"Boros: {len(d)}"
@@ -698,7 +698,7 @@ def _bug_base(daze=3, ponder=3, kaito=2, bowm=4, bauble=2, snuff=1, extra_snuff=
     d += [fetch_land('Verdant Catacombs', ['Swamp','Forest'])] * 1
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 4
     d += [dual_land_tapped('Undercity Sewers', ['U','B'], ['Island','Swamp'])] * 1
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [basic_land('Island', 'U', 'Island')] * 1
     d += [basic_land('Swamp', 'B', 'Swamp')] * 1
     return d
@@ -1984,7 +1984,7 @@ def make_dimir_flash_deck() -> List[Card]:
     d += [fetch_land('Scalding Tarn', ['Underground Sea', 'Volcanic Island'])] * 2
     d += [dual_land('Underground Sea', ['U', 'B'], ['Island', 'Swamp'])] * 4
     d += [dual_land_tapped('Undercity Sewers', ['U', 'B'], ['Island', 'Swamp'])] * 2
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [basic_land('Island', 'U', 'Island')] * 3
     d += [basic_land('Swamp', 'B', 'Swamp')] * 1
     assert len(d) == 60, f"Dimir Flash: {len(d)}"

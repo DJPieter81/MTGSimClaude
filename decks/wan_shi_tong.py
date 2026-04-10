@@ -51,7 +51,7 @@ def make_wst_deck():
     d += [basic_land('Plains', 'W', 'Plains')] * 3
     d += [dual_land('Plateau', ['R','W'], ['Mountain','Plains'])] * 1
     d += [utility_land('Karakas', ['W'], 'karakas')] * 1
-    d += [utility_land('Wasteland', [], 'wl')] * 1
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 1
     d += [utility_land('Meticulous Archive', ['W','U'], 'archive')] * 1
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 1
     d += [utility_land('Mystic Sanctuary', ['U'], 'sanctuary')] * 1

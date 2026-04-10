@@ -114,7 +114,7 @@ def make_dimir_d_deck() -> List[Card]:
 
     # Utility lands (5)
     d += [utility_land('Undercity Sewers', ['U', 'B'], 'sewers')] * 1
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
 
     # Basic lands (2)
     d += [basic_land('Island', 'U', 'Island')] * 1

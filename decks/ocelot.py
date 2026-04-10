@@ -27,7 +27,7 @@ def make_ocelot_deck():
     # Lands (23)
     d += [fetch_land('Arid Mesa', ['Mountain','Plains'])] * 4
     d += [fetch_land('Marsh Flats', ['Swamp','Plains'])] * 4
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [utility_land('Karakas', ['W'], 'karakas')] * 2
     d += [dual_land('Plateau', ['R','W'], ['Mountain','Plains'])] * 2
     d += [dual_land('Scrubland', ['W','B'], ['Plains','Swamp'])] * 2
