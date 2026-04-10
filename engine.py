@@ -60,6 +60,71 @@ def _deduct(budget: list, cmc: int, card) -> bool:
     return True
 
 
+# ─────────────────────────────────────────────────────────────────────
+# Shared lock/tax enforcement — used by protagonist_turn & opp_turn
+# ─────────────────────────────────────────────────────────────────────
+# These ensure every tax/lock effect is enforced in ONE place, preventing
+# the asymmetry bugs where an effect works in one turn function but not
+# another (see: Thalia fix, Eidolon fix, Trinisphere lesson).
+
+def apply_lock_effects(gs, player, log):
+    """Pre-strategy: apply Chalice blocking, Trinisphere, Thalia taxes.
+    Returns a dict of adjustments to pass to restore_lock_effects().
+    """
+    hand = player.hand
+    adjustments = {'chalice': [], 'trini': [], 'thalia': []}
+
+    # Chalice of the Void: remove spells with CMC == chalice_x from hand
+    if gs.chalice_x is not None:
+        for card in list(hand):
+            if not card.is_land() and card.cmc == gs.chalice_x:
+                adjustments['chalice'].append(card)
+                hand.remove(card)
+        if adjustments['chalice']:
+            log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(c.name for c in adjustments['chalice']))}")
+
+    # Trinisphere: all spells cost at least 3 (CR 601.2f)
+    if gs.trinisphere_active:
+        for card in hand:
+            if not card.is_land() and card.cmc < 3:
+                adjustments['trini'].append((card, card.cmc))
+                card.cmc = 3
+        if adjustments['trini']:
+            log(f"Trinisphere active — {len(adjustments['trini'])} spells taxed to 3 mana")
+
+    # Thalia, Guardian of Thraben: noncreature spells cost +1 (CR 613)
+    if gs.thalia_on_board:
+        for card in hand:
+            if not card.is_land() and not card.is_creature():
+                adjustments['thalia'].append((card, card.cmc))
+                card.cmc += 1
+        if adjustments['thalia']:
+            log(f"Thalia tax — {len(adjustments['thalia'])} noncreature spells cost +1")
+
+    return adjustments
+
+
+def restore_lock_effects(player, adjustments):
+    """Post-strategy: restore Chalice-blocked cards and tax-adjusted CMCs."""
+    player.hand.extend(adjustments['chalice'])
+    for card, orig_cmc in adjustments['thalia']:
+        card.cmc = orig_cmc
+    for card, orig_cmc in adjustments['trini']:
+        card.cmc = orig_cmc
+
+
+def apply_eidolon_damage(gs, player, spells_before, log):
+    """Post-strategy: apply Eidolon of the Great Revel damage for spells cast."""
+    if gs.eidolon_active and not gs.game_over:
+        spells_cast = player.spells_cast_this_turn - spells_before
+        if spells_cast > 0:
+            eidolon_dmg = spells_cast * 2
+            player.life -= eidolon_dmg
+            p_label = 'P1' if player is gs.p1 else 'P2'
+            log(f"Eidolon trigger — {spells_cast} spell(s) cast, {eidolon_dmg} damage to {p_label} ({player.life})")
+            gs.check_life_totals()
+
+
 def _eidolon_trigger(gs: GameState, card, log_fn, caster=None) -> None:
     """CR 702.2: Eidolon of the Great Revel — whenever ANY player casts a spell with CMC≤3,
     Eidolon deals 2 damage to that spell's caster."""
@@ -1800,30 +1865,8 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     else:
         gs.opp_goal = None
 
-    # ── Lock piece enforcement ──────────────────────────────────────────────
-    # Chalice of the Void: counter any spell with CMC == chalice_x
-    # Remove Chalice-blocked cards from hand so strategies can't cast them.
-    # Save originals to restore after strategy runs (cards aren't really gone).
-    _chalice_blocked = []
-    if gs.chalice_x is not None:
-        for card in list(o.hand):
-            if not card.is_land() and card.cmc == gs.chalice_x:
-                _chalice_blocked.append(card)
-                o.hand.remove(card)
-        if _chalice_blocked:
-            blocked_names = [c.name for c in _chalice_blocked]
-            log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(blocked_names))}")
-
-    # Trinisphere: all spells cost at least 3 (CR 601.2f).
-    # Temporarily raise cmc of cheap spells so strategies naturally pay the tax.
-    _trini_adjusted = []  # (card, original_cmc) pairs to restore after
-    if gs.trinisphere_active:
-        for card in o.hand:
-            if not card.is_land() and card.cmc < 3:
-                _trini_adjusted.append((card, card.cmc))
-                card.cmc = 3
-        if _trini_adjusted:
-            log(f"Trinisphere active — {len(_trini_adjusted)} spells taxed to 3 mana")
+    # ── Lock piece enforcement (shared helpers — single source of truth) ──
+    _adjustments = apply_lock_effects(gs, o, log)
 
     # ── Matchup dispatch (all decks via registry) ──
     spells_before = o.spells_cast_this_turn
@@ -1839,19 +1882,9 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
                 log_entries.append(msg)
             strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
 
-    # ── Eidolon of the Great Revel: 2 damage per spell cast (CMC ≤3) ──
-    if gs.eidolon_active and not gs.game_over:
-        spells_cast = o.spells_cast_this_turn - spells_before
-        if spells_cast > 0:
-            eidolon_dmg = spells_cast * 2
-            o.life -= eidolon_dmg
-            log(f"Eidolon trigger — {spells_cast} spell(s) cast, {eidolon_dmg} damage to P2 ({o.life})")
-            gs.check_life_totals()
-
-    # Restore Chalice-blocked cards and Trinisphere-adjusted CMCs
-    o.hand.extend(_chalice_blocked)
-    for card, orig_cmc in _trini_adjusted:
-        card.cmc = orig_cmc
+    # ── Post-strategy: Eidolon damage + restore lock adjustments ──
+    apply_eidolon_damage(gs, o, spells_before, log)
+    restore_lock_effects(o, _adjustments)
 
     gs.state_based_actions()
 
