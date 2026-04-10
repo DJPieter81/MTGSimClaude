@@ -162,6 +162,50 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Keep eidolon_active in sync ──────────────────────────────────────
     gs.eidolon_active = any(c.card.tag == 'eidolon' for c in player.creatures)
 
+    # ── Eidolon self-damage awareness (needed before pre-combat spells) ──
+    own_eidolon = gs.eidolon_active
+    eidolon_self_cost = 2 if own_eidolon else 0
+
+    def deal_face_damage(amount, source_name):
+        opponent.life -= amount
+        log_fn(f"★ {source_name} → {amount} damage (opp at {opponent.life})", True)
+        gs.check_life_totals()
+
+    def _worth_casting(spell_damage):
+        if not own_eidolon:
+            return True
+        if spell_damage >= opponent.life:
+            return True
+        if player.life <= eidolon_self_cost:
+            return False
+        return spell_damage > eidolon_self_cost
+
+    # ── Pre-combat: cast one cheap burn spell for prowess trigger ────────
+    # Real Burn casts a spell Main Phase 1 to pump Swiftspear before combat.
+    swiftspear_in_play = any(c.card.tag == 'swiftspear' for c in player.creatures
+                             if not c.summoning_sick)
+    if swiftspear_in_play and mana >= 1:
+        pre_combat_spell = (player.find_tag('chain') or player.find_tag('spike')
+                            or player.find_tag('bolt') or player.find_tag('rift'))
+        if pre_combat_spell and _worth_casting(3):
+            if not _try_counter_any(player, opponent, gs, pre_combat_spell, log_entries):
+                player.remove_from_hand(pre_combat_spell)
+                player.add_to_grave(pre_combat_spell)
+                mana -= 1
+                player.spells_cast_this_turn += 1
+                deal_face_damage(3, f"{pre_combat_spell.name} (pre-combat)")
+
+    # ── Prowess: Swiftspear gets +1/+0 per noncreature spell this turn ──
+    prowess_count = player.spells_cast_this_turn
+    prowess_boosted = []
+    if prowess_count > 0:
+        for c in player.creatures:
+            if c.card.tag == 'swiftspear':
+                c.power_mod += prowess_count
+                prowess_boosted.append(c)
+                if prowess_count > 0:
+                    log_fn(f"  Prowess: Swiftspear +{prowess_count}/+0 → {c.power}/{c.toughness}")
+
     # ── Combat: attack with all non-summoning-sick creatures ─────────────
     attackers = [c for c in player.creatures if c.can_attack()]
     if attackers:
@@ -180,31 +224,18 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
         gs.state_based_actions()
         gs.check_life_totals()
         if gs.game_over:
+            # Clean up prowess before returning
+            for c in prowess_boosted:
+                c.power_mod -= prowess_count
             return
 
+    # Reset prowess after combat (it's until end of turn, but more spells
+    # will be cast post-combat — we'll re-apply at end if needed)
+    for c in prowess_boosted:
+        c.power_mod -= prowess_count
+    prowess_boosted = []
+
     # ── Burn spells at face ──────────────────────────────────────────────
-    # Eidolon awareness: if OUR Eidolon is on board, each spell costs us 2 life.
-    # Only cast if the damage dealt exceeds the self-damage, or if it's lethal.
-    own_eidolon = gs.eidolon_active
-    eidolon_self_cost = 2 if own_eidolon else 0
-
-    def deal_face_damage(amount, source_name):
-        opponent.life -= amount
-        log_fn(f"★ {source_name} → {amount} damage (opp at {opponent.life})", True)
-        gs.check_life_totals()
-
-    def _worth_casting(spell_damage):
-        """Check if casting a burn spell is worth the Eidolon self-damage."""
-        if not own_eidolon:
-            return True
-        # Always cast if it's lethal
-        if spell_damage >= opponent.life:
-            return True
-        # Don't cast if self-damage would kill us
-        if player.life <= eidolon_self_cost:
-            return False
-        # Cast if damage dealt > self-damage (net positive)
-        return spell_damage > eidolon_self_cost
 
     # --- Price of Progress: best when opp has nonbasic lands ---
     while mana >= 2:

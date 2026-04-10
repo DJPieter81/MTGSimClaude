@@ -2269,6 +2269,11 @@ def _strategy_elves(player, opponent, gs, total_mana, log_fn, log_entries):
 def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     """Death and Taxes: Aether Vial + tax creatures + land denial.
 
+    Mother of Runes: if untapped on board, protects most valuable creature
+    from targeted removal. Modeled as gs._mom_protected_tag — the tag of
+    the creature MoR is protecting this turn. Removal targeting that
+    creature fails (checked in opp_can_remove).
+
     Priority vs aggro (creatures on opponent's board):
       1. Swords to Plowshares (exile + life gain)
       2. Solitude (free evoke exile + life gain)
@@ -2282,6 +2287,22 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
       3. Stoneforge Mystic (tutor equipment)
       4. Wasteland + Port (deny mana)
     """
+
+    # ── Mother of Runes: protect most valuable creature ──
+    # MoR taps to give protection from a color → prevents targeted removal.
+    # Model: flag the most important creature as protected for this turn cycle.
+    mom_perm = next((c for c in player.creatures
+                     if c.card.tag == 'mom' and not c.summoning_sick), None)
+    gs._mom_protected_tag = None
+    if mom_perm and len(player.creatures) >= 2:
+        # Protect the most valuable non-MoR creature
+        protect_priority = {'thalia': 10, 'sfm': 8, 'skyclave': 7, 'phelia': 6,
+                            'flickerwisp': 5, 'solitude': 5, 'recruiter': 3}
+        best = max((c for c in player.creatures if c.card.tag != 'mom'),
+                   key=lambda c: protect_priority.get(c.card.tag, 1), default=None)
+        if best:
+            gs._mom_protected_tag = best.card.tag
+            log_fn(f"Mother of Runes protects {best.card.name}")
 
     # ── 0. Swords to Plowshares — FIRST PRIORITY vs any creature ──
     # Real DnT always fires STP before deploying own threats.
