@@ -660,10 +660,14 @@ def bug_turn(gs: GameState, turn: int):
     # ── Untap (S3/S4 applied via LandPermanent) ──
     b.untap_all()
     b.revolt_this_turn = False
+    if gs.trace:
+        log(f"── Untap ── ({len(b.lands)} lands)")
 
     # ── Upkeep ──
     b.clear_summoning_sickness()
     update_goyf(gs)
+    if gs.trace:
+        log("── Upkeep ──")
 
     # Mishra's Bauble: pending draws cash out at controller's upkeep (not draw step)
     # CR 603.3: triggers fire at start of upkeep, before drawing.
@@ -696,6 +700,11 @@ def bug_turn(gs: GameState, turn: int):
     b._narset_lock = any(p.card.tag == 'narset' for p in o.planeswalkers)
 
     # ── Draw (first player skips T1 draw — CR 103.8a) ──
+    if gs.trace:
+        if turn == 1 and gs.p1_goes_first:
+            log("── Draw ── (skipped — on the play, T1)")
+        else:
+            log("── Draw ──")
     if not (turn == 1 and gs.p1_goes_first):
         drawn = b.draw(1, is_draw_step=True)  # draw step
         if drawn:
@@ -721,6 +730,9 @@ def bug_turn(gs: GameState, turn: int):
 
     # C1: mana budget = number of available producing lands
     b_budget = [b.available_mana_count()]  # mutable int via list
+    if gs.trace:
+        log(f"── Main ── Mana: {b_budget[0]}")
+        log(f"  Hand ({len(b.hand)}): {', '.join(c.name for c in b.hand)}")
     # Trinisphere CR 601.2f: all spells cost at least {3}
     # effective_cmc raises any spell's cost to minimum 3 when Trinisphere is active
     trini_min = 3 if gs.trinisphere_active else 0
@@ -1407,6 +1419,9 @@ def bug_turn(gs: GameState, turn: int):
                 update_goyf(gs)
 
     # ── Combat — C2: attackers tap ──
+    if gs.trace:
+        atk = [c for c in b.creatures if not c.summoning_sick]
+        log(f"── Combat ── ({len(atk)} eligible attackers)")
     resolve_combat(gs, b, o, log_entries)
     if gs.game_over:
         return log_entries
@@ -1513,7 +1528,27 @@ def bug_turn(gs: GameState, turn: int):
             log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
 
     gs.state_based_actions()
+
+    if gs.trace:
+        log("── End ──")
+        _trace_board_state(b, o, log)
+
     return log_entries
+
+
+def _trace_board_state(player, opponent, log):
+    """Emit trace-level board state summary at end of turn."""
+    creatures = ', '.join(f"{c.card.name} ({c.power}/{c.toughness})" for c in player.creatures) or '(none)'
+    lands = ', '.join(l.card.name for l in player.lands) or '(none)'
+    arts = ', '.join(a.card.name for a in player.artifacts)
+    log(f"  Board: Lands[{lands}]  Creatures[{creatures}]" +
+        (f"  Artifacts[{arts}]" if arts else ""))
+    log(f"  Hand ({len(player.hand)}): {', '.join(c.name for c in player.hand) or '(empty)'}")
+    if player.graveyard:
+        gy_names = ', '.join(c.name for c in player.graveyard[:15])
+        suffix = f" +{len(player.graveyard)-15} more" if len(player.graveyard) > 15 else ""
+        log(f"  GY ({len(player.graveyard)}): {gy_names}{suffix}")
+    log(f"  Library: {len(player.library)} cards")
 
 
 # ─────────────────────────────────────────────
@@ -1618,8 +1653,15 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     o.untap_all()
     o.revolt_this_turn = False
     o.clear_summoning_sickness()
+    if gs.trace:
+        log(f"── Untap ── ({len(o.lands)} lands)")
 
     # ── Draw (first player on play skips T1 draw) ──
+    if gs.trace:
+        if turn == 1 and not gs.p1_goes_first:
+            log("── Draw ── (skipped — on the play, T1)")
+        else:
+            log("── Draw ──")
     if not (turn == 1 and not gs.p1_goes_first):
         drawn = o.draw(1, is_draw_step=True)  # first draw step card — Bowmasters exempt
         if drawn:
@@ -1643,6 +1685,9 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
                 log(f"Land: {land.name} ({len(o.lands)} lands)")
 
     # ── Tap lands ──
+    if gs.trace:
+        log(f"── Main ──")
+        log(f"  Hand ({len(o.hand)}): {', '.join(c.name for c in o.hand)}")
     # om = available mana from untapped lands (on-demand tapping)
     om = o.available_mana_count()
     # Lotus Petal: sac for any color mana (+1 each)
@@ -1659,6 +1704,8 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
         om += tomb_count
         o.life -= tomb_count * 2
     # City of Traitors: produces 2C like Tomb but no life loss
+    if gs.trace:
+        log(f"  Mana available: {om}")
 
     # ── Rishadan Port: tap target BUG land during opponent's upkeep ──
     # Oracle: {T}: tap target land — fire ALL untapped Port copies, not just one.
@@ -1731,6 +1778,11 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
         card.cmc = orig_cmc
 
     gs.state_based_actions()
+
+    if gs.trace:
+        log("── End ──")
+        _trace_board_state(o, b, log)
+
     return log_entries
 
 

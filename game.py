@@ -242,6 +242,8 @@ class GameState:
     p2_deck: str = ''                 # antagonist deck key
     # Kept for Storm/Oops spell-count tracking
     pending_bauble_draws: int = 0
+    # Trace mode: when True, turn functions emit phase markers and state snapshots
+    trace: bool = False
 
     # ── Computed properties — always derived from board state, never manually synced ──
 
@@ -516,11 +518,30 @@ class GameState:
 # Mulligan  CR 103.5 — London format
 # ─────────────────────────────────────────────
 
-def london_mulligan(deck_fn, keep_fn, matchup: str = '') -> tuple:
+def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) -> tuple:
     """
     S1 fix — London mulligan: draw 7, put N on bottom (choosing best N to discard).
-    Returns (hand, library, mulls_taken).
+    Returns (hand, library, mulls_taken) or (hand, library, mulls_taken, trace_lines) if trace=True.
     """
+    trace_lines = [] if trace else None
+
+    def _hand_summary(hand):
+        lands = sum(1 for c in hand if c.is_land())
+        creatures = sum(1 for c in hand if c.is_creature())
+        counters = sum(1 for c in hand if c.tag in ('fow', 'fon', 'daze', 'fluster', 'counter', 'veto'))
+        cantrips = sum(1 for c in hand if c.tag in ('bs', 'ponder'))
+        removal = sum(1 for c in hand if c.is_removal and c.tag not in ('fow', 'fon', 'daze'))
+        combo = sum(1 for c in hand if c.is_combo_piece or c.win_condition)
+        parts = [f"Lands: {lands}"]
+        if creatures: parts.append(f"Creatures: {creatures}")
+        if counters: parts.append(f"Counters: {counters}")
+        if cantrips: parts.append(f"Cantrips: {cantrips}")
+        if removal: parts.append(f"Removal: {removal}")
+        if combo: parts.append(f"Combo: {combo}")
+        other = len(hand) - lands - creatures - counters - cantrips - removal - combo
+        if other > 0: parts.append(f"Other: {other}")
+        return '  '.join(parts)
+
     for mulls in range(4):  # 0 mulls = keep opening 7, max 3 mulls
         deck = list(deck_fn())
         random.shuffle(deck)
@@ -528,9 +549,20 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '') -> tuple:
         hand7 = deck[:7]
         rest = deck[7:]
 
+        if trace:
+            if mulls == 0:
+                trace_lines.append(f"  Draw 7: {', '.join(c.name for c in hand7)}")
+            else:
+                trace_lines.append(f"  Mulligan #{mulls} — draw 7: {', '.join(c.name for c in hand7)}")
+            trace_lines.append(f"    {_hand_summary(hand7)}")
+
         if mulls == 0:
             if keep_fn(hand7, matchup):
-                return hand7, rest, 0
+                if trace:
+                    trace_lines.append(f"    → KEEP (opening 7)")
+                return (hand7, rest, 0, trace_lines) if trace else (hand7, rest, 0)
+            if trace:
+                trace_lines.append(f"    → MULLIGAN")
             continue
 
         # Keep the best (7 - mulls) cards from the 7 seen
@@ -538,8 +570,16 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '') -> tuple:
         bottomed = [c for c in hand7 if c not in hand]
         library = rest + bottomed  # bottomed go to... bottom
 
+        if trace:
+            trace_lines.append(f"    Keep best {7 - mulls}: {', '.join(c.name for c in hand)}")
+            trace_lines.append(f"    Bottom {mulls}: {', '.join(c.name for c in bottomed)}")
+
         if keep_fn(hand, matchup):
-            return hand, library, mulls
+            if trace:
+                trace_lines.append(f"    → KEEP (mull to {7 - mulls})")
+            return (hand, library, mulls, trace_lines) if trace else (hand, library, mulls)
+        if trace:
+            trace_lines.append(f"    → MULLIGAN")
 
     # Forced keep after 3 mulligans — still draw 7, keep best 4
     deck = list(deck_fn())
@@ -548,7 +588,11 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '') -> tuple:
     rest  = deck[7:]
     hand  = _choose_best_n(hand7, 4)  # choose best 4 (prioritises lands)
     bottomed = [c for c in hand7 if c not in hand]
-    return hand, rest + bottomed, 3
+    if trace:
+        trace_lines.append(f"  Forced keep (mull to 4): {', '.join(c.name for c in hand)}")
+        trace_lines.append(f"    Bottom 3: {', '.join(c.name for c in bottomed)}")
+    result = (hand, rest + bottomed, 3)
+    return (*result, trace_lines) if trace else result
 
 
 def _choose_best_n(hand7: List[Card], n: int) -> List[Card]:

@@ -51,15 +51,19 @@ class GameResult:
     def bug_went_first(self): return self.p1_went_first
 
 
-def run_game(deck1: str, deck2: str = None, verbose: bool = False) -> GameResult:
+def run_game(deck1: str, deck2: str = None, verbose: bool = False,
+             trace: bool = False) -> GameResult:
     """
     Run a single game between any two decks with equal AI quality.
+
+    Args:
+        trace: If True, emit detailed phase markers, hand state, board state,
+               mulligan decisions, and mana tracking for full play-by-play output.
 
     Usage:
         run_game('ur_delver', 'dimir')
         run_game('storm', 'burn')
-        run_game('bug', 'eldrazi')
-        run_game('storm')          # legacy: deck1=BUG, deck2='storm'
+        run_game('burn', 'dimir', trace=True)  # full play-by-play
     """
     # Legacy compat: run_game('storm') means BUG vs storm
     if deck2 is None:
@@ -75,8 +79,15 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False) -> GameResult
     p1_keep = bug_keep if deck1 == 'bug' else opp_keep
     p2_keep = bug_keep if deck2 == 'bug' else opp_keep
 
-    p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1 if deck1 != 'bug' else '')
-    p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2 if deck2 != 'bug' else '')
+    p1_mull_trace = p2_mull_trace = None
+    if trace:
+        p1_hand, p1_lib, p1_mulls, p1_mull_trace = london_mulligan(
+            DECKS[deck1], p1_keep, deck1 if deck1 != 'bug' else '', trace=True)
+        p2_hand, p2_lib, p2_mulls, p2_mull_trace = london_mulligan(
+            DECKS[deck2], p2_keep, deck2 if deck2 != 'bug' else '', trace=True)
+    else:
+        p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1 if deck1 != 'bug' else '')
+        p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2 if deck2 != 'bug' else '')
 
     p1_goes_first = random.random() < 0.5
 
@@ -87,9 +98,30 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False) -> GameResult
     gs.p1_deck = deck1
     gs.p2_deck = deck2
     gs.matchup = deck2  # backward compat: matchup = antagonist deck
+    gs.trace = trace
 
     all_log = []
     display_turn = 0
+
+    # ── Trace: pregame section ──
+    if trace:
+        all_log.append(f"{'═' * 70}")
+        all_log.append(f"  {deck1.upper()} vs {deck2.upper()}")
+        all_log.append(f"{'═' * 70}")
+        all_log.append("")
+        all_log.append(f"── PREGAME {'─' * 58}")
+        all_log.append("")
+        first_name = deck1.upper() if p1_goes_first else deck2.upper()
+        all_log.append(f"  Coin flip: {first_name} wins the die roll, goes FIRST")
+        all_log.append("")
+        all_log.append(f"  {deck1.upper()} (P1):")
+        if p1_mull_trace:
+            all_log += p1_mull_trace
+        all_log.append("")
+        all_log.append(f"  {deck2.upper()} (P2):")
+        if p2_mull_trace:
+            all_log += p2_mull_trace
+        all_log.append("")
 
     for turn in range(1, 16):
         if gs.game_over:
@@ -99,9 +131,25 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False) -> GameResult
         first, second = ('p1', 'p2') if p1_goes_first else ('p2', 'p1')
         for who in (first, second):
             display_turn += 1
-            lines = play_turn(gs, turn, who)
             label = deck1.upper() if who == 'p1' else deck2.upper()
-            all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
+            player = gs.p1 if who == 'p1' else gs.p2
+            opponent = gs.p2 if who == 'p1' else gs.p1
+
+            if trace:
+                # Turn header with life totals
+                life_str = f"{deck1} {gs.p1.life} | {deck2} {gs.p2.life}"
+                header = f"── T{display_turn} [{label}] "
+                all_log.append(f"{header}{'─' * max(1, 56 - len(header))} Life: {life_str}")
+                all_log.append("")
+
+            lines = play_turn(gs, turn, who)
+
+            if trace:
+                for l in lines:
+                    all_log.append(f"  {l}")
+                all_log.append("")
+            else:
+                all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
             if gs.game_over: break
 
     # Timeout resolution: score board position
@@ -124,6 +172,13 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False) -> GameResult
             gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
         gs.kill_turn = gs.turn
         gs.game_over = True
+
+    if trace:
+        all_log.append(f"{'═' * 70}")
+        winner_label = deck1.upper() if gs.winner == 'p1' else deck2.upper()
+        all_log.append(f"  WINNER: {winner_label} — {gs.win_reason}")
+        all_log.append(f"  Final life: {deck1} {gs.p1.life} | {deck2} {gs.p2.life}")
+        all_log.append(f"{'═' * 70}")
 
     return GameResult(
         winner=gs.winner,
@@ -280,11 +335,20 @@ def protagonist_turn(gs, turn, matchup):
     gs.opp_spells_cast_this_turn = 0
     gs.veil_active = False
     b.spells_cast_this_turn = 0
+    if gs.trace:
+        log(f"── Untap ── ({len(b.lands)} lands)")
 
     # ── Upkeep: Goyf update ──
     update_goyf(gs)
+    if gs.trace:
+        log("── Upkeep ──")
 
     # ── Draw (first player on play skips T1 draw) ──
+    if gs.trace:
+        if turn == 1 and gs.p1_goes_first:
+            log("── Draw ── (skipped — on the play, T1)")
+        else:
+            log("── Draw ──")
     if not (turn == 1 and gs.p1_goes_first):
         drawn = b.draw(1, is_draw_step=True)
         if drawn:
@@ -365,6 +429,10 @@ def protagonist_turn(gs, turn, matchup):
         if l.card.tag == 'cradle' and not l.tapped:
             total_mana += len(b.creatures)
             l.tapped = True
+
+    if gs.trace:
+        log(f"── Main ── Mana: {total_mana}")
+        log(f"  Hand ({len(b.hand)}): {', '.join(c.name for c in b.hand)}")
 
     # ── Wasteland: destroy opponent's best nonbasic land ──
     wl_land = next((l for l in b.lands if l.card.tag in ('wl', 'wasteland') and not l.tapped), None)
@@ -482,6 +550,9 @@ def protagonist_turn(gs, turn, matchup):
 
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
     combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
+    if gs.trace:
+        atk = [c for c in b.creatures if not c.summoning_sick]
+        log(f"── Combat ── ({len(atk)} eligible attackers)")
     if not combat_happened and not gs.game_over and b.creatures:
         attackers = _select_attackers(b, o)
         if attackers:
@@ -490,6 +561,12 @@ def protagonist_turn(gs, turn, matchup):
     update_goyf(gs)
     b.land_played_this_turn = False
     gs.state_based_actions()
+
+    if gs.trace:
+        from engine import _trace_board_state
+        log("── End ──")
+        _trace_board_state(b, o, log)
+
     return log_entries
 
 

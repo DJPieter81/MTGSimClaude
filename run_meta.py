@@ -340,16 +340,15 @@ def cmd_verbose(deck1, deck2, seed=None):
 
 
 def cmd_trace(deck1, deck2, seed=None):
-    """Run one game with full log + hand state each turn."""
+    """Run one game with full play-by-play: mulligan, phases, hand, board, life."""
     from sim import run_game
     if seed is not None:
         random.seed(seed)
 
-    # For trace, we need to run the game ourselves to access gs mid-game
-    # For now, just run verbose with extra header info
-    cmd_verbose(deck1, deck2, seed)
-    print("\n  (--trace currently shows same output as --verbose)")
-    print("  Full AI reasoning trace requires engine instrumentation — future work)")
+    r = run_game(deck1, deck2, trace=True)
+
+    for line in r.log_lines:
+        print(line)
 
 
 def main():
