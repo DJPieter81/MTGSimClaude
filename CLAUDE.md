@@ -57,7 +57,8 @@ python3 run_meta.py --matchup ur_delver dimir -n 100  # Head-to-head sweep
 python3 run_meta.py --field bug -n 50                 # One deck vs all others
 python3 run_meta.py --matrix --decks 8 -n 30          # Top-8 meta matrix
 python3 run_meta.py --matrix bug storm dimir -n 50    # Custom deck matrix
-python3 run_meta.py --verbose storm burn -s 42        # Single game log
+python3 run_meta.py --verbose storm burn -s 42        # Full play-by-play trace (auto-saved)
+python3 run_meta.py --trace storm burn -s 42          # Alias for --verbose
 python3 run_meta.py --results                         # List saved result files
 python3 run_meta.py --load                            # Display latest saved matrix
 python3 run_meta.py --load custom_matrix              # Display specific saved result

@@ -318,29 +318,21 @@ def cmd_matrix(decks, n_games, top_tier, seed=None, decks_arg=None):
     save_matrix(matrix, decks=all_decks, n_games=n_games, tag=tag)
 
 
+def _save_trace(r, deck1, deck2, seed=None):
+    """Auto-save trace log to results/ directory."""
+    import os, datetime
+    os.makedirs('results', exist_ok=True)
+    ts = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    seed_str = f"_s{seed}" if seed is not None else ""
+    fname = f"results/trace_{deck1}_vs_{deck2}{seed_str}_{ts}.txt"
+    with open(fname, 'w') as f:
+        for line in r.log_lines:
+            f.write(line + '\n')
+    return fname
+
+
 def cmd_verbose(deck1, deck2, seed=None):
-    """Run one game with full log output."""
-    from sim import run_game
-    if seed is not None:
-        random.seed(seed)
-
-    r = run_game(deck1, deck2)
-
-    print(f"\n{'=' * 60}")
-    print(f"  {deck1.upper()} vs {deck2.upper()}")
-    print(f"  Winner: {r.winner.upper()} — {r.win_reason}")
-    print(f"  {deck1} {'FIRST' if r.p1_went_first else 'SECOND'} | "
-          f"Life: {r.final_p1_life}-{r.final_p2_life} | T{r.game_length}")
-    print(f"  P1 hand: {r.p1_opening_hand}")
-    print(f"  P2 hand: {r.p2_opening_hand}")
-    print(f"{'=' * 60}")
-
-    for line in r.log_lines:
-        print(line)
-
-
-def cmd_trace(deck1, deck2, seed=None):
-    """Run one game with full play-by-play: mulligan, phases, hand, board, life."""
+    """Run one game with full play-by-play trace (trace is now the default)."""
     from sim import run_game
     if seed is not None:
         random.seed(seed)
@@ -349,6 +341,14 @@ def cmd_trace(deck1, deck2, seed=None):
 
     for line in r.log_lines:
         print(line)
+
+    fname = _save_trace(r, deck1, deck2, seed)
+    print(f"\n  Trace saved: {fname}")
+
+
+def cmd_trace(deck1, deck2, seed=None):
+    """Run one game with full play-by-play trace (alias for --verbose)."""
+    cmd_verbose(deck1, deck2, seed)
 
 
 def main():
