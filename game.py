@@ -249,8 +249,9 @@ class GameState:
 
     @property
     def bowmasters_on_board(self) -> bool:
-        """True iff p1 controls at least one Orcish Bowmasters permanent."""
-        return any(c.card.tag == 'bowm' for c in self.p1.creatures)
+        """True iff ANY player controls at least one Orcish Bowmasters permanent."""
+        return any(c.card.tag == 'bowm'
+                   for c in self.p1.creatures + self.p2.creatures)
 
     @bowmasters_on_board.setter
     def bowmasters_on_board(self, value):
@@ -258,8 +259,9 @@ class GameState:
 
     @property
     def orc_army(self):
-        """The Orc Army token permanent, or None. Derived from p1.creatures."""
-        return next((c for c in self.p1.creatures if c.card.tag == 'orc_army'), None)
+        """The Orc Army token permanent, or None. Checks both players."""
+        return next((c for c in self.p1.creatures + self.p2.creatures
+                     if c.card.tag == 'orc_army'), None)
 
     @orc_army.setter
     def orc_army(self, value):

@@ -79,7 +79,7 @@ def make_ur_tempo_deck() -> List[Card]:
 
     d += [dual_land('Volcanic Island', ['U', 'R'], ['Island', 'Mountain'])] * 4
 
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
 
     d += [utility_land('Thundering Falls', ['U', 'R'], 'tfall')]
 

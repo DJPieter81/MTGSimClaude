@@ -508,7 +508,7 @@ def make_eldrazi_deck() -> List[Card]:
     # City of Traitors: {T}→{CC}, sacrifices itself when next land played
     d += [utility_land('City of Traitors',['C','C'], 'city',  sac_on_land=True)] * 3
     # Eye of Ugin: {T}→nothing, but reduces Eldrazi costs by 2
-    d += [utility_land('Eye of Ugin',     ['C'],     'eye')] * 1
+    d += [utility_land('Eye of Ugin',     [],     'eye')] * 1
     # Abundant Countryside: enters tapped, fetches any basic type
     d += [fetch_land('Abundant Countryside', ['Forest','Plains','Island','Swamp','Mountain'])] * 4
     # Wasteland: destroy target nonbasic
@@ -603,7 +603,7 @@ def make_dnt_deck() -> List[Card]:
     d += [artifact('Batterskull', 5, {'generic':5}, tag='equipment')] * 1
     # Lands (27 — DnT runs lots of utility lands)
     d += [utility_land('Rishadan Port', ['C'], 'port')] * 4
-    d += [utility_land('Wasteland',     [], 'wl')]   * 4
+    d += [utility_land('Wasteland',     ['C'], 'wl')]   * 4
     d += [utility_land('Karakas',       ['W'], 'karakas')] * 3
     d += [fetch_land('Flooded Strand', ['Plains'])]  * 2
     d += [fetch_land('Arid Mesa',      ['Plains'])]  * 2

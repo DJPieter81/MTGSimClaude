@@ -77,7 +77,7 @@ def make_infect_deck():
 
     # ── Lands (16) ───────────────────────────────────────────────────────────
     # Inkmoth Nexus: utility land, becomes 1/1 infect flyer
-    d += [utility_land('Inkmoth Nexus', {'C'}, tag='inkmoth')] * 4
+    d += [utility_land('Inkmoth Nexus', ['C'], tag='inkmoth')] * 4
 
     # Tropical Island: U/G dual
     d += [dual_land('Tropical Island', ['U', 'G'], ['Island', 'Forest'])] * 4
@@ -95,7 +95,7 @@ def make_infect_deck():
     d += [basic_land('Forest', 'G', 'Forest')] * 2
 
     # Pendelhaven: utility land, {T}: target 1/1 gets +1/+2
-    d += [utility_land('Pendelhaven', {'G'}, tag='pendel')] * 2
+    d += [utility_land('Pendelhaven', ['G'], tag='pendel')] * 2
 
     assert len(d) == 60, f"Infect deck has {len(d)} cards (expected 60)"
     return d
