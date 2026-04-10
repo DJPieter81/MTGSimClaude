@@ -585,6 +585,17 @@ def protagonist_turn(gs, turn, matchup):
         if _trini_adjusted:
             log(f"Trinisphere active — {len(_trini_adjusted)} spells taxed to 3 mana")
 
+    # Thalia, Guardian of Thraben: noncreature spells cost +1 (CR 613).
+    # Same pattern as Trinisphere — raise cmc before strategy dispatch, restore after.
+    _thalia_adjusted = []
+    if gs.thalia_on_board:
+        for card in b.hand:
+            if not card.is_land() and not card.is_creature():
+                _thalia_adjusted.append((card, card.cmc))
+                card.cmc += 1
+        if _thalia_adjusted:
+            log(f"Thalia tax — {len(_thalia_adjusted)} noncreature spells cost +1")
+
     # ── Strategy dispatch ──
     from deck_registry import get_strategy
     strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
@@ -593,8 +604,10 @@ def protagonist_turn(gs, turn, matchup):
     else:
         log(f"No strategy for {matchup} — passing")
 
-    # Restore blocked cards and Trinisphere-adjusted CMCs
+    # Restore blocked cards and tax-adjusted CMCs
     b.hand.extend(_chalice_blocked)
+    for card, orig_cmc in _thalia_adjusted:
+        card.cmc = orig_cmc
     for card, orig_cmc in _trini_adjusted:
         card.cmc = orig_cmc
 
