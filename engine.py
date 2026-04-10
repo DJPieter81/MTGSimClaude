@@ -304,14 +304,15 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
     # Condition: Vial has matching counters, opp has a creature in hand at that CMC,
     # and the ambush creature can survive or trade favourably with an attacker.
     if MC.is_vial(gs) and attackers:
-        o = (gs.p2 if defender_player is gs.p1 else gs.p1)
-        if o is gs.p2:  # only fire when DnT/Boros is the defender
-            vial_perm = next((p for p in gs.p2.artifacts if p.card.tag == 'vial'), None)
+        # Vial ambush: the DEFENDER (DnT/Boros) flashes in a creature to block
+        vial_owner = defender_player
+        if True:  # fire whenever defender has Vial
+            vial_perm = next((p for p in vial_owner.artifacts if p.card.tag == 'vial'), None)
             if vial_perm and gs.vial_counters > 0:
                 ambush_tags = ('flickerwisp','skyclave','thalia','phelia',
                                'recruiter','solitude','orchid','dungeoneer','minsc')
                 for tag in ambush_tags:
-                    crea = gs.p2.find_tag(tag)
+                    crea = vial_owner.find_tag(tag)
                     if not crea or crea.cmc != gs.vial_counters:
                         continue
                     # Check if this creature can profitably block any attacker:
@@ -326,27 +327,27 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
                         if not a.card.flying or crea.flying or getattr(crea, 'reach', False)
                     )
                     if can_trade:
-                        gs.p2.remove_from_hand(crea)
-                        new_perm = gs.p2.put_creature_in_play(crea)
+                        vial_owner.remove_from_hand(crea)
+                        new_perm = vial_owner.put_creature_in_play(crea)
                         new_perm.summoning_sick = False  # instant-speed = can block immediately
-                        # ETB effects
-                        if tag == 'skyclave' and gs.p1.creatures:
-                            tgt = next((c for c in gs.p1.creatures if c.card.cmc <= 4), None)
+                        # ETB effects (target the attacker's side)
+                        if tag == 'skyclave' and attacker_player.creatures:
+                            tgt = next((c for c in attacker_player.creatures if c.card.cmc <= 4), None)
                             if tgt:
-                                gs.p1.remove_creature(tgt)
+                                attacker_player.remove_creature(tgt)
                                 log_list.append(f"  Skyclave Apparition (Vial ambush) exiles {tgt.card.name}")
                                 update_goyf(gs)
-                        if tag == 'solitude' and gs.p1.creatures:
-                            tgt = gs.p1.creatures[-1]
-                            gs.p1.remove_creature(tgt)
+                        if tag == 'solitude' and attacker_player.creatures:
+                            tgt = max(attacker_player.creatures, key=lambda c: c.power)
+                            attacker_player.remove_creature(tgt)
                             log_list.append(f"  Solitude (Vial ambush) exiles {tgt.card.name}")
                             update_goyf(gs)
                         if tag == 'recruiter':
                             for ft in ('thalia','phelia','flickerwisp','skyclave'):
-                                found = next((c for c in gs.p2.library if c.tag == ft), None)
+                                found = next((c for c in vial_owner.library if c.tag == ft), None)
                                 if found:
-                                    gs.p2.library.remove(found)
-                                    gs.p2.hand.append(found)
+                                    vial_owner.library.remove(found)
+                                    vial_owner.hand.append(found)
                                     log_list.append(f"  Recruiter (ambush) tutors {found.name}")
                                     break
                         can_block.append(new_perm)
@@ -2361,8 +2362,12 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     deploy_priority = ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp',
                        'orchid', 'mom', 'recruiter']
 
-    # Hard cast ONE creature if no Vial (mana-limited)
-    if not vial_perm:
+    # Hard cast creatures (multiple if mana permits, no Vial)
+    # Also cast via Vial if on board but deploy extras with mana
+    deployed_this_turn = 0
+    max_deploys = 1 if not vial_perm else 0  # hard cast 1 if no Vial, Vial handles rest
+    if total_mana >= 4: max_deploys = 2  # with 4+ mana, can double-deploy
+    if not vial_perm or total_mana >= 2:
         for tag in deploy_priority:
             crea = player.find_tag(tag)
             if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
@@ -2374,9 +2379,14 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
                 # ETB triggers
                 if tag == 'skyclave' and opponent.creatures:
-                    target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
+                    # Priority: Eidolon (punishes all our spells) > biggest threat
+                    target = next((c for c in opponent.creatures if c.card.tag == 'eidolon'), None)
+                    if not target:
+                        target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
                     if target:
                         opponent.remove_creature(target)
+                        if target.card.tag == 'eidolon':
+                            gs.eidolon_active = False
                         log_fn(f"  Skyclave Apparition exiles {target.card.name}")
                 if tag == 'recruiter':
                     found = next((c for c in player.library
@@ -2399,7 +2409,9 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                         update_goyf(gs)
             else:
                 player.add_to_grave(crea)
-            break  # one hard cast per turn
+            deployed_this_turn += 1
+            if deployed_this_turn >= max_deploys:
+                break
 
     # SFM activated: put equipment into play
     sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)

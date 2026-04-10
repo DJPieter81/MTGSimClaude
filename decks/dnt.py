@@ -27,17 +27,21 @@ def _keep_dnt(hand, matchup=''):
     has_stp = 'stp' in tags
     has_solitude = 'solitude' in tags
     has_removal = has_stp or has_solitude
-    has_creature = any(c.is_creature() for c in nonlands)
-    has_t1_play = has_vial or has_creature
-    # Need 2-4 lands + at least one proactive play
-    if not (2 <= lc <= 4 and has_t1_play):
+    creatures = [c for c in nonlands if c.is_creature()]
+    action = len(creatures) + (1 if has_vial else 0) + (1 if has_stp else 0)
+
+    # Need 2-4 lands + some action
+    if not (2 <= lc <= 4):
         return False
-    # Strong keeps: Vial + Thalia, or removal + threat
-    if has_vial and (has_thalia or has_removal):
-        return True
-    # Acceptable: 2-3 lands + 2+ action cards
-    action = sum(1 for c in nonlands if c.is_creature() or c.tag in ('vial', 'stp'))
-    return action >= 2
+    # Auto-keep strong hands
+    if has_vial:
+        return True  # Vial = engine, always keep
+    if has_thalia and action >= 2:
+        return True  # Thalia + backup
+    if has_removal and creatures:
+        return True  # interaction + clock
+    # Acceptable: 2+ action cards including at least 1 creature
+    return action >= 2 and len(creatures) >= 1
 
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────

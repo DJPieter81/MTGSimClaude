@@ -165,6 +165,17 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Combat: attack with all non-summoning-sick creatures ─────────────
     attackers = [c for c in player.creatures if c.can_attack()]
     if attackers:
+        # Goblin Guide trigger: each attacking Guide reveals defender's top card.
+        # If it's a land, defender puts it in their hand (CR 510 — Guide downside).
+        import random as _rng
+        for atk in attackers:
+            if atk.card.tag == 'guide' and opponent.library:
+                top = opponent.library[0]
+                if top.is_land():
+                    opponent.library.pop(0)
+                    opponent.hand.append(top)
+                    log_fn(f"  Goblin Guide trigger → reveals {top.name} (land) — opponent draws it")
+
         combat_declare(player, opponent, gs, log_entries, attackers)
         gs.state_based_actions()
         gs.check_life_totals()
@@ -172,11 +183,28 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             return
 
     # ── Burn spells at face ──────────────────────────────────────────────
-    # Helper: deal damage to opponent, check for lethal
+    # Eidolon awareness: if OUR Eidolon is on board, each spell costs us 2 life.
+    # Only cast if the damage dealt exceeds the self-damage, or if it's lethal.
+    own_eidolon = gs.eidolon_active
+    eidolon_self_cost = 2 if own_eidolon else 0
+
     def deal_face_damage(amount, source_name):
         opponent.life -= amount
         log_fn(f"★ {source_name} → {amount} damage (opp at {opponent.life})", True)
         gs.check_life_totals()
+
+    def _worth_casting(spell_damage):
+        """Check if casting a burn spell is worth the Eidolon self-damage."""
+        if not own_eidolon:
+            return True
+        # Always cast if it's lethal
+        if spell_damage >= opponent.life:
+            return True
+        # Don't cast if self-damage would kill us
+        if player.life <= eidolon_self_cost:
+            return False
+        # Cast if damage dealt > self-damage (net positive)
+        return spell_damage > eidolon_self_cost
 
     # --- Price of Progress: best when opp has nonbasic lands ---
     while mana >= 2:
@@ -187,6 +215,8 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
         pop_damage = nonbasics * 2
         if pop_damage <= 0:
             break  # don't waste it if opp has no nonbasics
+        if not _worth_casting(pop_damage):
+            break
         if not _try_counter_any(player, opponent, gs, pop, log_entries):
             player.remove_from_hand(pop)
             player.add_to_grave(pop)
@@ -208,6 +238,8 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             card = player.find_tag(tag)
             if not card:
                 break
+            if not _worth_casting(3):
+                break
             # Rift Bolt: suspend costs effectively 1 mana (simplified)
             cast_cost = 1  # all effectively cost 1 in this model
             if not _try_counter_any(player, opponent, gs, card, log_entries):
@@ -228,6 +260,9 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     while mana >= 1:
         bolt = player.find_tag('bolt')
         if not bolt:
+            break
+        if not _worth_casting(3) and not opponent.creatures:
+            # Don't bolt face if Eidolon would kill us, but still bolt creatures
             break
         # Check if opponent has a high-value creature worth bolting
         # (Bowmasters, Tamiyo, DRC, etc.)
@@ -269,6 +304,8 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     while mana >= 2:
         crack = player.find_tag('skullcrack')
         if not crack:
+            break
+        if not _worth_casting(3):
             break
         if not _try_counter_any(player, opponent, gs, crack, log_entries):
             player.remove_from_hand(crack)

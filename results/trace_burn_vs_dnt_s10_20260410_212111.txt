@@ -1,0 +1,267 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Price of Progress (instant, CMC 2)
+    2. Barbarian Ring (land)
+    3. Fireblast (instant, CMC 6)
+    4. Mountain (basic)
+    5. Barbarian Ring (land)
+    6. Monastery Swiftspear (creature 1/2, CMC 1)
+    7. Mountain (basic)
+    [Lands: 4  Creatures: 1  Other: 2]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Goblin Guide (creature 2/1, CMC 1)
+    2. Fireblast (instant, CMC 6)
+    3. Fireblast (instant, CMC 6)
+    4. Fireblast (instant, CMC 6)
+    5. Mountain (basic)
+    6. Fiery Islet (land)
+    7. Chain Lightning (sorcery, CMC 1)
+    [Lands: 2  Creatures: 1  Other: 4]
+  Keep best 6: Goblin Guide, Mountain, Fiery Islet, Fireblast, Fireblast, Fireblast
+  Bottom 1: Chain Lightning
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Skyclave Apparition (creature 2/2, CMC 3, removal)
+    2. Plains (basic)
+    3. Recruiter of the Guard (creature 1/1, CMC 3)
+    4. Rishadan Port (land)
+    5. White Orchid Phantom (creature 2/2, CMC 3)
+    6. Flickerwisp (creature 3/1, CMC 3)
+    7. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    [Lands: 2  Creatures: 5  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 5 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (5): Goblin Guide, Fiery Islet, Fireblast, Fireblast, Fireblast
+      → Goblin Guide goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Goblin Guide — 2 unblocked → o at 18
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 54  GY: 0        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Mountain                │   Lands: (none)                  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Fiery Islet, Fireblast   │   Hand: Skyclave Apparition      │
+  │         Fireblast, Fireblast     │         Plains                   │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Rishadan Port            │
+  │                                  │         White Orchid Phantom     │
+  │                                  │         Flickerwisp, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 18
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Batterskull
+  Land: Plains (1 lands)
+  ── Main ──
+    Hand (7): Skyclave Apparition, Recruiter of the Guard, Rishadan Port, White Orchid Phantom, Flickerwisp, Phelia, Exuberant Shepherd, Batterskull
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 54  GY: 0        │   Hand: 7  Lib: 52  GY: 0        │
+  │   Lands: Mountain                │   Lands: Plains                  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Fiery Islet, Fireblast   │   Hand: Skyclave Apparition      │
+  │         Fireblast, Fireblast     │         Recruiter of the Guard   │
+  │                                  │         Rishadan Port            │
+  │                                  │         White Orchid Phantom     │
+  │                                  │         Flickerwisp, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Batterskull              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  Land: Fiery Islet (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Fireblast, Fireblast, Fireblast, Lightning Bolt
+  Attack: Goblin Guide — 2 unblocked → o at 16
+      → Lightning Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 13)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 13                       │
+  │   Hand: 3  Lib: 53  GY: 1        │   Hand: 7  Lib: 52  GY: 0        │
+  │   Lands: Mountain, Fiery Islet   │   Lands: Plains                  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Hand: Skyclave Apparition      │
+  │         Fireblast                │         Recruiter of the Guard   │
+  │                                  │         Rishadan Port            │
+  │                                  │         White Orchid Phantom     │
+  │                                  │         Flickerwisp, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Batterskull              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 13
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Phelia, Exuberant Shepherd
+  Land: Rishadan Port (2 lands)
+  ── Main ──
+    Hand (7): Skyclave Apparition, Recruiter of the Guard, White Orchid Phantom, Flickerwisp, Phelia, Exuberant Shepherd, Batterskull, Phelia, Exuberant Shepherd
+    Mana available: 1
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 13                       │
+  │   Hand: 3  Lib: 53  GY: 1        │   Hand: 7  Lib: 51  GY: 0        │
+  │   Lands: Mountain, Fiery Islet   │   Lands: Plains, Rishadan Port   │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Hand: Skyclave Apparition      │
+  │         Fireblast                │         Recruiter of the Guard   │
+  │                                  │         White Orchid Phantom     │
+  │                                  │         Flickerwisp, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Batterskull, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 13
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Price of Progress
+  ── Main ── Mana: 2
+    Hand (4): Fireblast, Fireblast, Fireblast, Price of Progress
+  Attack: Goblin Guide — 2 unblocked → o at 11
+      → Price of Progress goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 9)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 9                        │
+  │   Hand: 3  Lib: 52  GY: 2        │   Hand: 7  Lib: 51  GY: 0        │
+  │   Lands: Mountain, Fiery Islet   │   Lands: Plains, Rishadan Port   │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Hand: Skyclave Apparition      │
+  │         Fireblast                │         Recruiter of the Guard   │
+  │                                  │         White Orchid Phantom     │
+  │                                  │         Flickerwisp, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Batterskull, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 9
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Stoneforge Mystic
+  ── Main ──
+    Hand (8): Skyclave Apparition, Recruiter of the Guard, White Orchid Phantom, Flickerwisp, Phelia, Exuberant Shepherd, Batterskull, Phelia, Exuberant Shepherd, Stoneforge Mystic
+    Mana available: 1
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 9                        │
+  │   Hand: 3  Lib: 52  GY: 2        │   Hand: 8  Lib: 50  GY: 0        │
+  │   Lands: Mountain, Fiery Islet   │   Lands: Plains, Rishadan Port   │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Hand: Skyclave Apparition      │
+  │         Fireblast                │         Recruiter of the Guard   │
+  │                                  │         White Orchid Phantom     │
+  │                                  │         Flickerwisp, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Batterskull, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 9
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Chain Lightning
+  ── Main ── Mana: 2
+    Hand (4): Fireblast, Fireblast, Fireblast, Chain Lightning
+  Attack: Goblin Guide — 2 unblocked → o at 7
+      → Chain Lightning goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 4)
+      → Fireblast goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 0)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 0                        │
+  │   Hand: 2  Lib: 51  GY: 4        │   Hand: 8  Lib: 50  GY: 0        │
+  │   Lands: (none)                  │   Lands: Plains, Rishadan Port   │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Hand: Skyclave Apparition      │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         White Orchid Phantom     │
+  │                                  │         Flickerwisp, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Batterskull, Phelia      │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches 0 on turn 4
+  Final life: burn 20 | dnt 0
+══════════════════════════════════════════════════════════════════════
