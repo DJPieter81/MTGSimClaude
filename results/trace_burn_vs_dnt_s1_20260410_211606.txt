@@ -1,0 +1,413 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Rift Bolt (sorcery, CMC 3)
+    2. Inspiring Vantage (land)
+    3. Lava Spike (sorcery, CMC 1)
+    4. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    5. Goblin Guide (creature 2/1, CMC 1)
+    6. Monastery Swiftspear (creature 1/2, CMC 1)
+    7. Chain Lightning (sorcery, CMC 1)
+    [Lands: 1  Creatures: 3  Other: 3]
+  → KEEP (opening 7)
+    Reason: 3 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    2. Plains (basic)
+    3. Flickerwisp (creature 3/1, CMC 3)
+    4. White Orchid Phantom (creature 2/2, CMC 3)
+    5. Recruiter of the Guard (creature 1/1, CMC 3)
+    6. Karakas (land)
+    7. Stoneforge Mystic (creature 1/2, CMC 2)
+    [Lands: 2  Creatures: 5]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 5 threat(s) for a clock
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Plains (1 lands)
+  ── Main ──
+    Hand (6): Phelia, Exuberant Shepherd, Flickerwisp, White Orchid Phantom, Recruiter of the Guard, Karakas, Stoneforge Mystic
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Plains                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Rift Bolt                │   Hand: Phelia                   │
+  │         Inspiring Vantage        │         Exuberant Shepherd       │
+  │         Lava Spike               │         Flickerwisp              │
+  │         Eidolon of the Great Rev │         White Orchid Phantom     │
+  │         el, Goblin Guide         │         Recruiter of the Guard   │
+  │         Monastery Swiftspear     │         Karakas                  │
+  │         Chain Lightning          │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Rift Bolt, Inspiring Vantage, Lava Spike, Eidolon of the Great Revel, Goblin Guide, Monastery Swiftspear, Chain Lightning
+      → Goblin Guide goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Goblin Guide — 2 unblocked → o at 18
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Mountain                │   Lands: Plains                  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Rift Bolt                │   Hand: Phelia                   │
+  │         Inspiring Vantage        │         Exuberant Shepherd       │
+  │         Lava Spike               │         Flickerwisp              │
+  │         Eidolon of the Great Rev │         White Orchid Phantom     │
+  │         el                       │         Recruiter of the Guard   │
+  │         Monastery Swiftspear     │         Karakas                  │
+  │         Chain Lightning          │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Arid Mesa
+  Land: Karakas (2 lands)
+  ── Main ──
+    Hand (6): Phelia, Exuberant Shepherd, Flickerwisp, White Orchid Phantom, Recruiter of the Guard, Stoneforge Mystic, Arid Mesa
+    Mana available: 2
+      → Stoneforge Mystic goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Stoneforge Mystic RESOLVES
+  Stoneforge Mystic (1/2)
+    Stoneforge Mystic tutors Kaldra Compleat
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 51  GY: 0        │
+  │   Lands: Mountain                │   Lands: Plains, Karakas         │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: Stoneforge Mystic (1/2) │
+  │   Hand: Rift Bolt                │   Hand: Phelia                   │
+  │         Inspiring Vantage        │         Exuberant Shepherd       │
+  │         Lava Spike               │         Flickerwisp              │
+  │         Eidolon of the Great Rev │         White Orchid Phantom     │
+  │         el                       │         Recruiter of the Guard   │
+  │         Monastery Swiftspear     │         Arid Mesa                │
+  │         Chain Lightning          │         Kaldra Compleat          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Rift Bolt, Inspiring Vantage, Lava Spike, Eidolon of the Great Revel, Monastery Swiftspear, Chain Lightning
+      → Monastery Swiftspear goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Monastery Swiftspear RESOLVES
+  Monastery Swiftspear enters the battlefield
+  Attack: Goblin Guide, Monastery Swiftspear — Stoneforge Mystic blocks Goblin Guide. Goblin Guide deals 2, Stoneforge Mystic deals 1 back. 0 unblocked damage to player (o at 18)
+      Stoneforge Mystic dies.
+      Goblin Guide dies.
+    1 unblocked → o at 17
+      → Chain Lightning goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 14)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 14                       │
+  │   Hand: 4  Lib: 51  GY: 3        │   Hand: 6  Lib: 51  GY: 1        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains, Karakas         │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Rift Bolt                │   Hand: Phelia                   │
+  │         Inspiring Vantage        │         Exuberant Shepherd       │
+  │         Lava Spike               │         Flickerwisp              │
+  │         Eidolon of the Great Rev │         White Orchid Phantom     │
+  │         el                       │         Recruiter of the Guard   │
+  │                                  │         Arid Mesa                │
+  │                                  │         Kaldra Compleat          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 14
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Play+crack Arid Mesa (−1 life, 13) → Plains
+  ── Main ──
+    Hand (6): Phelia, Exuberant Shepherd, Flickerwisp, White Orchid Phantom, Recruiter of the Guard, Kaldra Compleat, Wasteland
+    Mana available: 3
+      → Phelia, Exuberant Shepherd goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Phelia, Exuberant Shepherd RESOLVES
+  Phelia, Exuberant Shepherd (2/2)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 13                       │
+  │   Hand: 4  Lib: 51  GY: 3        │   Hand: 5  Lib: 49  GY: 3        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains, Karakas, Plains │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Rift Bolt                │   Hand: Flickerwisp              │
+  │         Inspiring Vantage        │         White Orchid Phantom     │
+  │         Lava Spike               │         Recruiter of the Guard   │
+  │         Eidolon of the Great Rev │         Kaldra Compleat          │
+  │         el                       │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 13
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lava Spike
+  Land: Inspiring Vantage (3 lands)
+  ── Main ── Mana: 3
+    Hand (4): Rift Bolt, Lava Spike, Eidolon of the Great Revel, Lava Spike
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+      → Lava Spike goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lava Spike RESOLVES
+  ★ Lava Spike → 3 damage (opp at 10)
+  Eidolon trigger — 2 spell(s) cast, 4 damage to P1 (16)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 16                       │   Life: 10                       │
+  │   Hand: 2  Lib: 50  GY: 4        │   Hand: 5  Lib: 49  GY: 3        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Karakas, Plains │
+  │   Creatures: Monastery Swiftspear (1/2... │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Rift Bolt, Lava Spike    │   Hand: Flickerwisp              │
+  │                                  │         White Orchid Phantom     │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Kaldra Compleat          │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 16 | dnt 10
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Recruiter of the Guard
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (5): Flickerwisp, White Orchid Phantom, Recruiter of the Guard, Kaldra Compleat, Recruiter of the Guard
+    Mana available: 3
+      → Flickerwisp goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Flickerwisp RESOLVES
+  Flickerwisp (3/1)
+    Flickerwisp blinks Eidolon of the Great Revel
+  Wasteland → destroys Inspiring Vantage
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 16                       │   Life: 10                       │
+  │   Hand: 2  Lib: 50  GY: 6        │   Hand: 4  Lib: 48  GY: 4        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains, Karakas, Plains │
+  │   Creatures: Monastery Swiftspear (1/2... │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Rift Bolt, Lava Spike    │   Hand: White Orchid Phantom     │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Kaldra Compleat          │
+  │                                  │         Recruiter of the Guard   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 16 | dnt 10
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Inspiring Vantage
+  Land: Inspiring Vantage (3 lands)
+  ── Main ── Mana: 3
+    Hand (2): Rift Bolt, Lava Spike
+  Attack: Eidolon of the Great Revel — Flickerwisp blocks Eidolon of the Great Revel. Eidolon of the Great Revel deals 2, Flickerwisp deals 3 back. 0 unblocked damage to player (o at 10)
+      Flickerwisp dies.
+      Eidolon of the Great Revel dies.
+      → Lava Spike goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lava Spike RESOLVES
+  ★ Lava Spike → 3 damage (opp at 7)
+      → Rift Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Rift Bolt RESOLVES
+  ★ Rift Bolt → 3 damage (opp at 4)
+  Eidolon trigger — 2 spell(s) cast, 4 damage to P1 (12)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 12                       │   Life: 4                        │
+  │   Hand: 0  Lib: 49  GY: 10       │   Hand: 4  Lib: 48  GY: 5        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Karakas, Plains │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: (empty)                  │   Hand: White Orchid Phantom     │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Kaldra Compleat          │
+  │                                  │         Recruiter of the Guard   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 12 | dnt 4
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Solitude
+  ── Main ──
+    Hand (5): White Orchid Phantom, Recruiter of the Guard, Kaldra Compleat, Recruiter of the Guard, Solitude
+    Mana available: 3
+  ★ Solitude (evoke, pitch White Orchid Phantom) exiles Monastery Swiftspear (+2 life)
+      → Recruiter of the Guard goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Recruiter of the Guard RESOLVES
+  Recruiter of the Guard (1/1)
+    Recruiter tutors Skyclave Apparition
+  Attack: Phelia, Exuberant Shepherd — 2 unblocked → b at 10
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 10                       │   Life: 6                        │
+  │   Hand: 0  Lib: 49  GY: 10       │   Hand: 3  Lib: 46  GY: 6        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Karakas, Plains │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: (empty)                  │   Hand: Kaldra Compleat          │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Skyclave Apparition      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 10 | dnt 6
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Rift Bolt
+  ── Main ── Mana: 3
+    Hand (1): Rift Bolt
+      → Rift Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Rift Bolt RESOLVES
+  ★ Rift Bolt → 3 damage (opp at 3)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 10                       │   Life: 3                        │
+  │   Hand: 0  Lib: 48  GY: 11       │   Hand: 3  Lib: 46  GY: 6        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Karakas, Plains │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: (empty)                  │   Hand: Kaldra Compleat          │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Skyclave Apparition      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 10 | dnt 3
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Swords to Plowshares
+  ── Main ──
+    Hand (4): Kaldra Compleat, Recruiter of the Guard, Skyclave Apparition, Swords to Plowshares
+    Mana available: 3
+      → Skyclave Apparition goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Skyclave Apparition RESOLVES
+  Skyclave Apparition (2/2)
+  Attack: Phelia, Exuberant Shepherd — 2 unblocked → b at 8
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 8                        │   Life: 3                        │
+  │   Hand: 0  Lib: 48  GY: 11       │   Hand: 3  Lib: 45  GY: 6        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Karakas, Plains │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: (empty)                  │   Hand: Kaldra Compleat          │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Swords to Plowshares     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 8 | dnt 3
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Chain Lightning
+  ── Main ── Mana: 3
+    Hand (1): Chain Lightning
+      → Chain Lightning goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 0)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 8                        │   Life: 0                        │
+  │   Hand: 0  Lib: 47  GY: 12       │   Hand: 3  Lib: 45  GY: 6        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Karakas, Plains │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: (empty)                  │   Hand: Kaldra Compleat          │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Swords to Plowshares     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches 0 on turn 6
+  Final life: burn 8 | dnt 0
+══════════════════════════════════════════════════════════════════════
