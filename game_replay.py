@@ -126,6 +126,91 @@ def classify_play(line):
     return 'other'
 
 
+def _explain_hand(hand, deck_key):
+    """Explain why a hand is keepable or not based on composition."""
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    threats = [c for c in nonlands if c.is_creature()]
+    cantrips = [c for c in nonlands if c.tag in ('bs', 'ponder', 'preordain', 'probe')]
+    counters = [c for c in nonlands if c.tag in ('fow', 'fon', 'daze', 'fluster', 'pact_neg', 'vos')]
+    removal = [c for c in nonlands if c.tag in ('push', 'bolt', 'heat', 'stp', 'ad', 'dismember', 'snuff')]
+    fast_mana = [c for c in nonlands if c.tag in ('petal', 'led', 'chrome_mox', 'darkrit', 'opal', 'ssg', 'mox_diamond')]
+    combo = [c for c in nonlands if c.tag in ('show', 'sneak', 'omni', 'entomb', 'reanimate', 'exhume',
+             'animate_dead', 'oops', 'spy', 'depths', 'stage', 'crop')]
+
+    parts = []
+    parts.append(f"{lc}L/{len(threats)}T/{len(cantrips)}can")
+    if counters: parts.append(f"{len(counters)} protection")
+    if fast_mana: parts.append(f"{len(fast_mana)} fast mana")
+    if combo: parts.append(f"{len(combo)} combo")
+    if removal: parts.append(f"{len(removal)} removal")
+
+    issues = []
+    if lc == 0: issues.append("no lands")
+    elif lc >= 5: issues.append("flood (5+ lands)")
+    if not threats and not combo and not cantrips: issues.append("no action")
+    if lc == 1 and not cantrips and not fast_mana: issues.append("1 land no cantrip")
+
+    strengths = []
+    if combo and (fast_mana or lc >= 1): strengths.append("combo ready")
+    if threats and counters: strengths.append("threat + protection")
+    if lc in (2, 3) and cantrips: strengths.append("good mana + cantrips")
+    if fast_mana and combo: strengths.append("explosive start")
+
+    summary = " · ".join(parts)
+    if issues: summary += " — ISSUES: " + ", ".join(issues)
+    if strengths: summary += " — " + ", ".join(strengths)
+    return summary
+
+
+def _narrate_turn(td, prev_td, game_context):
+    """Generate strategic commentary for a turn based on plays and board state."""
+    plays = td.get('plays', [])
+    if not plays: return ""
+
+    notes = []
+    cats = [p.get('cat', '') for p in plays]
+    texts = [p.get('text', '').lower() for p in plays]
+    all_text = ' '.join(texts)
+
+    # Combo resolution
+    if 'combo' in cats:
+        notes.append("COMBO TURN — going for the win")
+    # Counter war
+    if any('counter' in t for t in texts):
+        if any('veil' in t for t in texts):
+            notes.append("Veil of Summer blanks all blue interaction before comboing")
+        else:
+            notes.append("Stack interaction — counter war")
+    # Land + pass (developing)
+    if set(cats) <= {'land', 'draw', 'other'} and len(plays) <= 3:
+        hand_size = len(td.get('hand_before', []))
+        if hand_size > 5:
+            notes.append("Developing mana, holding cards — waiting for the right moment")
+    # Aggressive combat
+    if 'combat' in cats:
+        damage_plays = [p for p in plays if 'unblocked' in p.get('text', '').lower()]
+        if damage_plays:
+            notes.append("Pressing damage — clock is ticking")
+    # Cantrip-heavy turn
+    cantrip_count = sum(1 for c in cats if c == 'cantrip')
+    if cantrip_count >= 2:
+        notes.append("Digging hard — looking for a specific answer or combo piece")
+    # Wasteland
+    if any('wasteland' in t and 'destroys' in t for t in texts):
+        notes.append("Mana denial — cutting opponent off key colours")
+    # Discard
+    if any('thoughtseize' in t or 'unmask' in t for t in texts):
+        notes.append("Stripping opponent's best card before committing")
+    # No land drop when expected
+    if td.get('life', 20) > 0 and 'land' not in cats and len(td.get('hand_before', [])) > 0:
+        if prev_td and len(prev_td.get('lands', [])) < 3:
+            notes.append("Missed land drop — mana screw risk")
+
+    return " · ".join(notes) if notes else ""
+
+
 def run_one_game(matchup, seed=None, protagonist='bug'):
     """Run a single game and return structured data.
     protagonist: deck key for the protagonist ('bug' uses bug_turn AI, others use protagonist_turn).
@@ -134,10 +219,34 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
 
     from sim import protagonist_turn
 
+    # Wrap mulligan to capture history
     pro_keep = bug_keep if protagonist == 'bug' else opp_keep
     pro_deck = DECKS.get(protagonist, DECKS['bug'])
-    pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck, pro_keep, protagonist if protagonist != 'bug' else None)
-    opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
+
+    pro_mull_history = []
+    def _tracking_keep_pro(hand, matchup_arg=''):
+        kept = pro_keep(hand, matchup_arg)
+        pro_mull_history.append({
+            'hand': [ab(c.name) for c in hand],
+            'size': len(hand),
+            'kept': kept,
+            'reason': _explain_hand(hand, protagonist),
+        })
+        return kept
+
+    opp_mull_history = []
+    def _tracking_keep_opp(hand, matchup_arg=''):
+        kept = opp_keep(hand, matchup_arg)
+        opp_mull_history.append({
+            'hand': [ab(c.name) for c in hand],
+            'size': len(hand),
+            'kept': kept,
+            'reason': _explain_hand(hand, matchup),
+        })
+        return kept
+
+    pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck, _tracking_keep_pro, protagonist if protagonist != 'bug' else None)
+    opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], _tracking_keep_opp, matchup)
     pro_goes_first = random.random() < 0.5
 
     gs = GameState(
@@ -210,6 +319,8 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
                 'opp_graveyard': fmt_graveyard(opponent),
                 'plays': plays,
             }
+            prev = turns_data[-1] if turns_data else None
+            td['narrative'] = _narrate_turn(td, prev, {})
             turns_data.append(td)
             life_pro.append(gs.p1.life)
             life_opp.append(gs.p2.life)
@@ -233,6 +344,7 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
         'protagonist': protagonist, 'pro_label': pro_label,
         'bug_goes_first': pro_goes_first,
         'bug_mulls': pro_mulls, 'opp_mulls': opp_mulls,
+        'bug_mull_history': pro_mull_history, 'opp_mull_history': opp_mull_history,
         'bug_open': pro_open, 'opp_open': opp_open,
         'turns_data': turns_data, 'life_bug': life_pro, 'life_opp': life_opp,
         'display_turn': display_turn, 'winner': winner, 'win_reason': gs.win_reason or '',
@@ -335,6 +447,15 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .ench-list{{color:#d2a8ff}}
 .pw-list{{color:#79c0ff}}
 .gy-list{{color:#6e7681;font-size:0.75em}}
+.mull-step{{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-size:0.8em}}
+.mull-label{{color:#8b949e;font-weight:600}}
+.keep-tag{{color:#3fb950;font-weight:700;font-size:0.85em}}
+.mull-tag{{color:#f85149;font-weight:700;font-size:0.85em}}
+.mull-pills{{opacity:0.5;margin:2px 0}}
+.mull-pills .pill{{font-size:0.7em;text-decoration:line-through}}
+.mull-reason{{font-size:0.75em;color:#f85149;margin:2px 0 8px;font-style:italic;padding-left:4px;border-left:2px solid #f8514930}}
+.hand-analysis{{font-size:0.75em;color:#3fb950;margin-top:6px;padding:4px 8px;background:#3fb95010;border-radius:4px;border-left:2px solid #3fb95040}}
+.turn-narrative{{font-size:0.8em;color:#d2a8ff;background:#d2a8ff08;border-left:2px solid #d2a8ff40;padding:4px 10px;margin:8px 0;border-radius:0 4px 4px 0;font-style:italic}}
 .result{{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}}
 .result h2{{font-size:1.8em;margin-bottom:8px}}
 .result h2.bug-win{{color:#58a6ff}}.result h2.opp-win{{color:#f85149}}
@@ -367,14 +488,44 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
         act = ' active' if gi == 0 else ''
         h.append(f'<div class="game-panel{act}" id="game-{gi}">')
 
-        # Opening hands
+        # Opening hands with mulligan history
         play_str = 'ON THE PLAY' if g['bug_goes_first'] else 'ON THE DRAW'
         h.append(f'<div class="meta" style="margin-bottom:12px;color:#8b949e">{html.escape(pro_label)} is {play_str} &nbsp;|&nbsp; Seed: {g["seed"]}</div>')
         h.append(f'<div class="hands">')
-        h.append(f'<div class="hand-box bug"><h3>{html.escape(pro_label)} opening (mull {g["bug_mulls"]})</h3>')
+        # Protagonist mulligan history
+        h.append(f'<div class="hand-box bug"><h3>{html.escape(pro_label)} (mull {g["bug_mulls"]})</h3>')
+        for mi, mh in enumerate(g.get('bug_mull_history', [])):
+            kept_cls = 'keep-tag' if mh['kept'] else 'mull-tag'
+            kept_txt = '✓ KEEP' if mh['kept'] else '✗ MULL'
+            if mi > 0 or not mh['kept']:
+                h.append(f'<div class="mull-step">')
+                h.append(f'<span class="mull-label">{mh["size"]} cards</span>')
+                h.append(f'<span class="{kept_cls}">{kept_txt}</span>')
+                h.append(f'</div>')
+            if not mh['kept']:
+                h.append(f'<div class="mull-pills">')
+                for c in mh['hand']: h.append(f'<span class="pill mull-pill">{html.escape(c)}</span>')
+                h.append(f'</div>')
+                h.append(f'<div class="mull-reason">{html.escape(mh["reason"])}</div>')
+        # Final kept hand
         for c in g['bug_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
-        h.append(f'</div><div class="hand-box opp"><h3>OPP opening (mull {g["opp_mulls"]})</h3>')
+        final_mh = g.get('bug_mull_history', [{}])[-1] if g.get('bug_mull_history') else {}
+        if final_mh.get('reason'):
+            h.append(f'<div class="hand-analysis">{html.escape(final_mh["reason"])}</div>')
+        h.append(f'</div>')
+        # Opponent mulligan history
+        h.append(f'<div class="hand-box opp"><h3>OPP (mull {g["opp_mulls"]})</h3>')
+        for mi, mh in enumerate(g.get('opp_mull_history', [])):
+            if not mh['kept']:
+                h.append(f'<div class="mull-step"><span class="mull-label">{mh["size"]} cards</span><span class="mull-tag">✗ MULL</span></div>')
+                h.append(f'<div class="mull-pills">')
+                for c in mh['hand']: h.append(f'<span class="pill mull-pill">{html.escape(c)}</span>')
+                h.append(f'</div>')
+                h.append(f'<div class="mull-reason">{html.escape(mh["reason"])}</div>')
         for c in g['opp_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
+        final_opp_mh = g.get('opp_mull_history', [{}])[-1] if g.get('opp_mull_history') else {}
+        if final_opp_mh.get('reason'):
+            h.append(f'<div class="hand-analysis">{html.escape(final_opp_mh["reason"])}</div>')
         h.append(f'</div></div>')
 
         # Life chart
@@ -479,6 +630,11 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
                     h.append(f'<div class="combat-detail"><div class="death-line">☠ {p["text"]}</div></div>')
             if not td['plays']:
                 h.append(f'<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>')
+
+            # Strategic narrative
+            narrative = td.get('narrative', '')
+            if narrative:
+                h.append(f'<div class="turn-narrative">{html.escape(narrative)}</div>')
 
             # Enhanced board: show BOTH sides
             h.append(f'<div class="section-label">Board State</div>')

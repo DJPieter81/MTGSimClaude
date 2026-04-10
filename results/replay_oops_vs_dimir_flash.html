@@ -75,6 +75,15 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 .ench-list{color:#d2a8ff}
 .pw-list{color:#79c0ff}
 .gy-list{color:#6e7681;font-size:0.75em}
+.mull-step{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-size:0.8em}
+.mull-label{color:#8b949e;font-weight:600}
+.keep-tag{color:#3fb950;font-weight:700;font-size:0.85em}
+.mull-tag{color:#f85149;font-weight:700;font-size:0.85em}
+.mull-pills{opacity:0.5;margin:2px 0}
+.mull-pills .pill{font-size:0.7em;text-decoration:line-through}
+.mull-reason{font-size:0.75em;color:#f85149;margin:2px 0 8px;font-style:italic;padding-left:4px;border-left:2px solid #f8514930}
+.hand-analysis{font-size:0.75em;color:#3fb950;margin-top:6px;padding:4px 8px;background:#3fb95010;border-radius:4px;border-left:2px solid #3fb95040}
+.turn-narrative{font-size:0.8em;color:#d2a8ff;background:#d2a8ff08;border-left:2px solid #d2a8ff40;padding:4px 10px;margin:8px 0;border-radius:0 4px 4px 0;font-style:italic}
 .result{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}
 .result h2{font-size:1.8em;margin-bottom:8px}
 .result h2.bug-win{color:#58a6ff}.result h2.opp-win{color:#f85149}
@@ -96,7 +105,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="game-panel active" id="game-0">
 <div class="meta" style="margin-bottom:12px;color:#8b949e">OOPS is ON THE DRAW &nbsp;|&nbsp; Seed: 42</div>
 <div class="hands">
-<div class="hand-box bug"><h3>OOPS opening (mull 0)</h3>
+<div class="hand-box bug"><h3>OOPS (mull 0)</h3>
 <span class="pill">MRain</span>
 <span class="pill">Pact of Negation</span>
 <span class="pill">Island</span>
@@ -104,7 +113,9 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="pill">Veil of Summer</span>
 <span class="pill">Pact of Negation</span>
 <span class="pill">Swamp</span>
-</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<div class="hand-analysis">3L/0T/1can · 1 protection — good mana + cantrips</div>
+</div>
+<div class="hand-box opp"><h3>OPP (mull 0)</h3>
 <span class="pill">Push</span>
 <span class="pill">Push</span>
 <span class="pill">Wan Shi Tong, Librarian</span>
@@ -112,6 +123,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="pill">Island</span>
 <span class="pill">FoW</span>
 <span class="pill">USea</span>
+<div class="hand-analysis">3L/1T/0can · 1 protection · 2 removal — threat + protection</div>
 </div></div>
 <div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 520 80">
 <circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
@@ -213,6 +225,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="action">Land: USea (1 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
 </div>
+<div class="turn-narrative">Developing mana, holding cards — waiting for the right moment</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
@@ -314,6 +327,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="play"><span class="step">3.</span>
 <span class="action">Wan Shi Tong, Librarian (X=0) enters as 1/1</span>
 </div>
+<div class="turn-narrative">Developing mana, holding cards — waiting for the right moment</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
@@ -361,6 +375,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="action">Land: Swamp (2 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
 </div>
+<div class="turn-narrative">Developing mana, holding cards — waiting for the right moment</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
@@ -416,6 +431,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="atk-line">⚔ Attackers: Wan Shi Tong, Librarian</div>
 <div class="dmg-line">→ 1 unblocked → b at 19</div>
 </div>
+<div class="turn-narrative">Pressing damage — clock is ticking</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
@@ -519,6 +535,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="atk-line">⚔ Attackers: Wan Shi Tong, Librarian</div>
 <div class="dmg-line">→ 1 unblocked → b at 18</div>
 </div>
+<div class="turn-narrative">Pressing damage — clock is ticking · Stripping opponent&#x27;s best card before committing</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
@@ -567,6 +584,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="action">Play+crack MRain (−1 life, 17) → Tropical Island</span>
 <span class="reasoning">&larr; fix mana + shuffle</span>
 </div>
+<div class="turn-narrative">Developing mana, holding cards — waiting for the right moment</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
@@ -618,6 +636,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="atk-line">⚔ Attackers: Wan Shi Tong, Librarian</div>
 <div class="dmg-line">→ 1 unblocked → b at 16</div>
 </div>
+<div class="turn-narrative">Pressing damage — clock is ticking</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
@@ -666,6 +685,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="action">Play+crack PDelta (−1 life, 15) → Bayou</span>
 <span class="reasoning">&larr; fix mana + shuffle</span>
 </div>
+<div class="turn-narrative">Developing mana, holding cards — waiting for the right moment</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
@@ -721,6 +741,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="atk-line">⚔ Attackers: Wan Shi Tong, Librarian</div>
 <div class="dmg-line">→ 1 unblocked → b at 14</div>
 </div>
+<div class="turn-narrative">Pressing damage — clock is ticking</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
@@ -778,6 +799,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="cat-badge cat-combo">COMBO</span>
 <span class="action key">★ Oops through Veil — wins</span>
 </div>
+<div class="turn-narrative">COMBO TURN — going for the win</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
@@ -812,7 +834,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="game-panel" id="game-1">
 <div class="meta" style="margin-bottom:12px;color:#8b949e">OOPS is ON THE DRAW &nbsp;|&nbsp; Seed: 99</div>
 <div class="hands">
-<div class="hand-box bug"><h3>OOPS opening (mull 0)</h3>
+<div class="hand-box bug"><h3>OOPS (mull 0)</h3>
 <span class="pill">Veil of Summer</span>
 <span class="pill">Unmask</span>
 <span class="pill">Island</span>
@@ -820,11 +842,52 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="pill">Pact of Negation</span>
 <span class="pill">PDelta</span>
 <span class="pill">Brainstorm</span>
-</div><div class="hand-box opp"><h3>OPP opening (mull 3)</h3>
+<div class="hand-analysis">3L/0T/1can · 1 protection — good mana + cantrips</div>
+</div>
+<div class="hand-box opp"><h3>OPP (mull 3)</h3>
+<div class="mull-step"><span class="mull-label">7 cards</span><span class="mull-tag">✗ MULL</span></div>
+<div class="mull-pills">
+<span class="pill mull-pill">Wan Shi Tong, Librarian</span>
+<span class="pill mull-pill">Thoughtseize</span>
+<span class="pill mull-pill">PDelta</span>
+<span class="pill mull-pill">Thoughtseize</span>
+<span class="pill mull-pill">Swamp</span>
+<span class="pill mull-pill">Island</span>
+<span class="pill mull-pill">Fluster</span>
+</div>
+<div class="mull-reason">3L/1T/0can · 1 protection — threat + protection</div>
+<div class="mull-step"><span class="mull-label">6 cards</span><span class="mull-tag">✗ MULL</span></div>
+<div class="mull-pills">
+<span class="pill mull-pill">FoW</span>
+<span class="pill mull-pill">USea</span>
+<span class="pill mull-pill">Thoughtseize</span>
+<span class="pill mull-pill">Island</span>
+<span class="pill mull-pill">PDelta</span>
+<span class="pill mull-pill">Push</span>
+</div>
+<div class="mull-reason">3L/0T/0can · 1 protection · 1 removal — ISSUES: no action</div>
+<div class="mull-step"><span class="mull-label">5 cards</span><span class="mull-tag">✗ MULL</span></div>
+<div class="mull-pills">
+<span class="pill mull-pill">Wan Shi Tong, Librarian</span>
+<span class="pill mull-pill">Wan Shi Tong, Librarian</span>
+<span class="pill mull-pill">Ponder</span>
+<span class="pill mull-pill">Push</span>
+<span class="pill mull-pill">Push</span>
+</div>
+<div class="mull-reason">0L/2T/1can · 2 removal — ISSUES: no lands</div>
+<div class="mull-step"><span class="mull-label">4 cards</span><span class="mull-tag">✗ MULL</span></div>
+<div class="mull-pills">
+<span class="pill mull-pill">Murktide</span>
+<span class="pill mull-pill">Tamiyo</span>
+<span class="pill mull-pill">Bowmasters</span>
+<span class="pill mull-pill">Island</span>
+</div>
+<div class="mull-reason">1L/3T/0can — ISSUES: 1 land no cantrip</div>
 <span class="pill">FoW</span>
 <span class="pill">Murktide</span>
 <span class="pill">Wan Shi Tong, Librarian</span>
 <span class="pill">PDelta</span>
+<div class="hand-analysis">1L/3T/0can — ISSUES: 1 land no cantrip</div>
 </div></div>
 <div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 280 80">
 <circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
@@ -975,6 +1038,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="action">Draw: Daze</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
+<div class="turn-narrative">Missed land drop — mana screw risk</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
@@ -1145,6 +1209,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="cat-badge cat-combo">COMBO</span>
 <span class="action key">★ Oops through Veil — wins</span>
 </div>
+<div class="turn-narrative">COMBO TURN — going for the win</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
@@ -1174,7 +1239,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="game-panel" id="game-2">
 <div class="meta" style="margin-bottom:12px;color:#8b949e">OOPS is ON THE DRAW &nbsp;|&nbsp; Seed: 7</div>
 <div class="hands">
-<div class="hand-box bug"><h3>OOPS opening (mull 0)</h3>
+<div class="hand-box bug"><h3>OOPS (mull 0)</h3>
 <span class="pill">FoW</span>
 <span class="pill">Tropical Island</span>
 <span class="pill">Ponder</span>
@@ -1182,11 +1247,52 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="pill">Island</span>
 <span class="pill">Island</span>
 <span class="pill">Balustrade Spy</span>
-</div><div class="hand-box opp"><h3>OPP opening (mull 3)</h3>
+<div class="hand-analysis">4L/1T/1can · 1 protection · 1 combo — combo ready, threat + protection</div>
+</div>
+<div class="hand-box opp"><h3>OPP (mull 3)</h3>
+<div class="mull-step"><span class="mull-label">7 cards</span><span class="mull-tag">✗ MULL</span></div>
+<div class="mull-pills">
+<span class="pill mull-pill">Murktide</span>
+<span class="pill mull-pill">Tamiyo</span>
+<span class="pill mull-pill">Push</span>
+<span class="pill mull-pill">Bowmasters</span>
+<span class="pill mull-pill">Wan Shi Tong, Librarian</span>
+<span class="pill mull-pill">Sewers</span>
+<span class="pill mull-pill">Daze</span>
+</div>
+<div class="mull-reason">1L/4T/0can · 1 protection · 1 removal — ISSUES: 1 land no cantrip — threat + protection</div>
+<div class="mull-step"><span class="mull-label">6 cards</span><span class="mull-tag">✗ MULL</span></div>
+<div class="mull-pills">
+<span class="pill mull-pill">FoW</span>
+<span class="pill mull-pill">Tamiyo</span>
+<span class="pill mull-pill">Wan Shi Tong, Librarian</span>
+<span class="pill mull-pill">Bowmasters</span>
+<span class="pill mull-pill">Push</span>
+<span class="pill mull-pill">MRain</span>
+</div>
+<div class="mull-reason">1L/3T/0can · 1 protection · 1 removal — ISSUES: 1 land no cantrip — threat + protection</div>
+<div class="mull-step"><span class="mull-label">5 cards</span><span class="mull-tag">✗ MULL</span></div>
+<div class="mull-pills">
+<span class="pill mull-pill">FoN</span>
+<span class="pill mull-pill">USea</span>
+<span class="pill mull-pill">PDelta</span>
+<span class="pill mull-pill">Waste</span>
+<span class="pill mull-pill">Island</span>
+</div>
+<div class="mull-reason">4L/0T/0can · 1 protection — ISSUES: no action</div>
+<div class="mull-step"><span class="mull-label">4 cards</span><span class="mull-tag">✗ MULL</span></div>
+<div class="mull-pills">
+<span class="pill mull-pill">FoW</span>
+<span class="pill mull-pill">Bowmasters</span>
+<span class="pill mull-pill">Brainstorm</span>
+<span class="pill mull-pill">Thoughtseize</span>
+</div>
+<div class="mull-reason">0L/1T/1can · 1 protection — ISSUES: no lands — threat + protection</div>
 <span class="pill">FoW</span>
 <span class="pill">FoN</span>
 <span class="pill">Wan Shi Tong, Librarian</span>
 <span class="pill">Tamiyo</span>
+<div class="hand-analysis">0L/1T/1can · 1 protection — ISSUES: no lands — threat + protection</div>
 </div></div>
 <div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 200 80">
 <circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
@@ -1324,6 +1430,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="action">Draw: Thoughtseize</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
+<div class="turn-narrative">Stripping opponent&#x27;s best card before committing · Missed land drop — mana screw risk</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
@@ -1379,6 +1486,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <span class="cat-badge cat-combo">COMBO</span>
 <span class="action key">★ Oops through Veil — wins</span>
 </div>
+<div class="turn-narrative">COMBO TURN — going for the win</div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
