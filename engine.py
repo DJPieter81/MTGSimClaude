@@ -3313,6 +3313,19 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             break
 
+    # ── 2b. Summoner's Pact: free tutor for green creature (Spy) ──
+    # Pact costs 0 now, pay {2}{G}{G} next upkeep (or lose the game).
+    # In Oops, you win before next upkeep, so it's always free.
+    spact = player.find_tag('spact')
+    if spact and not player.find_tag('spy'):
+        # Tutor Balustrade Spy from library
+        spy_from_lib = next((c for c in player.library if c.tag == 'spy'), None)
+        if spy_from_lib:
+            player.remove_from_hand(spact); player.exile.append(spact)
+            player.library.remove(spy_from_lib)
+            player.hand.append(spy_from_lib)
+            log_fn(f"Summoner's Pact → tutors Balustrade Spy (free)", True)
+
     # ── 3. Grief (free evoke: exile black card from hand) ──
     grief = player.find_tag('grief')
     if grief and sum(1 for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief) >= 1:

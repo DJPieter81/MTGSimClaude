@@ -505,8 +505,9 @@ class MTGRules:
 
     @staticmethod
     def fatal_push_valid_target(permanent: Permanent, revolt: bool) -> bool:
-        """CMC ≤ 2; with revolt CMC ≤ 4. Power is irrelevant."""
+        """CMC ≤ 2; with revolt CMC ≤ 4. Can't destroy indestructible (CR 702.12)."""
         if permanent.card.card_type != CardType.CREATURE: return False
+        if getattr(permanent.card, 'indestructible', False): return False
         threshold = 4 if revolt else 2
         return permanent.cmc <= threshold
 
@@ -514,7 +515,8 @@ class MTGRules:
 
     @staticmethod
     def abrupt_decay_valid_target(permanent: Permanent) -> bool:
-        """Destroys target permanent with CMC 3 or less. Cannot be countered."""
+        """Destroys target permanent with CMC 3 or less. Can't destroy indestructible."""
+        if getattr(permanent.card, 'indestructible', False): return False
         return permanent.cmc <= 3
 
     # ── Chalice of the Void ───────────────────

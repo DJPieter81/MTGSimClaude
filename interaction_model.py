@@ -114,10 +114,12 @@ def compute_combo_fizzle_rate(interaction, veil_active=False):
     uses_gy = interaction.get('uses_graveyard', False)
 
     if uses_gy:
-        # P(BUG has Surgical/Leyline): 2 copies, ~10 cards seen
-        base = _prob_at_least_one(2, 10)  # ~30%
+        # Game 1: no sideboard hate (Surgical/Leyline are SB cards).
+        # Only fizzle source is Endurance (1-2 mainboard in some decks).
+        # P(opponent has Endurance): ~1 copy in 60, ~8 cards seen = ~13%
+        base = _prob_at_least_one(1, 8)  # ~13% (Endurance only)
     else:
-        base = 0.05  # non-GY combos rarely fizzle
+        base = 0.03  # non-GY combos rarely fizzle in Game 1
 
     if veil_active:
         base *= 0.3  # Veil blocks most interaction
