@@ -563,3 +563,25 @@ if __name__ == '__main__':
     with open(out_path, 'w') as f:
         f.write(html_content)
     print(f"Game replay written to: {out_path}")
+
+    # Auto-save trace log alongside HTML replay
+    from sim import run_game
+    if '--bo3' in sys.argv:
+        idx = sys.argv.index('--bo3')
+        trace_seeds = [int(s) for s in sys.argv[idx+1:idx+4]]
+    elif len(sys.argv) > 2 and sys.argv[2] not in ('--bo3', '--pro'):
+        trace_seeds = [int(sys.argv[2])]
+    else:
+        trace_seeds = [None]
+
+    for ts in trace_seeds:
+        if ts is not None:
+            random.seed(ts)
+        r = run_game(protagonist, matchup, trace=True)
+        seed_str = f"_s{ts}" if ts is not None else ""
+        trace_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  'results', f'trace_{protagonist}_vs_{matchup}{seed_str}.txt')
+        with open(trace_path, 'w') as f:
+            for line in r.log_lines:
+                f.write(line + '\n')
+        print(f"Trace log saved: {trace_path}")
