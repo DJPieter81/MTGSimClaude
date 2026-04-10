@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Game Replay: BUG vs Burn</title>
+<title>Bo3 Replay: UR DELVER vs Boros</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:900px;margin:0 auto}
@@ -79,86 +79,1551 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 </style></head><body>
 
 <div class="header">
-<h1><span class="bug-name">BUG</span> <span class="vs">vs</span> <span class="opp-name">Burn</span></h1>
+<h1><span class="bug-name">UR DELVER</span> <span class="vs">vs</span> <span class="opp-name">Boros</span></h1>
+<div class="series-score"><span class="bug-s">UR DELVER 3</span> — <span class="opp-s">0 OPP</span></div>
+<div class="meta"><span class="bug-name">UR DELVER wins the series</span></div>
+</div>
+<div class="game-tabs">
+<div class="game-tab active" onclick="showGame(0)">Game 1<span class="winner-dot bug"></span></div>
+<div class="game-tab" onclick="showGame(1)">Game 2<span class="winner-dot bug"></span></div>
+<div class="game-tab" onclick="showGame(2)">Game 3<span class="winner-dot bug"></span></div>
 </div>
 <div class="game-panel active" id="game-0">
-<div class="meta" style="margin-bottom:12px;color:#8b949e">BUG is ON THE PLAY &nbsp;|&nbsp; Seed: 42</div>
+<div class="meta" style="margin-bottom:12px;color:#8b949e">UR DELVER is ON THE DRAW &nbsp;|&nbsp; Seed: 1</div>
 <div class="hands">
-<div class="hand-box bug"><h3>BUG opening (mull 1)</h3>
-<span class="pill">Tamiyo</span>
-<span class="pill">Kaito</span>
-<span class="pill">Brainstorm</span>
-<span class="pill">Thoughtseize</span>
-<span class="pill">USea</span>
-<span class="pill">Island</span>
-</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<div class="hand-box bug"><h3>UR DELVER opening (mull 0)</h3>
+<span class="pill">Ponder</span>
 <span class="pill">Mountain</span>
-<span class="pill">Inspiring Vantage</span>
-<span class="pill">Chain Lightning</span>
-<span class="pill">Fiery Islet</span>
-<span class="pill">Monastery Swiftspear</span>
-<span class="pill">Chain Lightning</span>
-<span class="pill">Lava Spike</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Murktide</span>
+<span class="pill">Delver of Secrets</span>
+<span class="pill">DRC</span>
+<span class="pill">Heat</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<span class="pill">Recruiter of the Guard</span>
+<span class="pill">Plains</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Plateau</span>
+<span class="pill">Bowmasters</span>
 </div></div>
 <div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 440 80">
-<circle cx="20" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
 <circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
-<text x="20" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="20" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
 <text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
-<line x1="20" y1="17.727272727272727" x2="60" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
 <line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
-<circle cx="60" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#58a6ff"/>
 <circle cx="60" cy="11.363636363636367" r="3" fill="#f85149"/>
-<text x="60" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="60" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
 <text x="60" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
-<line x1="60" y1="27.272727272727273" x2="100" y2="30.454545454545453" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
 <line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
-<circle cx="100" cy="30.454545454545453" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#58a6ff"/>
 <circle cx="100" cy="11.363636363636367" r="3" fill="#f85149"/>
-<text x="100" y="24.454545454545453" text-anchor="middle" fill="#58a6ff" font-size="9">14</text>
+<text x="100" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
 <text x="100" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
-<line x1="100" y1="30.454545454545453" x2="140" y2="30.454545454545453" stroke="#58a6ff" stroke-width="2"/>
-<line x1="100" y1="11.363636363636367" x2="140" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
-<circle cx="140" cy="30.454545454545453" r="3" fill="#58a6ff"/>
-<circle cx="140" cy="11.363636363636367" r="3" fill="#f85149"/>
-<text x="140" y="24.454545454545453" text-anchor="middle" fill="#58a6ff" font-size="9">14</text>
-<text x="140" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
-<line x1="140" y1="30.454545454545453" x2="180" y2="30.454545454545453" stroke="#58a6ff" stroke-width="2"/>
-<line x1="140" y1="11.363636363636367" x2="180" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
-<circle cx="180" cy="30.454545454545453" r="3" fill="#58a6ff"/>
+<line x1="100" y1="11.363636363636367" x2="140" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="11.363636363636367" x2="140" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="20.909090909090914" r="3" fill="#f85149"/>
+<text x="140" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="140" y="32.909090909090914" text-anchor="middle" fill="#f85149" font-size="9">17</text>
+<line x1="140" y1="14.545454545454547" x2="180" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="140" y1="20.909090909090914" x2="180" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
+<circle cx="180" cy="14.545454545454547" r="3" fill="#58a6ff"/>
 <circle cx="180" cy="20.909090909090914" r="3" fill="#f85149"/>
-<text x="180" y="24.454545454545453" text-anchor="middle" fill="#58a6ff" font-size="9">14</text>
+<text x="180" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
 <text x="180" y="32.909090909090914" text-anchor="middle" fill="#f85149" font-size="9">17</text>
-<line x1="180" y1="30.454545454545453" x2="220" y2="49.54545454545455" stroke="#58a6ff" stroke-width="2"/>
-<line x1="180" y1="20.909090909090914" x2="220" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
-<circle cx="220" cy="49.54545454545455" r="3" fill="#58a6ff"/>
-<circle cx="220" cy="20.909090909090914" r="3" fill="#f85149"/>
-<text x="220" y="43.54545454545455" text-anchor="middle" fill="#58a6ff" font-size="9">8</text>
-<text x="220" y="32.909090909090914" text-anchor="middle" fill="#f85149" font-size="9">17</text>
-<line x1="220" y1="49.54545454545455" x2="260" y2="49.54545454545455" stroke="#58a6ff" stroke-width="2"/>
-<line x1="220" y1="20.909090909090914" x2="260" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
-<circle cx="260" cy="49.54545454545455" r="3" fill="#58a6ff"/>
-<circle cx="260" cy="30.454545454545453" r="3" fill="#f85149"/>
-<text x="260" y="43.54545454545455" text-anchor="middle" fill="#58a6ff" font-size="9">8</text>
-<text x="260" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
-<line x1="260" y1="49.54545454545455" x2="300" y2="59.09090909090909" stroke="#58a6ff" stroke-width="2"/>
-<line x1="260" y1="30.454545454545453" x2="300" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
-<circle cx="300" cy="59.09090909090909" r="3" fill="#58a6ff"/>
-<circle cx="300" cy="30.454545454545453" r="3" fill="#f85149"/>
-<text x="300" y="53.09090909090909" text-anchor="middle" fill="#58a6ff" font-size="9">5</text>
-<text x="300" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
-<line x1="300" y1="59.09090909090909" x2="340" y2="65.45454545454545" stroke="#58a6ff" stroke-width="2"/>
-<line x1="300" y1="30.454545454545453" x2="340" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
-<circle cx="340" cy="65.45454545454545" r="3" fill="#58a6ff"/>
-<circle cx="340" cy="30.454545454545453" r="3" fill="#f85149"/>
-<text x="340" y="59.45454545454545" text-anchor="middle" fill="#58a6ff" font-size="9">3</text>
-<text x="340" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
-<line x1="340" y1="65.45454545454545" x2="380" y2="75.0" stroke="#58a6ff" stroke-width="2"/>
-<line x1="340" y1="30.454545454545453" x2="380" y2="30.454545454545453" stroke="#f85149" stroke-width="2"/>
-<circle cx="380" cy="75.0" r="3" fill="#58a6ff"/>
-<circle cx="380" cy="30.454545454545453" r="3" fill="#f85149"/>
-<text x="380" y="69.0" text-anchor="middle" fill="#58a6ff" font-size="9">0</text>
-<text x="380" y="42.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">14</text>
+<line x1="180" y1="14.545454545454547" x2="220" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="20.909090909090914" x2="220" y2="40.0" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="40.0" r="3" fill="#f85149"/>
+<text x="220" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="220" y="52.0" text-anchor="middle" fill="#f85149" font-size="9">11</text>
+<line x1="220" y1="14.545454545454547" x2="260" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="220" y1="40.0" x2="260" y2="43.18181818181819" stroke="#f85149" stroke-width="2"/>
+<circle cx="260" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="260" cy="43.18181818181819" r="3" fill="#f85149"/>
+<text x="260" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="260" y="55.18181818181819" text-anchor="middle" fill="#f85149" font-size="9">10</text>
+<line x1="260" y1="17.727272727272727" x2="300" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="260" y1="43.18181818181819" x2="300" y2="52.72727272727273" stroke="#f85149" stroke-width="2"/>
+<circle cx="300" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="300" cy="52.72727272727273" r="3" fill="#f85149"/>
+<text x="300" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="300" y="64.72727272727272" text-anchor="middle" fill="#f85149" font-size="9">7</text>
+<line x1="300" y1="20.909090909090914" x2="340" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="300" y1="52.72727272727273" x2="340" y2="52.72727272727273" stroke="#f85149" stroke-width="2"/>
+<circle cx="340" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="340" cy="52.72727272727273" r="3" fill="#f85149"/>
+<text x="340" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="340" y="64.72727272727272" text-anchor="middle" fill="#f85149" font-size="9">7</text>
+<line x1="340" y1="20.909090909090914" x2="380" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="340" y1="52.72727272727273" x2="380" y2="75.0" stroke="#f85149" stroke-width="2"/>
+<circle cx="380" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="380" cy="75.0" r="3" fill="#f85149"/>
+<text x="380" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="380" y="87.0" text-anchor="middle" fill="#f85149" font-size="9">-1</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>
+</div>
+<div class="turn opp" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T1</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Recruiter of the Guard</span>
+<span class="pill">Plains</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Plateau</span>
+<span class="pill">Bowmasters</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Plains (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T2</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Ponder</span>
+<span class="pill">Mountain</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Murktide</span>
+<span class="pill">Delver of Secrets</span>
+<span class="pill">DRC</span>
+<span class="pill">Heat</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: STarn</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Mountain (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Delver of Secrets</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 1 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T3</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Recruiter of the Guard</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Plateau</span>
+<span class="pill">Bowmasters</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Waste</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Plateau (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Eidolon of the Great Revel — BUG pays 2 life per CMC≥2 spell</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 1 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T4</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 17</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Ponder</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Murktide</span>
+<span class="pill">DRC</span>
+<span class="pill">Heat</span>
+<span class="pill">STarn</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: PDelta</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack STarn (−1 life, 19) → Volc</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">DRC</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Brainstorm — cantrip</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Delver of Secrets — 3 unblocked → o at 17</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Delver of Secrets</div>
+<div class="dmg-line">→ 3 unblocked → o at 17</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Volc</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T5</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Recruiter of the Guard</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Waste</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: FStrand</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Waste (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-interact">COUNTER</span>
+<span class="action">Waste → destroys Volc</span>
+<span class="reasoning">&larr; deny opponent mana</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 1 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="5">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T6</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 11</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Ponder</span>
+<span class="pill">Murktide</span>
+<span class="pill">Heat</span>
+<span class="pill">PDelta</span>
+<span class="pill">Brainstorm</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Island</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Island (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Brainstorm — cantrip</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Heat (2 dmg) -&gt; Eidolon of the Great Revel</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Delver of Secrets, DRC — 6 unblocked → o at 11</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Delver of Secrets, DRC</div>
+<div class="dmg-line">→ 6 unblocked → o at 11</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Island</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="6">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T7</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>10 (-1)</b> &nbsp;|&nbsp; Opp: 18</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Recruiter of the Guard</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">FStrand</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Minsc and Boo, Timeless Heroes</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack FStrand (−1 life, 10) → Plateau</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Eidolon of the Great Revel — BUG pays 2 life per CMC≥2 spell</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Seasoned Dungeoneer</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action">Initiative (Undercity room 1) — 1 damage to BUG (18)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+<span class="creature-badge">Seasoned Dun..<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Plateau</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Island</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="7">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T8</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>17 (-1)</b> &nbsp;|&nbsp; Opp: 7</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔2</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Ponder</span>
+<span class="pill">Murktide</span>
+<span class="pill">PDelta</span>
+<span class="pill">Ponder</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Heat</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack PDelta (−1 life, 17) → Volc</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Murktide (delve 6, paid 2)</span>
+<span class="reasoning">&larr; 5/5 flyer for ~2 mana via delve</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder — cantrip</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Delver of Secrets, DRC — Seasoned Dungeoneer blocks DRC. DRC deals 3, Seasoned Dungeoneer deals 3 back. 0 unblocked damage to player (o at 10)</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Delver of Secrets, DRC</div>
+<div class="dmg-line">→ Seasoned Dungeoneer blocks DRC. DRC deals 3, Seasoned Dungeoneer deals 3 back. 0 unblocked damage to player (o at 10)</div>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="action">Seasoned Dungeoneer dies.</span>
+</div>
+<div class="combat-detail"><div class="death-line">☠ Seasoned Dungeoneer dies.</div></div>
+<div class="play"><span class="step">7.</span>
+<span class="action">DRC dies.</span>
+</div>
+<div class="combat-detail"><div class="death-line">☠ DRC dies.</div></div>
+<div class="play"><span class="step">8.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">3 unblocked → o at 7</span>
+</div>
+<div class="combat-detail">
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">Murktide<span class="pt">5/5</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Island, Volc</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Plateau</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="8">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T9</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>7</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Recruiter of the Guard</span>
+<span class="pill">Bowmasters</span>
+<span class="pill">Minsc and Boo, Timeless Heroes</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Recruiter of the Guard</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Recruiter of the Guard</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span></span>
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Plateau</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">Murktide<span class="pt">5/5</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Island, Volc</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug open" data-idx="9">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T10</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: -1</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Ponder</span>
+<span class="pill">Heat</span>
+<span class="pill">Murktide</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Delver of Secrets</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Delver of Secrets</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder — cantrip</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Heat (2 dmg) -&gt; Eidolon of the Great Revel</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Delver of Secrets, Murktide — 8 unblocked → o at -1</span>
+<span class="reasoning">&larr; 5/5 flyer for ~2 mana via delve</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Delver of Secrets, Murktide</div>
+<div class="dmg-line">→ 8 unblocked → o at -1</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">Murktide<span class="pt">5/5</span></span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Island, Volc</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Plateau</div>
+</div>
+</div>
+</div></div>
+<div class="result">
+<h2 class="bug-win">UR DELVER WINS</h2>
+<div class="reason">Opp life reaches -1 on turn 5</div>
+<div class="stats">Final life: UR DELVER 17 | OPP -1 &nbsp;|&nbsp; Length: T10</div>
+<div class="stats" style="margin-top:6px">UR DELVER: 
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span> 
+<span class="creature-badge">Murktide<span class="pt">5/5</span></span> 
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span> 
+</div>
+<div class="stats" style="margin-top:6px">OPP: 
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span></span> 
+</div>
+</div>
+</div>
+<div class="game-panel" id="game-1">
+<div class="meta" style="margin-bottom:12px;color:#8b949e">UR DELVER is ON THE DRAW &nbsp;|&nbsp; Seed: 3</div>
+<div class="hands">
+<div class="hand-box bug"><h3>UR DELVER opening (mull 0)</h3>
+<span class="pill">Brainstorm</span>
+<span class="pill">Bolt</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Preordain</span>
+<span class="pill">Steam Vents</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Murktide</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<span class="pill">Plains</span>
+<span class="pill">Bolt</span>
+<span class="pill">Arid Mesa</span>
+<span class="pill">White Orchid Phantom</span>
+<span class="pill">Aether Vial</span>
+<span class="pill">StP</span>
+<span class="pill">Mountain</span>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 520 80">
+<circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="20" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="60" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="60" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="60" y1="11.363636363636367" x2="100" y2="30.454545454545453" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="11.363636363636367" x2="100" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="100" cy="30.454545454545453" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="100" y="24.454545454545453" text-anchor="middle" fill="#58a6ff" font-size="9">14</text>
+<text x="100" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="100" y1="30.454545454545453" x2="140" y2="33.63636363636363" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="14.545454545454547" x2="140" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="33.63636363636363" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="140" y="27.636363636363633" text-anchor="middle" fill="#58a6ff" font-size="9">13</text>
+<text x="140" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="140" y1="33.63636363636363" x2="180" y2="33.63636363636363" stroke="#58a6ff" stroke-width="2"/>
+<line x1="140" y1="14.545454545454547" x2="180" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="180" cy="33.63636363636363" r="3" fill="#58a6ff"/>
+<circle cx="180" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="180" y="27.636363636363633" text-anchor="middle" fill="#58a6ff" font-size="9">13</text>
+<text x="180" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="180" y1="33.63636363636363" x2="220" y2="33.63636363636363" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="14.545454545454547" x2="220" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="33.63636363636363" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="220" y="27.636363636363633" text-anchor="middle" fill="#58a6ff" font-size="9">13</text>
+<text x="220" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="220" y1="33.63636363636363" x2="260" y2="33.63636363636363" stroke="#58a6ff" stroke-width="2"/>
+<line x1="220" y1="24.090909090909086" x2="260" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="260" cy="33.63636363636363" r="3" fill="#58a6ff"/>
+<circle cx="260" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="260" y="27.636363636363633" text-anchor="middle" fill="#58a6ff" font-size="9">13</text>
+<text x="260" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="260" y1="33.63636363636363" x2="300" y2="36.81818181818182" stroke="#58a6ff" stroke-width="2"/>
+<line x1="260" y1="24.090909090909086" x2="300" y2="33.63636363636363" stroke="#f85149" stroke-width="2"/>
+<circle cx="300" cy="36.81818181818182" r="3" fill="#58a6ff"/>
+<circle cx="300" cy="33.63636363636363" r="3" fill="#f85149"/>
+<text x="300" y="30.81818181818182" text-anchor="middle" fill="#58a6ff" font-size="9">12</text>
+<text x="300" y="45.63636363636363" text-anchor="middle" fill="#f85149" font-size="9">13</text>
+<line x1="300" y1="36.81818181818182" x2="340" y2="36.81818181818182" stroke="#58a6ff" stroke-width="2"/>
+<line x1="300" y1="33.63636363636363" x2="340" y2="33.63636363636363" stroke="#f85149" stroke-width="2"/>
+<circle cx="340" cy="36.81818181818182" r="3" fill="#58a6ff"/>
+<circle cx="340" cy="33.63636363636363" r="3" fill="#f85149"/>
+<text x="340" y="30.81818181818182" text-anchor="middle" fill="#58a6ff" font-size="9">12</text>
+<text x="340" y="45.63636363636363" text-anchor="middle" fill="#f85149" font-size="9">13</text>
+<line x1="340" y1="36.81818181818182" x2="380" y2="36.81818181818182" stroke="#58a6ff" stroke-width="2"/>
+<line x1="340" y1="33.63636363636363" x2="380" y2="52.72727272727273" stroke="#f85149" stroke-width="2"/>
+<circle cx="380" cy="36.81818181818182" r="3" fill="#58a6ff"/>
+<circle cx="380" cy="52.72727272727273" r="3" fill="#f85149"/>
+<text x="380" y="30.81818181818182" text-anchor="middle" fill="#58a6ff" font-size="9">12</text>
+<text x="380" y="64.72727272727272" text-anchor="middle" fill="#f85149" font-size="9">7</text>
+<line x1="380" y1="36.81818181818182" x2="420" y2="36.81818181818182" stroke="#58a6ff" stroke-width="2"/>
+<line x1="380" y1="52.72727272727273" x2="420" y2="52.72727272727273" stroke="#f85149" stroke-width="2"/>
+<circle cx="420" cy="36.81818181818182" r="3" fill="#58a6ff"/>
+<circle cx="420" cy="52.72727272727273" r="3" fill="#f85149"/>
+<text x="420" y="30.81818181818182" text-anchor="middle" fill="#58a6ff" font-size="9">12</text>
+<text x="420" y="64.72727272727272" text-anchor="middle" fill="#f85149" font-size="9">7</text>
+<line x1="420" y1="36.81818181818182" x2="460" y2="36.81818181818182" stroke="#58a6ff" stroke-width="2"/>
+<line x1="420" y1="52.72727272727273" x2="460" y2="75.0" stroke="#f85149" stroke-width="2"/>
+<circle cx="460" cy="36.81818181818182" r="3" fill="#58a6ff"/>
+<circle cx="460" cy="75.0" r="3" fill="#f85149"/>
+<text x="460" y="30.81818181818182" text-anchor="middle" fill="#58a6ff" font-size="9">12</text>
+<text x="460" y="87.0" text-anchor="middle" fill="#f85149" font-size="9">-2</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>
+</div>
+<div class="turn opp" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T1</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Plains</span>
+<span class="pill">Bolt</span>
+<span class="pill">Arid Mesa</span>
+<span class="pill">White Orchid Phantom</span>
+<span class="pill">Aether Vial</span>
+<span class="pill">StP</span>
+<span class="pill">Mountain</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Plains (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Aether Vial enters play</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T2</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Brainstorm</span>
+<span class="pill">Bolt</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Preordain</span>
+<span class="pill">Steam Vents</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Murktide</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Ponder</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Steam Vents (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Brainstorm — cantrip</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T3</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 14</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡3</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Bolt</span>
+<span class="pill">Arid Mesa</span>
+<span class="pill">White Orchid Phantom</span>
+<span class="pill">StP</span>
+<span class="pill">Mountain</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Recruiter of the Guard</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack Arid Mesa (−1 life, 19) → Plateau</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-interact">COUNTER</span>
+<span class="action">Aether Vial — 1 counter(s)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action">Bolt — BUG face (17)</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action">Bolt — BUG face (14)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T4</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>13 (-1)</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Bolt</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Preordain</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Murktide</span>
+<span class="pill">Ponder</span>
+<span class="pill">DRC</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: PDelta</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack PDelta (−1 life, 13) → Volc</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">DRC</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Brainstorm — cantrip</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T5</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 13</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">White Orchid Phantom</span>
+<span class="pill">Mountain</span>
+<span class="pill">Recruiter of the Guard</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Bolt</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Mountain (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-interact">COUNTER</span>
+<span class="action">Aether Vial — 2 counter(s)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">White Orchid Phantom</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Mountain</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="5">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T6</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>13</b> &nbsp;|&nbsp; Opp: 16</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Bolt</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Preordain</span>
+<span class="pill">Murktide</span>
+<span class="pill">Ponder</span>
+<span class="pill">Delver of Secrets</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: DRC</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Delver of Secrets</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder — cantrip</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC — 3 unblocked → o at 16</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC</div>
+<div class="dmg-line">→ 3 unblocked → o at 16</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="6">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T7</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16</b> &nbsp;|&nbsp; Opp: 13</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Recruiter of the Guard</span>
+<span class="pill">Bolt</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Mountain</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Mountain (4 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Recruiter of the Guard</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action">Bolt → Delver of Secrets</span>
+<span class="reasoning">&larr; 3 damage removal or burn</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span></span>
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Mountain, Mountain</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="7">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T8</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>12 (-1)</b> &nbsp;|&nbsp; Opp: 13</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Bolt</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Preordain</span>
+<span class="pill">Murktide</span>
+<span class="pill">DRC</span>
+<span class="pill">Delver of Secrets</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: MRain</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack MRain (−1 life, 12) → Volc</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Delver of Secrets</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Preordain — cantrip</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action">Bolt -&gt; White Orchid Phantom</span>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC — 3 unblocked → o at 13</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC</div>
+<div class="dmg-line">→ 3 unblocked → o at 13</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc, Volc</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Mountain, Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="8">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T9</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>13</b> &nbsp;|&nbsp; Opp: 12</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Plains</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Plains (5 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Mountain, Mountain, Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc, Volc</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="9">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T10</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>12</b> &nbsp;|&nbsp; Opp: 7</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Spell Pierce</span>
+<span class="pill">Murktide</span>
+<span class="pill">DRC</span>
+<span class="pill">Ponder</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Murktide</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">DRC</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder — cantrip</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC, Delver of Secrets — 6 unblocked → o at 7</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC, Delver of Secrets</div>
+<div class="dmg-line">→ 6 unblocked → o at 7</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc, Volc</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Mountain, Mountain, Plains</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="10">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T11</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>7</b> &nbsp;|&nbsp; Opp: 12</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Aether Vial</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Mountain, Mountain, Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc, Volc</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug open" data-idx="11">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T12</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>12</b> &nbsp;|&nbsp; Opp: -2</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Spell Pierce</span>
+<span class="pill">Murktide</span>
+<span class="pill">Murktide</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Daze</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Murktide (delve 6, paid 2)</span>
+<span class="reasoning">&larr; 5/5 flyer for ~2 mana via delve</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC, Delver of Secrets, DRC — 9 unblocked → o at -2</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC, Delver of Secrets, DRC</div>
+<div class="dmg-line">→ 9 unblocked → o at -2</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">Murktide<span class="pt">5/5</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Steam Vents, Volc, Volc</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Plains, Plateau, Mountain, Mountain, Plains</div>
+</div>
+</div>
+</div></div>
+<div class="result">
+<h2 class="bug-win">UR DELVER WINS</h2>
+<div class="reason">Opp life reaches -2 on turn 6</div>
+<div class="stats">Final life: UR DELVER 12 | OPP -2 &nbsp;|&nbsp; Length: T12</div>
+<div class="stats" style="margin-top:6px">UR DELVER: 
+<span class="creature-badge">DRC<span class="pt">3/3</span></span> 
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span> 
+<span class="creature-badge">DRC<span class="pt">3/3</span></span> 
+<span class="creature-badge">Murktide<span class="pt">5/5</span></span> 
+</div>
+<div class="stats" style="margin-top:6px">OPP: 
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span></span> 
+</div>
+</div>
+</div>
+<div class="game-panel" id="game-2">
+<div class="meta" style="margin-bottom:12px;color:#8b949e">UR DELVER is ON THE PLAY &nbsp;|&nbsp; Seed: 5</div>
+<div class="hands">
+<div class="hand-box bug"><h3>UR DELVER opening (mull 1)</h3>
+<span class="pill">Delver of Secrets</span>
+<span class="pill">Volc</span>
+<span class="pill">STarn</span>
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Preordain</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Rishadan Port</span>
+<span class="pill">Pyroblast</span>
+<span class="pill">Thalia, Guardian of Thraben</span>
+<span class="pill">Arid Mesa</span>
+<span class="pill">Mountain</span>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 960 80">
+<circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="20" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="60" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="60" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="60" y1="11.363636363636367" x2="100" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="11.363636363636367" x2="100" y2="20.909090909090914" stroke="#f85149" stroke-width="2"/>
+<circle cx="100" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="20.909090909090914" r="3" fill="#f85149"/>
+<text x="100" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="100" y="32.909090909090914" text-anchor="middle" fill="#f85149" font-size="9">17</text>
+<line x1="100" y1="14.545454545454547" x2="140" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="20.909090909090914" x2="140" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="140" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="140" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="140" y1="14.545454545454547" x2="180" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="140" y1="24.090909090909086" x2="180" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="180" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="180" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="180" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="180" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="180" y1="14.545454545454547" x2="220" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="24.090909090909086" x2="220" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="220" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="220" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="220" y1="14.545454545454547" x2="260" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="220" y1="24.090909090909086" x2="260" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="260" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="260" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="260" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="260" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="260" y1="14.545454545454547" x2="300" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="260" y1="24.090909090909086" x2="300" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="300" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="300" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="300" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="300" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="300" y1="14.545454545454547" x2="340" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="300" y1="24.090909090909086" x2="340" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="340" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="340" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="340" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="340" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="340" y1="17.727272727272727" x2="380" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="340" y1="24.090909090909086" x2="380" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="380" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="380" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="380" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="380" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="380" y1="17.727272727272727" x2="420" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="380" y1="24.090909090909086" x2="420" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="420" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="420" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="420" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="420" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="420" y1="17.727272727272727" x2="460" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="420" y1="24.090909090909086" x2="460" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="460" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="460" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="460" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="460" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="460" y1="20.909090909090914" x2="500" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="460" y1="24.090909090909086" x2="500" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="500" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="500" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="500" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="500" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="500" y1="20.909090909090914" x2="540" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="500" y1="24.090909090909086" x2="540" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="540" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="540" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="540" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="540" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="540" y1="27.272727272727273" x2="580" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="540" y1="24.090909090909086" x2="580" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="580" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="580" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="580" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="580" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="580" y1="27.272727272727273" x2="620" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="580" y1="24.090909090909086" x2="620" y2="24.090909090909086" stroke="#f85149" stroke-width="2"/>
+<circle cx="620" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="620" cy="24.090909090909086" r="3" fill="#f85149"/>
+<text x="620" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="620" y="36.090909090909086" text-anchor="middle" fill="#f85149" font-size="9">16</text>
+<line x1="620" y1="27.272727272727273" x2="660" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="620" y1="24.090909090909086" x2="660" y2="43.18181818181819" stroke="#f85149" stroke-width="2"/>
+<circle cx="660" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="660" cy="43.18181818181819" r="3" fill="#f85149"/>
+<text x="660" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="660" y="55.18181818181819" text-anchor="middle" fill="#f85149" font-size="9">10</text>
+<line x1="660" y1="27.272727272727273" x2="700" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="660" y1="43.18181818181819" x2="700" y2="43.18181818181819" stroke="#f85149" stroke-width="2"/>
+<circle cx="700" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="700" cy="43.18181818181819" r="3" fill="#f85149"/>
+<text x="700" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="700" y="55.18181818181819" text-anchor="middle" fill="#f85149" font-size="9">10</text>
+<line x1="700" y1="17.727272727272727" x2="740" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="700" y1="43.18181818181819" x2="740" y2="52.72727272727273" stroke="#f85149" stroke-width="2"/>
+<circle cx="740" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="740" cy="52.72727272727273" r="3" fill="#f85149"/>
+<text x="740" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="740" y="64.72727272727272" text-anchor="middle" fill="#f85149" font-size="9">7</text>
+<line x1="740" y1="17.727272727272727" x2="780" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="740" y1="52.72727272727273" x2="780" y2="52.72727272727273" stroke="#f85149" stroke-width="2"/>
+<circle cx="780" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="780" cy="52.72727272727273" r="3" fill="#f85149"/>
+<text x="780" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="780" y="64.72727272727272" text-anchor="middle" fill="#f85149" font-size="9">7</text>
+<line x1="780" y1="27.272727272727273" x2="820" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="780" y1="52.72727272727273" x2="820" y2="62.27272727272727" stroke="#f85149" stroke-width="2"/>
+<circle cx="820" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="820" cy="62.27272727272727" r="3" fill="#f85149"/>
+<text x="820" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="820" y="74.27272727272728" text-anchor="middle" fill="#f85149" font-size="9">4</text>
+<line x1="820" y1="27.272727272727273" x2="860" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="820" y1="62.27272727272727" x2="860" y2="65.45454545454545" stroke="#f85149" stroke-width="2"/>
+<circle cx="860" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="860" cy="65.45454545454545" r="3" fill="#f85149"/>
+<text x="860" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="860" y="77.45454545454545" text-anchor="middle" fill="#f85149" font-size="9">3</text>
+<line x1="860" y1="27.272727272727273" x2="900" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="860" y1="65.45454545454545" x2="900" y2="75.0" stroke="#f85149" stroke-width="2"/>
+<circle cx="900" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="900" cy="75.0" r="3" fill="#f85149"/>
+<text x="900" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="900" y="87.0" text-anchor="middle" fill="#f85149" font-size="9">0</text>
 </svg></div>
 <div class="controls">
 <button onclick="expandAll()">Expand All</button>
@@ -169,43 +1634,35 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum bug">T1</span>
-<span class="player bug">BUG</span>
-<span class="life">Life: <b>18 (-2)</b> &nbsp;|&nbsp; Opp: 20</span>
-<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡2</span></span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Tamiyo</span>
-<span class="pill">Kaito</span>
-<span class="pill">Brainstorm</span>
-<span class="pill">Thoughtseize</span>
-<span class="pill">USea</span>
-<span class="pill">Island</span>
+<span class="pill">Delver of Secrets</span>
+<span class="pill">Volc</span>
+<span class="pill">STarn</span>
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Preordain</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-land">LAND</span>
-<span class="action">Play USea (1 lands)</span>
+<span class="action">Land: Volc (1 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="cat-badge cat-discard">DISCARD</span>
-<span class="action">Thoughtseize (−2 life, 18)</span>
-<span class="reasoning">&larr; pay 2 life to see hand + take best card</span>
-</div>
-<div class="play"><span class="step">3.</span>
-<span class="cat-badge cat-discard">DISCARD</span>
-<span class="action">Thoughtseize -&gt; strips Monastery Swiftspear</span>
-<span class="reasoning">&larr; rip their best card</span>
+<span class="action">Delver of Secrets</span>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
-<h4>BUG — 1 lands</h4>
+<h4>UR DELVER — 1 lands</h4>
 <div class="board">
-<span style="color:#484f58;font-size:0.8em">no creatures</span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span> <span class="sick">(sick)</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">USea</div>
+<div class="land-list" style="margin-top:4px">Volc</div>
 </div>
 <div class="board-side opp">
 <h4>OPP — 0 lands</h4>
@@ -221,32 +1678,31 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="left">
 <span class="tnum opp">T2</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 15</span>
-<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Rishadan Port</span>
+<span class="pill">Pyroblast</span>
+<span class="pill">Thalia, Guardian of Thraben</span>
+<span class="pill">Arid Mesa</span>
 <span class="pill">Mountain</span>
-<span class="pill">Inspiring Vantage</span>
-<span class="pill">Chain Lightning</span>
-<span class="pill">Fiery Islet</span>
-<span class="pill">Chain Lightning</span>
-<span class="pill">Lava Spike</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-draw">DRAW</span>
-<span class="action">Draw: Skullcrack</span>
+<span class="action">Draw: Bolt</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
 <span class="cat-badge cat-land">LAND</span>
-<span class="action">Land: Mountain (1 lands)</span>
+<span class="action">Land: Rishadan Port (1 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="cat-badge cat-combo">COMBO</span>
-<span class="action key">★ Chain Lightning → 3 damage (opp at 15)</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
@@ -255,14 +1711,14 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="board">
 <span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port</div>
 </div>
 <div class="board-side bug">
-<h4>BUG — 1 lands</h4>
+<h4>UR DELVER — 1 lands</h4>
 <div class="board">
-<span style="color:#484f58;font-size:0.8em">no creatures</span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span> <span class="sick">(sick)</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">USea</div>
+<div class="land-list" style="margin-top:4px">Volc</div>
 </div>
 </div>
 </div></div>
@@ -270,63 +1726,55 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum bug">T3</span>
-<span class="player bug">BUG</span>
-<span class="life">Life: <b>14 (-1)</b> &nbsp;|&nbsp; Opp: 20</span>
-<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏2</span> <span style="color:#d2a8ff;font-size:0.75em">🛡1</span> <span style="color:#f778ba;font-size:0.75em">★1</span></span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 17</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Tamiyo</span>
-<span class="pill">Kaito</span>
-<span class="pill">Brainstorm</span>
-<span class="pill">Island</span>
+<span class="pill">STarn</span>
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Preordain</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-draw">DRAW</span>
-<span class="action">Draw: PDelta</span>
+<span class="action">Draw: Expressive Iteration</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
 <span class="cat-badge cat-land">LAND</span>
-<span class="action">Play+crack PDelta (−1 life, 14) → USea [untapped]</span>
+<span class="action">Play+crack STarn (−1 life, 19) → Volc</span>
 <span class="reasoning">&larr; fix mana + shuffle</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="cat-badge cat-discard">DISCARD</span>
-<span class="action">Brainstorm (3 draws = 3 separate draw events) → [FoW, Brainstorm, Thoughtseize]</span>
-<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
+<span class="action">Preordain — cantrip</span>
 </div>
 <div class="play"><span class="step">4.</span>
-<span class="cat-badge cat-cantrip">DIG</span>
-<span class="action">Puts back: [&#x27;Island&#x27;, &#x27;Brainstorm&#x27;]</span>
-<span class="reasoning">&larr; hide bad cards on top</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Delver of Secrets — 3 unblocked → o at 17</span>
+<span class="reasoning">&larr; swing for damage</span>
 </div>
-<div class="play"><span class="step">5.</span>
-<span class="cat-badge cat-spell">CAST</span>
-<span class="action">Cast Tamiyo (CMC 1, summoning sick)</span>
-<span class="reasoning">&larr; 0/3 that flips to planeswalker</span>
-</div>
-<div class="play"><span class="step">6.</span>
-<span class="cat-badge cat-combo">COMBO</span>
-<span class="action key">★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)</span>
-<span class="reasoning">&larr; FLIP! Card-advantage engine online</span>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Delver of Secrets</div>
+<div class="dmg-line">→ 3 unblocked → o at 17</div>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
-<h4>BUG — 2 lands</h4>
+<h4>UR DELVER — 2 lands</h4>
 <div class="board">
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+<span class="creature-badge">Delver of Se..<span class="pt">3/2</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">USea, USea</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc</div>
 </div>
 <div class="board-side opp">
 <h4>OPP — 1 lands</h4>
 <div class="board">
 <span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port</div>
 </div>
 </div>
 </div></div>
@@ -335,50 +1783,53 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="left">
 <span class="tnum opp">T4</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 14</span>
-<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+<span class="life">Life: <b>16 (-1)</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Inspiring Vantage</span>
-<span class="pill">Fiery Islet</span>
-<span class="pill">Chain Lightning</span>
-<span class="pill">Lava Spike</span>
-<span class="pill">Skullcrack</span>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Pyroblast</span>
+<span class="pill">Thalia, Guardian of Thraben</span>
+<span class="pill">Arid Mesa</span>
+<span class="pill">Mountain</span>
+<span class="pill">Bolt</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-draw">DRAW</span>
-<span class="action">Draw: Eidolon of the Great Revel</span>
+<span class="action">Draw: White Orchid Phantom</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
 <span class="cat-badge cat-land">LAND</span>
-<span class="action">Land: Inspiring Vantage (2 lands)</span>
-<span class="reasoning">&larr; develop mana</span>
+<span class="action">Play+crack Arid Mesa (−1 life, 16) → Plateau</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Eidolon of the Great Revel enters the battlefield</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
 </div>
 <div class="play"><span class="step">4.</span>
-<span class="cat-badge cat-combo">COMBO</span>
-<span class="action key">★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action">Bolt → Delver of Secrets</span>
+<span class="reasoning">&larr; 3 damage removal or burn</span>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
 <h4>OPP — 2 lands</h4>
 <div class="board">
-<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau</div>
 </div>
 <div class="board-side bug">
-<h4>BUG — 2 lands</h4>
+<h4>UR DELVER — 2 lands</h4>
 <div class="board">
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="land-list" style="margin-top:4px">USea, USea</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc</div>
 </div>
 </div>
 </div></div>
@@ -386,55 +1837,45 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum bug">T5</span>
-<span class="player bug">BUG</span>
-<span class="life">Life: <b>14</b> &nbsp;|&nbsp; Opp: 17</span>
-<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 16</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Kaito</span>
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">Expressive Iteration</span>
 <span class="pill">FoW</span>
-<span class="pill">Thoughtseize</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-draw">DRAW</span>
-<span class="action">Draw: Brainstorm</span>
-<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
+<span class="action">Draw: Volc</span>
+<span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="cat-badge cat-cantrip">DIG</span>
-<span class="action">Brainstorm (3 draws = 3 separate draw events) → [Island, Bowmasters, Bowmasters]</span>
-<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Volc (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Puts back: [&#x27;Island&#x27;, &#x27;Kaito&#x27;]</span>
-<span class="reasoning">&larr; hide bad cards on top</span>
-</div>
-<div class="play"><span class="step">4.</span>
-<span class="cat-badge cat-combat">COMBAT</span>
-<span class="action">Attack: Tamiyo — 3 unblocked → o at 17</span>
-<span class="reasoning">&larr; swing for damage</span>
-</div>
-<div class="combat-detail">
-<div class="atk-line">⚔ Attackers: Tamiyo</div>
-<div class="dmg-line">→ 3 unblocked → o at 17</div>
+<span class="action">Expressive Iteration — draw + exile selection</span>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
-<h4>BUG — 2 lands</h4>
+<h4>UR DELVER — 3 lands</h4>
 <div class="board">
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="land-list" style="margin-top:4px">USea, USea</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc</div>
 </div>
 <div class="board-side opp">
 <h4>OPP — 2 lands</h4>
 <div class="board">
-<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau</div>
 </div>
 </div>
 </div></div>
@@ -443,50 +1884,58 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="left">
 <span class="tnum opp">T6</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 8</span>
-<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★2</span></span>
+<span class="life">Life: <b>16</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Fiery Islet</span>
-<span class="pill">Chain Lightning</span>
-<span class="pill">Lava Spike</span>
-<span class="pill">Skullcrack</span>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Pyroblast</span>
+<span class="pill">Thalia, Guardian of Thraben</span>
+<span class="pill">Mountain</span>
+<span class="pill">White Orchid Phantom</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-draw">DRAW</span>
-<span class="action">Draw: Barbarian Ring</span>
+<span class="action">Draw: Aether Vial</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
 <span class="cat-badge cat-land">LAND</span>
-<span class="action">Land: Fiery Islet (3 lands)</span>
+<span class="action">Land: Mountain (3 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="cat-badge cat-combo">COMBO</span>
-<span class="action key">★ Chain Lightning → 3 damage (opp at 11)</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
 </div>
 <div class="play"><span class="step">4.</span>
+<span class="action">Aether Vial enters play</span>
+</div>
+<div class="play"><span class="step">5.</span>
 <span class="cat-badge cat-combo">COMBO</span>
-<span class="action key">★ Lava Spike → 3 damage (opp at 8)</span>
+<span class="action key">★ Eidolon of the Great Revel — BUG pays 2 life per CMC≥2 spell</span>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="action">Thalia, Guardian of Thraben</span>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
 <h4>OPP — 3 lands</h4>
 <div class="board">
-<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span></span>
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+<span class="creature-badge">Thalia, Guar..<span class="pt">2/1</span> <span class="sick">(sick)</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain</div>
 </div>
 <div class="board-side bug">
-<h4>BUG — 2 lands</h4>
+<h4>UR DELVER — 3 lands</h4>
 <div class="board">
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
 </div>
-<div class="land-list" style="margin-top:4px">USea, USea</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc</div>
 </div>
 </div>
 </div></div>
@@ -494,53 +1943,41 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum bug">T7</span>
-<span class="player bug">BUG</span>
-<span class="life">Life: <b>8</b> &nbsp;|&nbsp; Opp: 14</span>
-<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 16</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
 <span class="pill">FoW</span>
-<span class="pill">Thoughtseize</span>
-<span class="pill">Bowmasters</span>
-<span class="pill">Bowmasters</span>
+<span class="pill">DRC</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-draw">DRAW</span>
-<span class="action">Draw: Kaito</span>
+<span class="action">Draw: FoW</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="cat-badge cat-spell">CAST</span>
-<span class="action">Flash Bowmasters (1 trigger per card opp draws)</span>
-<span class="reasoning">&larr; punishes every draw: 1 ping + grows Army</span>
-</div>
-<div class="play"><span class="step">3.</span>
-<span class="cat-badge cat-combat">COMBAT</span>
-<span class="action">Attack: Tamiyo — 3 unblocked → o at 14</span>
-<span class="reasoning">&larr; swing for damage</span>
-</div>
-<div class="combat-detail">
-<div class="atk-line">⚔ Attackers: Tamiyo</div>
-<div class="dmg-line">→ 3 unblocked → o at 14</div>
+<span class="action">DRC</span>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
-<h4>BUG — 2 lands</h4>
+<h4>UR DELVER — 3 lands</h4>
 <div class="board">
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">USea, USea</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc</div>
 </div>
 <div class="board-side opp">
 <h4>OPP — 3 lands</h4>
 <div class="board">
-<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span></span>
+<span class="creature-badge">Eidolon of t..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+<span class="creature-badge">Thalia, Guar..<span class="pt">2/1</span> <span class="sick">(sick)</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain</div>
 </div>
 </div>
 </div></div>
@@ -549,49 +1986,44 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="left">
 <span class="tnum opp">T8</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>14</b> &nbsp;|&nbsp; Opp: 5</span>
-<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+<span class="life">Life: <b>16</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
-<span class="pill">Skullcrack</span>
-<span class="pill">Barbarian Ring</span>
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Pyroblast</span>
+<span class="pill">White Orchid Phantom</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-draw">DRAW</span>
-<span class="action">Draw: Goblin Guide</span>
+<span class="action">Draw: Recruiter of the Guard</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="cat-badge cat-land">LAND</span>
-<span class="action">Land: Barbarian Ring (4 lands)</span>
-<span class="reasoning">&larr; develop mana</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Goblin Guide enters the battlefield</span>
-</div>
-<div class="play"><span class="step">4.</span>
-<span class="cat-badge cat-combo">COMBO</span>
-<span class="action key">★ Skullcrack → 3 damage (opp at 5)</span>
+<span class="cat-badge cat-interact">COUNTER</span>
+<span class="action">Aether Vial — 1 counter(s)</span>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
-<h4>OPP — 4 lands</h4>
+<h4>OPP — 3 lands</h4>
 <div class="board">
 <span class="creature-badge">Eidolon of t..<span class="pt">2/2</span></span>
-<span class="creature-badge">Goblin Guide<span class="pt">2/1</span></span>
+<span class="creature-badge">Thalia, Guar..<span class="pt">2/1</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet, Barbarian Ring</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain</div>
 </div>
 <div class="board-side bug">
-<h4>BUG — 2 lands</h4>
+<h4>UR DELVER — 3 lands</h4>
 <div class="board">
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">USea, USea</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc</div>
 </div>
 </div>
 </div></div>
@@ -599,16 +2031,444 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
 <span class="tnum bug">T9</span>
-<span class="player bug">BUG</span>
-<span class="life">Life: <b>3 (-2)</b> &nbsp;|&nbsp; Opp: 14</span>
-<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>18 (-1)</b> &nbsp;|&nbsp; Opp: 16</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
 <span class="pill">FoW</span>
-<span class="pill">Thoughtseize</span>
-<span class="pill">Bowmasters</span>
-<span class="pill">Kaito</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: STarn</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack STarn (−1 life, 18) → Steam Vents</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC — Eidolon of the Great Revel blocks DRC. DRC deals 3, Eidolon of the Great Revel deals 2 back. 0 unblocked damage to player (o at 16)</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC</div>
+<div class="dmg-line">→ Eidolon of the Great Revel blocks DRC. DRC deals 3, Eidolon of the Great Revel deals 2 back. 0 unblocked damage to player (o at 16)</div>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Eidolon of the Great Revel dies.</span>
+</div>
+<div class="combat-detail"><div class="death-line">☠ Eidolon of the Great Revel dies.</div></div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Thalia, Guar..<span class="pt">2/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="9">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T10</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16</b> &nbsp;|&nbsp; Opp: 18</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Pyroblast</span>
+<span class="pill">White Orchid Phantom</span>
+<span class="pill">Recruiter of the Guard</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Plains</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Plains (4 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-interact">COUNTER</span>
+<span class="action">Aether Vial — 2 counter(s)</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action">White Orchid Phantom</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">Thalia, Guar..<span class="pt">2/1</span></span>
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="10">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T11</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>18</b> &nbsp;|&nbsp; Opp: 16</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">FoW</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Mountain</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Mountain (5 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC — Thalia, Guardian of Thraben blocks DRC. DRC deals 3, Thalia, Guardian of Thraben deals 2 back. 0 unblocked damage to player (o at 16)</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC</div>
+<div class="dmg-line">→ Thalia, Guardian of Thraben blocks DRC. DRC deals 3, Thalia, Guardian of Thraben deals 2 back. 0 unblocked damage to player (o at 16)</div>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Thalia, Guardian of Thraben dies.</span>
+</div>
+<div class="combat-detail"><div class="death-line">☠ Thalia, Guardian of Thraben dies.</div></div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 4 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="11">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T12</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16</b> &nbsp;|&nbsp; Opp: 17</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Seasoned Dungeoneer</span>
+<span class="pill">Pyroblast</span>
+<span class="pill">Recruiter of the Guard</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Plains</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Plains (5 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Seasoned Dungeoneer</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action">Initiative (Undercity room 1) — 1 damage to BUG (17)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span></span>
+<span class="creature-badge">Seasoned Dun..<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="12">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T13</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>17</b> &nbsp;|&nbsp; Opp: 16</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">FoW</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: DRC</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">DRC</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span></span>
+<span class="creature-badge">Seasoned Dun..<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="13">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T14</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16</b> &nbsp;|&nbsp; Opp: 15</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Pyroblast</span>
+<span class="pill">Recruiter of the Guard</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Plains</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Plains (6 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Recruiter of the Guard</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Seasoned Dungeoneer — DRC blocks Seasoned Dungeoneer. Seasoned Dungeoneer deals 3, DRC deals 3 back. 0 unblocked damage to player (b at 17)</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Seasoned Dungeoneer</div>
+<div class="dmg-line">→ DRC blocks Seasoned Dungeoneer. Seasoned Dungeoneer deals 3, DRC deals 3 back. 0 unblocked damage to player (b at 17)</div>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="action">DRC dies.</span>
+</div>
+<div class="combat-detail"><div class="death-line">☠ DRC dies.</div></div>
+<div class="play"><span class="step">7.</span>
+<span class="action">Seasoned Dungeoneer dies.</span>
+</div>
+<div class="combat-detail"><div class="death-line">☠ Seasoned Dungeoneer dies.</div></div>
+<div class="play"><span class="step">8.</span>
+<span class="action">Initiative (Undercity room 2) — 2 damage to BUG (15)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span></span>
+<span class="creature-badge">Recruiter of..<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="14">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T15</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>15</b> &nbsp;|&nbsp; Opp: 16</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">FoW</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: DRC</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">DRC</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC — Recruiter of the Guard blocks DRC. DRC deals 3, Recruiter of the Guard deals 1 back. 0 unblocked damage to player (o at 16)</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC</div>
+<div class="dmg-line">→ Recruiter of the Guard blocks DRC. DRC deals 3, Recruiter of the Guard deals 1 back. 0 unblocked damage to player (o at 16)</div>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Recruiter of the Guard dies.</span>
+</div>
+<div class="combat-detail"><div class="death-line">☠ Recruiter of the Guard dies.</div></div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="15">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T16</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16</b> &nbsp;|&nbsp; Opp: 15</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Pyroblast</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Aether Vial</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 5 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="16">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T17</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>15</b> &nbsp;|&nbsp; Opp: 10</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">FoW</span>
+<span class="pill">FoW</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
@@ -618,103 +2478,333 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 </div>
 <div class="play"><span class="step">2.</span>
 <span class="cat-badge cat-land">LAND</span>
-<span class="action">Play Island (3 lands)</span>
+<span class="action">Land: Island (6 lands)</span>
 <span class="reasoning">&larr; develop mana</span>
 </div>
 <div class="play"><span class="step">3.</span>
-<span class="action">Eidolon trigger — Kaito (CMC 3) deals 2 to BUG (3)</span>
-</div>
-<div class="play"><span class="step">4.</span>
-<span class="cat-badge cat-spell">CAST</span>
-<span class="action">Cast Kaito (3/4 hexproof) → Surveil 2, draw 1 [Tamiyo]</span>
-<span class="reasoning">&larr; hexproof threat + card advantage</span>
-</div>
-<div class="play"><span class="step">5.</span>
 <span class="cat-badge cat-combat">COMBAT</span>
-<span class="action">Attack: Tamiyo — Eidolon of the Great Revel blocks Tamiyo. Tamiyo deals 3, Eidolon of the Great Revel deals 2 back. 0 unblocked damage to player (o at 14)</span>
+<span class="action">Attack: DRC, DRC — 6 unblocked → o at 10</span>
 <span class="reasoning">&larr; swing for damage</span>
 </div>
 <div class="combat-detail">
-<div class="atk-line">⚔ Attackers: Tamiyo</div>
-<div class="dmg-line">→ Eidolon of the Great Revel blocks Tamiyo. Tamiyo deals 3, Eidolon of the Great Revel deals 2 back. 0 unblocked damage to player (o at 14)</div>
+<div class="atk-line">⚔ Attackers: DRC, DRC</div>
+<div class="dmg-line">→ 6 unblocked → o at 10</div>
 </div>
-<div class="play"><span class="step">6.</span>
-<span class="action">Eidolon of the Great Revel dies.</span>
-</div>
-<div class="combat-detail"><div class="death-line">☠ Eidolon of the Great Revel dies.</div></div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side bug">
-<h4>BUG — 3 lands</h4>
+<h4>UR DELVER — 6 lands</h4>
 <div class="board">
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
-<span class="creature-badge">Kaito<span class="pt">3/4</span> <span class="sick">(sick)</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">USea, USea, Island</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain, Island</div>
 </div>
 <div class="board-side opp">
-<h4>OPP — 4 lands</h4>
+<h4>OPP — 6 lands</h4>
 <div class="board">
-<span class="creature-badge">Goblin Guide<span class="pt">2/1</span></span>
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet, Barbarian Ring</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains</div>
 </div>
 </div>
 </div></div>
-<div class="turn opp open" data-idx="9">
+<div class="turn opp" data-idx="17">
 <div class="turn-header" onclick="toggle(this.parentElement)">
 <div class="left">
-<span class="tnum opp">T10</span>
+<span class="tnum opp">T18</span>
 <span class="player opp">OPP</span>
-<span class="life">Life: <b>14</b> &nbsp;|&nbsp; Opp: 0</span>
-<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+<span class="life">Life: <b>10</b> &nbsp;|&nbsp; Opp: 18</span>
 </div><span class="arrow">&#9654;</span></div>
 <div class="turn-body">
 <div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Pyroblast</span>
+<span class="pill">Aether Vial</span>
 </div>
 <div class="section-label">Plays</div>
 <div class="play"><span class="step">1.</span>
 <span class="cat-badge cat-draw">DRAW</span>
-<span class="action">Draw: Rift Bolt</span>
+<span class="action">Draw: StP</span>
 <span class="reasoning">&larr; draw for turn</span>
 </div>
 <div class="play"><span class="step">2.</span>
-<span class="cat-badge cat-removal">REMOVE</span>
-<span class="action key">★ Rift Bolt → 3 damage (opp at 0)</span>
-<span class="reasoning">&larr; 3 damage removal or burn</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">StP exiles DRC (+3 life)</span>
 </div>
 <div class="section-label">Board State</div>
 <div class="board-grid">
 <div class="board-side opp">
-<h4>OPP — 4 lands</h4>
+<h4>OPP — 6 lands</h4>
 <div class="board">
-<span class="creature-badge">Goblin Guide<span class="pt">2/1</span></span>
+<span class="creature-badge">White Orchid..<span class="pt">2/2</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">Mountain, Inspiring Vantage, Fiery Islet, Barbarian Ring</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains</div>
 </div>
 <div class="board-side bug">
-<h4>BUG — 3 lands</h4>
+<h4>UR DELVER — 6 lands</h4>
 <div class="board">
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span>
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span>
-<span class="creature-badge">Kaito<span class="pt">3/4</span> <span class="sick">(sick)</span></span>
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
 </div>
-<div class="land-list" style="margin-top:4px">USea, USea, Island</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain, Island</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="18">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T19</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>18</b> &nbsp;|&nbsp; Opp: 7</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">FoW</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Bolt</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action">Bolt -&gt; White Orchid Phantom</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC — 3 unblocked → o at 7</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC</div>
+<div class="dmg-line">→ 3 unblocked → o at 7</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain, Island</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 6 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="19">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T20</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>7</b> &nbsp;|&nbsp; Opp: 15</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Pyroblast</span>
+<span class="pill">Aether Vial</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Seasoned Dungeoneer</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Seasoned Dungeoneer</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Initiative (Undercity room 3) — 3 damage to BUG (15)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">Seasoned Dun..<span class="pt">3/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain, Island</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="20">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T21</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>15</b> &nbsp;|&nbsp; Opp: 4</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">FoW</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Ponder</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder — cantrip</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Heat (6 dmg) -&gt; Seasoned Dungeoneer</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC — 3 unblocked → o at 4</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC</div>
+<div class="dmg-line">→ 3 unblocked → o at 4</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain, Island</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 6 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="21">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T22</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>3 (-1)</b> &nbsp;|&nbsp; Opp: 15</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Pyroblast</span>
+<span class="pill">Aether Vial</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Arid Mesa</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack Arid Mesa (−1 life, 3) → Plateau</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Rishadan Port taps Volc (BUG loses 1 mana)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 7 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains, Plateau</div>
+</div>
+<div class="board-side bug">
+<h4>UR DELVER — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain, Island</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug open" data-idx="22">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T23</span>
+<span class="player bug">UR DELVER</span>
+<span class="life">Life: <b>15</b> &nbsp;|&nbsp; Opp: 0</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span> <span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Daze</span>
+<span class="pill">Spell Pierce</span>
+<span class="pill">FoW</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Ponder</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder — cantrip</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: DRC — 3 unblocked → o at 0</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: DRC</div>
+<div class="dmg-line">→ 3 unblocked → o at 0</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>UR DELVER — 6 lands</h4>
+<div class="board">
+<span class="creature-badge">DRC<span class="pt">3/3</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, Volc, Volc, Steam Vents, Mountain, Island</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 7 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Rishadan Port, Plateau, Mountain, Plains, Plains, Plains, Plateau</div>
 </div>
 </div>
 </div></div>
 <div class="result">
-<h2 class="opp-win">OPP WINS</h2>
-<div class="reason">BUG life reaches 0 on turn 5</div>
-<div class="stats">Final life: BUG 0 | OPP 14 &nbsp;|&nbsp; Length: T10</div>
-<div class="stats" style="margin-top:6px">BUG: 
-<span class="creature-badge">Tamiyo<span class="pt">3/3</span></span> 
-<span class="creature-badge">Bowmasters<span class="pt">1/1</span></span> 
-<span class="creature-badge">Kaito<span class="pt">3/4</span></span> 
-</div>
-<div class="stats" style="margin-top:6px">OPP: 
-<span class="creature-badge">Goblin Guide<span class="pt">2/1</span></span> 
+<h2 class="bug-win">UR DELVER WINS</h2>
+<div class="reason">Opp life reaches 0 on turn 12</div>
+<div class="stats">Final life: UR DELVER 15 | OPP 0 &nbsp;|&nbsp; Length: T23</div>
+<div class="stats" style="margin-top:6px">UR DELVER: 
+<span class="creature-badge">DRC<span class="pt">3/3</span></span> 
 </div>
 </div>
 </div>

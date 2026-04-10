@@ -1,0 +1,1506 @@
+
+============================================================
+  Affinity (8-Cast variant)  (affinity)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (18):
+    4x Emry, Lurker of the Loch CMC3 [emry]
+    2x Kappa Cannoneer CMC6 [cannoneer]
+    1x Krang, Master Mind CMC5 [krang]
+    4x Patchwork Automaton CMC2 [automaton]
+    4x Pinnacle Emissary CMC4 [emissary]
+    3x Thought Monitor CMC7 [monitor]
+
+  Spells (27):
+    4x Force of Will CMC5 [fow]
+    1x Lavaspur Boots CMC1 [boots]
+    4x Lotus Petal CMC0 [petal]
+    4x Mishra's Bauble CMC0 [bauble]
+    4x Mox Opal CMC0 [opal]
+    1x Shadowspear CMC1 [spear]
+    1x Sink into Stupor CMC3 [sink]
+    4x Thoughtcast CMC5 [cast]
+    4x Urza's Bauble CMC0 [ubauble]
+
+  Lands (15):
+    4x Ancient Tomb [tomb]
+    2x Island [basic]
+    1x Otawara, Soaring City [otawara]
+    4x Seat of the Synod [seat]
+    4x Urza's Saga [saga]
+
+  Strategy: _strategy_affinity (in decks.affinity)
+  Archetype: aggro, prison
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  4/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    15 cantrips, 18 creatures, 4 counters, 8 rituals, 4 combo pieces
+    Avg CMC (nonland): 2.64
+
+============================================================
+  Goblin Charbelcher  (belcher)
+  Meta share: 2%  |  Cards: 60
+============================================================
+
+  Creatures (10):
+    4x Elvish Spirit Guide CMC2 [esg]
+    4x Simian Spirit Guide CMC2 [ssg]
+    2x Tinder Wall CMC1 [tinder]
+
+  Spells (49):
+    4x Burning Wish CMC2 [burning_wish]
+    4x Chrome Mox CMC0 [chrome_mox]
+    4x Dark Ritual CMC1 [darkrit]
+    3x Desperate Ritual CMC2 [desperate]
+    4x Empty the Warrens CMC4 [empty]
+    3x Gitaxian Probe CMC0 [probe]
+    4x Goblin Charbelcher CMC4 [belcher]
+    4x Land Grant CMC2 [grant]
+    4x Lion's Eye Diamond CMC0 [led]
+    4x Lotus Petal CMC0 [petal]
+    4x Rite of Flame CMC1 [rite]
+    4x Seething Song CMC3 [seething]
+    3x Veil of Summer CMC1 [vos]
+
+  Lands (1):
+    1x Taiga [dual]
+
+  Strategy: _strategy_belcher (in decks.belcher)
+  Archetype: combo, fast_combo
+
+  Interaction profile:
+    Speed:       1/5 (1=fastest)
+    Resilience:  1/5 (1=fragile)
+
+  Key stats:
+    3 cantrips, 10 creatures, 4 rituals, 16 combo pieces
+    Avg CMC (nonland): 1.61
+
+============================================================
+  Boros Aggro  (boros)
+  Meta share: 2%  |  Cards: 60
+============================================================
+
+  Creatures (22):
+    4x Eidolon of the Great Revel CMC2 [eidolon]
+    2x Minsc and Boo, Timeless Heroes CMC4 [minsc]
+    4x Orcish Bowmasters CMC2 [bowm]
+    4x Recruiter of the Guard CMC3 [recruiter]
+    3x Seasoned Dungeoneer CMC3 [dungeoneer]
+    2x Thalia, Guardian of Thraben CMC2 [thalia]
+    3x White Orchid Phantom CMC3 [orchid]
+
+  Spells (14):
+    4x Aether Vial CMC1 [vial]
+    4x Lightning Bolt CMC1 [bolt]
+    2x Pyroblast CMC1 [pyro]
+    4x Swords to Plowshares CMC1 [stp]
+
+  Lands (24):
+    4x Arid Mesa [fetch]
+    2x Flooded Strand [fetch]
+    4x Mountain [basic]
+    6x Plains [basic]
+    2x Plateau [dual]
+    2x Rishadan Port [port]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_boros (in decks.boros)
+  Archetype: aggro, prison, vial_decks
+
+  Interaction profile:
+    Speed:       4/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    22 creatures, 8 removal
+    Avg CMC (nonland): 2.00
+
+============================================================
+  BUG Tempo  (bug)
+  Meta share: 10%  |  Cards: 60
+============================================================
+
+  Creatures (17):
+    3x Kaito, Bane of Nightmares CMC3 [kaito]
+    2x Murktide Regent CMC7 [murk]
+    4x Nethergoyf CMC2 [nether]
+    4x Orcish Bowmasters CMC2 [bowm]
+    4x Tamiyo, Inquisitive Student CMC1 [tamiyo]
+
+  Spells (24):
+    4x Brainstorm CMC1 [bs]
+    4x Daze CMC2 [daze]
+    3x Fatal Push CMC1 [push]
+    1x Force of Negation CMC3 [fon]
+    4x Force of Will CMC5 [fow]
+    1x Mishra's Bauble CMC0 [bauble]
+    3x Ponder CMC1 [ponder]
+    1x Snuff Out CMC4 [snuffout]
+    3x Thoughtseize CMC1 [ts]
+
+  Lands (19):
+    1x Flooded Strand [fetch]
+    1x Island [basic]
+    1x Marsh Flats [fetch]
+    1x Misty Rainforest [fetch]
+    4x Polluted Delta [fetch]
+    1x Scalding Tarn [fetch]
+    1x Swamp [basic]
+    1x Undercity Sewers [sewers]
+    4x Underground Sea [dual]
+    4x Wasteland [wl]
+
+  Strategy: MISSING
+  Archetype: fair/unclassified
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+
+  Key stats:
+    8 cantrips, 17 creatures, 9 counters, 4 removal
+    Avg CMC (nonland): 2.22
+
+============================================================
+  Burn  (burn)
+  Meta share: 4%  |  Cards: 60
+============================================================
+
+  Creatures (12):
+    4x Eidolon of the Great Revel CMC2 [eidolon]
+    4x Goblin Guide CMC1 [guide]
+    4x Monastery Swiftspear CMC1 [swiftspear]
+
+  Spells (28):
+    4x Chain Lightning CMC1 [chain]
+    4x Fireblast CMC6 [fireblast]
+    4x Lava Spike CMC1 [spike]
+    4x Lightning Bolt CMC1 [bolt]
+    4x Price of Progress CMC2 [pop]
+    4x Rift Bolt CMC3 [rift]
+    2x Searing Blaze CMC2 [blaze]
+    2x Skullcrack CMC2 [skullcrack]
+
+  Lands (20):
+    4x Barbarian Ring [ring]
+    2x Fiery Islet [islet]
+    4x Inspiring Vantage [vantage]
+    10x Mountain [basic]
+
+  Strategy: _strategy_burn (in decks.burn)
+  Archetype: aggro
+
+  Interaction profile:
+    Speed:       1/5 (1=fastest)
+    Resilience:  2/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    12 creatures, 4 removal
+    Avg CMC (nonland): 2.00
+
+============================================================
+  Cephalid Breakfast  (cephalid)
+  Meta share: 2%  |  Cards: 60
+============================================================
+
+  Creatures (17):
+    4x Cephalid Illusionist CMC2 [illusionist]
+    3x Narcomoeba CMC2 [narco]
+    3x Nomads en-Kor CMC1 [nomads]
+    3x Tamiyo, Inquisitive Student CMC1 [tamiyo]
+    1x Thassa's Oracle CMC2 [oracle]
+    3x Voice of Victory CMC2 [voice]
+
+  Spells (23):
+    4x Brainstorm CMC1 [bs]
+    1x Cabal Therapy CMC1 [therapy]
+    2x Daze CMC2 [daze]
+    1x Dread Return CMC4 [dread]
+    4x Force of Will CMC5 [fow]
+    2x Orim's Chant CMC1 [chant]
+    4x Ponder CMC1 [ponder]
+    2x Shuko CMC1 [shuko]
+    1x Step Through CMC5 [step]
+    2x Swords to Plowshares CMC1 [stp]
+
+  Lands (20):
+    4x Flooded Strand [fetch]
+    2x Island [basic]
+    1x Marsh Flats [fetch]
+    1x Meticulous Archive [archive]
+    1x Plains [basic]
+    4x Polluted Delta [fetch]
+    2x Tundra [dual]
+    1x Undercity Sewers [sewers]
+    1x Underground Sea [dual]
+    3x Urza's Saga [saga]
+
+  Strategy: _strategy_cephalid (in decks.cephalid)
+  Archetype: combo, gy_combo
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  2/5 (1=fragile)
+    Traits:      graveyard-dependent
+
+  Key stats:
+    8 cantrips, 17 creatures, 6 counters, 2 removal, 17 combo pieces
+    Avg CMC (nonland): 1.90
+
+============================================================
+  Cloudpost (12-Post)  (cloudpost)
+  Meta share: 2%  |  Cards: 60
+============================================================
+
+  Creatures (1):
+    1x Ulamog, the Ceaseless Hunger CMC10 [ulamog]
+
+  Spells (34):
+    4x Crop Rotation CMC1 [crop]
+    4x Disruptor Flute CMC2 [flute]
+    2x Expedition Map CMC1 [map]
+    4x Karn, the Great Creator CMC4 [karn]
+    4x Kozilek's Command CMC4 [koz_cmd]
+    4x Lotus Petal CMC0 [petal]
+    2x Pithing Needle CMC1 [needle]
+    4x Stock Up CMC2 [stock]
+    3x The One Ring CMC4 [ring]
+    3x Ugin, Eye of the Storms CMC6 [ugin]
+
+  Lands (25):
+    1x Bojuka Bog [bog]
+    2x Boseiju, Who Endures [boseiju]
+    4x Cloudpost [post]
+    1x Forest [basic]
+    2x Glimmerpost [glimmer]
+    1x Island [basic]
+    1x Karakas [karakas]
+    1x Otawara, Soaring City [otawara]
+    4x Planar Nexus [nexus]
+    2x Urza's Mine [mine]
+    2x Urza's Power Plant [plant]
+    4x Urza's Tower [tower]
+
+  Strategy: _strategy_cloudpost (in decks.cloudpost)
+  Archetype: prison, land_combo
+
+  Interaction profile:
+    Speed:       4/5 (1=fastest)
+    Resilience:  5/5 (1=fragile)
+    Traits:      soft to Wasteland
+
+  Key stats:
+    4 cantrips, 1 creatures, 4 rituals, 9 combo pieces
+    Avg CMC (nonland): 2.74
+
+============================================================
+  Dark Depths  (depths)
+  Meta share: 4%  |  Cards: 60
+============================================================
+
+  Creatures (9):
+    1x Dryad Arbor CMC0 [arbor]
+    4x Elvish Reclaimer CMC1 [reclaimer]
+    2x Endurance CMC3 [endurance]
+    2x Knight of the Reliquary CMC3 [knight]
+
+  Spells (21):
+    4x Crop Rotation CMC1 [crop]
+    3x Exploration CMC1 [exploration]
+    4x Green Sun's Zenith CMC1 [gsz]
+    3x Mox Diamond CMC0 [mox_diamond]
+    3x Once Upon a Time CMC2 [once]
+    2x Sylvan Library CMC2 [sylvan]
+    2x Sylvan Scrying CMC2 [scrying]
+
+  Lands (30):
+    2x Bayou [dual]
+    2x Bojuka Bog [bog]
+    4x Dark Depths [depths]
+    2x Forest [basic]
+    1x Plains [basic]
+    2x Savannah [dual]
+    2x Sejiri Steppe [steppe]
+    4x Thespian's Stage [stage]
+    4x Verdant Catacombs [fetch]
+    3x Wasteland [waste]
+    4x Windswept Heath [fetch]
+
+  Strategy: _strategy_depths (in decks.depths)
+  Archetype: combo, land_combo
+
+  Interaction profile:
+    Speed:       2/5 (1=fastest)
+    Resilience:  1/5 (1=fragile)
+    Traits:      soft to Wasteland
+
+  Key stats:
+    3 cantrips, 9 creatures
+    Avg CMC (nonland): 1.37
+
+============================================================
+  Dimir Tempo A (Nethergoyf)  (dimir)
+  Meta share: 8%  |  Cards: 60
+============================================================
+
+  Creatures (15):
+    2x Brazen Borrower CMC3 [borrow]
+    2x Murktide Regent CMC7 [murk]
+    3x Nethergoyf CMC2 [nether]
+    4x Orcish Bowmasters CMC2 [bowm]
+    4x Tamiyo, Inquisitive Student CMC1 [tamiyo]
+
+  Spells (26):
+    4x Brainstorm CMC1 [bs]
+    3x Daze CMC2 [daze]
+    4x Fatal Push CMC1 [push]
+    4x Force of Will CMC5 [fow]
+    2x Kaito, Bane of Nightmares CMC3 [kaito]
+    2x Mishra's Bauble CMC0 [bauble]
+    3x Ponder CMC1 [ponder]
+    4x Thoughtseize CMC1 [ts]
+
+  Lands (19):
+    2x Bloodstained Mire [fetch]
+    1x Island [basic]
+    4x Polluted Delta [fetch]
+    2x Scalding Tarn [fetch]
+    1x Swamp [basic]
+    1x Undercity Sewers [dual]
+    4x Underground Sea [dual]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_dimir (in decks.dimir)
+  Archetype: mirror, tempo_mirror, bowm_decks
+
+  Interaction profile:
+    Speed:       4/5 (1=fastest)
+    Resilience:  4/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    9 cantrips, 15 creatures, 7 counters, 4 removal
+    Avg CMC (nonland): 2.07
+
+============================================================
+  Dimir Tempo B (Barrowgoyf)  (dimir_b)
+  Meta share: 5%  |  Cards: 60
+============================================================
+
+  Creatures (14):
+    2x Baleful Strix CMC2 [strix]
+    2x Barrowgoyf CMC3 [barrow]
+    1x Brazen Borrower CMC3 [borrow]
+    2x Murktide Regent CMC7 [murk]
+    3x Orcish Bowmasters CMC2 [bowm]
+    4x Tamiyo, Inquisitive Student CMC1 [tamiyo]
+
+  Spells (27):
+    4x Brainstorm CMC1 [bs]
+    3x Daze CMC2 [daze]
+    3x Fatal Push CMC1 [push]
+    1x Force of Negation CMC3 [fon]
+    4x Force of Will CMC5 [fow]
+    2x Kaito, Bane of Nightmares CMC3 [kaito]
+    4x Ponder CMC1 [ponder]
+    2x Snuff Out CMC4 [snuffout]
+    4x Thoughtseize CMC1 [ts]
+
+  Lands (19):
+    1x Bloodstained Mire [fetch]
+    1x Flooded Strand [fetch]
+    1x Island [basic]
+    1x Misty Rainforest [fetch]
+    4x Polluted Delta [fetch]
+    1x Swamp [basic]
+    2x Undercity Sewers [dual]
+    3x Underground Sea [dual]
+    1x Verdant Catacombs [fetch]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_dimir_b (in decks.dimir_b)
+  Archetype: mirror, tempo_mirror, bowm_decks
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  5/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    8 cantrips, 14 creatures, 8 counters, 5 removal
+    Avg CMC (nonland): 2.32
+
+============================================================
+  Dimir Tempo C (Barrowgoyf)  (dimir_c)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (15):
+    1x Barrowgoyf CMC2 [barro]
+    1x Brazen Borrower CMC3 [borrow]
+    2x Murktide Regent CMC7 [murk]
+    3x Nethergoyf CMC2 [nether]
+    4x Orcish Bowmasters CMC2 [bowm]
+    4x Tamiyo, Inquisitive Student CMC1 [tamiyo]
+
+  Spells (25):
+    4x Brainstorm CMC1 [bs]
+    3x Daze CMC2 [daze]
+    4x Fatal Push CMC1 [push]
+    4x Force of Will CMC5 [fow]
+    1x Mishra's Bauble CMC0 [bauble]
+    4x Ponder CMC1 [ponder]
+    1x Snuff Out CMC4 [snuff]
+    4x Thoughtseize CMC1 [seize]
+
+  Lands (20):
+    2x Flooded Strand [fetch]
+    1x Island [basic]
+    1x Marsh Flats [fetch]
+    1x Misty Rainforest [fetch]
+    4x Polluted Delta [fetch]
+    1x Scalding Tarn [fetch]
+    1x Swamp [basic]
+    1x Undercity Sewers [sewers]
+    4x Underground Sea [dual]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_dimir_c (in decks.dimir_c)
+  Archetype: mirror, tempo_mirror, bowm_decks
+
+  Interaction profile:
+    Speed:       4/5 (1=fastest)
+    Resilience:  4/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    9 cantrips, 15 creatures, 7 counters, 4 removal
+    Avg CMC (nonland): 2.08
+
+============================================================
+  Dimir Tempo D (Kaito)  (dimir_d)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (15):
+    1x Brazen Borrower CMC3 [borrow]
+    3x Murktide Regent CMC7 [murk]
+    3x Nethergoyf CMC2 [nether]
+    4x Orcish Bowmasters CMC2 [bowm]
+    4x Tamiyo, Inquisitive Student CMC1 [tamiyo]
+
+  Spells (26):
+    4x Brainstorm CMC1 [bs]
+    3x Daze CMC2 [daze]
+    3x Fatal Push CMC1 [push]
+    4x Force of Will CMC5 [fow]
+    2x Kaito, Bane of Nightmares CMC3 [kaito]
+    2x Mishra's Bauble CMC0 [bauble]
+    3x Ponder CMC1 [ponder]
+    1x Snuff Out CMC4 [snuff]
+    4x Thoughtseize CMC1 [seize]
+
+  Lands (19):
+    1x Flooded Strand [fetch]
+    1x Island [basic]
+    1x Marsh Flats [fetch]
+    1x Misty Rainforest [fetch]
+    4x Polluted Delta [fetch]
+    1x Scalding Tarn [fetch]
+    1x Swamp [basic]
+    1x Undercity Sewers [sewers]
+    4x Underground Sea [dual]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_dimir_d (in decks.dimir_d)
+  Archetype: mirror, tempo_mirror, bowm_decks
+
+  Interaction profile:
+    Speed:       4/5 (1=fastest)
+    Resilience:  4/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    9 cantrips, 15 creatures, 7 counters, 3 removal
+    Avg CMC (nonland): 2.24
+
+============================================================
+  Dimir Flash (Wan Shi Tong)  (dimir_flash)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (13):
+    2x Murktide Regent CMC7 [murk]
+    4x Orcish Bowmasters CMC2 [bowm]
+    3x Tamiyo, Inquisitive Student CMC1 [tamiyo]
+    4x Wan Shi Tong, Librarian CMC2 [wst]
+
+  Spells (25):
+    4x Brainstorm CMC1 [bs]
+    3x Daze CMC1 [daze]
+    4x Fatal Push CMC1 [push]
+    1x Flusterstorm CMC1 [fluster]
+    2x Force of Negation CMC3 [fon]
+    4x Force of Will CMC5 [fow]
+    4x Ponder CMC1 [ponder]
+    3x Thoughtseize CMC1 [ts]
+
+  Lands (22):
+    3x Island [basic]
+    2x Misty Rainforest [fetch]
+    4x Polluted Delta [fetch]
+    2x Scalding Tarn [fetch]
+    1x Swamp [basic]
+    2x Undercity Sewers [dual]
+    4x Underground Sea [dual]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_dimir_flash (in decks.dimir_flash)
+  Archetype: mirror, tempo_mirror, bowm_decks
+
+  Interaction profile:
+    Speed:       4/5 (1=fastest)
+    Resilience:  4/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    13 creatures, 10 counters, 4 removal
+    Avg CMC (nonland): 2.05
+
+============================================================
+  Death and Taxes  (dnt)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (22):
+    2x Flickerwisp CMC3 [flickerwisp]
+    3x Phelia, Exuberant Shepherd CMC2 [phelia]
+    4x Recruiter of the Guard CMC3 [recruiter]
+    3x Skyclave Apparition CMC3 [skyclave]
+    2x Solitude CMC5 [solitude]
+    4x Stoneforge Mystic CMC2 [sfm]
+    3x Thalia, Guardian of Thraben CMC2 [thalia]
+    1x White Orchid Phantom CMC3 [orchid]
+
+  Spells (11):
+    4x Aether Vial CMC1 [vial]
+    1x Batterskull CMC5 [equipment]
+    1x Kaldra Compleat CMC7 [kaldra]
+    1x Pre-War Formalwear CMC4 [equipment]
+    4x Swords to Plowshares CMC1 [stp]
+
+  Lands (27):
+    2x Arid Mesa [fetch]
+    2x Flooded Strand [fetch]
+    3x Karakas [karakas]
+    12x Plains [basic]
+    4x Rishadan Port [port]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_dnt (in decks.dnt)
+  Archetype: prison, vial_decks
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  4/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    22 creatures, 4 removal
+    Avg CMC (nonland): 2.55
+
+============================================================
+  Doomsday  (doomsday)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (7):
+    3x Street Wraith CMC5 [wraith]
+    4x Thassa's Oracle CMC2 [oracle]
+
+  Spells (27):
+    4x Brainstorm CMC1 [bs]
+    3x Dark Ritual CMC1 [darkrit]
+    4x Doomsday CMC5 [dd]
+    2x Edge of Autumn CMC2 [edge]
+    3x Flusterstorm CMC1 [fluster]
+    4x Force of Will CMC5 [fow]
+    4x Ponder CMC1 [ponder]
+    3x Veil of Summer CMC1 [vos]
+
+  Lands (26):
+    4x Cavern of Souls [cavern]
+    2x Forest [basic]
+    6x Island [basic]
+    2x Misty Rainforest [fetch]
+    4x Polluted Delta [fetch]
+    4x Swamp [basic]
+    1x Tropical Island [dual]
+    3x Underground Sea [dual]
+
+  Strategy: _strategy_doomsday (in decks.doomsday)
+  Archetype: combo, gy_combo
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  2/5 (1=fragile)
+    Traits:      graveyard-dependent
+
+  Key stats:
+    13 cantrips, 7 creatures, 7 counters, 3 rituals, 8 combo pieces
+    Avg CMC (nonland): 2.47
+
+============================================================
+  8-Cast  (eight_cast)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (12):
+    4x Emry, Lurker of the Loch CMC4 [emry]
+    4x Sai, Master Thopterist CMC3 [sai]
+    4x Thought Monitor CMC6 [monitor]
+
+  Spells (25):
+    4x Chalice of the Void CMC0 [chalice]
+    4x Karn, The Great Creator CMC4 [karn]
+    4x Lotus Petal CMC0 [petal]
+    3x Mishra's Bauble CMC0 [bauble]
+    4x Mox Opal CMC0 [opal]
+    1x Pithing Needle CMC1 [needle]
+    4x Portable Hole CMC1 [hole]
+    1x Shadowspear CMC1 [shadowspear]
+
+  Lands (23):
+    4x Ancient Tomb [ancient_tomb]
+    4x City of Traitors [city]
+    2x Inventors' Fair [fair]
+    2x Mishra's Factory [factory]
+    4x Seat of the Synod [seat]
+    4x Urza's Saga [saga]
+    3x Vault of Whispers [vault]
+
+  Strategy: _strategy_eight_cast (in decks.eight_cast)
+  Archetype: aggro, prison
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  4/5 (1=fragile)
+
+  Key stats:
+    3 cantrips, 12 creatures, 16 combo pieces
+    Avg CMC (nonland): 2.00
+
+============================================================
+  Eldrazi Aggro  (eldrazi)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (20):
+    4x Eldrazi Linebreaker CMC3 [linebreaker]
+    4x Glaring Fleshraker CMC3 [fleshraker]
+    4x Simian Spirit Guide CMC2 [ssg]
+    4x Thought-Knot Seer CMC4 [tks]
+    4x Wastescape Battlemage CMC3 [battlemage]
+
+  Spells (16):
+    4x Chalice of the Void CMC0 [chalice]
+    4x Kozilek's Command CMC3 [kcommand]
+    4x Lotus Petal CMC0 [petal]
+    4x The One Ring CMC4 [ring]
+
+  Lands (24):
+    4x Abundant Countryside [fetch]
+    4x Ancient Tomb [tomb]
+    4x Cavern of Souls [cavern]
+    3x City of Traitors [city]
+    4x Eldrazi Temple [temple]
+    1x Eye of Ugin [eye]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_eldrazi (in decks.eldrazi)
+  Archetype: aggro
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  4/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    20 creatures, 4 rituals, 4 combo pieces
+    Avg CMC (nonland): 2.44
+
+============================================================
+  Elves  (elves)
+  Meta share: 2%  |  Cards: 60
+============================================================
+
+  Creatures (31):
+    4x Allosaurus Shepherd CMC1 [shepherd]
+    1x Craterhoof Behemoth CMC8 [hoof]
+    1x Dryad Arbor CMC0 [dryad_arbor]
+    4x Elvish Mystic CMC1 [mystic]
+    1x Elvish Spirit Guide CMC1 [espirit]
+    4x Elvish Visionary CMC1 [visionary]
+    3x Heritage Druid CMC1 [heritage]
+    4x Llanowar Elves CMC1 [llanowar]
+    4x Nettle Sentinel CMC1 [nettle]
+    2x Quirion Ranger CMC1 [qranger]
+    1x Reclamation Sage CMC2 [recsage]
+    2x Wirewood Symbiote CMC1 [symbiote]
+
+  Spells (11):
+    4x Glimpse of Nature CMC1 [glimpse]
+    4x Green Sun's Zenith CMC1 [gsz]
+    3x Natural Order CMC2 [natorder]
+
+  Lands (18):
+    2x Bayou [dual]
+    4x Forest [basic]
+    4x Gaea's Cradle [cradle]
+    1x Misty Rainforest [fetch]
+    1x Savannah [dual]
+    4x Verdant Catacombs [fetch]
+    2x Windswept Heath [fetch]
+
+  Strategy: _strategy_elves (in decks.elves)
+  Archetype: aggro, tribal
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    31 creatures, 12 combo pieces
+    Avg CMC (nonland): 1.24
+
+============================================================
+  Goblins  (goblins)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (32):
+    2x Fury CMC5 [fury]
+    4x Goblin Cratermaker CMC2 [cratermaker]
+    4x Goblin Lackey CMC1 [lackey]
+    4x Goblin Matron CMC3 [matron]
+    4x Goblin Ringleader CMC4 [ringleader]
+    2x Goblin Warchief CMC3 [warchief]
+    3x Munitions Expert CMC2 [expert]
+    3x Muxus, Goblin Grandee CMC6 [muxus]
+    2x Pashalik Mons CMC3 [pashalik]
+    2x Skirk Prospector CMC1 [prospector]
+    2x Sling-Gang Lieutenant CMC4 [sling]
+
+  Spells (8):
+    4x Aether Vial CMC1 [vial]
+    2x Chrome Mox CMC0 [chrome_mox]
+    2x Thoughtseize CMC1 [ts]
+
+  Lands (20):
+    4x Auntie's Hovel [hovel]
+    4x Badlands [dual]
+    2x Bloodstained Mire [fetch]
+    4x Cavern of Souls [cavern]
+    2x Mountain [basic]
+    2x Swamp [basic]
+    2x Wooded Foothills [fetch]
+
+  Strategy: _strategy_goblins (in decks.goblins)
+  Archetype: aggro, vial_decks, tribal
+
+  Interaction profile:
+    Speed:       2/5 (1=fastest)
+    Resilience:  5/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    32 creatures, 7 combo pieces
+    Avg CMC (nonland): 2.55
+
+============================================================
+  Infect  (infect)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (12):
+    4x Blighted Agent CMC2 [blighted]
+    4x Glistener Elf CMC1 [glistener]
+    4x Noble Hierarch CMC1 [hierarch]
+
+  Spells (28):
+    4x Berserk CMC1 [berserk]
+    2x Blossoming Defense CMC1 [defense]
+    4x Brainstorm CMC1 [bs]
+    2x Crop Rotation CMC1 [crop]
+    2x Daze CMC2 [daze]
+    2x Force of Will CMC5 [fow]
+    4x Invigorate CMC3 [invigorate]
+    4x Mutagenic Growth CMC1 [mutagenic]
+    2x Ponder CMC1 [ponder]
+    2x Vines of Vastwood CMC1 [vines]
+
+  Lands (20):
+    2x Breeding Pool [dual]
+    2x Forest [basic]
+    4x Inkmoth Nexus [inkmoth]
+    2x Misty Rainforest [fetch]
+    2x Pendelhaven [pendel]
+    4x Tropical Island [dual]
+    4x Windswept Heath [fetch]
+
+  Strategy: _strategy_infect (in decks.infect)
+  Archetype: combo, fast_combo
+
+  Interaction profile:
+    Speed:       1/5 (1=fastest)
+    Resilience:  2/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    6 cantrips, 12 creatures, 4 counters
+    Avg CMC (nonland): 1.55
+
+============================================================
+  Lands  (lands)
+  Meta share: 4%  |  Cards: 60
+============================================================
+
+  Creatures (5):
+    3x Elvish Reclaimer CMC1 [reclaimer]
+    2x Endurance CMC3 [endurance]
+
+  Spells (10):
+    4x Crop Rotation CMC1 [crop]
+    4x Life from the Loam CMC3 [loam]
+    2x Punishing Fire CMC2 [pfire]
+
+  Lands (45):
+    2x Bayou [dual]
+    3x Dark Depths [depths]
+    10x Forest [basic]
+    4x Grove of the Burnwillows [grove]
+    3x Maze of Ith [maze]
+    4x Rishadan Port [port]
+    2x Taiga [dual]
+    2x The Tabernacle at Pendrell Vale [tab]
+    3x Thespian's Stage [stage]
+    4x Verdant Catacombs [fetch]
+    4x Wasteland [wl]
+    4x Windswept Heath [fetch]
+
+  Strategy: _strategy_lands (in decks.lands)
+  Archetype: land_combo
+
+  Interaction profile:
+    Speed:       5/5 (1=fastest)
+    Resilience:  5/5 (1=fragile)
+    Traits:      graveyard-dependent, soft to Wasteland
+
+  Key stats:
+    5 creatures, 10 combo pieces
+    Avg CMC (nonland): 1.93
+
+============================================================
+  Mardu Aggro  (mardu)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (16):
+    4x Fury CMC5 [fury]
+    4x Grief CMC3 [grief]
+    4x Orcish Bowmasters CMC2 [bowm]
+    4x Ragavan, Nimble Pilferer CMC1 [ragavan]
+
+  Spells (16):
+    4x Ephemerate CMC1 [ephemerate]
+    2x Force of Will CMC5 [fow]
+    4x Lightning Bolt CMC1 [bolt]
+    2x Swords to Plowshares CMC1 [stp]
+    4x Thoughtseize CMC1 [ts]
+
+  Lands (28):
+    4x Arid Mesa [fetch]
+    2x Badlands [dual]
+    2x Bloodstained Mire [fetch]
+    4x Marsh Flats [fetch]
+    4x Mountain [basic]
+    4x Plains [basic]
+    2x Plateau [dual]
+    2x Scrubland [dual]
+    4x Swamp [basic]
+
+  Strategy: _strategy_mardu (in decks.mardu)
+  Archetype: aggro, bowm_decks
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    16 creatures, 2 counters, 6 removal, 12 combo pieces
+    Avg CMC (nonland): 2.12
+
+============================================================
+  Mono Black Aggro  (mono_black)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (20):
+    4x Braids, Arisen Nightmare CMC4 [braids]
+    4x Carnage Interpreter CMC2 [carnage]
+    4x Dauthi Voidwalker CMC2 [dauthi]
+    4x Grief CMC5 [grief]
+    4x Orcish Bowmasters CMC2 [bowm]
+
+  Spells (16):
+    4x Fatal Push CMC1 [push]
+    4x Hymn to Tourach CMC2 [hymn]
+    4x Snuff Out CMC4 [snuffout]
+    4x Thoughtseize CMC1 [ts]
+
+  Lands (24):
+    4x Marsh Flats [fetch]
+    4x Polluted Delta [fetch]
+    12x Swamp [basic]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_mono_black (in decks.mono_black)
+  Archetype: aggro, bowm_decks
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    20 creatures, 8 removal
+    Avg CMC (nonland): 2.56
+
+============================================================
+  Oops All Spells  (oops)
+  Meta share: 4%  |  Cards: 60
+============================================================
+
+  Creatures (2):
+    2x Balustrade Spy CMC4 [spy]
+
+  Spells (30):
+    4x Brainstorm CMC1 [bs]
+    4x Cabal Ritual CMC2 [ritual]
+    4x Force of Will CMC5 [fow]
+    4x Oops, All Spells CMC2 [oops]
+    4x Pact of Negation CMC0 [pact]
+    4x Ponder CMC1 [ponder]
+    2x Unmask CMC4 [unmask]
+    4x Veil of Summer CMC1 [vos]
+
+  Lands (28):
+    2x Bayou [dual]
+    1x Forest [basic]
+    5x Island [basic]
+    4x Misty Rainforest [fetch]
+    4x Polluted Delta [fetch]
+    4x Swamp [basic]
+    3x Tropical Island [dual]
+    3x Underground Sea [dual]
+    2x Verdant Catacombs [fetch]
+
+  Strategy: _strategy_oops (in decks.oops)
+  Archetype: combo, fast_combo, gy_combo
+
+  Interaction profile:
+    Speed:       1/5 (1=fastest)
+    Resilience:  1/5 (1=fragile)
+    Traits:      graveyard-dependent, Veil of Summer
+
+  Key stats:
+    8 cantrips, 2 creatures, 4 counters, 4 rituals, 4 combo pieces
+    Avg CMC (nonland): 2.00
+
+============================================================
+  Painter  (painter)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (6):
+    4x Imperial Recruiter CMC3 [recruiter]
+    2x Walking Ballista CMC0 [ballista]
+
+  Spells (23):
+    3x Blood Moon CMC3 [moon]
+    2x Ensnaring Bridge CMC3 [bridge]
+    4x Grindstone CMC1 [grind]
+    2x Karn, the Great Creator CMC4 [karn]
+    4x Painter's Servant CMC2 [painter]
+    4x Pyroblast CMC1 [pyro]
+    4x Red Elemental Blast CMC1 [reb]
+
+  Lands (31):
+    4x Ancient Tomb [tomb]
+    4x Arid Mesa [fetch]
+    4x City of Traitors [cot]
+    17x Mountain [basic]
+    2x Volcanic Island [dual]
+
+  Strategy: _strategy_painter (in decks.painter)
+  Archetype: combo
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+
+  Key stats:
+    6 creatures, 8 rituals, 8 combo pieces
+    Avg CMC (nonland): 1.90
+
+============================================================
+  Artifacts Prison  (prison)
+  Meta share: 4%  |  Cards: 60
+============================================================
+
+  Creatures (4):
+    4x Thought-Knot Seer CMC4 [tks]
+
+  Spells (20):
+    4x Chalice of the Void CMC0 [chalice]
+    3x Ensnaring Bridge CMC3 [bridge]
+    2x Grindstone CMC1 [grind]
+    4x Karn, the Great Creator CMC4 [karn]
+    2x Null Rod CMC2 [nullrod]
+    2x Painter's Servant CMC2 [painter]
+    3x Trinisphere CMC3 [trini]
+
+  Lands (36):
+    4x Ancient Tomb [tomb]
+    4x City of Traitors [cot]
+    4x Eldrazi Temple [temple]
+    24x Wastes [basic]
+
+  Strategy: _strategy_prison (in decks.prison)
+  Archetype: prison
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  5/5 (1=fragile)
+
+  Key stats:
+    4 creatures, 8 rituals, 8 combo pieces
+    Avg CMC (nonland): 2.50
+
+============================================================
+  Reanimator  (reanimator)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (8):
+    2x Archon of Cruelty CMC8 [archon]
+    2x Atraxa, Grand Unifier CMC7 [atraxa]
+    4x Griselbrand CMC8 [gris]
+
+  Spells (32):
+    4x Animate Dead CMC2 [animatedead]
+    4x Brainstorm CMC1 [bs]
+    4x Entomb CMC1 [entomb]
+    4x Exhume CMC2 [exhume]
+    4x Force of Will CMC5 [fow]
+    4x Reanimate CMC1 [reanimate]
+    4x Thoughtseize CMC1 [ts]
+    4x Unmask CMC4 [unmask]
+
+  Lands (20):
+    4x Marsh Flats [fetch]
+    4x Polluted Delta [fetch]
+    9x Swamp [basic]
+    3x Underground Sea [dual]
+
+  Strategy: _strategy_reanimator (in decks.reanimator)
+  Archetype: combo, gy_combo
+
+  Interaction profile:
+    Speed:       2/5 (1=fastest)
+    Resilience:  2/5 (1=fragile)
+    Traits:      graveyard-dependent
+
+  Key stats:
+    8 creatures, 4 counters, 24 combo pieces
+    Avg CMC (nonland): 3.25
+
+============================================================
+  Show and Tell  (show)
+  Meta share: 6%  |  Cards: 60
+============================================================
+
+  Creatures (2):
+    2x Emrakul, the Aeons Torn CMC15 [emrakul]
+
+  Spells (31):
+    4x Brainstorm CMC1 [bs]
+    1x Cunning Wish CMC3 [wish]
+    3x Daze CMC2 [daze]
+    2x Force of Negation CMC3 [fon]
+    4x Force of Will CMC5 [fow]
+    2x Omniscience CMC10 [omni]
+    4x Ponder CMC1 [ponder]
+    2x Preordain CMC1 [pre]
+    4x Show and Tell CMC3 [sat]
+    2x Sneak Attack CMC4 [sneak]
+    3x Veil of Summer CMC1 [vos]
+
+  Lands (27):
+    4x Flooded Strand [fetch]
+    14x Island [basic]
+    4x Scalding Tarn [fetch]
+    2x Tundra [dual]
+    3x Volcanic Island [dual]
+
+  Strategy: _strategy_show (in decks.show)
+  Archetype: combo, land_combo
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  5/5 (1=fragile)
+    Traits:      Veil of Summer
+
+  Key stats:
+    10 cantrips, 2 creatures, 9 counters, 10 combo pieces
+    Avg CMC (nonland): 3.58
+
+============================================================
+  Sneak & Show A (rerere)  (sneak_a)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (7):
+    4x Atraxa, Grand Unifier CMC7 [atraxa]
+    3x Emrakul, the Aeons Torn CMC15 [emrakul]
+
+  Spells (33):
+    4x Brainstorm CMC1 [bs]
+    2x Daze CMC2 [daze]
+    4x Force of Will CMC5 [fow]
+    4x Lotus Petal CMC0 [petal]
+    2x Omniscience CMC10 [omni]
+    4x Ponder CMC1 [ponder]
+    4x Show and Tell CMC3 [sat]
+    1x Sink into Stupor CMC3 [sink]
+    4x Sneak Attack CMC4 [sneak]
+    4x Stock Up CMC2 [stock]
+
+  Lands (20):
+    4x Ancient Tomb [tomb]
+    1x City of Traitors [city]
+    2x Island [basic]
+    4x Misty Rainforest [fetch]
+    1x Mountain [basic]
+    4x Scalding Tarn [fetch]
+    2x Thundering Falls [tfall]
+    2x Volcanic Island [dual]
+
+  Strategy: _strategy_sneak_a (in decks.sneak_a)
+  Archetype: combo, land_combo
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+
+  Key stats:
+    12 cantrips, 7 creatures, 6 counters, 4 rituals, 17 combo pieces
+    Avg CMC (nonland): 4.10
+
+============================================================
+  Sneak & Show B (JPA93)  (sneak_b)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (9):
+    1x Archon of Cruelty CMC8 [archon]
+    4x Atraxa, Grand Unifier CMC7 [atraxa]
+    3x Emrakul, the Aeons Torn CMC15 [emrakul]
+    1x Simian Spirit Guide CMC3 [ssg]
+
+  Spells (32):
+    4x Brainstorm CMC1 [bs]
+    2x Daze CMC2 [daze]
+    2x Flusterstorm CMC1 [fluster]
+    4x Force of Will CMC5 [fow]
+    4x Lotus Petal CMC0 [petal]
+    1x Omniscience CMC10 [omni]
+    4x Ponder CMC1 [ponder]
+    4x Show and Tell CMC3 [sat]
+    4x Sneak Attack CMC4 [sneak]
+    3x Stock Up CMC2 [stock]
+
+  Lands (19):
+    3x Ancient Tomb [tomb]
+    2x City of Traitors [city]
+    1x Flooded Strand [fetch]
+    2x Island [basic]
+    1x Misty Rainforest [fetch]
+    1x Mountain [basic]
+    1x Polluted Delta [fetch]
+    4x Scalding Tarn [fetch]
+    1x Thundering Falls [tfall]
+    3x Volcanic Island [dual]
+
+  Strategy: _strategy_sneak_b (in decks.sneak_b)
+  Archetype: combo, land_combo
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+
+  Key stats:
+    11 cantrips, 9 creatures, 8 counters, 4 rituals, 17 combo pieces
+    Avg CMC (nonland): 3.95
+
+============================================================
+  Storm (ANT)  (storm)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Spells (46):
+    3x Ad Nauseam CMC5 [adnauseam]
+    4x Brainstorm CMC1 [bs]
+    4x Cabal Ritual CMC2 [cabalrit]
+    4x Dark Ritual CMC1 [darkrit]
+    3x Flusterstorm CMC1 [fluster]
+    4x Force of Will CMC5 [fow]
+    4x Infernal Tutor CMC2 [itutor]
+    4x Lion's Eye Diamond CMC0 [led]
+    2x Past in Flames CMC5 [pif]
+    4x Ponder CMC1 [ponder]
+    4x Tendrils of Agony CMC4 [tendrils]
+    2x Thoughtseize CMC1 [ts]
+    4x Veil of Summer CMC1 [vos]
+
+  Lands (14):
+    1x Bayou [dual]
+    2x Misty Rainforest [fetch]
+    4x Polluted Delta [fetch]
+    3x Swamp [basic]
+    3x Underground Sea [dual]
+    1x Volcanic Island [dual]
+
+  Strategy: _strategy_storm (in decks.storm)
+  Archetype: combo
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+    Traits:      graveyard-dependent, Veil of Summer
+
+  Key stats:
+    7 counters, 8 rituals, 17 combo pieces
+    Avg CMC (nonland): 2.13
+
+============================================================
+  The Epic Storm  (tes)
+  Meta share: 2%  |  Cards: 60
+============================================================
+
+  Spells (46):
+    1x Ad Nauseam CMC5 [adnaus]
+    4x Brainstorm CMC1 [bs]
+    4x Burning Wish CMC2 [burning_wish]
+    4x Chrome Mox CMC0 [chrome_mox]
+    4x Dark Ritual CMC1 [darkrit]
+    3x Echo of Eons CMC5 [echo]
+    4x Force of Will CMC5 [fow]
+    2x Gitaxian Probe CMC0 [probe]
+    4x Infernal Tutor CMC2 [infernal]
+    4x Lion's Eye Diamond CMC0 [led]
+    4x Lotus Petal CMC0 [petal]
+    2x Ponder CMC1 [ponder]
+    2x Tendrils of Agony CMC4 [tendrils]
+    4x Veil of Summer CMC1 [vos]
+
+  Lands (14):
+    6x Scalding Tarn [fetch]
+    4x Underground Sea [dual]
+    4x Volcanic Island [dual]
+
+  Strategy: _strategy_tes (in decks.tes)
+  Archetype: combo, fast_combo
+
+  Interaction profile:
+    Speed:       2/5 (1=fastest)
+    Resilience:  2/5 (1=fragile)
+    Traits:      Veil of Summer
+
+  Key stats:
+    8 cantrips, 4 counters, 4 rituals, 22 combo pieces
+    Avg CMC (nonland): 1.70
+
+============================================================
+  UR Aggro  (ur_aggro)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (14):
+    2x Brazen Borrower CMC3 [borrow]
+    4x Dragon's Rage Channeler CMC1 [drc]
+    4x Murktide Regent CMC7 [murk]
+    4x Ragavan, Nimble Pilferer CMC1 [ragavan]
+
+  Spells (26):
+    4x Brainstorm CMC1 [bs]
+    2x Daze CMC2 [daze]
+    4x Expressive Iteration CMC2 [ei]
+    4x Force of Will CMC5 [fow]
+    4x Lightning Bolt CMC1 [bolt]
+    4x Ponder CMC1 [ponder]
+    2x Price of Progress CMC2 [pop]
+    2x Unholy Heat CMC1 [heat]
+
+  Lands (20):
+    2x Flooded Strand [fetch]
+    4x Island [basic]
+    6x Mountain [basic]
+    4x Scalding Tarn [fetch]
+    4x Volcanic Island [dual]
+
+  Strategy: _strategy_ur_aggro (in decks.ur_aggro)
+  Archetype: aggro, bowm_decks
+
+  Interaction profile:
+    Speed:       2/5 (1=fastest)
+    Resilience:  5/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    14 creatures, 6 counters, 4 removal
+    Avg CMC (nonland): 2.30
+
+============================================================
+  UR Delver  (ur_delver)
+  Meta share: 4%  |  Cards: 60
+============================================================
+
+  Creatures (14):
+    2x Brazen Borrower CMC3 [borrow]
+    4x Delver of Secrets CMC1 [delver]
+    4x Dragon's Rage Channeler CMC1 [drc]
+    4x Murktide Regent CMC7 [murk]
+
+  Spells (28):
+    4x Brainstorm CMC1 [bs]
+    4x Daze CMC2 [daze]
+    2x Expressive Iteration CMC2 [ei]
+    4x Force of Will CMC5 [fow]
+    4x Lightning Bolt CMC1 [bolt]
+    4x Ponder CMC1 [ponder]
+    2x Preordain CMC1 [pre]
+    2x Spell Pierce CMC1 [pierce]
+    2x Unholy Heat CMC1 [heat]
+
+  Lands (18):
+    2x Island [basic]
+    2x Misty Rainforest [fetch]
+    2x Mountain [basic]
+    2x Polluted Delta [fetch]
+    4x Scalding Tarn [fetch]
+    2x Steam Vents [dual]
+    4x Volcanic Island [dual]
+
+  Strategy: _strategy_ur_delver (in decks.ur_delver)
+  Archetype: aggro, tempo_mirror
+
+  Interaction profile:
+    Speed:       2/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    10 cantrips, 14 creatures, 10 counters, 4 removal
+    Avg CMC (nonland): 2.19
+
+============================================================
+  UR Tempo (Cori-Steel)  (ur_tempo)
+  Meta share: 3%  |  Cards: 60
+============================================================
+
+  Creatures (15):
+    4x Cori-Steel Cutter CMC2 [cutter]
+    4x Dragon's Rage Channeler CMC1 [drc]
+    3x Murktide Regent CMC7 [murk]
+    4x Tamiyo, Inquisitive Student CMC1 [tamiyo]
+
+  Spells (26):
+    4x Brainstorm CMC1 [bs]
+    4x Daze CMC2 [daze]
+    4x Force of Will CMC5 [fow]
+    4x Lightning Bolt CMC1 [bolt]
+    4x Mishra's Bauble CMC0 [bauble]
+    4x Ponder CMC1 [ponder]
+    2x Unholy Heat CMC1 [heat]
+
+  Lands (19):
+    2x Flooded Strand [fetch]
+    1x Island [basic]
+    2x Misty Rainforest [fetch]
+    3x Polluted Delta [fetch]
+    2x Scalding Tarn [fetch]
+    1x Thundering Falls [tfall]
+    4x Volcanic Island [dual]
+    4x Wasteland [wl]
+
+  Strategy: _strategy_ur_tempo (in decks.ur_tempo)
+  Archetype: aggro, tempo_mirror
+
+  Interaction profile:
+    Speed:       3/5 (1=fastest)
+    Resilience:  3/5 (1=fragile)
+    Traits:      creature-based
+
+  Key stats:
+    12 cantrips, 15 creatures, 8 counters, 4 removal
+    Avg CMC (nonland): 1.93
+
+============================================================
+  UWx Control  (uwx)
+  Meta share: 4%  |  Cards: 60
+============================================================
+
+  Creatures (5):
+    3x Monastery Mentor CMC3 [mentor]
+    2x Snapcaster Mage CMC2 [snap]
+
+  Spells (30):
+    2x Back to Basics CMC3 [b2b]
+    4x Brainstorm CMC1 [bs]
+    3x Counterspell CMC2 [counter]
+    2x Flusterstorm CMC1 [fluster]
+    2x Force of Negation CMC3 [fon]
+    4x Force of Will CMC5 [fow]
+    2x Narset, Parter of Veils CMC3 [narset]
+    4x Ponder CMC1 [ponder]
+    4x Swords to Plowshares CMC1 [stp]
+    3x Terminus CMC6 [terminus]
+
+  Lands (25):
+    4x Flooded Strand [fetch]
+    9x Island [basic]
+    5x Plains [basic]
+    3x Scalding Tarn [fetch]
+    4x Tundra [dual]
+
+  Strategy: _strategy_uwx (in decks.uwx)
+  Archetype: mirror, bowm_decks
+
+  Interaction profile:
+    Speed:       5/5 (1=fastest)
+    Resilience:  5/5 (1=fragile)
+
+  Key stats:
+    8 cantrips, 5 creatures, 11 counters, 4 removal
+    Avg CMC (nonland): 2.54

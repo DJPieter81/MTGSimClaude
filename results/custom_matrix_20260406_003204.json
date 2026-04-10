@@ -1,0 +1,29 @@
+{
+  "type": "matrix",
+  "tag": "custom_matrix",
+  "timestamp": "2026-04-06T00:32:04.912094",
+  "n_games": 30,
+  "decks": [
+    "bug",
+    "storm",
+    "ur_delver"
+  ],
+  "matchups": {
+    "bug_vs_storm": 0.6333333333333333,
+    "bug_vs_ur_delver": 0.13333333333333333,
+    "storm_vs_bug": 0.3,
+    "storm_vs_ur_delver": 0.3333333333333333,
+    "ur_delver_vs_bug": 0.6333333333333333,
+    "ur_delver_vs_storm": 0.8
+  },
+  "meta_ev": {
+    "bug": 0.3833333333333333,
+    "storm": 0.31666666666666665,
+    "ur_delver": 0.7166666666666667
+  },
+  "rankings": [
+    "ur_delver",
+    "bug",
+    "storm"
+  ]
+}
