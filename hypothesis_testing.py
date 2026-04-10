@@ -584,7 +584,7 @@ def test_mulligan_penalty(protagonist: str, antagonist: str, n_games: int = 500,
     for _ in range(n_games):
         pw, aw, gp, results = run_any_match(protagonist, antagonist)
         for r in results:
-            mulls = r.bug_mulls
+            mulls = r.p1_mulls
             mull_counts[mulls] = mull_counts.get(mulls, 0) + 1
             if mulls == 0:
                 keep7_total += 1

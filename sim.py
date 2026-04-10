@@ -34,19 +34,9 @@ class GameResult:
     p1_deck: str = ''
     p2_deck: str = ''
 
-    # Compat aliases
+    # Legacy aliases — deprecated, use p1_*/p2_* instead
     @property
     def bug_mulls(self): return self.p1_mulls
-    @property
-    def opp_mulls(self): return self.p2_mulls
-    @property
-    def bug_opening_hand(self): return self.p1_opening_hand
-    @property
-    def opp_opening_hand(self): return self.p2_opening_hand
-    @property
-    def final_bug_life(self): return self.final_p1_life
-    @property
-    def final_opp_life(self): return self.final_p2_life
     @property
     def bug_went_first(self): return self.p1_went_first
 
@@ -120,19 +110,20 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
     if deck2 not in DECKS:
         raise ValueError(f"Unknown deck: {deck2}. Available: {sorted(DECKS.keys())}")
 
-    # Mulligan: each deck uses its own keep logic
-    p1_keep = bug_keep if deck1 == 'bug' else opp_keep
-    p2_keep = bug_keep if deck2 == 'bug' else opp_keep
+    # Mulligan: each deck uses its own keep logic (via registry or fallback)
+    from deck_registry import get_keep_fn
+    p1_keep = get_keep_fn(deck1) or (bug_keep if deck1 == 'bug' else opp_keep)
+    p2_keep = get_keep_fn(deck2) or (bug_keep if deck2 == 'bug' else opp_keep)
 
     p1_mull_trace = p2_mull_trace = None
     if trace:
         p1_hand, p1_lib, p1_mulls, p1_mull_trace = london_mulligan(
-            DECKS[deck1], p1_keep, deck1 if deck1 != 'bug' else '', trace=True)
+            DECKS[deck1], p1_keep, deck1, trace=True)
         p2_hand, p2_lib, p2_mulls, p2_mull_trace = london_mulligan(
-            DECKS[deck2], p2_keep, deck2 if deck2 != 'bug' else '', trace=True)
+            DECKS[deck2], p2_keep, deck2, trace=True)
     else:
-        p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1 if deck1 != 'bug' else '')
-        p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2 if deck2 != 'bug' else '')
+        p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1)
+        p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2)
 
     p1_goes_first = random.random() < 0.5
 
@@ -356,21 +347,22 @@ STRATEGIES = {
 
 def protagonist_turn(gs, turn, matchup):
     """
-    Generic protagonist turn for any deck in STRATEGIES.
+    P1's generic turn function (all decks except BUG, which uses bug_turn).
     Full turn structure: cleanup → untap → upkeep → draw → land → mana →
-    Wasteland → Thoughtseize → removal → strategy → combat → EOT.
-    gs.p1 = protagonist deck, gs.p2 = antagonist.
+    lock enforcement → strategy dispatch → Eidolon damage → combat → EOT.
+    gs.p1 = active player, gs.p2 = opposing player.
     """
     from engine import (bowmasters_triggers, update_goyf, opp_can_cast,
                         _try_counter_any, _select_attackers, combat_declare)
     from rules import LandPermanent, MTGRules
 
-    b = gs.p1
-    o = gs.p2
+    player = gs.p1          # active player this turn
+    opponent = gs.p2        # opposing player
+    b, o = player, opponent  # short aliases (legacy, used throughout)
     log_entries = []
 
     def log(msg, key=False):
-        gs.log_event('b', 'main', msg, key)
+        gs.log_event('p1', 'main', msg, key)
         log_entries.append(msg)
 
     # ── Cleanup — CR 510.2 ──
@@ -382,7 +374,7 @@ def protagonist_turn(gs, turn, matchup):
     b.untap_all()
     b.revolt_this_turn = False
     b.clear_summoning_sickness()
-    gs.opp_spells_cast_this_turn = 0
+    gs.p2_spells_cast_this_turn = 0
     gs.veil_active = False
     b.spells_cast_this_turn = 0
     if gs.trace:
@@ -407,13 +399,13 @@ def protagonist_turn(gs, turn, matchup):
             bowmasters_triggers(1, gs, log_entries, controller='o')
 
     # ── Pending Bauble draws from previous turn ──
-    pending = getattr(gs, 'pending_bauble_draws_bug', 0)
+    pending = getattr(gs, 'pending_bauble_draws_p1', 0)
     if pending > 0:
         drawn = b.draw(pending)
         for d in drawn:
             log(f"Bauble (upkeep draw) → {d.name}")
         bowmasters_triggers(pending, gs, log_entries, controller='o')
-        gs.pending_bauble_draws_bug = 0
+        gs.pending_bauble_draws_p1 = 0
 
     # ── Land drop ──
     # Prioritise mana-producing lands (duals, basics) over utility lands (Wasteland)
@@ -465,10 +457,10 @@ def protagonist_turn(gs, turn, matchup):
     # Lotus Petal in hand
     total_mana += sum(1 for c in b.hand if c.tag == 'petal')
     # Treasure tokens
-    bug_treasure = getattr(gs, 'bug_treasure', 0)
-    if bug_treasure > 0:
-        total_mana += bug_treasure
-        gs.bug_treasure = 0
+    p1_treasure = getattr(gs, 'p1_treasure', 0)
+    if p1_treasure > 0:
+        total_mana += p1_treasure
+        gs.p1_treasure = 0
     # Ancient Tomb: produces 2C (1 already counted, add 1 bonus), costs 2 life
     tomb_count = sum(1 for l in b.lands if l.card.tag == 'tomb' and not l.tapped)
     if tomb_count > 0:
@@ -561,9 +553,9 @@ def protagonist_turn(gs, turn, matchup):
     plan = GAMEPLANS.get(matchup)
     if plan:
         ba = assess(gs, turn)
-        gs.opp_goal = active_goal(plan, ba)
+        gs.p2_goal = active_goal(plan, ba)
     else:
-        gs.opp_goal = None
+        gs.p2_goal = None
 
     # ── Lock piece enforcement (shared helpers — single source of truth) ──
     from engine import apply_lock_effects, restore_lock_effects, apply_eidolon_damage

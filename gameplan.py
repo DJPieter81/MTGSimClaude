@@ -1,7 +1,7 @@
 """Gameplan stub – provides imports expected by engine.py.
 
 The full gameplan module is not yet implemented; this stub lets the
-simulator run with gs.opp_goal = None for all matchups.
+simulator run with gs.p2_goal = None for all matchups.
 """
 
 from enum import Enum, auto
