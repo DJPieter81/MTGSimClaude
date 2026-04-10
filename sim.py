@@ -565,36 +565,9 @@ def protagonist_turn(gs, turn, matchup):
     else:
         gs.opp_goal = None
 
-    # ── Lock piece enforcement ──
-    _chalice_blocked = []
-    if gs.chalice_x is not None:
-        for card in list(b.hand):
-            if not card.is_land() and card.cmc == gs.chalice_x:
-                _chalice_blocked.append(card)
-                b.hand.remove(card)
-        if _chalice_blocked:
-            log(f"Chalice on {gs.chalice_x} — blocks: {', '.join(set(c.name for c in _chalice_blocked))}")
-    # Trinisphere: all spells cost at least 3 (CR 601.2f).
-    # Temporarily raise cmc of cheap spells so strategies naturally pay the tax.
-    _trini_adjusted = []  # (card, original_cmc) pairs to restore after
-    if gs.trinisphere_active:
-        for card in b.hand:
-            if not card.is_land() and card.cmc < 3:
-                _trini_adjusted.append((card, card.cmc))
-                card.cmc = 3
-        if _trini_adjusted:
-            log(f"Trinisphere active — {len(_trini_adjusted)} spells taxed to 3 mana")
-
-    # Thalia, Guardian of Thraben: noncreature spells cost +1 (CR 613).
-    # Same pattern as Trinisphere — raise cmc before strategy dispatch, restore after.
-    _thalia_adjusted = []
-    if gs.thalia_on_board:
-        for card in b.hand:
-            if not card.is_land() and not card.is_creature():
-                _thalia_adjusted.append((card, card.cmc))
-                card.cmc += 1
-        if _thalia_adjusted:
-            log(f"Thalia tax — {len(_thalia_adjusted)} noncreature spells cost +1")
+    # ── Lock piece enforcement (shared helpers — single source of truth) ──
+    from engine import apply_lock_effects, restore_lock_effects, apply_eidolon_damage
+    _adjustments = apply_lock_effects(gs, b, log)
 
     # ── Strategy dispatch ──
     from deck_registry import get_strategy
@@ -605,23 +578,9 @@ def protagonist_turn(gs, turn, matchup):
     else:
         log(f"No strategy for {matchup} — passing")
 
-    # ── Eidolon of the Great Revel: 2 damage per spell cast (CMC ≤3) ──
-    # Strategies don't call _eidolon_trigger, so apply retroactively
-    if gs.eidolon_active and not gs.game_over:
-        spells_cast = b.spells_cast_this_turn - spells_before
-        if spells_cast > 0:
-            # Estimate: most spells in Legacy are CMC ≤3, apply to all
-            eidolon_dmg = spells_cast * 2
-            b.life -= eidolon_dmg
-            log(f"Eidolon trigger — {spells_cast} spell(s) cast, {eidolon_dmg} damage to P1 ({b.life})")
-            gs.check_life_totals()
-
-    # Restore blocked cards and tax-adjusted CMCs
-    b.hand.extend(_chalice_blocked)
-    for card, orig_cmc in _thalia_adjusted:
-        card.cmc = orig_cmc
-    for card, orig_cmc in _trini_adjusted:
-        card.cmc = orig_cmc
+    # ── Post-strategy: Eidolon damage + restore lock adjustments ──
+    apply_eidolon_damage(gs, b, spells_before, log)
+    restore_lock_effects(b, _adjustments)
 
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
     combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
