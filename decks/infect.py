@@ -43,15 +43,23 @@ def make_infect_deck():
 
     # ── Pump Spells (14) ─────────────────────────────────────────────────────
     # Invigorate: {2G} but free (alt cost: opp gains 3 life), +4/+4
-    d += [instant('Invigorate', 3, {'G': 1, 'generic': 2}, {'G'},
-                  tag='invigorate')] * 4
+    # Combo piece: free +4/+4 is the primary kill enabler for infect
+    _inv = [instant('Invigorate', 3, {'G': 1, 'generic': 2}, {'G'},
+                    tag='invigorate') for _ in range(4)]
+    for c in _inv:
+        c.is_combo_piece = True
+    d += _inv
 
     # Mutagenic Growth: {G/P} — pay 2 life instead of {G}, +2/+2
     d += [instant('Mutagenic Growth', 1, {'G': 1}, {'G'},
                   tag='mutagenic', life_cost=2)] * 4
 
     # Berserk: {G}, double power, creature dies EOT
-    d += [instant('Berserk', 1, {'G': 1}, {'G'}, tag='berserk')] * 4
+    # Combo piece: doubles total power, enabling one-shot kills
+    _bsk = [instant('Berserk', 1, {'G': 1}, {'G'}, tag='berserk') for _ in range(4)]
+    for c in _bsk:
+        c.is_combo_piece = True
+    d += _bsk
 
     # Vines of Vastwood: {G} kicked {G}, +4/+4 and hexproof
     d += [instant('Vines of Vastwood', 1, {'G': 1}, {'G'}, tag='vines')] * 2
@@ -426,8 +434,30 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.kill_turn = gs.turn
             log_fn(f"★★★ LETHAL — {poison} poison counters on turn {gs.turn}!", True)
     elif blocked:
-        log_fn(f"  {attacker.card.name} blocked — no poison damage")
-        # Berserk still kills the creature
+        # Blocker deals damage to attacker — infect creature likely dies
+        blocker = next((c for c in opponent.creatures if not c.tapped), None)
+        blocker_power = blocker.power if blocker else 0
+        attacker_toughness = getattr(attacker, 'toughness',
+                                     getattr(attacker.card, 'base_toughness', 1))
+        # Attacker with pumps has higher toughness
+        attacker_toughness += pump_bonus
+        for _ in range(berserk_count):
+            pass  # berserk doesn't boost toughness
+
+        if blocker and blocker_power >= attacker_toughness:
+            log_fn(f"  {attacker.card.name} blocked by {blocker.card.name} — dies in combat")
+            if attacker in player.creatures:
+                player.creatures.remove(attacker)
+                player.graveyard.append(attacker.card)
+        else:
+            log_fn(f"  {attacker.card.name} blocked — no poison damage")
+
+        # Infect damage to blocker kills it (poison counters on creatures = -1/-1)
+        if blocker and total_power >= blocker.toughness:
+            opponent.remove_creature(blocker)
+            log_fn(f"  {blocker.card.name} dies to infect damage")
+
+        # Berserk still kills the creature at EOT
         if berserk_count > 0:
             if attacker in player.creatures:
                 player.creatures.remove(attacker)

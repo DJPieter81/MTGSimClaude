@@ -1,0 +1,373 @@
+══════════════════════════════════════════════════════════════════════
+  DEPTHS vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  DEPTHS (P1):
+  Draw 7:
+    1. Elvish Reclaimer (creature 1/2, CMC 1)
+    2. Windswept Heath (fetch)
+    3. Crop Rotation (instant, CMC 1, combo)
+    4. Wasteland (land)
+    5. Verdant Catacombs (fetch)
+    6. Savannah (dual)
+    7. Once Upon a Time (instant, CMC 2)
+    [Lands: 4  Creatures: 1  Combo: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 1 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Nethergoyf (creature 0/1, CMC 2)
+    2. Murktide Regent (creature 3/3, CMC 7)
+    3. Thoughtseize (sorcery, CMC 1)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    6. Underground Sea (dual)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 1  Creatures: 4  Cantrips: 1  Other: 1]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Fatal Push (instant, CMC 1, removal)
+    2. Murktide Regent (creature 3/3, CMC 7)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Brainstorm (instant, CMC 1, cantrip)
+    6. Polluted Delta (fetch)
+    7. Wasteland (land)
+    [Lands: 2  Creatures: 3  Cantrips: 1  Removal: 1]
+  Keep best 6: Murktide Regent, Tamiyo, Inquisitive Student, Orcish Bowmasters, Fatal Push, Brainstorm, Polluted Delta
+  Bottom 1: Wasteland
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #2 — draw 7:
+    1. Scalding Tarn (fetch)
+    2. Mishra's Bauble (artifact, CMC 0)
+    3. Wasteland (land)
+    4. Brainstorm (instant, CMC 1, cantrip)
+    5. Undercity Sewers (dual)
+    6. Scalding Tarn (fetch)
+    7. Kaito, Bane of Nightmares (planeswalker, CMC 3)
+    [Lands: 4  Cantrips: 1  Other: 2]
+  Keep best 5: Scalding Tarn, Wasteland, Brainstorm, Undercity Sewers, Scalding Tarn
+  Bottom 2: Mishra's Bauble, Kaito, Bane of Nightmares
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #3 — draw 7:
+    1. Daze (instant, CMC 2, free counter)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Bloodstained Mire (fetch)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Daze (instant, CMC 2, free counter)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Brazen Borrower (creature 3/1, CMC 3)
+    [Lands: 1  Creatures: 2  Counters: 3  Other: 1]
+  Keep best 4: Force of Will, Orcish Bowmasters, Brazen Borrower, Thoughtseize
+  Bottom 3: Daze, Bloodstained Mire, Daze
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Forced keep after 3 mulligans — draw 7:
+    1. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    2. Murktide Regent (creature 3/3, CMC 7)
+    3. Brazen Borrower (creature 3/1, CMC 3)
+    4. Brainstorm (instant, CMC 1, cantrip)
+    5. Thoughtseize (sorcery, CMC 1)
+    6. Daze (instant, CMC 2, free counter)
+    7. Wasteland (land)
+  Keep best 4: Tamiyo, Inquisitive Student, Murktide Regent, Brazen Borrower, Brainstorm
+  Bottom 3: Thoughtseize, Daze, Wasteland
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  ── Main ──
+    Hand (4): Tamiyo, Inquisitive Student, Murktide Regent, Brazen Borrower, Brainstorm
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 4  Lib: 56  GY: 0        │
+  │   Lands: (none)                  │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Elvish Reclaimer         │   Hand: Tamiyo                   │
+  │         Windswept Heath          │         Inquisitive Student      │
+  │         Crop Rotation            │         Murktide Regent          │
+  │         Wasteland                │         Brazen Borrower          │
+  │         Verdant Catacombs        │         Brainstorm               │
+  │         Savannah                 │                                  │
+  │         Once Upon a Time         │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Sylvan Scrying
+  Land: Savannah (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Elvish Reclaimer, Windswept Heath, Crop Rotation, Wasteland, Verdant Catacombs, Once Upon a Time, Sylvan Scrying
+  Once Upon a Time (free) → dig
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Crop Rotation RESOLVES
+  ★ Crop Rotation (sac Savannah) → find depths
+    -> Dark Depths enters the battlefield
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 50  GY: 3        │   Hand: 4  Lib: 56  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Elvish Reclaimer         │   Hand: Tamiyo                   │
+  │         Windswept Heath          │         Inquisitive Student      │
+  │         Wasteland                │         Murktide Regent          │
+  │         Verdant Catacombs        │         Brazen Borrower          │
+  │         Sylvan Scrying           │         Brainstorm               │
+  │         Dark Depths              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ──
+    Hand (5): Tamiyo, Inquisitive Student, Murktide Regent, Brazen Borrower, Brainstorm, Thoughtseize
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 50  GY: 3        │   Hand: 5  Lib: 55  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Elvish Reclaimer         │   Hand: Tamiyo                   │
+  │         Windswept Heath          │         Inquisitive Student      │
+  │         Wasteland                │         Murktide Regent          │
+  │         Verdant Catacombs        │         Brazen Borrower          │
+  │         Sylvan Scrying           │         Brainstorm, Thoughtseize │
+  │         Dark Depths              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Green Sun's Zenith
+  Play+crack Windswept Heath → ?
+  ── Main ── Mana: 1
+    Hand (6): Elvish Reclaimer, Wasteland, Verdant Catacombs, Sylvan Scrying, Dark Depths, Green Sun's Zenith
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 6  Lib: 49  GY: 4        │   Hand: 5  Lib: 55  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Elvish Reclaimer         │   Hand: Tamiyo                   │
+  │         Wasteland                │         Inquisitive Student      │
+  │         Verdant Catacombs        │         Murktide Regent          │
+  │         Sylvan Scrying           │         Brazen Borrower          │
+  │         Dark Depths              │         Brainstorm, Thoughtseize │
+  │         Green Sun's Zenith       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Ponder
+  ── Main ──
+    Hand (6): Tamiyo, Inquisitive Student, Murktide Regent, Brazen Borrower, Brainstorm, Thoughtseize, Ponder
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 6  Lib: 49  GY: 4        │   Hand: 6  Lib: 54  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Elvish Reclaimer         │   Hand: Tamiyo                   │
+  │         Wasteland                │         Inquisitive Student      │
+  │         Verdant Catacombs        │         Murktide Regent          │
+  │         Sylvan Scrying           │         Brazen Borrower          │
+  │         Dark Depths              │         Brainstorm               │
+  │         Green Sun's Zenith       │         Thoughtseize, Ponder     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mox Diamond
+  Play+crack Verdant Catacombs → ?
+  ── Main ── Mana: 1
+    Hand (6): Elvish Reclaimer, Wasteland, Sylvan Scrying, Dark Depths, Green Sun's Zenith, Mox Diamond
+  Mox Diamond (discard Wasteland) → mana=2
+      → Sylvan Scrying goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Sylvan Scrying RESOLVES
+  Sylvan Scrying → find stage
+    -> Thespian's Stage to hand
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 4  Lib: 47  GY: 7        │   Hand: 6  Lib: 54  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Tamiyo                   │
+  │   Hand: Elvish Reclaimer         │         Inquisitive Student      │
+  │         Dark Depths              │         Murktide Regent          │
+  │         Green Sun's Zenith       │         Brazen Borrower          │
+  │         Thespian's Stage         │         Brainstorm               │
+  │                                  │         Thoughtseize, Ponder     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 18 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Ponder
+  ── Main ──
+    Hand (7): Tamiyo, Inquisitive Student, Murktide Regent, Brazen Borrower, Brainstorm, Thoughtseize, Ponder, Ponder
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 4  Lib: 47  GY: 7        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Tamiyo                   │
+  │   Hand: Elvish Reclaimer         │         Inquisitive Student      │
+  │         Dark Depths              │         Murktide Regent          │
+  │         Green Sun's Zenith       │         Brazen Borrower          │
+  │         Thespian's Stage         │         Brainstorm               │
+  │                                  │         Thoughtseize, Ponder     │
+  │                                  │         Ponder                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Crop Rotation
+  Land: Dark Depths (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Elvish Reclaimer, Green Sun's Zenith, Thespian's Stage, Crop Rotation
+      → Green Sun's Zenith goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Green Sun's Zenith RESOLVES
+  Green Sun's Zenith → Elvish Reclaimer
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 3  Lib: 45  GY: 8        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Dark Depths, Dark Depths │   Lands: (none)                  │
+  │   Creatures: Elvish Reclaimer (1/2) │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Tamiyo                   │
+  │   Hand: Elvish Reclaimer         │         Inquisitive Student      │
+  │         Thespian's Stage         │         Murktide Regent          │
+  │         Crop Rotation            │         Brazen Borrower          │
+  │                                  │         Brainstorm               │
+  │                                  │         Thoughtseize, Ponder     │
+  │                                  │         Ponder                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 18 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Land: Wasteland (1 lands)
+  ── Main ──
+    Hand (7): Tamiyo, Inquisitive Student, Murktide Regent, Brazen Borrower, Brainstorm, Thoughtseize, Ponder, Ponder
+    Mana available: 1
+  Brainstorm (3 draws)
+  Wasteland [ACTIVATED-uncounterable] → Dark Depths
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 3  Lib: 45  GY: 9        │   Hand: 9  Lib: 49  GY: 2        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: Elvish Reclaimer (1/2) │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Tamiyo                   │
+  │   Hand: Elvish Reclaimer         │         Inquisitive Student      │
+  │         Thespian's Stage         │         Murktide Regent          │
+  │         Crop Rotation            │         Brazen Borrower          │
+  │                                  │         Thoughtseize, Ponder     │
+  │                                  │         Ponder                   │
+  │                                  │         Undercity Sewers         │
+  │                                  │         Force of Will, Tamiyo    │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Crop Rotation
+  Land: Thespian's Stage (2 lands)
+  ── Main ── Mana: 2
+    Hand (3): Elvish Reclaimer, Crop Rotation, Crop Rotation
+  ★ Stage copies Depths → Marit Lage 20/20!
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Elvish Reclaimer, Marit Lage — 21 unblocked → o at -1
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 18                       │   Life: -1                       │
+  │   Hand: 3  Lib: 44  GY: 11       │   Hand: 9  Lib: 49  GY: 2        │
+  │   Lands: (none)                  │   Lands: (none)                  │
+  │   Creatures: Elvish Reclaimer (1/2), M... │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Tamiyo                   │
+  │   Hand: Elvish Reclaimer         │         Inquisitive Student      │
+  │         Crop Rotation            │         Murktide Regent          │
+  │         Crop Rotation            │         Brazen Borrower          │
+  │                                  │         Thoughtseize, Ponder     │
+  │                                  │         Ponder                   │
+  │                                  │         Undercity Sewers         │
+  │                                  │         Force of Will, Tamiyo    │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DEPTHS — Opp life reaches -1 on turn 5
+  Final life: depths 18 | dimir -1
+══════════════════════════════════════════════════════════════════════

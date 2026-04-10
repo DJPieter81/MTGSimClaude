@@ -40,42 +40,50 @@ def make_burn_deck():
     # ── Burn spells — 3-damage suite (16) ────────────────────────────────────
 
     # Lightning Bolt: {R} instant, 3 damage
+    # All direct-damage burn spells are marked win_condition — the deck wins
+    # exclusively by burning the opponent, and each spell is part of the kill
     for _ in range(4):
-        d.append(instant('Lightning Bolt', 1, {'R': 1}, {'R'}, tag='bolt'))
+        d.append(instant('Lightning Bolt', 1, {'R': 1}, {'R'}, tag='bolt',
+                         win_condition=True))
 
     # Chain Lightning: {R} sorcery, 3 damage
     for _ in range(4):
-        d.append(sorcery('Chain Lightning', 1, {'R': 1}, {'R'}, tag='chain'))
+        d.append(sorcery('Chain Lightning', 1, {'R': 1}, {'R'}, tag='chain',
+                         win_condition=True))
 
     # Lava Spike: {R} sorcery, 3 to player only
     for _ in range(4):
-        d.append(sorcery('Lava Spike', 1, {'R': 1}, {'R'}, tag='spike'))
+        d.append(sorcery('Lava Spike', 1, {'R': 1}, {'R'}, tag='spike',
+                         win_condition=True))
 
     # Rift Bolt: {2R} sorcery, 3 damage — suspend 1 effectively costs R
     for _ in range(4):
         d.append(sorcery('Rift Bolt', 3, {'R': 1, 'generic': 2}, {'R'},
-                         tag='rift'))
+                         tag='rift', win_condition=True))
 
     # ── Utility burn (12) ────────────────────────────────────────────────────
 
     # Price of Progress: {1R} instant, 2 damage per nonbasic land opp controls
+    # Marked as win_condition — deals 4-8+ damage, the primary burn finisher vs nonbasic decks
     for _ in range(4):
         d.append(instant('Price of Progress', 2, {'R': 1, 'generic': 1}, {'R'},
-                         tag='pop'))
+                         tag='pop', win_condition=True))
 
     # Fireblast: {4RR} instant, 4 damage — alt cost: sac 2 Mountains
+    # Already treated as major (CMC >= 4), but mark win_condition for clarity
     for _ in range(4):
         d.append(instant('Fireblast', 6, {'R': 2, 'generic': 4}, {'R'},
-                         tag='fireblast'))
+                         tag='fireblast', win_condition=True))
 
     # Searing Blaze: {RR} instant, 3+3 with landfall
     for _ in range(2):
-        d.append(instant('Searing Blaze', 2, {'R': 2}, {'R'}, tag='blaze'))
+        d.append(instant('Searing Blaze', 2, {'R': 2}, {'R'}, tag='blaze',
+                         win_condition=True))
 
     # Skullcrack: {1R} instant, 3 damage, opponent can't gain life
     for _ in range(2):
         d.append(instant('Skullcrack', 2, {'R': 1, 'generic': 1}, {'R'},
-                         tag='skullcrack'))
+                         tag='skullcrack', win_condition=True))
 
     # ── Lands (20) ───────────────────────────────────────────────────────────
 

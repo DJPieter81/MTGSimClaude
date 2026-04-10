@@ -1,0 +1,281 @@
+══════════════════════════════════════════════════════════════════════
+  BUG vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BUG wins the die roll, goes FIRST
+
+  BUG (P1):
+  Draw 7:
+    1. Polluted Delta (fetch)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Wasteland (land)
+    4. Ponder (sorcery, CMC 1, cantrip)
+    5. Underground Sea (dual)
+    6. Orcish Bowmasters (creature 1/1, CMC 2)
+    7. Orcish Bowmasters (creature 1/1, CMC 2)
+    [Lands: 3  Creatures: 2  Cantrips: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+  BURN (P2):
+  Draw 7:
+    1. Barbarian Ring (land)
+    2. Skullcrack (instant, CMC 2)
+    3. Searing Blaze (instant, CMC 2)
+    4. Goblin Guide (creature 2/1, CMC 1)
+    5. Mountain (basic)
+    6. Price of Progress (instant, CMC 2)
+    7. Lightning Bolt (instant, CMC 1)
+    [Lands: 2  Creatures: 1  Other: 4]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock
+
+━━ TURN 1 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  ── Main ── Mana: 0
+    Hand (7): Polluted Delta, Brainstorm, Wasteland, Ponder, Underground Sea, Orcish Bowmasters, Orcish Bowmasters
+  Play+crack Polluted Delta (−1 life, 19) → Underground Sea [untapped]
+  Brainstorm (3 draws = 3 separate draw events) → [Wasteland, Daze, Thoughtseize]
+    Puts back: ['Wasteland', 'Underground Sea']
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ BURN                             │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 6  Lib: 51  GY: 3        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Underground Sea         │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Ponder                   │   Hand: Barbarian Ring           │
+  │         Orcish Bowmasters        │         Skullcrack               │
+  │         Orcish Bowmasters        │         Searing Blaze            │
+  │         Wasteland, Daze          │         Goblin Guide, Mountain   │
+  │         Thoughtseize             │         Price of Progress        │
+  │                                  │         Lightning Bolt           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 19 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Mountain
+  Land: Barbarian Ring (1 lands)
+  ── Main ──
+    Hand (7): Skullcrack, Searing Blaze, Goblin Guide, Mountain, Price of Progress, Lightning Bolt, Mountain
+    Mana available: 1
+      → Goblin Guide goes on the STACK
+      → Priority passes to BUG
+      → BUG has [Daze] but PASSES (low-priority target)
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+    Goblin Guide trigger → reveals Underground Sea (land) — opponent draws it
+  Attack: Goblin Guide — 2 unblocked → b at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ BURN                             │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 7  Lib: 50  GY: 3        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Underground Sea         │   Lands: Barbarian Ring          │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Ponder                   │   Hand: Skullcrack               │
+  │         Orcish Bowmasters        │         Searing Blaze            │
+  │         Orcish Bowmasters        │         Mountain                 │
+  │         Wasteland, Daze          │         Price of Progress        │
+  │         Thoughtseize             │         Lightning Bolt, Mountain │
+  │         Underground Sea          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 17 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Wasteland
+  ── Main ── Mana: 1
+    Hand (8): Ponder, Orcish Bowmasters, Orcish Bowmasters, Wasteland, Daze, Thoughtseize, Underground Sea, Wasteland
+  Play Wasteland (2 lands)
+  Wasteland [ACTIVATED-uncounterable] → destroys Barbarian Ring
+  Thoughtseize (−2 life, 15)
+  Thoughtseize -> strips Skullcrack
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ BURN                             │
+  │   Life: 15                       │   Life: 20                       │
+  │   Hand: 6  Lib: 49  GY: 5        │   Hand: 5  Lib: 52  GY: 1        │
+  │   Lands: Underground Sea         │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Ponder                   │   Hand: Searing Blaze            │
+  │         Orcish Bowmasters        │         Mountain                 │
+  │         Orcish Bowmasters        │         Price of Progress        │
+  │         Daze, Underground Sea    │         Lightning Bolt, Mountain │
+  │         Wasteland                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 15 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Barbarian Ring
+  Land: Mountain (1 lands)
+  ── Main ──
+    Hand (5): Searing Blaze, Price of Progress, Lightning Bolt, Mountain, Barbarian Ring
+    Mana available: 1
+  Attack: Goblin Guide — 2 unblocked → b at 13
+      → Lightning Bolt goes on the STACK
+      → Priority passes to BUG
+      → BUG has [Daze] but PASSES (low-priority target)
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 10)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ BURN                             │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 6  Lib: 49  GY: 5        │   Hand: 4  Lib: 51  GY: 2        │
+  │   Lands: Underground Sea         │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Ponder                   │   Hand: Searing Blaze            │
+  │         Orcish Bowmasters        │         Price of Progress        │
+  │         Orcish Bowmasters        │         Mountain, Barbarian Ring │
+  │         Daze, Underground Sea    │                                  │
+  │         Wasteland                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 10 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  ── Main ── Mana: 1
+    Hand (7): Ponder, Orcish Bowmasters, Orcish Bowmasters, Daze, Underground Sea, Wasteland, Orcish Bowmasters
+  Play Underground Sea (2 lands)
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Orcish Bowmasters RESOLVES
+  Flash Bowmasters (1 trigger per card opp draws)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ BURN                             │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 5  Lib: 48  GY: 5        │   Hand: 4  Lib: 51  GY: 2        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Mountain                │
+  │   Creatures: Orcish Bowmasters (1/1) │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Ponder                   │   Hand: Searing Blaze            │
+  │         Orcish Bowmasters        │         Price of Progress        │
+  │         Daze, Wasteland          │         Mountain, Barbarian Ring │
+  │         Orcish Bowmasters        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 10 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Fireblast
+  Land: Mountain (2 lands)
+  ── Main ──
+    Hand (4): Searing Blaze, Price of Progress, Barbarian Ring, Fireblast
+    Mana available: 2
+    Goblin Guide trigger → reveals Polluted Delta (land) — opponent draws it
+  Attack: Goblin Guide — Orcish Bowmasters blocks Goblin Guide. Goblin Guide deals 2, Orcish Bowmasters deals 1 back. 0 unblocked damage to player (b at 10)
+      Orcish Bowmasters dies.
+      Goblin Guide dies.
+      → Price of Progress goes on the STACK
+      → Priority passes to BUG
+      → BUG has [Daze] but PASSES (low-priority target)
+      → Price of Progress RESOLVES
+  ★ Price of Progress (2 nonbasics) → 4 damage (opp at 6)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ BURN                             │
+  │   Life: 6                        │   Life: 20                       │
+  │   Hand: 6  Lib: 47  GY: 6        │   Hand: 3  Lib: 50  GY: 5        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Mountain, Mountain      │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Ponder                   │   Hand: Searing Blaze            │
+  │         Orcish Bowmasters        │         Barbarian Ring           │
+  │         Daze, Wasteland          │         Fireblast                │
+  │         Orcish Bowmasters        │                                  │
+  │         Polluted Delta           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 6 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 2
+    Hand (7): Ponder, Orcish Bowmasters, Daze, Wasteland, Orcish Bowmasters, Polluted Delta, Force of Will
+  Play+crack Polluted Delta (−1 life, 5) → Underground Sea [untapped]
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Orcish Bowmasters RESOLVES
+  Flash Bowmasters (1 trigger per card opp draws)
+  Ponder (1 draw) → keeps Thoughtseize
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ BURN                             │
+  │   Life: 5                        │   Life: 20                       │
+  │   Hand: 5  Lib: 44  GY: 9        │   Hand: 3  Lib: 50  GY: 5        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Mountain, Mountain      │
+  │   Creatures: Orcish Bowmasters (1/1) │   Creatures: (none)              │
+  │   Hand: Daze, Wasteland          │   Hand: Searing Blaze            │
+  │         Orcish Bowmasters        │         Barbarian Ring           │
+  │         Force of Will            │         Fireblast                │
+  │         Thoughtseize             │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 5 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Barbarian Ring
+  Land: Barbarian Ring (3 lands)
+  ── Main ──
+    Hand (3): Searing Blaze, Fireblast, Barbarian Ring
+    Mana available: 3
+      → Searing Blaze goes on the STACK
+      → Priority passes to BUG
+      → BUG evaluates: MAJOR THREAT — responds!
+    ★ BUG Force of Will counters Searing Blaze (exiles Daze)
+    Searing Blaze COUNTERED — goes to graveyard
+  Searing Blaze countered
+      → Fireblast goes on the STACK
+      → Priority passes to BUG
+      → BUG has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 1)
+  ★ Barbarian Ring (threshold) → 2 damage (opp at -1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ BURN                             │
+  │   Life: -1                       │   Life: 20                       │
+  │   Hand: 3  Lib: 44  GY: 10       │   Hand: 2  Lib: 49  GY: 8        │
+  │   Lands: Underground Sea, Undergro... │   Lands: (none)                  │
+  │   Creatures: Orcish Bowmasters (1/1) │   Creatures: (none)              │
+  │   Hand: Wasteland                │   Hand: Searing Blaze            │
+  │         Orcish Bowmasters        │         Barbarian Ring           │
+  │         Thoughtseize             │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — BUG life reaches -1 on turn 4
+  Final life: bug -1 | burn 20
+══════════════════════════════════════════════════════════════════════

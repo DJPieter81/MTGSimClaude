@@ -1,0 +1,356 @@
+══════════════════════════════════════════════════════════════════════
+  DIMIR_FLASH vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  DIMIR_FLASH (P1):
+  Draw 7:
+    1. Polluted Delta (fetch)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Wasteland (land)
+    4. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    5. Force of Will (instant, CMC 5, free counter)
+    6. Daze (instant, CMC 1, free counter)
+    7. Wasteland (land)
+    [Lands: 3  Creatures: 1  Counters: 2  Cantrips: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; 2 counter(s) for protection/disruption
+
+  BURN (P2):
+  Draw 7:
+    1. Fireblast (instant, CMC 6)
+    2. Price of Progress (instant, CMC 2)
+    3. Goblin Guide (creature 2/1, CMC 1)
+    4. Mountain (basic)
+    5. Inspiring Vantage (land)
+    6. Chain Lightning (sorcery, CMC 1)
+    7. Mountain (basic)
+    [Lands: 3  Creatures: 1  Other: 3]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ──
+    Hand (6): Fireblast, Price of Progress, Goblin Guide, Inspiring Vantage, Chain Lightning, Mountain
+    Mana available: 1
+      → Goblin Guide goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+    Goblin Guide trigger → reveals Island (land) — opponent draws it
+  Attack: Goblin Guide — 2 unblocked → b at 18
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 8  Lib: 52  GY: 0        │   Hand: 5  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Polluted Delta           │   Hand: Fireblast                │
+  │         Brainstorm, Wasteland    │         Price of Progress        │
+  │         Tamiyo                   │         Inspiring Vantage        │
+  │         Inquisitive Student      │         Chain Lightning          │
+  │         Force of Will, Daze      │         Mountain                 │
+  │         Wasteland, Island        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 18 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Island (1 lands)
+  ── Main ── Mana: 1
+    Hand (8): Polluted Delta, Brainstorm, Wasteland, Tamiyo, Inquisitive Student, Force of Will, Daze, Wasteland, Fatal Push
+      → Fatal Push goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Fatal Push RESOLVES
+  Fatal Push → Goblin Guide (no revolt)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 7  Lib: 51  GY: 1        │   Hand: 5  Lib: 53  GY: 1        │
+  │   Lands: Island                  │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta           │   Hand: Fireblast                │
+  │         Brainstorm, Wasteland    │         Price of Progress        │
+  │         Tamiyo                   │         Inspiring Vantage        │
+  │         Inquisitive Student      │         Chain Lightning          │
+  │         Force of Will, Daze      │         Mountain                 │
+  │         Wasteland                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 18 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Mountain
+  Land: Inspiring Vantage (2 lands)
+  ── Main ──
+    Hand (5): Fireblast, Price of Progress, Chain Lightning, Mountain, Mountain
+    Mana available: 2
+      → Chain Lightning goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 15)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 15                       │   Life: 20                       │
+  │   Hand: 7  Lib: 51  GY: 1        │   Hand: 4  Lib: 52  GY: 2        │
+  │   Lands: Island                  │   Lands: Mountain, Inspiring Vantage │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta           │   Hand: Fireblast                │
+  │         Brainstorm, Wasteland    │         Price of Progress        │
+  │         Tamiyo                   │         Mountain, Mountain       │
+  │         Inquisitive Student      │                                  │
+  │         Force of Will, Daze      │                                  │
+  │         Wasteland                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 15 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Daze
+  Play+crack Polluted Delta → ?
+  ── Main ── Mana: 1
+    Hand (7): Brainstorm, Wasteland, Tamiyo, Inquisitive Student, Force of Will, Daze, Wasteland, Daze
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 14                       │   Life: 20                       │
+  │   Hand: 6  Lib: 50  GY: 2        │   Hand: 4  Lib: 52  GY: 2        │
+  │   Lands: Island                  │   Lands: Mountain, Inspiring Vantage │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Brainstorm, Wasteland    │   Hand: Fireblast                │
+  │         Force of Will, Daze      │         Price of Progress        │
+  │         Wasteland, Daze          │         Mountain, Mountain       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 14 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Chain Lightning
+  Land: Mountain (3 lands)
+  ── Main ──
+    Hand (4): Fireblast, Price of Progress, Mountain, Chain Lightning
+    Mana available: 3
+      → Chain Lightning goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 11)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 11                       │   Life: 20                       │
+  │   Hand: 6  Lib: 50  GY: 2        │   Hand: 3  Lib: 51  GY: 3        │
+  │   Lands: Island                  │   Lands: Mountain, Inspiring Vanta... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Brainstorm, Wasteland    │   Hand: Fireblast                │
+  │         Force of Will, Daze      │         Price of Progress        │
+  │         Wasteland, Daze          │         Mountain                 │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 11 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Murktide Regent
+  Land: Wasteland (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Brainstorm, Force of Will, Daze, Wasteland, Daze, Murktide Regent
+  Wasteland [ACTIVATED-uncounterable] → Inspiring Vantage
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 11                       │   Life: 20                       │
+  │   Hand: 6  Lib: 49  GY: 2        │   Hand: 3  Lib: 51  GY: 4        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain, Mountain      │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Brainstorm               │   Hand: Fireblast                │
+  │         Force of Will, Daze      │         Price of Progress        │
+  │         Wasteland, Daze          │         Mountain                 │
+  │         Murktide Regent          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 11 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Fireblast
+  Land: Mountain (3 lands)
+  ── Main ──
+    Hand (3): Fireblast, Price of Progress, Fireblast
+    Mana available: 3
+      → Price of Progress goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 9)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 9                        │   Life: 20                       │
+  │   Hand: 6  Lib: 49  GY: 2        │   Hand: 2  Lib: 50  GY: 5        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain, Mountain, Mountain │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Brainstorm               │   Hand: Fireblast, Fireblast     │
+  │         Force of Will, Daze      │                                  │
+  │         Wasteland, Daze          │                                  │
+  │         Murktide Regent          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 9 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Thoughtseize
+  Land: Wasteland (3 lands)
+  ── Main ── Mana: 3
+    Hand (6): Brainstorm, Force of Will, Daze, Daze, Murktide Regent, Thoughtseize
+      → Thoughtseize goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Thoughtseize RESOLVES
+  Thoughtseize → takes Fireblast (−2 life, 7)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 7                        │   Life: 20                       │
+  │   Hand: 5  Lib: 48  GY: 3        │   Hand: 1  Lib: 50  GY: 6        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Mountain, Mountain, Mountain │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Brainstorm               │   Hand: Fireblast                │
+  │         Force of Will, Daze      │                                  │
+  │         Daze, Murktide Regent    │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 7 | burn 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Price of Progress
+  ── Main ──
+    Hand (2): Fireblast, Price of Progress
+    Mana available: 3
+      → Price of Progress goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH evaluates: MAJOR THREAT — responds!
+    ★ DIMIR_FLASH Force of Will counters Price of Progress (exiles Brainstorm)
+    Price of Progress COUNTERED — goes to graveyard
+  Price of Progress countered
+      → Fireblast goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH evaluates: MAJOR THREAT — responds!
+    ★ DIMIR_FLASH Daze counters Fireblast — Island returned
+    Fireblast COUNTERED — goes to graveyard
+  Fireblast countered
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 7                        │   Life: 20                       │
+  │   Hand: 3  Lib: 48  GY: 5        │   Hand: 2  Lib: 49  GY: 8        │
+  │   Lands: Wasteland, Wasteland    │   Lands: Mountain, Mountain, Mountain │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Daze, Murktide Regent    │   Hand: Fireblast                │
+  │         Island                   │         Price of Progress        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 7 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Island (3 lands)
+  ── Main ── Mana: 3
+    Hand (3): Daze, Murktide Regent, Fatal Push
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: 7                        │   Life: 20                       │
+  │   Hand: 3  Lib: 47  GY: 5        │   Hand: 2  Lib: 49  GY: 8        │
+  │   Lands: Wasteland, Wasteland, Island │   Lands: Mountain, Mountain, Mountain │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Daze, Murktide Regent    │   Hand: Fireblast                │
+  │         Fatal Push               │         Price of Progress        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 7 | burn 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Eidolon of the Great Revel
+  ── Main ──
+    Hand (3): Fireblast, Price of Progress, Eidolon of the Great Revel
+    Mana available: 3
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH evaluates: MAJOR THREAT — responds!
+    ★ DIMIR_FLASH Daze counters Eidolon of the Great Revel — Island returned
+    Eidolon of the Great Revel COUNTERED — goes to graveyard
+  Eidolon of the Great Revel countered
+      → Price of Progress goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (2 nonbasics) → 4 damage (opp at 3)
+      → Fireblast goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at -1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BURN                             │
+  │   Life: -1                       │   Life: 20                       │
+  │   Hand: 3  Lib: 47  GY: 6        │   Hand: 1  Lib: 48  GY: 11       │
+  │   Lands: Wasteland, Wasteland    │   Lands: Mountain                │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Murktide Regent          │   Hand: Eidolon of the Great Rev │
+  │         Fatal Push, Island       │         el                       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — BUG life reaches -1 on turn 6
+  Final life: dimir_flash -1 | burn 20
+══════════════════════════════════════════════════════════════════════

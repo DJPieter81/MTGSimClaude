@@ -1,0 +1,493 @@
+══════════════════════════════════════════════════════════════════════
+  REANIMATOR vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  REANIMATOR (P1):
+  Draw 7:
+    1. Archon of Cruelty (creature 6/6, CMC 8, win-con)
+    2. Griselbrand (creature 7/7, CMC 8, win-con)
+    3. Brainstorm (instant, CMC 1, cantrip)
+    4. Thoughtseize (sorcery, CMC 1)
+    5. Swamp (basic)
+    6. Atraxa, Grand Unifier (creature 7/7, CMC 7, win-con)
+    7. Exhume (sorcery, CMC 2, combo)
+    [Lands: 1  Creatures: 3  Cantrips: 1  Combo: 4]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; 3 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DIMIR (P2):
+  Draw 7:
+    1. Wasteland (land)
+    2. Fatal Push (instant, CMC 1, removal)
+    3. Mishra's Bauble (artifact, CMC 0)
+    4. Murktide Regent (creature 3/3, CMC 7)
+    5. Fatal Push (instant, CMC 1, removal)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Island (basic)
+    [Lands: 2  Creatures: 1  Counters: 1  Removal: 2  Other: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock; 1 counter(s) for protection/disruption; removal for opponent's threats
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Wasteland (1 lands)
+  ── Main ──
+    Hand (6): Fatal Push, Mishra's Bauble, Murktide Regent, Fatal Push, Force of Will, Island
+    Mana available: 1
+  Mishra's Bauble (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 52  GY: 1        │
+  │   Lands: (none)                  │   Lands: Wasteland               │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push               │
+  │         Griselbrand              │         Murktide Regent          │
+  │         Brainstorm               │         Fatal Push               │
+  │         Thoughtseize, Swamp      │         Force of Will, Island    │
+  │         Atraxa, Grand Unifier    │         Brainstorm               │
+  │         Exhume                   │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  Land: Swamp (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Archon of Cruelty, Griselbrand, Brainstorm, Thoughtseize, Atraxa, Grand Unifier, Exhume, Force of Will
+      → Thoughtseize goes on the STACK
+      → Priority passes to DIMIR
+  Thoughtseize → takes Murktide Regent (−2 life, 18)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 5  Lib: 52  GY: 2        │
+  │   Lands: Swamp                   │   Lands: Wasteland               │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Force of Will, Island    │
+  │         Brainstorm, Atraxa       │         Brainstorm               │
+  │         Grand Unifier, Exhume    │                                  │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Land: Island (2 lands)
+  ── Main ──
+    Hand (5): Fatal Push, Fatal Push, Force of Will, Brainstorm, Thoughtseize
+    Mana available: 2
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 7  Lib: 48  GY: 3        │
+  │   Lands: Swamp                   │   Lands: Wasteland, Island       │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Force of Will            │
+  │         Brainstorm, Atraxa       │         Thoughtseize, Swamp      │
+  │         Grand Unifier, Exhume    │         Underground Sea, Daze    │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Reanimate
+  ── Main ── Mana: 1
+    Hand (7): Archon of Cruelty, Griselbrand, Brainstorm, Atraxa, Grand Unifier, Exhume, Force of Will, Reanimate
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 7  Lib: 51  GY: 1        │   Hand: 7  Lib: 48  GY: 3        │
+  │   Lands: Swamp                   │   Lands: Wasteland, Island       │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Force of Will            │
+  │         Brainstorm, Atraxa       │         Thoughtseize, Swamp      │
+  │         Grand Unifier, Exhume    │         Underground Sea, Daze    │
+  │         Force of Will, Reanimate │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 18 | dimir 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Daze
+  Land: Swamp (3 lands)
+  ── Main ──
+    Hand (7): Fatal Push, Fatal Push, Force of Will, Thoughtseize, Underground Sea, Daze, Daze
+    Mana available: 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 7  Lib: 51  GY: 1        │   Hand: 7  Lib: 47  GY: 3        │
+  │   Lands: Swamp                   │   Lands: Wasteland, Island, Swamp │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Force of Will            │
+  │         Brainstorm, Atraxa       │         Thoughtseize             │
+  │         Grand Unifier, Exhume    │         Underground Sea, Daze    │
+  │         Force of Will, Reanimate │         Daze                     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Marsh Flats
+  Play+crack Marsh Flats (−1 life, 17) → Underground Sea
+  ── Main ── Mana: 2
+    Hand (7): Archon of Cruelty, Griselbrand, Brainstorm, Atraxa, Grand Unifier, Exhume, Force of Will, Reanimate
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 7  Lib: 49  GY: 3        │   Hand: 7  Lib: 47  GY: 3        │
+  │   Lands: Swamp, Underground Sea  │   Lands: Wasteland, Island, Swamp │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Force of Will            │
+  │         Brainstorm, Atraxa       │         Thoughtseize             │
+  │         Grand Unifier, Exhume    │         Underground Sea, Daze    │
+  │         Force of Will, Reanimate │         Daze                     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 17 | dimir 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Underground Sea (4 lands)
+  ── Main ──
+    Hand (7): Fatal Push, Fatal Push, Force of Will, Thoughtseize, Daze, Daze, Fatal Push
+    Mana available: 4
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 7  Lib: 49  GY: 4        │   Hand: 7  Lib: 46  GY: 4        │
+  │   Lands: Swamp                   │   Lands: Island, Swamp, Undergroun... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Force of Will            │
+  │         Brainstorm, Atraxa       │         Thoughtseize, Daze       │
+  │         Grand Unifier, Exhume    │         Daze, Fatal Push         │
+  │         Force of Will, Reanimate │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 17 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Entomb
+  ── Main ── Mana: 1
+    Hand (8): Archon of Cruelty, Griselbrand, Brainstorm, Atraxa, Grand Unifier, Exhume, Force of Will, Reanimate, Entomb
+      → Entomb goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR evaluates: MAJOR THREAT — responds!
+    ★ DIMIR Force of Will counters Entomb (exiles Daze)
+    Entomb COUNTERED — goes to graveyard
+  Entomb countered
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 7  Lib: 48  GY: 5        │   Hand: 5  Lib: 46  GY: 5        │
+  │   Lands: Swamp                   │   Lands: Island, Swamp, Undergroun... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize, Daze       │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │                                  │
+  │         Force of Will, Reanimate │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 17 | dimir 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ──
+    Hand (6): Fatal Push, Fatal Push, Thoughtseize, Daze, Fatal Push, Brainstorm
+    Mana available: 3
+  Brainstorm (3 draws)
+      → Nethergoyf goes on the STACK
+      → Priority passes to REANIMATOR
+      → REANIMATOR has [Force of Will] but PASSES (low-priority target)
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 7  Lib: 48  GY: 5        │   Hand: 7  Lib: 42  GY: 6        │
+  │   Lands: Swamp                   │   Lands: Island, Swamp, Undergroun... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (0/1)    │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize, Daze       │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Underground Sea          │
+  │         Force of Will, Reanimate │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 17 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Reanimate
+  ── Main ── Mana: 1
+    Hand (8): Archon of Cruelty, Griselbrand, Brainstorm, Atraxa, Grand Unifier, Exhume, Force of Will, Reanimate, Reanimate
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 8  Lib: 47  GY: 5        │   Hand: 7  Lib: 42  GY: 6        │
+  │   Lands: Swamp                   │   Lands: Island, Swamp, Undergroun... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize, Daze       │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Underground Sea          │
+  │         Force of Will            │         Murktide Regent          │
+  │         Reanimate, Reanimate     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 17 | dimir 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Land: Underground Sea (4 lands)
+  ── Main ──
+    Hand (7): Fatal Push, Fatal Push, Thoughtseize, Daze, Fatal Push, Murktide Regent, Wasteland
+    Mana available: 4
+  Attack: Nethergoyf — 4 unblocked → b at 13
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 13                       │   Life: 20                       │
+  │   Hand: 8  Lib: 47  GY: 5        │   Hand: 7  Lib: 41  GY: 6        │
+  │   Lands: Swamp                   │   Lands: Island, Swamp, Undergroun... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize, Daze       │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Murktide Regent          │
+  │         Force of Will            │         Wasteland                │
+  │         Reanimate, Reanimate     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 13 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Entomb
+  ── Main ── Mana: 1
+    Hand (9): Archon of Cruelty, Griselbrand, Brainstorm, Atraxa, Grand Unifier, Exhume, Force of Will, Reanimate, Reanimate, Entomb
+      → Entomb goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR evaluates: MAJOR THREAT — responds!
+    ★ DIMIR Daze counters Entomb — Island returned
+    Entomb COUNTERED — goes to graveyard
+  Entomb countered
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 13                       │   Life: 20                       │
+  │   Hand: 8  Lib: 46  GY: 6        │   Hand: 7  Lib: 41  GY: 7        │
+  │   Lands: Swamp                   │   Lands: Swamp, Underground Sea, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize             │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Murktide Regent          │
+  │         Force of Will            │         Wasteland, Island        │
+  │         Reanimate, Reanimate     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 13 | dimir 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Scalding Tarn
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (7): Fatal Push, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent, Island, Scalding Tarn
+    Mana available: 4
+  Attack: Nethergoyf — 4 unblocked → b at 9
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 9                        │   Life: 20                       │
+  │   Hand: 8  Lib: 46  GY: 6        │   Hand: 7  Lib: 40  GY: 7        │
+  │   Lands: Swamp                   │   Lands: Swamp, Underground Sea, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize             │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Murktide Regent          │
+  │         Force of Will            │         Island, Scalding Tarn    │
+  │         Reanimate, Reanimate     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 9 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 1
+    Hand (9): Archon of Cruelty, Griselbrand, Brainstorm, Atraxa, Grand Unifier, Exhume, Force of Will, Reanimate, Reanimate, Force of Will
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 9                        │   Life: 20                       │
+  │   Hand: 9  Lib: 45  GY: 6        │   Hand: 7  Lib: 40  GY: 7        │
+  │   Lands: Swamp                   │   Lands: Swamp, Underground Sea, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize             │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Murktide Regent          │
+  │         Force of Will            │         Island, Scalding Tarn    │
+  │         Reanimate, Reanimate     │                                  │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 9 | dimir 20
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Ponder
+  Land: Island (5 lands)
+  ── Main ──
+    Hand (7): Fatal Push, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent, Scalding Tarn, Ponder
+    Mana available: 5
+  Ponder (1 draw)
+  Attack: Nethergoyf — 4 unblocked → b at 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 5                        │   Life: 20                       │
+  │   Hand: 9  Lib: 45  GY: 6        │   Hand: 7  Lib: 38  GY: 8        │
+  │   Lands: Swamp                   │   Lands: Swamp, Underground Sea, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6)    │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize             │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Murktide Regent          │
+  │         Force of Will            │         Scalding Tarn, Wasteland │
+  │         Reanimate, Reanimate     │                                  │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 5 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Exhume
+  ── Main ── Mana: 1
+    Hand (10): Archon of Cruelty, Griselbrand, Brainstorm, Atraxa, Grand Unifier, Exhume, Force of Will, Reanimate, Reanimate, Force of Will, Exhume
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 5                        │   Life: 20                       │
+  │   Hand: 10  Lib: 44  GY: 6       │   Hand: 7  Lib: 38  GY: 8        │
+  │   Lands: Swamp                   │   Lands: Swamp, Underground Sea, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6)    │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize             │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Murktide Regent          │
+  │         Force of Will            │         Scalding Tarn, Wasteland │
+  │         Reanimate, Reanimate     │                                  │
+  │         Force of Will, Exhume    │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 5 | dimir 20
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  Play+crack Scalding Tarn (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (7): Fatal Push, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent, Wasteland, Tamiyo, Inquisitive Student
+    Mana available: 6
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to REANIMATOR
+      → REANIMATOR evaluates: minor threat + only 2 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Attack: Nethergoyf — 5 unblocked → b at 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 0                        │   Life: 19                       │
+  │   Hand: 10  Lib: 44  GY: 6       │   Hand: 6  Lib: 36  GY: 10       │
+  │   Lands: Swamp                   │   Lands: Swamp, Underground Sea, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Tamiyo,... │
+  │   Hand: Archon of Cruelty        │   Hand: Fatal Push, Fatal Push   │
+  │         Griselbrand              │         Thoughtseize             │
+  │         Brainstorm, Atraxa       │         Fatal Push               │
+  │         Grand Unifier, Exhume    │         Murktide Regent          │
+  │         Force of Will            │         Wasteland                │
+  │         Reanimate, Reanimate     │                                  │
+  │         Force of Will, Exhume    │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DIMIR — BUG life reaches 0 on turn 9
+  Final life: reanimator 0 | dimir 19
+══════════════════════════════════════════════════════════════════════

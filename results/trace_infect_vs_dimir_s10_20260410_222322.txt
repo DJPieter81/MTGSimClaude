@@ -1,0 +1,908 @@
+══════════════════════════════════════════════════════════════════════
+  INFECT vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: INFECT wins the die roll, goes FIRST
+
+  INFECT (P1):
+  Draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Windswept Heath (fetch)
+    3. Ponder (sorcery, CMC 1, cantrip)
+    4. Inkmoth Nexus (land)
+    5. Windswept Heath (fetch)
+    6. Blighted Agent (creature 1/1, CMC 2)
+    7. Breeding Pool (dual)
+    [Lands: 4  Creatures: 1  Cantrips: 2]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 1 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Thoughtseize (sorcery, CMC 1)
+    4. Fatal Push (instant, CMC 1, removal)
+    5. Mishra's Bauble (artifact, CMC 0)
+    6. Wasteland (land)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 1  Creatures: 1  Cantrips: 1  Removal: 1  Other: 3]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Murktide Regent (creature 3/3, CMC 7)
+    2. Underground Sea (dual)
+    3. Nethergoyf (creature 0/1, CMC 2)
+    4. Thoughtseize (sorcery, CMC 1)
+    5. Ponder (sorcery, CMC 1, cantrip)
+    6. Ponder (sorcery, CMC 1, cantrip)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 1  Creatures: 2  Cantrips: 3  Other: 1]
+  Keep best 6: Murktide Regent, Nethergoyf, Underground Sea, Thoughtseize, Ponder, Ponder
+  Bottom 1: Brainstorm
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #2 — draw 7:
+    1. Fatal Push (instant, CMC 1, removal)
+    2. Scalding Tarn (fetch)
+    3. Daze (instant, CMC 2, free counter)
+    4. Fatal Push (instant, CMC 1, removal)
+    5. Ponder (sorcery, CMC 1, cantrip)
+    6. Bloodstained Mire (fetch)
+    7. Orcish Bowmasters (creature 1/1, CMC 2)
+    [Lands: 2  Creatures: 1  Counters: 1  Cantrips: 1  Removal: 2]
+  Keep best 5: Orcish Bowmasters, Fatal Push, Scalding Tarn, Fatal Push, Ponder
+  Bottom 2: Daze, Bloodstained Mire
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #3 — draw 7:
+    1. Daze (instant, CMC 2, free counter)
+    2. Bloodstained Mire (fetch)
+    3. Wasteland (land)
+    4. Brazen Borrower (creature 3/1, CMC 3)
+    5. Nethergoyf (creature 0/1, CMC 2)
+    6. Swamp (basic)
+    7. Orcish Bowmasters (creature 1/1, CMC 2)
+    [Lands: 3  Creatures: 3  Counters: 1]
+  Keep best 4: Brazen Borrower, Nethergoyf, Orcish Bowmasters, Bloodstained Mire
+  Bottom 3: Daze, Wasteland, Swamp
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Forced keep after 3 mulligans — draw 7:
+    1. Daze (instant, CMC 2, free counter)
+    2. Orcish Bowmasters (creature 1/1, CMC 2)
+    3. Brazen Borrower (creature 3/1, CMC 3)
+    4. Fatal Push (instant, CMC 1, removal)
+    5. Brainstorm (instant, CMC 1, cantrip)
+    6. Bloodstained Mire (fetch)
+    7. Undercity Sewers (dual)
+  Keep best 4: Orcish Bowmasters, Brazen Borrower, Fatal Push, Brainstorm
+  Bottom 3: Daze, Bloodstained Mire, Undercity Sewers
+
+━━ TURN 1 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Breeding Pool (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Brainstorm, Windswept Heath, Ponder, Inkmoth Nexus, Windswept Heath, Blighted Agent
+      → Brainstorm goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Brainstorm RESOLVES
+  Brainstorm — draw
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 4  Lib: 56  GY: 0        │
+  │   Lands: Breeding Pool           │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Windswept Heath          │   Hand: Orcish Bowmasters        │
+  │         Ponder, Inkmoth Nexus    │         Brazen Borrower          │
+  │         Windswept Heath          │         Fatal Push, Brainstorm   │
+  │         Blighted Agent           │                                  │
+  │         Tropical Island          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  ── Main ──
+    Hand (5): Orcish Bowmasters, Brazen Borrower, Fatal Push, Brainstorm, Nethergoyf
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 5  Lib: 55  GY: 0        │
+  │   Lands: Breeding Pool           │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Windswept Heath          │   Hand: Orcish Bowmasters        │
+  │         Ponder, Inkmoth Nexus    │         Brazen Borrower          │
+  │         Windswept Heath          │         Fatal Push, Brainstorm   │
+  │         Blighted Agent           │         Nethergoyf               │
+  │         Tropical Island          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Tropical Island
+  Land: Tropical Island (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Windswept Heath, Ponder, Inkmoth Nexus, Windswept Heath, Blighted Agent, Tropical Island
+      → Blighted Agent goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Blighted Agent RESOLVES
+  Blighted Agent (infect, unblockable)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 51  GY: 0        │   Hand: 5  Lib: 55  GY: 0        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: Blighted Agent (1/1) │   Creatures: (none)              │
+  │   Hand: Windswept Heath          │   Hand: Orcish Bowmasters        │
+  │         Ponder, Inkmoth Nexus    │         Brazen Borrower          │
+  │         Windswept Heath          │         Fatal Push, Brainstorm   │
+  │         Tropical Island          │         Nethergoyf               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ──
+    Hand (6): Orcish Bowmasters, Brazen Borrower, Fatal Push, Brainstorm, Nethergoyf, Brainstorm
+    Mana available: 0
+  Fatal Push [CMC≤2] → kills Blighted Agent
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 51  GY: 1        │   Hand: 5  Lib: 54  GY: 1        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Windswept Heath          │   Hand: Orcish Bowmasters        │
+  │         Ponder, Inkmoth Nexus    │         Brazen Borrower          │
+  │         Windswept Heath          │         Brainstorm, Nethergoyf   │
+  │         Tropical Island          │         Brainstorm               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Forest
+  Land: Tropical Island (3 lands)
+  ── Main ── Mana: 3
+    Hand (5): Windswept Heath, Ponder, Inkmoth Nexus, Windswept Heath, Forest
+      → Ponder goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Ponder RESOLVES
+  Ponder — draw
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 49  GY: 1        │   Hand: 5  Lib: 54  GY: 1        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Windswept Heath          │   Hand: Orcish Bowmasters        │
+  │         Inkmoth Nexus            │         Brazen Borrower          │
+  │         Windswept Heath          │         Brainstorm, Nethergoyf   │
+  │         Forest, Daze             │         Brainstorm               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  ── Main ──
+    Hand (6): Orcish Bowmasters, Brazen Borrower, Brainstorm, Nethergoyf, Brainstorm, Nethergoyf
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 49  GY: 1        │   Hand: 6  Lib: 53  GY: 1        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Windswept Heath          │   Hand: Orcish Bowmasters        │
+  │         Inkmoth Nexus            │         Brazen Borrower          │
+  │         Windswept Heath          │         Brainstorm, Nethergoyf   │
+  │         Forest, Daze             │         Brainstorm, Nethergoyf   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Blighted Agent
+  Land: Forest (4 lands)
+  ── Main ── Mana: 4
+    Hand (5): Windswept Heath, Inkmoth Nexus, Windswept Heath, Daze, Blighted Agent
+      → Blighted Agent goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Blighted Agent RESOLVES
+  Blighted Agent (infect, unblockable)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 48  GY: 1        │   Hand: 6  Lib: 53  GY: 1        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: Blighted Agent (1/1) │   Creatures: (none)              │
+  │   Hand: Windswept Heath          │   Hand: Orcish Bowmasters        │
+  │         Inkmoth Nexus            │         Brazen Borrower          │
+  │         Windswept Heath, Daze    │         Brainstorm, Nethergoyf   │
+  │                                  │         Brainstorm, Nethergoyf   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Brazen Borrower, Brainstorm, Nethergoyf, Brainstorm, Nethergoyf, Orcish Bowmasters
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 48  GY: 1        │   Hand: 7  Lib: 52  GY: 1        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: Blighted Agent (1/1) │   Creatures: (none)              │
+  │   Hand: Windswept Heath          │   Hand: Orcish Bowmasters        │
+  │         Inkmoth Nexus            │         Brazen Borrower          │
+  │         Windswept Heath, Daze    │         Brainstorm, Nethergoyf   │
+  │                                  │         Brainstorm, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Crop Rotation
+  Play+crack Windswept Heath (−1 life, 19) → Breeding Pool
+  ── Main ── Mana: 5
+    Hand (4): Inkmoth Nexus, Windswept Heath, Daze, Crop Rotation
+  ★ Blighted Agent deals 1 poison (1/10)
+  ── Combat ── (1 eligible attackers)
+  Attack: Blighted Agent — 1 unblocked → o at 19
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 19                       │
+  │   Hand: 4  Lib: 46  GY: 3        │   Hand: 7  Lib: 52  GY: 1        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: Blighted Agent (1/1) │   Creatures: (none)              │
+  │   Hand: Inkmoth Nexus            │   Hand: Orcish Bowmasters        │
+  │         Windswept Heath, Daze    │         Brazen Borrower          │
+  │         Crop Rotation            │         Brainstorm, Nethergoyf   │
+  │                                  │         Brainstorm, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 19 | dimir 19
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ──
+    Hand (8): Orcish Bowmasters, Brazen Borrower, Brainstorm, Nethergoyf, Brainstorm, Nethergoyf, Orcish Bowmasters, Fatal Push
+    Mana available: 0
+  Fatal Push [CMC≤2] → kills Blighted Agent
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 19                       │
+  │   Hand: 4  Lib: 46  GY: 4        │   Hand: 7  Lib: 51  GY: 2        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Inkmoth Nexus            │   Hand: Orcish Bowmasters        │
+  │         Windswept Heath, Daze    │         Brazen Borrower          │
+  │         Crop Rotation            │         Brainstorm, Nethergoyf   │
+  │                                  │         Brainstorm, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 19 | dimir 19
+
+  ── Untap ── (5 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Inkmoth Nexus
+  Play+crack Windswept Heath (−1 life, 18) → Tropical Island
+  ── Main ── Mana: 6
+    Hand (4): Inkmoth Nexus, Daze, Crop Rotation, Inkmoth Nexus
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Crop Rotation RESOLVES
+  Crop Rotation — sac Tropical Island, tutor Inkmoth Nexus
+  Inkmoth Nexus activates — 1/1 infect flyer
+  ★ Inkmoth Nexus deals 1 poison (2/10)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 19                       │
+  │   Hand: 3  Lib: 43  GY: 7        │   Hand: 7  Lib: 51  GY: 2        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Inkmoth Nexus, Daze      │   Hand: Orcish Bowmasters        │
+  │         Inkmoth Nexus            │         Brazen Borrower          │
+  │                                  │         Brainstorm, Nethergoyf   │
+  │                                  │         Brainstorm, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 19
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Polluted Delta (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Brazen Borrower, Brainstorm, Nethergoyf, Brainstorm, Nethergoyf, Orcish Bowmasters
+    Mana available: 1
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 18                       │
+  │   Hand: 3  Lib: 43  GY: 7        │   Hand: 9  Lib: 46  GY: 5        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Inkmoth Nexus, Daze      │   Hand: Orcish Bowmasters        │
+  │         Inkmoth Nexus            │         Brazen Borrower          │
+  │                                  │         Nethergoyf, Brainstorm   │
+  │                                  │         Nethergoyf               │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf, Wasteland    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 18
+
+  ── Untap ── (6 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Glistener Elf
+  Land: Inkmoth Nexus (7 lands)
+  ── Main ── Mana: 7
+    Hand (3): Daze, Inkmoth Nexus, Glistener Elf
+      → Glistener Elf goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Glistener Elf RESOLVES
+  Glistener Elf (infect)
+  Inkmoth Nexus activates — 1/1 infect flyer
+  ★ Inkmoth Nexus deals 1 poison (3/10)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 18                       │
+  │   Hand: 2  Lib: 42  GY: 7        │   Hand: 9  Lib: 46  GY: 5        │
+  │   Lands: Breeding Pool, Tropical I... │   Lands: Underground Sea         │
+  │   Creatures: Glistener Elf (1/1) │   Creatures: (none)              │
+  │   Hand: Daze, Inkmoth Nexus      │   Hand: Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Nethergoyf, Brainstorm   │
+  │                                  │         Nethergoyf               │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf, Wasteland    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Mishra's Bauble
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (9): Orcish Bowmasters, Brazen Borrower, Nethergoyf, Brainstorm, Nethergoyf, Orcish Bowmasters, Force of Will, Nethergoyf, Mishra's Bauble
+    Mana available: 2
+  Brainstorm (3 draws)
+  Mishra's Bauble (sac, artifact in GY, +1 draw next upkeep)
+  Mishra's Bauble (sac, artifact in GY, +1 draw next upkeep)
+  Wasteland [ACTIVATED-uncounterable] → Breeding Pool
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 18                       │
+  │   Hand: 2  Lib: 42  GY: 8        │   Hand: 9  Lib: 42  GY: 9        │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Underground Sea         │
+  │   Creatures: Glistener Elf (1/1) │   Creatures: (none)              │
+  │   Hand: Daze, Inkmoth Nexus      │   Hand: Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize, Brainstorm │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 18
+
+  ── Untap ── (6 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  Land: Inkmoth Nexus (7 lands)
+  ── Main ── Mana: 7
+    Hand (2): Daze, Force of Will
+  ★ Glistener Elf deals 1 poison (4/10)
+  ── Combat ── (1 eligible attackers)
+  Attack: Glistener Elf — 1 unblocked → o at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 17                       │
+  │   Hand: 2  Lib: 41  GY: 8        │   Hand: 9  Lib: 42  GY: 9        │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Underground Sea         │
+  │   Creatures: Glistener Elf (1/1) │   Creatures: (none)              │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize, Brainstorm │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ──
+    Hand (10): Orcish Bowmasters, Brazen Borrower, Nethergoyf, Nethergoyf, Orcish Bowmasters, Force of Will, Nethergoyf, Thoughtseize, Brainstorm, Brainstorm
+    Mana available: 1
+  Brainstorm (3 draws)
+  Fatal Push [CMC≤2] → kills Glistener Elf
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 17                       │
+  │   Hand: 2  Lib: 41  GY: 9        │   Hand: 11  Lib: 38  GY: 11      │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Brainstorm, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 17
+
+  ── Untap ── (7 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Misty Rainforest
+  Play+crack Misty Rainforest (−1 life, 17) → Tropical Island
+  ── Main ── Mana: 8
+    Hand (2): Daze, Force of Will
+  Inkmoth Nexus activates — 1/1 infect flyer
+  ★ Inkmoth Nexus deals 1 poison (5/10)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 17                       │
+  │   Hand: 2  Lib: 39  GY: 11       │   Hand: 11  Lib: 38  GY: 11      │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Brainstorm, Tamiyo       │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 18 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Swamp
+  Land: Swamp (2 lands)
+  ── Main ──
+    Hand (11): Orcish Bowmasters, Brazen Borrower, Nethergoyf, Nethergoyf, Orcish Bowmasters, Force of Will, Nethergoyf, Thoughtseize, Brainstorm, Tamiyo, Inquisitive Student, Murktide Regent
+    Mana available: 2
+  Brainstorm (3 draws)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to INFECT
+      → INFECT evaluates: minor threat + only 2 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 17                       │
+  │   Hand: 2  Lib: 39  GY: 11       │   Hand: 12  Lib: 34  GY: 12      │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Underground Sea, Swamp  │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Wasteland                │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 19 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 17
+
+  ── Untap ── (8 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 8
+    Hand (3): Daze, Force of Will, Force of Will
+  Inkmoth Nexus activates — 1/1 infect flyer
+  ★ Inkmoth Nexus deals 1 poison (6/10)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 17                       │
+  │   Hand: 3  Lib: 38  GY: 11       │   Hand: 12  Lib: 34  GY: 12      │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Underground Sea, Swamp  │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Daze, Force of Will      │   Hand: Orcish Bowmasters        │
+  │         Force of Will            │         Brazen Borrower          │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Wasteland                │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 20 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 17
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Wasteland (3 lands)
+  ── Main ──
+    Hand (12): Orcish Bowmasters, Brazen Borrower, Nethergoyf, Nethergoyf, Orcish Bowmasters, Force of Will, Nethergoyf, Thoughtseize, Murktide Regent, Force of Will, Orcish Bowmasters, Fatal Push
+    Mana available: 3
+      → Brazen Borrower goes on the STACK
+      → Priority passes to INFECT
+      → INFECT evaluates: minor threat — responds!
+    ★ INFECT Force of Will counters Brazen Borrower (exiles Daze)
+    Brazen Borrower COUNTERED — goes to graveyard
+  Wasteland [ACTIVATED-uncounterable] → Tropical Island
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 17                       │
+  │   Hand: 1  Lib: 38  GY: 13       │   Hand: 11  Lib: 33  GY: 14      │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Swamp  │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Force of Will            │   Hand: Orcish Bowmasters        │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Fatal Push               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 21 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 17
+
+  ── Untap ── (7 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Glistener Elf
+  ── Main ── Mana: 7
+    Hand (2): Force of Will, Glistener Elf
+      → Glistener Elf goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Glistener Elf RESOLVES
+  Glistener Elf (infect)
+  Inkmoth Nexus activates — 1/1 infect flyer
+    Inkmoth Nexus blocked — no poison damage
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 17                       │
+  │   Hand: 1  Lib: 37  GY: 13       │   Hand: 11  Lib: 33  GY: 14      │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Swamp  │
+  │   Creatures: Glistener Elf (1/1) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Force of Will            │   Hand: Orcish Bowmasters        │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Fatal Push               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 22 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 17
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Ponder
+  ── Main ──
+    Hand (12): Orcish Bowmasters, Nethergoyf, Nethergoyf, Orcish Bowmasters, Force of Will, Nethergoyf, Thoughtseize, Murktide Regent, Force of Will, Orcish Bowmasters, Fatal Push, Ponder
+    Mana available: 2
+  Ponder (1 draw)
+  Fatal Push [CMC≤2] → kills Glistener Elf
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 17                       │
+  │   Hand: 1  Lib: 37  GY: 14       │   Hand: 11  Lib: 31  GY: 16      │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Swamp  │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Force of Will            │   Hand: Orcish Bowmasters        │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Bloodstained Mire        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 23 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 17
+
+  ── Untap ── (7 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Invigorate
+  ── Main ── Mana: 7
+    Hand (2): Force of Will, Invigorate
+  Inkmoth Nexus activates — 1/1 infect flyer
+      → Invigorate goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has counters but cannot use them (conditions not met)
+      → Invigorate RESOLVES
+  Invigorate (free) — +4/+4, opp gains 3 life
+    Inkmoth Nexus blocked — no poison damage
+    Tamiyo, Inquisitive Student dies to infect damage
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 1  Lib: 36  GY: 14       │   Hand: 11  Lib: 31  GY: 17      │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Swamp  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Orcish Bowmasters        │
+  │                                  │         Nethergoyf, Nethergoyf   │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Bloodstained Mire        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 24 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (11): Orcish Bowmasters, Nethergoyf, Nethergoyf, Orcish Bowmasters, Force of Will, Nethergoyf, Thoughtseize, Murktide Regent, Force of Will, Orcish Bowmasters, Polluted Delta
+    Mana available: 3
+      → Nethergoyf goes on the STACK
+      → Priority passes to INFECT
+      → INFECT has [Force of Will] but PASSES (low-priority target)
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 19                       │
+  │   Hand: 1  Lib: 36  GY: 14       │   Hand: 10  Lib: 29  GY: 19      │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Swamp, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (0/1)    │
+  │   Hand: Force of Will            │   Hand: Orcish Bowmasters        │
+  │                                  │         Nethergoyf               │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 25 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 19
+
+  ── Untap ── (7 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mutagenic Growth
+  ── Main ── Mana: 7
+    Hand (2): Force of Will, Mutagenic Growth
+  Inkmoth Nexus activates — 1/1 infect flyer
+      → Mutagenic Growth goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has counters but cannot use them (conditions not met)
+      → Mutagenic Growth RESOLVES
+  Mutagenic Growth (pay 2 life) — +2/+2
+  ★ Inkmoth Nexus deals 3 poison (9/10)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 15                       │   Life: 19                       │
+  │   Hand: 1  Lib: 35  GY: 14       │   Hand: 10  Lib: 29  GY: 19      │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Swamp, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6)    │
+  │   Hand: Force of Will            │   Hand: Orcish Bowmasters        │
+  │                                  │         Nethergoyf               │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 26 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 15 | dimir 19
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Force of Will
+  Play+crack Polluted Delta (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (10): Orcish Bowmasters, Nethergoyf, Orcish Bowmasters, Force of Will, Nethergoyf, Thoughtseize, Murktide Regent, Force of Will, Orcish Bowmasters, Force of Will
+    Mana available: 4
+      → Nethergoyf goes on the STACK
+      → Priority passes to INFECT
+      → INFECT has [Force of Will] but PASSES (low-priority target)
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  Attack: Nethergoyf — 5 unblocked → b at 10
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 10                       │   Life: 18                       │
+  │   Hand: 1  Lib: 35  GY: 14       │   Hand: 9  Lib: 27  GY: 21       │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Swamp, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Netherg... │
+  │   Hand: Force of Will            │   Hand: Orcish Bowmasters        │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 27 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 10 | dimir 18
+
+  ── Untap ── (7 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Vines of Vastwood
+  ── Main ── Mana: 7
+    Hand (2): Force of Will, Vines of Vastwood
+  Inkmoth Nexus activates — 1/1 infect flyer
+      → Vines of Vastwood goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has counters but cannot use them (conditions not met)
+      → Vines of Vastwood RESOLVES
+  Vines of Vastwood (kicked) — +4/+4, hexproof
+  ★ Inkmoth Nexus deals 5 poison (14/10)
+  ★★★ LETHAL — 14 poison counters on turn 14!
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 10                       │   Life: 18                       │
+  │   Hand: 1  Lib: 34  GY: 14       │   Hand: 9  Lib: 27  GY: 21       │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Swamp, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (5/6), Netherg... │
+  │   Hand: Force of Will            │   Hand: Orcish Bowmasters        │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Murktide Regent          │
+  │                                  │         Force of Will            │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: INFECT — Infect: 14 poison counters
+  Final life: infect 10 | dimir 18
+══════════════════════════════════════════════════════════════════════

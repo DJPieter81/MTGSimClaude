@@ -1,0 +1,619 @@
+══════════════════════════════════════════════════════════════════════
+  UR_TEMPO vs BUG
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UR_TEMPO wins the die roll, goes FIRST
+
+  UR_TEMPO (P1):
+  Draw 7:
+    1. Ponder (sorcery, CMC 1, cantrip)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Daze (instant, CMC 2, free counter)
+    4. Lightning Bolt (instant, CMC 1)
+    5. Wasteland (land)
+    6. Ponder (sorcery, CMC 1, cantrip)
+    7. Cori-Steel Cutter (creature 3/1, CMC 2)
+    [Lands: 1  Creatures: 1  Counters: 1  Cantrips: 3  Other: 1]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; 1 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+  BUG (P2):
+  Draw 7:
+    1. Wasteland (land)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Ponder (sorcery, CMC 1, cantrip)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Snuff Out (instant, CMC 4)
+    6. Daze (instant, CMC 2, free counter)
+    7. Island (basic)
+    [Lands: 2  Creatures: 1  Counters: 1  Cantrips: 1  Other: 2]
+  → MULLIGAN
+    Reason: doesn't meet deck-specific keep criteria
+  Mulligan #1 — draw 7:
+    1. Marsh Flats (fetch)
+    2. Daze (instant, CMC 2, free counter)
+    3. Daze (instant, CMC 2, free counter)
+    4. Murktide Regent (creature 3/3, CMC 7)
+    5. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    6. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    7. Polluted Delta (fetch)
+    [Lands: 2  Creatures: 3  Counters: 2]
+  Keep best 6: Murktide Regent, Tamiyo, Inquisitive Student, Tamiyo, Inquisitive Student, Marsh Flats, Polluted Delta, Daze
+  Bottom 1: 
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 2 lands — good mana base; 3 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Wasteland (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Ponder, Brainstorm, Daze, Lightning Bolt, Ponder, Cori-Steel Cutter
+  Brainstorm — cantrip
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Wasteland               │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent          │
+  │         Lightning Bolt, Ponder   │         Tamiyo                   │
+  │         Cori-Steel Cutter        │         Inquisitive Student      │
+  │         Mishra's Bauble          │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Marsh Flats              │
+  │                                  │         Polluted Delta, Daze     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Play+crack Marsh Flats (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (6): Murktide Regent, Tamiyo, Inquisitive Student, Tamiyo, Inquisitive Student, Polluted Delta, Daze, Wasteland
+    Mana available: 1
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 5  Lib: 51  GY: 2        │
+  │   Lands: Wasteland               │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent          │
+  │         Lightning Bolt, Ponder   │         Tamiyo                   │
+  │         Cori-Steel Cutter        │         Inquisitive Student      │
+  │         Mishra's Bauble          │         Polluted Delta, Daze     │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | bug 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  ── Main ── Mana: 1
+    Hand (7): Ponder, Daze, Lightning Bolt, Ponder, Cori-Steel Cutter, Mishra's Bauble, Tamiyo, Inquisitive Student
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to BUG
+      → BUG evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student
+  Mishra's Bauble — cantrip
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 50  GY: 3        │   Hand: 5  Lib: 51  GY: 3        │
+  │   Lands: (none)                  │   Lands: (none)                  │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent          │
+  │         Lightning Bolt, Ponder   │         Tamiyo                   │
+  │         Cori-Steel Cutter        │         Inquisitive Student      │
+  │         Misty Rainforest         │         Polluted Delta, Daze     │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | bug 19
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  Play+crack Polluted Delta (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (5): Murktide Regent, Tamiyo, Inquisitive Student, Daze, Wasteland, Nethergoyf
+    Mana available: 1
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 6  Lib: 50  GY: 3        │   Hand: 4  Lib: 49  GY: 6        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Wasteland, Nethergoyf    │
+  │         Cori-Steel Cutter        │                                  │
+  │         Misty Rainforest         │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | bug 18
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Dragon's Rage Channeler
+  Play+crack Misty Rainforest (−1 life, 19) → Volcanic Island
+  ── Main ── Mana: 1
+    Hand (6): Ponder, Daze, Lightning Bolt, Ponder, Cori-Steel Cutter, Dragon's Rage Channeler
+      → Dragon's Rage Channeler goes on the STACK
+      → Priority passes to BUG
+      → BUG has [Daze] but PASSES (low-priority target)
+      → Dragon's Rage Channeler RESOLVES
+  Dragon's Rage Channeler
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 19                       │   Life: 18                       │
+  │   Hand: 5  Lib: 48  GY: 5        │   Hand: 4  Lib: 49  GY: 6        │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea         │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Wasteland, Nethergoyf    │
+  │         Cori-Steel Cutter        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (4): Murktide Regent, Daze, Nethergoyf, Thoughtseize
+    Mana available: 2
+      → Nethergoyf goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO has [Daze] but PASSES (low-priority target)
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  Wasteland [ACTIVATED-uncounterable] → Volcanic Island
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 19                       │   Life: 18                       │
+  │   Hand: 5  Lib: 48  GY: 6        │   Hand: 3  Lib: 48  GY: 7        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | bug 18
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  ── Main ── Mana: 0
+    Hand (6): Ponder, Daze, Lightning Bolt, Ponder, Cori-Steel Cutter, Tamiyo, Inquisitive Student
+  Attack: Dragon's Rage Channeler — Tamiyo, Inquisitive Student blocks Dragon's Rage Channeler. Dragon's Rage Channeler deals 3, Tamiyo, Inquisitive Student deals 0 back. 0 unblocked damage to player (o at 18)
+      Tamiyo, Inquisitive Student dies.
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 19                       │   Life: 18                       │
+  │   Hand: 6  Lib: 47  GY: 6        │   Hand: 3  Lib: 48  GY: 8        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Nethergoyf (2/3)    │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │                                  │
+  │         Tamiyo                   │                                  │
+  │         Inquisitive Student      │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Ponder
+  ── Main ──
+    Hand (4): Murktide Regent, Daze, Thoughtseize, Ponder
+    Mana available: 1
+  Ponder (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 19                       │   Life: 18                       │
+  │   Hand: 6  Lib: 47  GY: 6        │   Hand: 4  Lib: 46  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Nethergoyf (2/3)    │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Tamiyo                   │                                  │
+  │         Inquisitive Student      │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | bug 18
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Dragon's Rage Channeler
+  ── Main ── Mana: 0
+    Hand (7): Ponder, Daze, Lightning Bolt, Ponder, Cori-Steel Cutter, Tamiyo, Inquisitive Student, Dragon's Rage Channeler
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 19                       │   Life: 18                       │
+  │   Hand: 7  Lib: 46  GY: 6        │   Hand: 4  Lib: 46  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Nethergoyf (3/4)    │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Tamiyo                   │                                  │
+  │         Inquisitive Student      │                                  │
+  │         Dragon's Rage Channeler  │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ──
+    Hand (5): Murktide Regent, Daze, Thoughtseize, Orcish Bowmasters, Fatal Push
+    Mana available: 1
+  Fatal Push [CMC≤2] → kills Tamiyo, Inquisitive Student
+  Attack: Nethergoyf — 4 unblocked → b at 15
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 15                       │   Life: 18                       │
+  │   Hand: 7  Lib: 46  GY: 7        │   Hand: 4  Lib: 45  GY: 10       │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Tamiyo                   │                                  │
+  │         Inquisitive Student      │                                  │
+  │         Dragon's Rage Channeler  │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 15 | bug 18
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Scalding Tarn
+  Play+crack Scalding Tarn (−1 life, 14) → Volcanic Island
+  ── Main ── Mana: 1
+    Hand (7): Ponder, Daze, Lightning Bolt, Ponder, Cori-Steel Cutter, Tamiyo, Inquisitive Student, Dragon's Rage Channeler
+      → Dragon's Rage Channeler goes on the STACK
+      → Priority passes to BUG
+      → BUG has [Daze] but PASSES (low-priority target)
+      → Dragon's Rage Channeler RESOLVES
+  Dragon's Rage Channeler
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 14                       │   Life: 18                       │
+  │   Hand: 6  Lib: 44  GY: 9        │   Hand: 4  Lib: 45  GY: 10       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea         │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Tamiyo                   │                                  │
+  │         Inquisitive Student      │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 14 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  ── Main ──
+    Hand (5): Murktide Regent, Daze, Thoughtseize, Orcish Bowmasters, Nethergoyf
+    Mana available: 1
+  Attack: Nethergoyf — Dragon's Rage Channeler blocks Nethergoyf. Nethergoyf deals 4, Dragon's Rage Channeler deals 3 back. 0 unblocked damage to player (b at 14)
+      Dragon's Rage Channeler dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 14                       │   Life: 18                       │
+  │   Hand: 6  Lib: 44  GY: 10       │   Hand: 5  Lib: 44  GY: 10       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea         │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Tamiyo                   │         Nethergoyf               │
+  │         Inquisitive Student      │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 14 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  ── Main ── Mana: 1
+    Hand (7): Ponder, Daze, Lightning Bolt, Ponder, Cori-Steel Cutter, Tamiyo, Inquisitive Student, Lightning Bolt
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to BUG
+      → BUG evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 14                       │   Life: 18                       │
+  │   Hand: 6  Lib: 43  GY: 10       │   Hand: 5  Lib: 44  GY: 10       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea         │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Lightning Bolt           │         Nethergoyf               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 14 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ──
+    Hand (6): Murktide Regent, Daze, Thoughtseize, Orcish Bowmasters, Nethergoyf, Brainstorm
+    Mana available: 1
+  Brainstorm (3 draws)
+  Attack: Nethergoyf — Tamiyo, Inquisitive Student blocks Nethergoyf. Nethergoyf deals 4, Tamiyo, Inquisitive Student deals 0 back. 0 unblocked damage to player (b at 14)
+      Tamiyo, Inquisitive Student dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 14                       │   Life: 18                       │
+  │   Hand: 6  Lib: 43  GY: 11       │   Hand: 8  Lib: 40  GY: 11       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea         │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Ponder, Daze             │   Hand: Murktide Regent, Daze    │
+  │         Lightning Bolt, Ponder   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Lightning Bolt           │         Nethergoyf, Swamp        │
+  │                                  │         Polluted Delta           │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 14 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Cori-Steel Cutter
+  ── Main ── Mana: 1
+    Hand (7): Ponder, Daze, Lightning Bolt, Ponder, Cori-Steel Cutter, Lightning Bolt, Cori-Steel Cutter
+  Ponder — cantrip
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 14                       │   Life: 18                       │
+  │   Hand: 7  Lib: 41  GY: 12       │   Hand: 8  Lib: 40  GY: 11       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea         │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Daze, Lightning Bolt     │   Hand: Murktide Regent, Daze    │
+  │         Ponder                   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Lightning Bolt           │         Nethergoyf, Swamp        │
+  │         Cori-Steel Cutter        │         Polluted Delta           │
+  │         Unholy Heat              │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 14 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Kaito, Bane of Nightmares
+  Land: Swamp (2 lands)
+  ── Main ──
+    Hand (8): Murktide Regent, Daze, Thoughtseize, Orcish Bowmasters, Nethergoyf, Polluted Delta, Orcish Bowmasters, Kaito, Bane of Nightmares
+    Mana available: 2
+      → Nethergoyf goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO has [Daze] but PASSES (low-priority target)
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  Attack: Nethergoyf — 4 unblocked → b at 10
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 10                       │   Life: 18                       │
+  │   Hand: 7  Lib: 41  GY: 12       │   Hand: 7  Lib: 39  GY: 11       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea, Swamp  │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5), Netherg... │
+  │   Hand: Daze, Lightning Bolt     │   Hand: Murktide Regent, Daze    │
+  │         Ponder                   │         Thoughtseize             │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Lightning Bolt           │         Polluted Delta           │
+  │         Cori-Steel Cutter        │         Orcish Bowmasters        │
+  │         Unholy Heat              │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 10 | bug 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 1
+    Hand (8): Daze, Lightning Bolt, Ponder, Cori-Steel Cutter, Lightning Bolt, Cori-Steel Cutter, Unholy Heat, Force of Will
+  Ponder — cantrip
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 10                       │   Life: 18                       │
+  │   Hand: 8  Lib: 39  GY: 13       │   Hand: 7  Lib: 39  GY: 11       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea, Swamp  │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5), Netherg... │
+  │   Hand: Daze, Lightning Bolt     │   Hand: Murktide Regent, Daze    │
+  │         Cori-Steel Cutter        │         Thoughtseize             │
+  │         Lightning Bolt           │         Orcish Bowmasters        │
+  │         Cori-Steel Cutter        │         Polluted Delta           │
+  │         Unholy Heat              │         Orcish Bowmasters        │
+  │         Force of Will, Ponder    │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 18 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 10 | bug 18
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Misty Rainforest
+  Play+crack Polluted Delta (−1 life, 17) → Underground Sea
+  ── Main ──
+    Hand (7): Murktide Regent, Daze, Thoughtseize, Orcish Bowmasters, Orcish Bowmasters, Kaito, Bane of Nightmares, Misty Rainforest
+    Mana available: 3
+      → Kaito, Bane of Nightmares goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO evaluates: MAJOR THREAT — responds!
+    ★ UR_TEMPO Force of Will counters Kaito, Bane of Nightmares (exiles Ponder)
+    Kaito, Bane of Nightmares COUNTERED — goes to graveyard
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO has [Daze] but PASSES (low-priority target)
+      → Orcish Bowmasters RESOLVES
+  Orcish Bowmasters (1/1, flash)
+  Attack: Nethergoyf, Nethergoyf — 8 unblocked → b at 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 2                        │   Life: 17                       │
+  │   Hand: 6  Lib: 39  GY: 14       │   Hand: 5  Lib: 37  GY: 14       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea, Swamp, U... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5), Netherg... │
+  │   Hand: Daze, Lightning Bolt     │   Hand: Murktide Regent, Daze    │
+  │         Cori-Steel Cutter        │         Thoughtseize             │
+  │         Lightning Bolt           │         Orcish Bowmasters        │
+  │         Cori-Steel Cutter        │         Misty Rainforest         │
+  │         Unholy Heat              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 19 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 2 | bug 17
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Murktide Regent
+    Bowmasters T1/1: b -1 life → 1, Orc Army 1/1
+  ── Main ── Mana: 1
+    Hand (7): Daze, Lightning Bolt, Cori-Steel Cutter, Lightning Bolt, Cori-Steel Cutter, Unholy Heat, Murktide Regent
+  Lightning Bolt -> Orcish Bowmasters
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: 1                        │   Life: 17                       │
+  │   Hand: 6  Lib: 38  GY: 15       │   Hand: 5  Lib: 37  GY: 15       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea, Swamp, U... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Nethergoyf (4/5), Netherg... │
+  │   Hand: Daze                     │   Hand: Murktide Regent, Daze    │
+  │         Cori-Steel Cutter        │         Thoughtseize             │
+  │         Lightning Bolt           │         Orcish Bowmasters        │
+  │         Cori-Steel Cutter        │         Misty Rainforest         │
+  │         Unholy Heat              │                                  │
+  │         Murktide Regent          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 20 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 1 | bug 17
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  Play+crack Misty Rainforest (−1 life, 16) → Underground Sea
+  ── Main ──
+    Hand (5): Murktide Regent, Daze, Thoughtseize, Orcish Bowmasters, Tamiyo, Inquisitive Student
+    Mana available: 4
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO has [Daze] but PASSES (low-priority target)
+      → Orcish Bowmasters RESOLVES
+  Orcish Bowmasters (1/1, flash)
+  Attack: Nethergoyf, Nethergoyf — Dragon's Rage Channeler blocks Nethergoyf. Nethergoyf deals 4, Dragon's Rage Channeler deals 3 back. 0 unblocked damage to player (b at 1)
+      Dragon's Rage Channeler dies.
+    4 unblocked → b at -3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ BUG                              │
+  │   Life: -3                       │   Life: 16                       │
+  │   Hand: 6  Lib: 38  GY: 16       │   Hand: 3  Lib: 35  GY: 17       │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea, Swamp, U... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5), Netherg... │
+  │   Hand: Daze                     │   Hand: Murktide Regent, Daze    │
+  │         Cori-Steel Cutter        │         Thoughtseize             │
+  │         Lightning Bolt           │                                  │
+  │         Cori-Steel Cutter        │                                  │
+  │         Unholy Heat              │                                  │
+  │         Murktide Regent          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BUG — BUG life reaches -3 on turn 10
+  Final life: ur_tempo -3 | bug 16
+══════════════════════════════════════════════════════════════════════

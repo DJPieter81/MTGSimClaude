@@ -112,18 +112,20 @@ def make_goblins_deck():
                  colors=set(), tag='hovel', produces={'B', 'R'}, gy_type='land')
         d.append(c)
 
-    # Bloodstained Mire (fetch)
+    # Bloodstained Mire (fetch) — searches for Swamp or Mountain
     for _ in range(2):
         c = Card('Bloodstained Mire', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='fetch', gy_type='land')
+                 colors=set(), tag='fetch', gy_type='land',
+                 fetch_targets={'Swamp', 'Mountain'})
         c.is_fetch = True
         c.produces = set()
         d.append(c)
 
-    # Wooded Foothills (fetch)
+    # Wooded Foothills (fetch) — searches for Mountain or Forest
     for _ in range(2):
         c = Card('Wooded Foothills', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='fetch', gy_type='land')
+                 colors=set(), tag='fetch', gy_type='land',
+                 fetch_targets={'Mountain', 'Forest'})
         c.is_fetch = True
         c.produces = set()
         d.append(c)
@@ -132,14 +134,14 @@ def make_goblins_deck():
     for _ in range(2):
         c = Card('Mountain', CardType.LAND, cmc=0, mana_cost={},
                  colors=set(), tag='basic', produces={'R'}, gy_type='land',
-                 is_basic=True)
+                 is_basic=True, subtypes={'Mountain'})
         d.append(c)
 
     # Swamp (basic)
     for _ in range(2):
         c = Card('Swamp', CardType.LAND, cmc=0, mana_cost={},
                  colors=set(), tag='basic', produces={'B'}, gy_type='land',
-                 is_basic=True)
+                 is_basic=True, subtypes={'Swamp'})
         d.append(c)
 
     assert len(d) == 60, f"Goblins deck has {len(d)} cards"

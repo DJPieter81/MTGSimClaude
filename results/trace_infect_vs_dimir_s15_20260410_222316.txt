@@ -1,0 +1,530 @@
+══════════════════════════════════════════════════════════════════════
+  INFECT vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  INFECT (P1):
+  Draw 7:
+    1. Blighted Agent (creature 1/1, CMC 2)
+    2. Blighted Agent (creature 1/1, CMC 2)
+    3. Inkmoth Nexus (land)
+    4. Windswept Heath (fetch)
+    5. Breeding Pool (dual)
+    6. Blighted Agent (creature 1/1, CMC 2)
+    7. Breeding Pool (dual)
+    [Lands: 4  Creatures: 3]
+  → MULLIGAN
+    Reason: doesn't meet deck-specific keep criteria
+  Mulligan #1 — draw 7:
+    1. Crop Rotation (instant, CMC 1)
+    2. Ponder (sorcery, CMC 1, cantrip)
+    3. Misty Rainforest (fetch)
+    4. Blighted Agent (creature 1/1, CMC 2)
+    5. Tropical Island (dual)
+    6. Inkmoth Nexus (land)
+    7. Misty Rainforest (fetch)
+    [Lands: 4  Creatures: 1  Cantrips: 1  Other: 1]
+  Keep best 6: Blighted Agent, Ponder, Misty Rainforest, Tropical Island, Inkmoth Nexus, Misty Rainforest
+  Bottom 1: Crop Rotation
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 4 lands — slightly land-heavy but playable; 1 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Bloodstained Mire (fetch)
+    2. Orcish Bowmasters (creature 1/1, CMC 2)
+    3. Kaito, Bane of Nightmares (planeswalker, CMC 3)
+    4. Brazen Borrower (creature 3/1, CMC 3)
+    5. Murktide Regent (creature 3/3, CMC 7)
+    6. Fatal Push (instant, CMC 1, removal)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 1  Creatures: 3  Cantrips: 1  Removal: 1  Other: 1]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Island (basic)
+    4. Mishra's Bauble (artifact, CMC 0)
+    5. Murktide Regent (creature 3/3, CMC 7)
+    6. Wasteland (land)
+    7. Wasteland (land)
+    [Lands: 3  Creatures: 1  Cantrips: 2  Other: 1]
+  Keep best 6: Murktide Regent, Brainstorm, Brainstorm, Island, Wasteland, Wasteland
+  Bottom 1: Mishra's Bauble
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Island (1 lands)
+  ── Main ──
+    Hand (5): Murktide Regent, Brainstorm, Brainstorm, Wasteland, Wasteland
+    Mana available: 1
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 54  GY: 0        │   Hand: 7  Lib: 51  GY: 1        │
+  │   Lands: (none)                  │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Blighted Agent, Ponder   │   Hand: Murktide Regent          │
+  │         Misty Rainforest         │         Brainstorm, Wasteland    │
+  │         Tropical Island          │         Wasteland, Brainstorm    │
+  │         Inkmoth Nexus            │         Tamiyo                   │
+  │         Misty Rainforest         │         Inquisitive Student      │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Blossoming Defense
+  Land: Tropical Island (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Blighted Agent, Ponder, Misty Rainforest, Inkmoth Nexus, Misty Rainforest, Blossoming Defense
+      → Ponder goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Ponder RESOLVES
+  Ponder — draw
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 7  Lib: 51  GY: 1        │
+  │   Lands: Tropical Island         │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Blighted Agent           │   Hand: Murktide Regent          │
+  │         Misty Rainforest         │         Brainstorm, Wasteland    │
+  │         Inkmoth Nexus            │         Wasteland, Brainstorm    │
+  │         Misty Rainforest         │         Tamiyo                   │
+  │         Blossoming Defense       │         Inquisitive Student      │
+  │         Mutagenic Growth         │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Bloodstained Mire
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (7): Murktide Regent, Brainstorm, Wasteland, Brainstorm, Tamiyo, Inquisitive Student, Tamiyo, Inquisitive Student, Bloodstained Mire
+    Mana available: 2
+  Brainstorm (3 draws)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to INFECT
+      → INFECT has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Wasteland [ACTIVATED-uncounterable] → Tropical Island
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 8  Lib: 47  GY: 3        │
+  │   Lands: (none)                  │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Blighted Agent           │   Hand: Murktide Regent          │
+  │         Misty Rainforest         │         Wasteland, Brainstorm    │
+  │         Inkmoth Nexus            │         Tamiyo                   │
+  │         Misty Rainforest         │         Inquisitive Student      │
+  │         Blossoming Defense       │         Bloodstained Mire        │
+  │         Mutagenic Growth         │         Fatal Push, Daze         │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Windswept Heath
+  Play+crack Misty Rainforest (−1 life, 19) → Breeding Pool
+  ── Main ── Mana: 1
+    Hand (6): Blighted Agent, Inkmoth Nexus, Misty Rainforest, Blossoming Defense, Mutagenic Growth, Windswept Heath
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 6  Lib: 50  GY: 3        │   Hand: 8  Lib: 47  GY: 3        │
+  │   Lands: Breeding Pool           │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Blighted Agent           │   Hand: Murktide Regent          │
+  │         Inkmoth Nexus            │         Wasteland, Brainstorm    │
+  │         Misty Rainforest         │         Tamiyo                   │
+  │         Blossoming Defense       │         Inquisitive Student      │
+  │         Mutagenic Growth         │         Bloodstained Mire        │
+  │         Windswept Heath          │         Fatal Push, Daze         │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 19 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (8): Murktide Regent, Brainstorm, Tamiyo, Inquisitive Student, Bloodstained Mire, Fatal Push, Daze, Tamiyo, Inquisitive Student, Fatal Push
+    Mana available: 2
+  Brainstorm (3 draws)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to INFECT
+      → INFECT has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Wasteland [ACTIVATED-uncounterable] → Breeding Pool
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 6  Lib: 50  GY: 4        │   Hand: 9  Lib: 43  GY: 6        │
+  │   Lands: (none)                  │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Blighted Agent           │   Hand: Murktide Regent          │
+  │         Inkmoth Nexus            │         Bloodstained Mire        │
+  │         Misty Rainforest         │         Fatal Push, Daze         │
+  │         Blossoming Defense       │         Tamiyo                   │
+  │         Mutagenic Growth         │         Inquisitive Student      │
+  │         Windswept Heath          │         Fatal Push, Daze         │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 19 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Windswept Heath
+  Play+crack Misty Rainforest (−1 life, 18) → Tropical Island
+  ── Main ── Mana: 1
+    Hand (6): Blighted Agent, Inkmoth Nexus, Blossoming Defense, Mutagenic Growth, Windswept Heath, Windswept Heath
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 6  Lib: 48  GY: 6        │   Hand: 9  Lib: 43  GY: 6        │
+  │   Lands: Tropical Island         │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Blighted Agent           │   Hand: Murktide Regent          │
+  │         Inkmoth Nexus            │         Bloodstained Mire        │
+  │         Blossoming Defense       │         Fatal Push, Daze         │
+  │         Mutagenic Growth         │         Tamiyo                   │
+  │         Windswept Heath          │         Inquisitive Student      │
+  │         Windswept Heath          │         Fatal Push, Daze         │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (9): Murktide Regent, Fatal Push, Daze, Tamiyo, Inquisitive Student, Fatal Push, Daze, Orcish Bowmasters, Kaito, Bane of Nightmares, Nethergoyf
+    Mana available: 2
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to INFECT
+      → INFECT has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 19                       │
+  │   Hand: 6  Lib: 48  GY: 6        │   Hand: 8  Lib: 41  GY: 9        │
+  │   Lands: Tropical Island         │   Lands: Island, Underground Sea │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Blighted Agent           │   Hand: Murktide Regent          │
+  │         Inkmoth Nexus            │         Fatal Push, Daze         │
+  │         Blossoming Defense       │         Fatal Push, Daze         │
+  │         Mutagenic Growth         │         Orcish Bowmasters        │
+  │         Windswept Heath          │         Kaito                    │
+  │         Windswept Heath          │         Bane of Nightmares       │
+  │                                  │         Nethergoyf               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Forest
+  Land: Forest (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Blighted Agent, Inkmoth Nexus, Blossoming Defense, Mutagenic Growth, Windswept Heath, Windswept Heath
+      → Blighted Agent goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Daze] but PASSES (low-priority target)
+      → Blighted Agent RESOLVES
+  Blighted Agent (infect, unblockable)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 19                       │
+  │   Hand: 5  Lib: 47  GY: 6        │   Hand: 8  Lib: 41  GY: 9        │
+  │   Lands: Tropical Island, Forest │   Lands: Island, Underground Sea │
+  │   Creatures: Blighted Agent (1/1) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Inkmoth Nexus            │   Hand: Murktide Regent          │
+  │         Blossoming Defense       │         Fatal Push, Daze         │
+  │         Mutagenic Growth         │         Fatal Push, Daze         │
+  │         Windswept Heath          │         Orcish Bowmasters        │
+  │         Windswept Heath          │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  │                                  │         Nethergoyf               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 19
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Scalding Tarn
+  Play+crack Scalding Tarn (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (8): Murktide Regent, Fatal Push, Daze, Fatal Push, Daze, Orcish Bowmasters, Kaito, Bane of Nightmares, Nethergoyf
+    Mana available: 3
+      → Nethergoyf goes on the STACK
+      → Priority passes to INFECT
+      → INFECT has no counters — passes priority
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  Fatal Push [revolt CMC≤4] → kills Blighted Agent
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 18                       │   Life: 18                       │
+  │   Hand: 5  Lib: 47  GY: 7        │   Hand: 6  Lib: 39  GY: 12       │
+  │   Lands: Tropical Island, Forest │   Lands: Island, Underground Sea, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Inkmoth Nexus            │   Hand: Murktide Regent, Daze    │
+  │         Blossoming Defense       │         Fatal Push, Daze         │
+  │         Mutagenic Growth         │         Orcish Bowmasters        │
+  │         Windswept Heath          │         Kaito                    │
+  │         Windswept Heath          │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 18 | dimir 18
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Blighted Agent
+  Play+crack Windswept Heath (−1 life, 17) → Breeding Pool
+  ── Main ── Mana: 3
+    Hand (5): Inkmoth Nexus, Blossoming Defense, Mutagenic Growth, Windswept Heath, Blighted Agent
+      → Blighted Agent goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Daze] but PASSES (low-priority target)
+      → Blighted Agent RESOLVES
+  Blighted Agent (infect, unblockable)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 17                       │   Life: 18                       │
+  │   Hand: 4  Lib: 45  GY: 9        │   Hand: 6  Lib: 39  GY: 12       │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: Blighted Agent (1/1) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Inkmoth Nexus            │   Hand: Murktide Regent, Daze    │
+  │         Blossoming Defense       │         Fatal Push, Daze         │
+  │         Mutagenic Growth         │         Orcish Bowmasters        │
+  │         Windswept Heath          │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 17 | dimir 18
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Brazen Borrower
+  ── Main ──
+    Hand (7): Murktide Regent, Daze, Fatal Push, Daze, Orcish Bowmasters, Kaito, Bane of Nightmares, Brazen Borrower
+    Mana available: 3
+      → Brazen Borrower goes on the STACK
+      → Priority passes to INFECT
+      → INFECT has no counters — passes priority
+      → Brazen Borrower RESOLVES
+  Brazen Borrower (3/1)
+  Fatal Push [CMC≤2] → kills Blighted Agent
+  Attack: Nethergoyf — 3 unblocked → b at 14
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 14                       │   Life: 18                       │
+  │   Hand: 4  Lib: 45  GY: 10       │   Hand: 5  Lib: 38  GY: 13       │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Inkmoth Nexus            │   Hand: Murktide Regent, Daze    │
+  │         Blossoming Defense       │         Daze                     │
+  │         Mutagenic Growth         │         Orcish Bowmasters        │
+  │         Windswept Heath          │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 14 | dimir 18
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Invigorate
+  Play+crack Windswept Heath (−1 life, 13) → Tropical Island
+  ── Main ── Mana: 4
+    Hand (4): Inkmoth Nexus, Blossoming Defense, Mutagenic Growth, Invigorate
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 13                       │   Life: 18                       │
+  │   Hand: 4  Lib: 43  GY: 12       │   Hand: 5  Lib: 38  GY: 13       │
+  │   Lands: Tropical Island, Forest, ... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Inkmoth Nexus            │   Hand: Murktide Regent, Daze    │
+  │         Blossoming Defense       │         Daze                     │
+  │         Mutagenic Growth         │         Orcish Bowmasters        │
+  │         Invigorate               │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 13 | dimir 18
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (5): Murktide Regent, Daze, Daze, Orcish Bowmasters, Kaito, Bane of Nightmares
+    Mana available: 4
+  Wasteland [ACTIVATED-uncounterable] → Tropical Island
+  Attack: Nethergoyf, Brazen Borrower — 6 unblocked → b at 7
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 7                        │   Life: 18                       │
+  │   Hand: 4  Lib: 43  GY: 13       │   Hand: 5  Lib: 37  GY: 14       │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Inkmoth Nexus            │   Hand: Murktide Regent, Daze    │
+  │         Blossoming Defense       │         Daze                     │
+  │         Mutagenic Growth         │         Orcish Bowmasters        │
+  │         Invigorate               │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — INFECT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 7 | dimir 18
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Crop Rotation
+  Land: Inkmoth Nexus (4 lands)
+  ── Main ── Mana: 4
+    Hand (4): Blossoming Defense, Mutagenic Growth, Invigorate, Crop Rotation
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Daze] but PASSES (low-priority target)
+      → Crop Rotation RESOLVES
+  Crop Rotation — sac Inkmoth Nexus, tutor Inkmoth Nexus
+  Inkmoth Nexus activates — 1/1 infect flyer
+      → Invigorate goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR evaluates: MAJOR THREAT — responds!
+    ★ DIMIR Daze counters Invigorate — Island returned
+    Invigorate COUNTERED — goes to graveyard
+      → Mutagenic Growth goes on the STACK
+      → Priority passes to DIMIR
+    Daze attempted on Mutagenic Growth — caster pays {1}, spell resolves
+      → DIMIR has counters but cannot use them (conditions not met)
+      → Mutagenic Growth RESOLVES
+  Mutagenic Growth (pay 2 life) — +2/+2
+      → Blossoming Defense goes on the STACK
+      → Priority passes to DIMIR
+    Daze attempted on Blossoming Defense — caster pays {1}, spell resolves
+      → DIMIR has counters but cannot use them (conditions not met)
+      → Blossoming Defense RESOLVES
+  Blossoming Defense — +2/+2, hexproof
+    Inkmoth Nexus blocked — no poison damage
+    Tamiyo, Inquisitive Student dies to infect damage
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: 5                        │   Life: 18                       │
+  │   Hand: 0  Lib: 41  GY: 15       │   Hand: 5  Lib: 37  GY: 16       │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Brazen ... │
+  │   Hand: (empty)                  │   Hand: Murktide Regent, Daze    │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  │                                  │         Island                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: infect 5 | dimir 18
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Ponder
+  Land: Island (3 lands)
+  ── Main ──
+    Hand (5): Murktide Regent, Daze, Orcish Bowmasters, Kaito, Bane of Nightmares, Ponder
+    Mana available: 3
+  Ponder (1 draw)
+  Attack: Nethergoyf, Brazen Borrower — 6 unblocked → b at -1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ INFECT                           │ DIMIR                            │
+  │   Life: -1                       │   Life: 18                       │
+  │   Hand: 0  Lib: 41  GY: 15       │   Hand: 5  Lib: 35  GY: 17       │
+  │   Lands: Forest, Breeding Pool, Tr... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5), Brazen ... │
+  │   Hand: (empty)                  │   Hand: Murktide Regent, Daze    │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DIMIR — BUG life reaches -1 on turn 8
+  Final life: infect -1 | dimir 18
+══════════════════════════════════════════════════════════════════════

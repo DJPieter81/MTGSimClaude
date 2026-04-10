@@ -1,0 +1,817 @@
+══════════════════════════════════════════════════════════════════════
+  DIMIR_FLASH vs BOROS
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BOROS wins the die roll, goes FIRST
+
+  DIMIR_FLASH (P1):
+  Draw 7:
+    1. Polluted Delta (fetch)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Wasteland (land)
+    4. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    5. Force of Will (instant, CMC 5, free counter)
+    6. Daze (instant, CMC 1, free counter)
+    7. Wasteland (land)
+    [Lands: 3  Creatures: 1  Counters: 2  Cantrips: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; 2 counter(s) for protection/disruption
+
+  BOROS (P2):
+  Draw 7:
+    1. Lightning Bolt (instant, CMC 1, removal)
+    2. Lightning Bolt (instant, CMC 1, removal)
+    3. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    4. Rishadan Port (land)
+    5. Mountain (basic)
+    6. Recruiter of the Guard (creature 1/1, CMC 3)
+    7. Rishadan Port (land)
+    [Lands: 3  Creatures: 2  Removal: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 20 | boros 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Rishadan Port (1 lands)
+  ── Main ──
+    Hand (6): Lightning Bolt, Lightning Bolt, Thalia, Guardian of Thraben, Mountain, Recruiter of the Guard, Rishadan Port
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Rishadan Port           │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta           │   Hand: Lightning Bolt           │
+  │         Brainstorm, Wasteland    │         Lightning Bolt, Thalia   │
+  │         Tamiyo                   │         Guardian of Thraben      │
+  │         Inquisitive Student      │         Mountain                 │
+  │         Force of Will, Daze      │         Recruiter of the Guard   │
+  │         Wasteland                │         Rishadan Port            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 20 | boros 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Island
+  Land: Island (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Polluted Delta, Brainstorm, Wasteland, Tamiyo, Inquisitive Student, Force of Will, Daze, Wasteland
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to BOROS
+      → BOROS has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Island                  │   Lands: Rishadan Port           │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Polluted Delta           │   Hand: Lightning Bolt           │
+  │         Brainstorm, Wasteland    │         Lightning Bolt, Thalia   │
+  │         Force of Will, Daze      │         Guardian of Thraben      │
+  │         Wasteland                │         Mountain                 │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Rishadan Port            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 20 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Plateau
+  Land: Mountain (2 lands)
+  ── Main ──
+    Hand (6): Lightning Bolt, Lightning Bolt, Thalia, Guardian of Thraben, Recruiter of the Guard, Rishadan Port, Plateau
+    Mana available: 2
+  Rishadan Port taps Island (BUG loses 1 mana)
+  Lightning Bolt → Tamiyo, Inquisitive Student
+  Lightning Bolt — BUG face (17)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 4  Lib: 52  GY: 2        │
+  │   Lands: Island                  │   Lands: Rishadan Port, Mountain │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta           │   Hand: Thalia                   │
+  │         Brainstorm, Wasteland    │         Guardian of Thraben      │
+  │         Force of Will, Daze      │         Recruiter of the Guard   │
+  │         Wasteland                │         Rishadan Port, Plateau   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 17 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fatal Push
+  Play+crack Polluted Delta → ?
+  ── Main ── Mana: 1
+    Hand (6): Brainstorm, Wasteland, Force of Will, Daze, Wasteland, Fatal Push
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 16                       │   Life: 20                       │
+  │   Hand: 6  Lib: 51  GY: 2        │   Hand: 4  Lib: 52  GY: 2        │
+  │   Lands: Island                  │   Lands: Rishadan Port, Mountain │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Brainstorm, Wasteland    │   Hand: Thalia                   │
+  │         Force of Will, Daze      │         Guardian of Thraben      │
+  │         Wasteland, Fatal Push    │         Recruiter of the Guard   │
+  │                                  │         Rishadan Port, Plateau   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 16 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Eidolon of the Great Revel
+  Land: Rishadan Port (3 lands)
+  ── Main ──
+    Hand (4): Thalia, Guardian of Thraben, Recruiter of the Guard, Plateau, Eidolon of the Great Revel
+    Mana available: 3
+  Rishadan Port taps Island (BUG loses 1 mana)
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH evaluates: MAJOR THREAT — responds!
+    ★ DIMIR_FLASH Force of Will counters Eidolon of the Great Revel (exiles Brainstorm)
+    Eidolon of the Great Revel COUNTERED — goes to graveyard
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 16                       │   Life: 20                       │
+  │   Hand: 4  Lib: 51  GY: 3        │   Hand: 3  Lib: 51  GY: 3        │
+  │   Lands: Island                  │   Lands: Rishadan Port, Mountain, ... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Wasteland, Daze          │   Hand: Thalia                   │
+  │         Wasteland, Fatal Push    │         Guardian of Thraben      │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Plateau                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 16 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Daze
+  Land: Wasteland (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Daze, Wasteland, Fatal Push, Daze
+  Wasteland [ACTIVATED-uncounterable] → Rishadan Port
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 16                       │   Life: 20                       │
+  │   Hand: 4  Lib: 50  GY: 3        │   Hand: 3  Lib: 51  GY: 4        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain, Rishadan Port │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Wasteland          │   Hand: Thalia                   │
+  │         Fatal Push, Daze         │         Guardian of Thraben      │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Plateau                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 16 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Pyroblast
+  Land: Plateau (3 lands)
+  ── Main ──
+    Hand (3): Thalia, Guardian of Thraben, Recruiter of the Guard, Pyroblast
+    Mana available: 3
+  Rishadan Port taps Island (BUG loses 1 mana)
+      → Thalia, Guardian of Thraben goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Daze] but PASSES (low-priority target)
+      → Thalia, Guardian of Thraben RESOLVES
+  Thalia, Guardian of Thraben
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 16                       │   Life: 20                       │
+  │   Hand: 4  Lib: 50  GY: 3        │   Hand: 2  Lib: 50  GY: 4        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain, Rishadan Port, ... │
+  │   Creatures: (none)              │   Creatures: Thalia, Guardian of Thrab... │
+  │   Hand: Daze, Wasteland          │   Hand: Recruiter of the Guard   │
+  │         Fatal Push, Daze         │         Pyroblast                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 16 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Murktide Regent
+  Land: Wasteland (3 lands)
+  ── Main ── Mana: 3
+    Hand (4): Daze, Fatal Push, Daze, Murktide Regent
+  Wasteland [ACTIVATED-uncounterable] → Rishadan Port
+      → Fatal Push goes on the STACK
+      → Priority passes to BOROS
+      → BOROS has [Pyroblast] but PASSES (low-priority target)
+      → Fatal Push RESOLVES
+  Fatal Push → Thalia, Guardian of Thraben (revolt)
+  Wasteland [ACTIVATED-uncounterable] → Plateau
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 16                       │   Life: 20                       │
+  │   Hand: 3  Lib: 49  GY: 5        │   Hand: 2  Lib: 50  GY: 7        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Recruiter of the Guard   │
+  │         Murktide Regent          │         Pyroblast                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 16 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Lightning Bolt
+  ── Main ──
+    Hand (3): Recruiter of the Guard, Pyroblast, Lightning Bolt
+    Mana available: 1
+  Lightning Bolt — BUG face (13)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 13                       │   Life: 20                       │
+  │   Hand: 3  Lib: 49  GY: 5        │   Hand: 2  Lib: 49  GY: 8        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Recruiter of the Guard   │
+  │         Murktide Regent          │         Pyroblast                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 13 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ── Mana: 2
+    Hand (4): Daze, Daze, Murktide Regent, Thoughtseize
+      → Thoughtseize goes on the STACK
+      → Priority passes to BOROS
+  Thoughtseize → takes Recruiter of the Guard (−2 life, 11)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 11                       │   Life: 20                       │
+  │   Hand: 3  Lib: 48  GY: 6        │   Hand: 1  Lib: 49  GY: 9        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 11 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: White Orchid Phantom
+  ── Main ──
+    Hand (2): Pyroblast, White Orchid Phantom
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 11                       │   Life: 20                       │
+  │   Hand: 3  Lib: 48  GY: 6        │   Hand: 2  Lib: 48  GY: 9        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 11 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ── Mana: 2
+    Hand (4): Daze, Daze, Murktide Regent, Fatal Push
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 11                       │   Life: 20                       │
+  │   Hand: 4  Lib: 47  GY: 6        │   Hand: 2  Lib: 48  GY: 9        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 11 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Minsc and Boo, Timeless Heroes
+  ── Main ──
+    Hand (3): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 11                       │   Life: 20                       │
+  │   Hand: 4  Lib: 47  GY: 6        │   Hand: 3  Lib: 47  GY: 9        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push               │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 11 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Scalding Tarn
+  Play+crack Scalding Tarn → ?
+  ── Main ── Mana: 2
+    Hand (4): Daze, Daze, Murktide Regent, Fatal Push
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 4  Lib: 46  GY: 7        │   Hand: 3  Lib: 47  GY: 9        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push               │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  ── Main ──
+    Hand (4): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes, Orcish Bowmasters
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 4  Lib: 46  GY: 7        │   Hand: 4  Lib: 46  GY: 9        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push               │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Ponder
+  ── Main ── Mana: 2
+    Hand (5): Daze, Daze, Murktide Regent, Fatal Push, Ponder
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 5  Lib: 45  GY: 7        │   Hand: 4  Lib: 46  GY: 9        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (4): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes, Orcish Bowmasters
+    Mana available: 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 5  Lib: 45  GY: 7        │   Hand: 4  Lib: 45  GY: 9        │
+  │   Lands: Island, Wasteland       │   Lands: Mountain, Wasteland     │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 18 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Underground Sea
+  Land: Underground Sea (3 lands)
+  ── Main ── Mana: 3
+    Hand (5): Daze, Daze, Murktide Regent, Fatal Push, Ponder
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 5  Lib: 44  GY: 7        │   Hand: 4  Lib: 45  GY: 9        │
+  │   Lands: Island, Wasteland, Underg... │   Lands: Mountain, Wasteland     │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 19 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Aether Vial
+  ── Main ──
+    Hand (5): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes, Orcish Bowmasters, Aether Vial
+    Mana available: 2
+  Wasteland → destroys Underground Sea
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 5  Lib: 44  GY: 8        │   Hand: 5  Lib: 44  GY: 10       │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 20 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Wan Shi Tong, Librarian
+  ── Main ── Mana: 2
+    Hand (6): Daze, Daze, Murktide Regent, Fatal Push, Ponder, Wan Shi Tong, Librarian
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 6  Lib: 43  GY: 8        │   Hand: 5  Lib: 44  GY: 10       │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │         Wan Shi Tong, Librarian  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 21 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Aether Vial
+  ── Main ──
+    Hand (6): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes, Orcish Bowmasters, Aether Vial, Aether Vial
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 6  Lib: 43  GY: 8        │   Hand: 6  Lib: 43  GY: 10       │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │         Wan Shi Tong, Librarian  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial, Aether Vial │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 22 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Daze
+  ── Main ── Mana: 2
+    Hand (7): Daze, Daze, Murktide Regent, Fatal Push, Ponder, Wan Shi Tong, Librarian, Daze
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 7  Lib: 42  GY: 8        │   Hand: 6  Lib: 43  GY: 10       │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │         Wan Shi Tong             │         Timeless Heroes          │
+  │         Librarian, Daze          │         Orcish Bowmasters        │
+  │                                  │         Aether Vial, Aether Vial │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 23 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Swords to Plowshares
+  ── Main ──
+    Hand (7): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes, Orcish Bowmasters, Aether Vial, Aether Vial, Swords to Plowshares
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 7  Lib: 42  GY: 8        │   Hand: 7  Lib: 42  GY: 10       │
+  │   Lands: Island, Wasteland       │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │         Wan Shi Tong             │         Timeless Heroes          │
+  │         Librarian, Daze          │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial              │
+  │                                  │         Swords to Plowshares     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 24 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Undercity Sewers
+  Land: Undercity Sewers (3 lands)
+  ── Main ── Mana: 3
+    Hand (7): Daze, Daze, Murktide Regent, Fatal Push, Ponder, Wan Shi Tong, Librarian, Daze
+      → Wan Shi Tong, Librarian goes on the STACK
+      → Priority passes to BOROS
+      → BOROS has [Pyroblast] but PASSES (CMC 2 creature — better answered by removal later)
+      → Wan Shi Tong, Librarian RESOLVES
+  Wan Shi Tong, Librarian (X=1) enters as 2/2
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 6  Lib: 41  GY: 8        │   Hand: 7  Lib: 42  GY: 10       │
+  │   Lands: Island, Wasteland, Underc... │   Lands: Mountain                │
+  │   Creatures: Wan Shi Tong, Librarian (... │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder, Daze │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial              │
+  │                                  │         Swords to Plowshares     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 25 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Aether Vial
+  ── Main ──
+    Hand (8): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes, Orcish Bowmasters, Aether Vial, Aether Vial, Swords to Plowshares, Aether Vial
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 6  Lib: 41  GY: 8        │   Hand: 8  Lib: 41  GY: 10       │
+  │   Lands: Island, Wasteland, Underc... │   Lands: Mountain                │
+  │   Creatures: Wan Shi Tong, Librarian (... │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder, Daze │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial              │
+  │                                  │         Swords to Plowshares     │
+  │                                  │         Aether Vial              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 26 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 20
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  ── Main ── Mana: 3
+    Hand (7): Daze, Daze, Murktide Regent, Fatal Push, Ponder, Daze, Orcish Bowmasters
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to BOROS
+      → BOROS has [Pyroblast] but PASSES (CMC 2 creature — better answered by removal later)
+      → Orcish Bowmasters RESOLVES
+  Flash Bowmasters
+  Attack: Wan Shi Tong, Librarian — 2 unblocked → o at 18
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 10                       │   Life: 18                       │
+  │   Hand: 6  Lib: 40  GY: 8        │   Hand: 8  Lib: 41  GY: 10       │
+  │   Lands: Island, Wasteland, Underc... │   Lands: Mountain                │
+  │   Creatures: Wan Shi Tong, Librarian (... │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder, Daze │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial              │
+  │                                  │         Swords to Plowshares     │
+  │                                  │         Aether Vial              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 27 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | boros 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Arid Mesa
+  Play+crack Arid Mesa (−1 life, 17) → Plateau
+  ── Main ──
+    Hand (8): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes, Orcish Bowmasters, Aether Vial, Aether Vial, Swords to Plowshares, Aether Vial
+    Mana available: 2
+  Swords to Plowshares exiles Wan Shi Tong, Librarian (+2 life)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 12                       │   Life: 17                       │
+  │   Hand: 6  Lib: 40  GY: 8        │   Hand: 7  Lib: 39  GY: 13       │
+  │   Lands: Island, Wasteland, Underc... │   Lands: Mountain, Plateau       │
+  │   Creatures: Orcish Bowmasters (1/1) │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder, Daze │         Minsc and Boo            │
+  │                                  │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial, Aether Vial │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 28 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 12 | boros 17
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Ponder
+  ── Main ── Mana: 3
+    Hand (7): Daze, Daze, Murktide Regent, Fatal Push, Ponder, Daze, Ponder
+  Wasteland [ACTIVATED-uncounterable] → Plateau
+  Attack: Orcish Bowmasters — 1 unblocked → o at 16
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 12                       │   Life: 16                       │
+  │   Hand: 7  Lib: 39  GY: 8        │   Hand: 7  Lib: 39  GY: 14       │
+  │   Lands: Island, Wasteland, Underc... │   Lands: Mountain                │
+  │   Creatures: Orcish Bowmasters (1/1) │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │         Daze, Ponder             │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial, Aether Vial │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 29 — BOROS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 12 | boros 16
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Thalia, Guardian of Thraben
+  ── Main ──
+    Hand (8): Pyroblast, White Orchid Phantom, Minsc and Boo, Timeless Heroes, Orcish Bowmasters, Aether Vial, Aether Vial, Aether Vial, Thalia, Guardian of Thraben
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 12                       │   Life: 16                       │
+  │   Hand: 7  Lib: 39  GY: 8        │   Hand: 8  Lib: 38  GY: 14       │
+  │   Lands: Island, Wasteland, Underc... │   Lands: Mountain                │
+  │   Creatures: Orcish Bowmasters (1/1) │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │         Daze, Ponder             │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 30 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 12 | boros 16
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  ── Main ── Mana: 3
+    Hand (8): Daze, Daze, Murktide Regent, Fatal Push, Ponder, Daze, Ponder, Tamiyo, Inquisitive Student
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to BOROS
+      → BOROS evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Attack: Orcish Bowmasters — 1 unblocked → o at 15
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ BOROS                            │
+  │   Life: 12                       │   Life: 15                       │
+  │   Hand: 7  Lib: 38  GY: 8        │   Hand: 8  Lib: 38  GY: 14       │
+  │   Lands: Island, Wasteland, Underc... │   Lands: Mountain                │
+  │   Creatures: Orcish Bowmasters (1/1), ... │   Creatures: (none)              │
+  │   Hand: Daze, Daze               │   Hand: Pyroblast                │
+  │         Murktide Regent          │         White Orchid Phantom     │
+  │         Fatal Push, Ponder       │         Minsc and Boo            │
+  │         Daze, Ponder             │         Timeless Heroes          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial              │
+  │                                  │         Aether Vial, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DIMIR_FLASH — Board/life advantage after T15
+  Final life: dimir_flash 12 | boros 15
+══════════════════════════════════════════════════════════════════════

@@ -627,6 +627,29 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     is_mirror_or_flash = is_in_category(matchup, 'mirror') or is_in_category(matchup, 'dimir_only')
     if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
         is_major_threat = True
+
+    # High-power cheap creatures from tempo/aggro decks are major threats when
+    # the defender lacks creature removal in hand. DRC (3/3 for 1) and Cutter
+    # (3/1 haste for 2) are Legacy's premier cheap threats — if the defender
+    # can't Fatal Push or Bolt them, they must counter or lose the tempo war.
+    _TEMPO_THREAT_TAGS = {'drc', 'cutter', 'ragavan', 'delver'}
+    if (spell_card.tag in _TEMPO_THREAT_TAGS and not is_major_threat):
+        has_creature_removal = any(c.tag in ('push', 'bolt', 'heat', 'stp',
+                                             'bowm', 'decay', 'solitude')
+                                   for c in defender.hand)
+        if not has_creature_removal and total_counters >= 2:
+            is_major_threat = True
+
+    # Infect pump spells: when caster has an infect creature on board, pump spells
+    # are kill-enabling combo pieces and should always be countered. In real Legacy,
+    # FoW on Invigorate or Berserk is critical — these are the infect kill spells.
+    _INFECT_PUMP_TAGS = {'invigorate', 'mutagenic', 'berserk', 'vines', 'defense'}
+    if spell_card.tag in _INFECT_PUMP_TAGS and not is_major_threat:
+        infect_tags = {'glistener', 'blighted', 'inkmoth'}
+        caster_has_infect = any(c.card.tag in infect_tags for c in caster.creatures)
+        if caster_has_infect:
+            is_major_threat = True
+
     # Control decks (runs STP) should NOT FoW cheap creatures — STP them later
     # But always counter Eidolon, lock pieces, and engines (can't STP those)
     if (spell_card.cmc <= 2 and has_removal and not spell_card.win_condition
@@ -771,8 +794,29 @@ def play_turn(gs: GameState, turn: int, who: str = 'p1'):
         if p1_deck == 'bug' or p1_deck == '':
             return bug_turn(gs, turn)
         else:
+            # ── Wasteland sacrifice fix (CR 701.16) ──
+            # protagonist_turn taps Wasteland but doesn't sacrifice it.
+            # Real Wasteland: "{T}, Sacrifice ~: Destroy target nonbasic land."
+            # Track which Wastelands were untapped before the turn. After the turn,
+            # any that became tapped were activated and must be sacrificed.
+            # Note: untap_all() runs inside protagonist_turn, so all Wastelands
+            # start untapped. We detect newly-tapped ones after the turn.
+            wl_ids_before = set(id(l) for l in player.lands
+                                if l.card.tag in ('wl', 'wasteland'))
+            opp_land_count_before = len(opponent.lands)
             from sim import protagonist_turn
-            return protagonist_turn(gs, turn, p1_deck)
+            result = protagonist_turn(gs, turn, p1_deck)
+            # If opponent lost a nonbasic land and a Wasteland was tapped,
+            # it was an activation — sacrifice it
+            opp_land_count_after = len(opponent.lands)
+            if opp_land_count_after < opp_land_count_before:
+                tapped_wl = [l for l in player.lands
+                             if l.card.tag in ('wl', 'wasteland')
+                             and l.tapped and id(l) in wl_ids_before]
+                for wl in tapped_wl[:1]:  # at most 1 Wasteland activation per turn
+                    player.lands.remove(wl)
+                    player.add_to_grave(wl.card)
+            return result
     else:
         matchup = getattr(gs, 'p2_deck', '') or getattr(gs, 'matchup', '')
         return opp_turn(gs, turn, matchup)
@@ -3458,12 +3502,14 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.pending_bauble_draws = getattr(gs, 'pending_bauble_draws', 0) + 1
             update_goyf(gs)
             log_fn(f"Mishra\'s Bauble (sac, artifact in GY, +1 draw next upkeep)")
+    # Deploy non-Bowmasters creatures first (Nethergoyf, Brazen Borrower, etc.)
     thr = player.find_any(lambda c: c.is_creature() and c.cmc <= rem and c.tag not in ('bowm','snuffout'))
     if thr:
         player.remove_from_hand(thr)
         if not _try_counter_any(player, opponent, gs, thr, log_entries):
             player.put_creature_in_play(thr)
             log_fn(f"{thr.name} ({thr.base_power}/{thr.base_toughness})")
+            rem -= thr.cmc
             # Baleful Strix ETB: draw a card
             if getattr(thr, 'engine', False) and thr.cmc == 2:
                 drawn = player.draw(1)
@@ -3476,6 +3522,34 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
                 update_goyf(gs)
                 log_fn(f"  Barrowgoyf P/T: {player.creatures[-1].power}/{player.creatures[-1].toughness}")
         else: player.add_to_grave(thr)
+
+    # Deploy Bowmasters: flash creature that provides a blocker and pings on draws.
+    # In real Legacy, Bowmasters is cast on opponent's turn (flash), but since
+    # the sim doesn't model between-turn flash timing, deploy it on our turn
+    # when we have spare mana and need a body for blocking or board presence.
+    bowm_in_play = any(c.card.tag == 'bowm' for c in player.creatures)
+    bowm = player.find_tag('bowm')
+    if bowm and rem >= 2 and not bowm_in_play:
+        player.remove_from_hand(bowm)
+        if not _try_counter_any(player, opponent, gs, bowm, log_entries):
+            perm = player.put_creature_in_play(bowm)
+            rem -= 2
+            log_fn(f"Orcish Bowmasters (1/1, flash)")
+            gs.bowmasters_on_board = True
+            # Bowmasters ETB: deal 1 damage to any target, create 1/1 Orc Army
+            if opponent.creatures:
+                # Target smallest enemy creature (ping to kill 1/1s like infect creatures)
+                target = min(opponent.creatures, key=lambda c: c.toughness)
+                if target.toughness <= 1:
+                    opponent.remove_creature(target)
+                    log_fn(f"  Bowmasters ETB: pings {target.card.name} (dies)")
+                    update_goyf(gs)
+            from rules import Permanent
+            army_card = creature("Orc Army", 1, {}, set(), 1, 1, tag='army')
+            army_perm = Permanent(card=army_card, controller=perm.controller)
+            player.creatures.append(army_perm)
+        else:
+            player.add_to_grave(bowm)
     push = player.find_tag('push')
     if push and opponent.creatures:
         target = next((c for c in opponent.creatures
@@ -3502,8 +3576,15 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
 
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
     if wl:
-        wt = next((l for l in opponent.lands if MTGRules.wasteland_can_target(l)), None)
-        if wt:
+        eligible_wt = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if eligible_wt:
+            # Prioritize combo lands (Depths, Stage, Cradle) over duals/utility
+            _COMBO_LAND_TAGS = {'depths', 'stage', 'cradle', 'tomb', 'city'}
+            def _wl_prio(land):
+                if land.card.tag in _COMBO_LAND_TAGS: return 10
+                if land.card.tag == 'dual': return 3
+                return 1
+            wt = max(eligible_wt, key=_wl_prio)
             player.lands.remove(wl); player.add_to_grave(wl.card)
             opponent.lands.remove(wt); opponent.add_to_grave(wt.card)
             opponent.revolt_this_turn = True
@@ -4227,20 +4308,75 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
                     log_fn(f"  Reanimate: pay {life_paid} life ({player.life} remaining)")
                     gs.check_life_totals()
                 player.graveyard.remove(gy_target)
-                player.put_creature_in_play(gy_target)
+                perm = player.put_creature_in_play(gy_target)
                 log_fn(f"★ {spell.name} → {gy_target.name} enters play", True)
-                # Griselbrand win: draw 7, gain 7 life (simplified: mark game over)
-                if gy_target.tag in ('gris', 'archon'):
-                    gs.game_over = True
-                    gs.winner = 'p1' if player is gs.p1 else 'p2'
-                    gs.win_reason = f"Reanimator: {gy_target.name} resolves uncountered"
-                    gs.kill_turn = gs.turn
-                    log_fn(f"★ {gy_target.name} wins the game", True)
+                # Griselbrand/Archon: extremely powerful but NOT instant-win.
+                # Real Legacy gives the opponent a turn to answer (Karakas, Borrower,
+                # STP, Fatal Push revolt, etc.). Model the creature correctly:
+                # - Griselbrand: 7/7 flying lifelink, draw 7 on ETB (simplified)
+                # - Archon: 6/6, ETB drain 3 + draw 1 + discard 1
+                # - Atraxa: 7/7 flying lifelink deathtouch, ETB draw 4
+                if gy_target.tag == 'gris':
+                    # Set flying/lifelink on BOTH perm and card (combat reads card attrs)
+                    perm.flying = True
+                    perm.lifelink = True
+                    gy_target.flying = True
+                    gy_target.lifelink = True
+                    # Griselbrand: activated ability "Pay 7 life: Draw 7 cards"
+                    # Check if Bowmasters would kill us: 7 draws = 7 pings = 7 damage
+                    opp_has_bowm = any(c.card.tag == 'bowm' for c in opponent.creatures)
+                    bowm_damage = 7 if (opp_has_bowm or gs.bowmasters_on_board) else 0
+                    # Need life > 7 (Griselbrand cost) + bowmasters pings + buffer
+                    life_after = player.life - 7 - bowm_damage
+                    if life_after >= 1:
+                        player.life -= 7
+                        drawn = player.draw(7)
+                        log_fn(f"  Griselbrand: pay 7 life, draw 7 ({player.life} remaining)")
+                        # Bowmasters triggers on each of the 7 draws
+                        if gs.bowmasters_on_board or opp_has_bowm:
+                            bowmasters_triggers(7, gs, log_entries,
+                                controller='o' if player is gs.p1 else 'b')
+                        gs.check_life_totals()
+                elif gy_target.tag == 'archon':
+                    # Archon ETB: target opponent sacrifices creature/planeswalker,
+                    # discards a card, loses 3 life; you draw, gain 3 life
+                    if opponent.creatures:
+                        worst = min(opponent.creatures, key=lambda c: c.power)
+                        opponent.remove_creature(worst)
+                        log_fn(f"  Archon ETB: opponent sacrifices {worst.card.name}")
+                    if opponent.hand:
+                        worst = min(opponent.hand, key=lambda c: c.cmc)
+                        opponent.hand.remove(worst)
+                        opponent.graveyard.append(worst)
+                    player.draw(1)
+                    opponent.life -= 3
+                    player.life += 3
+                    log_fn(f"  Archon ETB: drain 3, draw 1, opp discards (opp at {opponent.life})")
+                    gs.check_life_totals()
+                elif gy_target.tag == 'atraxa':
+                    # Set flying/lifelink/deathtouch on BOTH perm and card
+                    perm.flying = True
+                    perm.lifelink = True
+                    perm.deathtouch = True
+                    gy_target.flying = True
+                    gy_target.lifelink = True
+                    gy_target.deathtouch = True
+                    # Atraxa ETB: reveal top 10, put one of each type into hand
+                    drawn = player.draw(4)
+                    log_fn(f"  Atraxa ETB: draw 4")
+                    gs.check_life_totals()
             else:
                 player.add_to_grave(spell)
                 log_fn(f"{spell.name} countered")
     elif gy_target and gs.leyline_active:
         log_fn("Leyline active — no GY target available")
+
+    # ── Combat: attack with any non-summoning-sick creatures ─────────────
+    if not gs.game_over:
+        attackers = [c for c in player.creatures if not c.summoning_sick]
+        if attackers:
+            combat_declare(player, opponent, gs, log_entries, attackers)
+    gs.state_based_actions()
 
 
 def _opp_reanimator(gs, om, log, le, turn):
