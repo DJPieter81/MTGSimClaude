@@ -97,16 +97,48 @@ Each play is classified into a visual category with a colored badge:
 | Category | Badge | When |
 |----------|-------|------|
 | `draw` | DRAW | Draw step, upkeep draws |
-| `land` | LAND | Land drops, fetch+crack |
+| `land` | LAND | Land drops |
+| `fetch` | FETCH | Fetchland crack + target |
 | `combat` | COMBAT | Attacks, blocks, damage |
-| `interact` | COUNTER | Force of Will, Daze, counterspells |
+| `counter` | COUNTER | Force of Will, Daze, counterspells |
 | `discard` | DISCARD | Thoughtseize, Unmask |
 | `removal` | REMOVE | Push, Bolt, Swords |
 | `combo` | COMBO | ★ Kill lines, Oops resolves |
 | `spell` | CAST | Generic spell casts |
-| `trigger` | TRIGGER | Bowmasters pings, ETB effects |
+| `trigger` | TRIGGER | ETB, Bowmasters pings, tokens, energy |
 | `cantrip` | DIG | Brainstorm, Ponder, Stock Up |
-| `mana` | MANA | Lotus Petal, rituals |
+| `mana` | MANA | Lotus Petal, rituals, Spirit Guide |
+| `death` | DIES | Creature death |
+| `exile` | EXILE | Prismatic Ending, Swords, Binding |
+| `sba` | SBA | Legend rule, sacrifice |
+| `pw` | PW | Planeswalker activation, flip |
+| `damage` | DMG | Direct damage, drain |
+| `life` | LIFE | Life gain/loss/payment |
+
+## Audit Methodology
+
+After generating a replay, check for rules violations:
+
+### Common Rules Violations
+```python
+# Double land play — >1 land per turn per player
+for t in game['turns_data']:
+    land_plays = sum(1 for p in t['plays'] if p['cat'] in ('land', 'fetch'))
+    if land_plays > 1 and not any('exploration' in str(t.get('enchantments',[])).lower()):
+        print(f"DOUBLE LAND T{t['num']} by {t['label']}")
+
+# Negative life — game continuing after 0 or below
+for t in game['turns_data']:
+    if t['life'] <= 0 and t != game['turns_data'][-1]:
+        print(f"NEGATIVE LIFE T{t['num']} {t['label']} at {t['life']}")
+```
+
+### Known Sim Limitations
+| Issue | Symptom | Deck affected |
+|-------|---------|---------------|
+| No static lock modeling | Chalice/Trinisphere don't affect opponent costs | Eldrazi, Prison |
+| No Karn lockout | Karn's -2 doesn't shut off opponent artifacts | Tron variants |
+| Simplified combat | No first strike, no trample over (except Emrakul) | Aggro mirrors |
 
 ## Common Debug Patterns
 

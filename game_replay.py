@@ -112,17 +112,25 @@ def classify_play(line):
     """Classify a play line into a visual category."""
     lo = line.lower()
     if lo.startswith('draw:') or 'upkeep draw' in lo: return 'draw'
-    if lo.startswith('land:') or lo.startswith('play ') or lo.startswith('play+crack'): return 'land'
+    if 'play+crack' in lo and '→' in lo: return 'fetch'
+    if lo.startswith('land:') or lo.startswith('play '): return 'land'
     if 'attack:' in lo or 'attacks for' in lo or 'unblocked' in lo or 'blocks' in lo: return 'combat'
-    if 'counter' in lo or 'daze' in lo and 'counter' in lo or 'fow' in lo and 'counter' in lo: return 'interact'
-    if 'thoughtseize' in lo or 'strips' in lo: return 'discard'
-    if 'kills' in lo or 'push' in lo and '→' in lo or 'snuff' in lo or 'bolt' in lo: return 'removal'
-    if '★' in line or 'combo' in lo: return 'combo'
+    if 'counter' in lo or ('daze' in lo and 'counter' in lo) or ('fow' in lo and 'counter' in lo): return 'counter'
+    if 'thoughtseize' in lo or 'strips' in lo or 'unmask' in lo: return 'discard'
+    if 'dies' in lo or 'destroyed' in lo: return 'death'
+    if 'exile' in lo and ('ending' in lo or 'binding' in lo or 'swords' in lo): return 'exile'
+    if 'legend rule' in lo or 'sacrifice' in lo: return 'sba'
+    if 'kills' in lo or ('push' in lo and '→' in lo) or 'snuff' in lo: return 'removal'
+    if '★' in line or 'combo' in lo or 'lethal' in lo: return 'combo'
     if 'cast ' in lo or 'flash ' in lo: return 'spell'
-    if 'bowmasters t' in lo or 'orc army' in lo or 'ping' in lo: return 'trigger'
+    if 'bowmasters t' in lo or 'orc army' in lo or 'enters' in lo or 'trigger' in lo or 'etb' in lo: return 'trigger'
     if 'brainstorm' in lo or 'ponder' in lo or 'stock' in lo: return 'cantrip'
     if 'wasteland' in lo and 'destroys' in lo: return 'interact'
-    if 'petal' in lo or 'mox' in lo or 'ritual' in lo: return 'mana'
+    if 'petal' in lo or 'mox' in lo or 'ritual' in lo or 'spirit guide' in lo: return 'mana'
+    if 'damage' in lo or 'drain' in lo or 'ping' in lo: return 'damage'
+    if 'life' in lo and ('gain' in lo or 'pay' in lo or 'lose' in lo): return 'life'
+    if 'planeswalker' in lo or 'flips' in lo or 'loyalty' in lo: return 'pw'
+    if 'bolt' in lo and ('→' in lo or 'damage' in lo): return 'removal'
     return 'other'
 
 
@@ -430,6 +438,8 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .cat-draw{{background:#1a1a2e;color:#8b8bb8}}.cat-land{{background:#0d2611;color:#7ee787}}.cat-combat{{background:#3d1418;color:#f85149}}.cat-interact{{background:#2d1b4e;color:#d2a8ff}}
 .cat-discard{{background:#3d2e14;color:#e3b341}}.cat-removal{{background:#3d1418;color:#ff7b72}}.cat-combo{{background:#4a1942;color:#f778ba}}.cat-spell{{background:#0d2847;color:#58a6ff}}
 .cat-trigger{{background:#2a2000;color:#d29922}}.cat-cantrip{{background:#0a2540;color:#79c0ff}}.cat-mana{{background:#1a2e1a;color:#56d364}}.cat-other{{background:#1c1c1c;color:#6e7681}}
+.cat-fetch{{background:#2a1a3a;color:#a78bfa}}.cat-counter{{background:#2d1b4e;color:#d2a8ff}}.cat-death{{background:#3a1a1a;color:#f85149}}.cat-exile{{background:#2a1a3a;color:#a78bfa}}
+.cat-sba{{background:#2a2a2a;color:#8b949e}}.cat-pw{{background:#1a3a3a;color:#22d3ee}}.cat-damage{{background:#3a1a1a;color:#f85149}}.cat-life{{background:#1a3a1a;color:#4ade80}}
 .board-grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}}
 .board-side{{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px 10px}}
 .board-side h4{{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}}
@@ -596,9 +606,12 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             for j, p in enumerate(td['plays']):
                 cls_p = ' key' if p['key'] else (' counter' if p['counter'] else '')
                 cat = p.get('cat', 'other')
-                cat_label = {'draw':'DRAW','land':'LAND','combat':'COMBAT','interact':'COUNTER',
+                cat_label = {'draw':'DRAW','land':'LAND','fetch':'FETCH','combat':'COMBAT',
+                             'counter':'COUNTER','interact':'COUNTER',
                              'discard':'DISCARD','removal':'REMOVE','combo':'COMBO','spell':'CAST',
-                             'trigger':'TRIGGER','cantrip':'DIG','mana':'MANA','other':''}.get(cat,'')
+                             'trigger':'TRIGGER','cantrip':'DIG','mana':'MANA',
+                             'death':'DIES','exile':'EXILE','sba':'SBA','pw':'PW',
+                             'damage':'DMG','life':'LIFE','other':''}.get(cat,'')
                 is_combat = cat == 'combat'
                 h.append(f'<div class="play"><span class="step">{j+1}.</span>')
                 if cat_label:
