@@ -530,13 +530,38 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         spell_card.win_condition or spell_card.is_combo_piece or
         spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4
     )
+
+    # Burn spells: major threat when defender is at low life or spell is lethal
+    _BURN_TAGS = {'bolt', 'pop', 'chain', 'spike', 'fireblast', 'rift',
+                  'blaze', 'skullcrack', 'heat', 'lball', 'price'}
+    if spell_card.tag in _BURN_TAGS and not is_major_threat:
+        nonbasics = sum(1 for l in defender.lands if not l.card.is_basic)
+        est_damage = 3  # default burn spell damage
+        if spell_card.tag == 'pop':
+            est_damage = nonbasics * 2
+        elif spell_card.tag == 'fireblast':
+            est_damage = 4
+        elif spell_card.tag in ('bolt', 'chain', 'spike', 'rift'):
+            est_damage = 3
+        elif spell_card.tag == 'skullcrack':
+            est_damage = 3
+        # Counter if lethal or defender at ≤7 life
+        if est_damage >= defender.life or defender.life <= 7:
+            is_major_threat = True
+
+    # Eidolon of the Great Revel: major threat for any deck that casts CMC≤3 spells
+    # (which is nearly every Legacy deck). Punishes cantrips, removal, counters.
+    if spell_card.tag == 'eidolon':
+        is_major_threat = True
+
     # Mirror/flash: Bowmasters + Nethergoyf are key threats worth FoWing
     from deck_registry import is_in_category
     is_mirror_or_flash = is_in_category(matchup, 'mirror') or is_in_category(matchup, 'dimir_only')
     if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
         is_major_threat = True
     # Control decks (runs STP) should NOT FoW cheap creatures — STP them later
-    if spell_card.cmc <= 2 and has_removal and not spell_card.win_condition:
+    # But always counter Eidolon (it punishes every spell you cast)
+    if spell_card.cmc <= 2 and has_removal and not spell_card.win_condition and spell_card.tag != 'eidolon':
         is_major_threat = False
 
     is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
