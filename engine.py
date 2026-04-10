@@ -743,8 +743,11 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
 def play_turn(gs: GameState, turn: int, who: str = 'p1'):
     """
     Unified turn entry point — dispatches to the appropriate turn function.
-    who='p1': protagonist's turn (bug_turn for BUG deck, protagonist_turn for others)
-    who='p2': antagonist's turn (opp_turn)
+    who='p1': P1's turn (bug_turn for BUG deck, protagonist_turn for others)
+    who='p2': P2's turn (opp_turn — handles all decks via registry)
+
+    Both players get equal AI quality. The p1/p2 slots are neutral —
+    the deck key determines which strategy runs, not the slot.
 
     Also enforces universal rules that apply regardless of strategy:
     - Narset lock (opponent's Narset prevents extra draws)
@@ -1764,15 +1767,17 @@ def _opp_storm(gs, om, log, le, turn):
     _strategy_storm(player, opponent, gs, om, _l, le)
 
 def opp_turn(gs: GameState, turn: int, matchup: str):
-    o = gs.p2
-    b = gs.p1
+    """P2's turn — symmetric counterpart to protagonist_turn (P1)."""
+    player = gs.p2             # active player this turn (P2)
+    opponent = gs.p1           # opposing player (P1)
+    o, b = player, opponent    # short aliases (legacy, used throughout)
     log_entries = []
-    gs.opp_spells_cast_this_turn = 0
-    gs.veil_active = False  # reset at start of each turn  # Mindbreak Trap: track spells cast this turn
-    gs.teferi_active = False  # Teferi +1 lasted until this turn; reset now
+    gs.p2_spells_cast_this_turn = 0
+    gs.veil_active = False
+    gs.teferi_active = False
 
     def log(msg, key=False):
-        gs.log_event('o', 'main', msg, key)
+        gs.log_event('p2', 'main', msg, key)
         log_entries.append(msg)
 
     # ── Cleanup from previous turn — CR 510.2 ──
@@ -1824,11 +1829,11 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     # Lotus Petal: sac for any color mana (+1 each)
     om += sum(1 for c in o.hand if c.tag == 'petal')
     # Ragavan Treasure tokens from previous turn
-    if getattr(gs, 'opp_treasure', 0) > 0:
-        om += gs.opp_treasure
-        if gs.opp_treasure > 0:
-            log(f"Treasure ({gs.opp_treasure}) → +{gs.opp_treasure} mana")
-        gs.opp_treasure = 0
+    if getattr(gs, 'p2_treasure', 0) > 0:
+        om += gs.p2_treasure
+        if gs.p2_treasure > 0:
+            log(f"Treasure ({gs.p2_treasure}) → +{gs.p2_treasure} mana")
+        gs.p2_treasure = 0
     # Ancient Tomb: produces 2C but deals 2 damage when tapped (CR 702.9)
     tomb_count = sum(1 for l in o.lands if l.card.tag == 'tomb' and not l.tapped)
     if tomb_count > 0:
@@ -1857,13 +1862,13 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
             log(f"Rishadan Port taps {target.name} (BUG loses 1 mana)", True)
 
     # ── Gameplan layer — compute board assessment + active goal ──
-    # Exposes posture to individual strategy functions via gs.opp_goal
+    # Exposes posture to individual strategy functions via gs.p2_goal
     plan = GAMEPLANS.get(matchup)
     if plan:
         ba = assess(gs, turn)
-        gs.opp_goal = active_goal(plan, ba)
+        gs.p2_goal = active_goal(plan, ba)
     else:
-        gs.opp_goal = None
+        gs.p2_goal = None
 
     # ── Lock piece enforcement (shared helpers — single source of truth) ──
     _adjustments = apply_lock_effects(gs, o, log)
@@ -4362,7 +4367,7 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     rag_perm = next((c for c in player.creatures if c.card.tag == 'ragavan' and c.tapped), None)
     if rag_perm and opponent.library:
         stolen = opponent.library.pop(0)
-        treasure = getattr(gs, 'opp_treasure', 0) + 1
+        treasure = getattr(gs, 'p2_treasure', 0) + 1
         log_fn(f"★ Ragavan exiles {stolen.name} from BUG library + creates Treasure", True)
         update_goyf(gs)
         if not stolen.is_land() and stolen.cmc <= treasure and stolen.cmc > 0:
