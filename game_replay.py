@@ -60,6 +60,10 @@ def fmt_creatures(player):
         r.append({'name':n,'power':c.power,'toughness':c.toughness,'sick':c.summoning_sick})
     return r
 def fmt_lands(player): return [ab(l.card.name) for l in player.lands]
+def fmt_artifacts(player): return [ab(p.card.name) for p in player.artifacts]
+def fmt_enchantments(player): return [ab(p.card.name) for p in player.enchantments]
+def fmt_planeswalkers(player): return [ab(p.card.name) for p in player.planeswalkers]
+def fmt_graveyard(player): return [ab(c.name) for c in player.graveyard]
 
 def reason(line):
     lo = line.lower()
@@ -196,6 +200,14 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
                 'opp_creatures': fmt_creatures(opponent),
                 'lands': fmt_lands(player),
                 'opp_lands': fmt_lands(opponent),
+                'artifacts': fmt_artifacts(player),
+                'opp_artifacts': fmt_artifacts(opponent),
+                'enchantments': fmt_enchantments(player),
+                'opp_enchantments': fmt_enchantments(opponent),
+                'planeswalkers': fmt_planeswalkers(player),
+                'opp_planeswalkers': fmt_planeswalkers(opponent),
+                'graveyard': fmt_graveyard(player),
+                'opp_graveyard': fmt_graveyard(opponent),
                 'plays': plays,
             }
             turns_data.append(td)
@@ -318,6 +330,11 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .creature-badge .pt{{color:#e3b341;font-weight:700;margin-left:4px}}
 .creature-badge .sick{{color:#f85149;font-size:0.7em}}
 .land-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}}
+.perm-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em}}
+.art-list{{color:#e3b341}}
+.ench-list{{color:#d2a8ff}}
+.pw-list{{color:#79c0ff}}
+.gy-list{{color:#6e7681;font-size:0.75em}}
 .result{{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}}
 .result h2{{font-size:1.8em;margin-bottom:8px}}
 .result h2.bug-win{{color:#58a6ff}}.result h2.opp-win{{color:#f85149}}
@@ -481,6 +498,17 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
                 h.append(f'<span style="color:#484f58;font-size:0.8em">no creatures</span>')
             h.append(f'</div>')
             h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
+            if td.get('artifacts'):
+                h.append(f'<div class="perm-list art-list" style="margin-top:4px">⚙️ {", ".join(html.escape(a) for a in td["artifacts"])}</div>')
+            if td.get('enchantments'):
+                h.append(f'<div class="perm-list ench-list" style="margin-top:4px">✨ {", ".join(html.escape(e) for e in td["enchantments"])}</div>')
+            if td.get('planeswalkers'):
+                h.append(f'<div class="perm-list pw-list" style="margin-top:4px">🔮 {", ".join(html.escape(p) for p in td["planeswalkers"])}</div>')
+            if td.get('graveyard'):
+                gy = td["graveyard"]
+                gy_display = ", ".join(html.escape(c) for c in gy[:8])
+                if len(gy) > 8: gy_display += f" (+{len(gy)-8} more)"
+                h.append(f'<div class="perm-list gy-list" style="margin-top:4px">🪦 {gy_display}</div>')
             h.append(f'</div>')
             # Opponent side
             h.append(f'<div class="board-side {opp_cls}">')
@@ -493,6 +521,17 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
                 h.append(f'<span style="color:#484f58;font-size:0.8em">no creatures</span>')
             h.append(f'</div>')
             h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td.get("opp_lands", [])) if td.get("opp_lands") else "none"}</div>')
+            if td.get('opp_artifacts'):
+                h.append(f'<div class="perm-list art-list" style="margin-top:4px">⚙️ {", ".join(html.escape(a) for a in td["opp_artifacts"])}</div>')
+            if td.get('opp_enchantments'):
+                h.append(f'<div class="perm-list ench-list" style="margin-top:4px">✨ {", ".join(html.escape(e) for e in td["opp_enchantments"])}</div>')
+            if td.get('opp_planeswalkers'):
+                h.append(f'<div class="perm-list pw-list" style="margin-top:4px">🔮 {", ".join(html.escape(p) for p in td["opp_planeswalkers"])}</div>')
+            if td.get('opp_graveyard'):
+                gy = td["opp_graveyard"]
+                gy_display = ", ".join(html.escape(c) for c in gy[:8])
+                if len(gy) > 8: gy_display += f" (+{len(gy)-8} more)"
+                h.append(f'<div class="perm-list gy-list" style="margin-top:4px">🪦 {gy_display}</div>')
             h.append(f'</div>')
             h.append(f'</div>')  # board-grid
             h.append(f'</div></div>')

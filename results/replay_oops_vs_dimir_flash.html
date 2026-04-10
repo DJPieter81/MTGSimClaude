@@ -1,185 +1,1426 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Bo3 Replay: Oops vs Dimir Flash</title>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bo3 Replay: OOPS vs Dimir Flash</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0c0e14;color:#c8cdd8;font-family:'Courier New',monospace;padding:20px;line-height:1.6}
-h1{color:#ef4444;font-size:20px;margin-bottom:4px}
-.sub{color:#5a6270;font-size:12px;margin-bottom:20px}
-.game{background:#12151e;border:1px solid #1e2333;border-radius:8px;margin:16px 0;overflow:hidden}
-.game-hdr{padding:12px 16px;background:#1a1e2a;border-bottom:1px solid #1e2333;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
-.game-hdr:hover{background:#1e2333}
-.game-hdr h2{font-size:14px;color:#60a5fa}
-.game-hdr .result{font-size:14px;font-weight:700}
-.game-hdr .result.w{color:#4ade80}.game-hdr .result.l{color:#f87171}
-.log{padding:12px 16px;font-size:12px;display:none}
-.log.open{display:block}
-.log-line{padding:2px 0;border-bottom:1px solid #ffffff06}
-.log-line.p1{color:#ef4444}
-.log-line.p2{color:#60a5fa}
-.log-line.key{color:#c9a227;font-weight:700;background:#c9a22710;padding:2px 6px;border-radius:3px;margin:2px 0}
-.hand{background:#181c28;border-radius:4px;padding:8px 12px;margin:6px 0;font-size:11px}
-.hand .label{color:#5a6270;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
-.hand .cards{color:#c9a227;margin-top:2px}
-.summary{background:#181c28;border-radius:6px;padding:16px;margin:20px 0}
-.summary h3{color:#c9a227;font-size:14px;margin-bottom:8px}
-.summary .stat{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
-.summary .stat .lbl{color:#5a6270}
-.summary .stat .val{color:#c8cdd8;font-weight:600}
-.note{background:#ef444415;border-left:3px solid #ef4444;padding:10px 14px;margin:12px 0;font-size:12px;color:#c8a898;border-radius:0 4px 4px 0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:900px;margin:0 auto}
+.header{background:linear-gradient(135deg,#161b22,#1c2333);border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:20px}
+.header h1{font-size:1.6em;margin-bottom:8px;color:#f0f6fc}
+.header h1 .vs{color:#666}
+.header .bug-name{color:#58a6ff}
+.header .opp-name{color:#f85149}
+.header .meta{color:#8b949e;font-size:0.9em;margin-top:4px}
+.series-score{font-size:1.3em;margin-top:8px;font-weight:700}
+.series-score .bug-s{color:#58a6ff}.series-score .opp-s{color:#f85149}
+.game-tabs{display:flex;gap:4px;margin-bottom:16px}
+.game-tab{background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;font-weight:600;font-size:0.95em}
+.game-tab:hover{background:#30363d}
+.game-tab.active{background:#161b22;color:#f0f6fc;border-bottom-color:#161b22}
+.game-tab .winner-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px}
+.game-tab .winner-dot.bug{background:#58a6ff}.game-tab .winner-dot.opp{background:#f85149}
+.game-panel{display:none}.game-panel.active{display:block}
+.hands{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.hand-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}
+.hand-box h3{font-size:0.85em;color:#8b949e;margin-bottom:8px}
+.hand-box.bug{border-left:3px solid #58a6ff}.hand-box.opp{border-left:3px solid #f85149}
+.pill{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#e3b341}
+.controls{display:flex;gap:8px;margin-bottom:16px}
+.controls button{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}
+.controls button:hover{background:#30363d}
+.life-chart{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:20px}
+.life-chart h3{font-size:0.85em;color:#8b949e;margin-bottom:12px}
+.life-chart svg{width:100%;height:80px}
+.turn{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}
+.turn.bug{border-left:3px solid #58a6ff}.turn.opp{border-left:3px solid #f85149}
+.turn.active{border-color:#e3b341}
+.turn-header{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.turn-header:hover{background:#1c2333}
+.turn-header .left{display:flex;align-items:center;gap:12px}
+.turn-header .tnum{font-weight:700;font-size:1.1em;min-width:36px}
+.turn-header .tnum.bug{color:#58a6ff}.turn-header .tnum.opp{color:#f85149}
+.turn-header .player{font-weight:600;font-size:0.9em;padding:2px 8px;border-radius:4px}
+.turn-header .player.bug{background:#0d2847;color:#58a6ff}.turn-header .player.opp{background:#3d1418;color:#f85149}
+.turn-header .life{font-size:0.9em;color:#8b949e}
+.turn-header .life b{color:#f0f6fc}
+.turn-header .arrow{color:#484f58;transition:transform 0.2s;font-size:0.8em}
+.turn.open .arrow{transform:rotate(90deg)}
+.turn-body{display:none;padding:0 16px 16px;border-top:1px solid #21262d}
+.turn.open .turn-body{display:block}
+.section-label{font-size:0.75em;text-transform:uppercase;letter-spacing:1px;color:#484f58;margin:12px 0 6px}
+.hand-pills{margin-bottom:4px}
+.play{padding:6px 0;display:flex;gap:8px;align-items:flex-start}
+.play .step{color:#484f58;font-size:0.85em;min-width:20px;text-align:right;padding-top:1px}
+.play .action{font-family:'Fira Code','Consolas',monospace;font-size:0.85em;color:#c9d1d9;flex:1}
+.play .action.key{color:#e3b341;font-weight:600}
+.play .action.counter{color:#f85149;text-decoration:line-through;opacity:0.7}
+.play .reasoning{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px}
+.play .cat-badge{font-size:0.65em;text-transform:uppercase;letter-spacing:0.5px;padding:1px 5px;border-radius:3px;font-weight:600;margin-right:4px;font-family:'Segoe UI',system-ui,sans-serif;min-width:50px;text-align:center;display:inline-block}
+.cat-draw{background:#1a1a2e;color:#8b8bb8}.cat-land{background:#0d2611;color:#7ee787}.cat-combat{background:#3d1418;color:#f85149}.cat-interact{background:#2d1b4e;color:#d2a8ff}
+.cat-discard{background:#3d2e14;color:#e3b341}.cat-removal{background:#3d1418;color:#ff7b72}.cat-combo{background:#4a1942;color:#f778ba}.cat-spell{background:#0d2847;color:#58a6ff}
+.cat-trigger{background:#2a2000;color:#d29922}.cat-cantrip{background:#0a2540;color:#79c0ff}.cat-mana{background:#1a2e1a;color:#56d364}.cat-other{background:#1c1c1c;color:#6e7681}
+.board-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.board-side{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px 10px}
+.board-side h4{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
+.board-side.bug h4{color:#58a6ff}.board-side.opp h4{color:#f85149}
+.combat-detail{background:#1a0a0a;border:1px solid #3d1418;border-radius:6px;padding:8px 12px;margin:4px 0;font-family:'Fira Code','Consolas',monospace;font-size:0.82em}
+.combat-detail .atk-line{color:#e3b341;margin-bottom:2px}.combat-detail .blk-line{color:#d2a8ff;margin-bottom:2px}
+.combat-detail .dmg-line{color:#f85149;font-weight:600}.combat-detail .death-line{color:#f85149;opacity:0.8;font-style:italic}
+.board{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.creature-badge{background:#0d2847;border:1px solid #1f3d5c;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#58a6ff}
+.creature-badge .pt{color:#e3b341;font-weight:700;margin-left:4px}
+.creature-badge .sick{color:#f85149;font-size:0.7em}
+.land-list{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}
+.perm-list{font-family:'Fira Code','Consolas',monospace;font-size:0.8em}
+.art-list{color:#e3b341}
+.ench-list{color:#d2a8ff}
+.pw-list{color:#79c0ff}
+.gy-list{color:#6e7681;font-size:0.75em}
+.result{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}
+.result h2{font-size:1.8em;margin-bottom:8px}
+.result h2.bug-win{color:#58a6ff}.result h2.opp-win{color:#f85149}
+.result .reason{color:#8b949e;font-size:1em;margin-bottom:12px}
+.result .stats{color:#6e7681;font-size:0.9em}
+.kbd{font-size:0.75em;color:#6e7681;margin-left:auto}
 </style></head><body>
-<h1>Bo3 Replay: OOPS vs DIMIR_FLASH</h1>
-<div class="sub">Debug replay — investigating Oops 24.6% matrix anomaly</div>
-<div class="summary"><h3>Match Result: OOPS wins 2-1</h3>
-<div class="stat"><span class="lbl">Current sim WR</span><span class="val">~70% for Oops (20-game sample)</span></div>
-<div class="stat"><span class="lbl">Matrix data WR</span><span class="val">12% for Oops ← BROKEN</span></div>
-<div class="stat"><span class="lbl">Diagnosis</span><span class="val">Matrix ran with different Oops strategy code</span></div>
+
+<div class="header">
+<h1><span class="bug-name">OOPS</span> <span class="vs">vs</span> <span class="opp-name">Dimir Flash</span></h1>
+<div class="series-score"><span class="bug-s">OOPS 3</span> — <span class="opp-s">0 OPP</span></div>
+<div class="meta"><span class="bug-name">OOPS wins the series</span></div>
 </div>
-<div class="note"><strong>Key finding:</strong> Current sim shows Oops comboing on T3-T6 with Veil of Summer protection, winning ~65-74% vs Dimir Flash. The matrix data (12%) was generated with a different version of the Oops strategy that appears to have been broken or significantly nerfed. The current repo code produces healthy results.</div>
-<div class="game">
-<div class="game-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
-<h2>Game 1 — T6</h2>
-<span class="result w">OOPS wins — Oops + Veil — BUG blue interaction blanked</span>
+<div class="game-tabs">
+<div class="game-tab active" onclick="showGame(0)">Game 1<span class="winner-dot bug"></span></div>
+<div class="game-tab" onclick="showGame(1)">Game 2<span class="winner-dot bug"></span></div>
+<div class="game-tab" onclick="showGame(2)">Game 3<span class="winner-dot bug"></span></div>
 </div>
-<div class="log">
-<div class="hand"><div class="label">Oops opening hand (mulls: 0)</div><div class="cards">Misty Rainforest, Pact of Negation, Island, Ponder, Veil of Summer, Pact of Negation, Swamp</div></div>
-<div class="hand"><div class="label">Dimir Flash opening hand (mulls: 0)</div><div class="cards">Fatal Push, Fatal Push, Wan Shi Tong, Librarian, Underground Sea, Island, Force of Will, Underground Sea</div></div>
-<div class="log-line p2">T1[DIMIR_FLASH] Land: Underground Sea (1 lands)</div>
-<div class="log-line p1">T2[OOPS] Draw: Swamp</div>
-<div class="log-line p1">T2[OOPS] Land: Island (1 lands)</div>
-<div class="log-line p1">T2[OOPS] Ponder (1 draw)</div>
-<div class="log-line p2">T3[DIMIR_FLASH] Draw: Misty Rainforest</div>
-<div class="log-line p2">T3[DIMIR_FLASH] Land: Island (2 lands)</div>
-<div class="log-line p2">T3[DIMIR_FLASH] Wan Shi Tong, Librarian (X=0) enters as 1/1</div>
-<div class="log-line key">T4[OOPS] Draw: Veil of Summer</div>
-<div class="log-line p1">T4[OOPS] Land: Swamp (2 lands)</div>
-<div class="log-line p2">T5[DIMIR_FLASH] Draw: Daze</div>
-<div class="log-line p2">T5[DIMIR_FLASH] Land: Underground Sea (3 lands)</div>
-<div class="log-line p2">T5[DIMIR_FLASH] Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 19</div>
-<div class="log-line p1">T6[OOPS] Draw: Ponder</div>
-<div class="log-line p1">T6[OOPS] Land: Swamp (3 lands)</div>
-<div class="log-line p1">T6[OOPS] Ponder (1 draw)</div>
-<div class="log-line p2">T7[DIMIR_FLASH] Draw: Thoughtseize</div>
-<div class="log-line p2">T7[DIMIR_FLASH] Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 18</div>
-<div class="log-line p1">T8[OOPS] Draw: Balustrade Spy</div>
-<div class="log-line p1">T8[OOPS] Play+crack Misty Rainforest (−1 life, 17) → Tropical Island</div>
-<div class="log-line p2">T9[DIMIR_FLASH] Draw: Ponder</div>
-<div class="log-line p2">T9[DIMIR_FLASH] Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 16</div>
-<div class="log-line p1">T10[OOPS] Draw: Balustrade Spy</div>
-<div class="log-line p1">T10[OOPS] Play+crack Polluted Delta (−1 life, 15) → Bayou</div>
-<div class="log-line p2">T11[DIMIR_FLASH] Draw: Tamiyo, Inquisitive Student</div>
-<div class="log-line p2">T11[DIMIR_FLASH] Tamiyo, Inquisitive Student (0/3)</div>
-<div class="log-line p2">T11[DIMIR_FLASH] Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 14</div>
-<div class="log-line p1">T12[OOPS] Draw: Oops, All Spells</div>
-<div class="log-line p1">T12[OOPS] Play+crack Misty Rainforest (−1 life, 13) → Underground Sea</div>
-<div class="log-line key">T12[OOPS] Veil of Summer — blue blanked</div>
-<div class="log-line key">T12[OOPS] ★ Oops through Veil — wins</div>
+<div class="game-panel active" id="game-0">
+<div class="meta" style="margin-bottom:12px;color:#8b949e">OOPS is ON THE DRAW &nbsp;|&nbsp; Seed: 42</div>
+<div class="hands">
+<div class="hand-box bug"><h3>OOPS opening (mull 0)</h3>
+<span class="pill">MRain</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Island</span>
+<span class="pill">Ponder</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Swamp</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 0)</h3>
+<span class="pill">Push</span>
+<span class="pill">Push</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">USea</span>
+<span class="pill">Island</span>
+<span class="pill">FoW</span>
+<span class="pill">USea</span>
 </div></div>
-<div class="game">
-<div class="game-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
-<h2>Game 2 — T9</h2>
-<span class="result l">DIMIR_FLASH wins — BUG life reaches 0 on turn 9</span>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 520 80">
+<circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="20" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="60" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="60" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="100" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="100" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="100" y1="11.363636363636367" x2="140" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="11.363636363636367" x2="140" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="140" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="140" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="140" y1="11.363636363636367" x2="180" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="140" y1="11.363636363636367" x2="180" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="180" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="180" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="180" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="180" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="180" y1="14.545454545454547" x2="220" y2="14.545454545454547" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="11.363636363636367" x2="220" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="14.545454545454547" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="220" y="8.545454545454547" text-anchor="middle" fill="#58a6ff" font-size="9">19</text>
+<text x="220" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="220" y1="14.545454545454547" x2="260" y2="17.727272727272727" stroke="#58a6ff" stroke-width="2"/>
+<line x1="220" y1="11.363636363636367" x2="260" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="260" cy="17.727272727272727" r="3" fill="#58a6ff"/>
+<circle cx="260" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="260" y="11.727272727272727" text-anchor="middle" fill="#58a6ff" font-size="9">18</text>
+<text x="260" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="260" y1="17.727272727272727" x2="300" y2="20.909090909090914" stroke="#58a6ff" stroke-width="2"/>
+<line x1="260" y1="14.545454545454547" x2="300" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="300" cy="20.909090909090914" r="3" fill="#58a6ff"/>
+<circle cx="300" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="300" y="14.909090909090914" text-anchor="middle" fill="#58a6ff" font-size="9">17</text>
+<text x="300" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="300" y1="20.909090909090914" x2="340" y2="24.090909090909086" stroke="#58a6ff" stroke-width="2"/>
+<line x1="300" y1="14.545454545454547" x2="340" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="340" cy="24.090909090909086" r="3" fill="#58a6ff"/>
+<circle cx="340" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="340" y="18.090909090909086" text-anchor="middle" fill="#58a6ff" font-size="9">16</text>
+<text x="340" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="340" y1="24.090909090909086" x2="380" y2="27.272727272727273" stroke="#58a6ff" stroke-width="2"/>
+<line x1="340" y1="14.545454545454547" x2="380" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="380" cy="27.272727272727273" r="3" fill="#58a6ff"/>
+<circle cx="380" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="380" y="21.272727272727273" text-anchor="middle" fill="#58a6ff" font-size="9">15</text>
+<text x="380" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="380" y1="27.272727272727273" x2="420" y2="30.454545454545453" stroke="#58a6ff" stroke-width="2"/>
+<line x1="380" y1="14.545454545454547" x2="420" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="420" cy="30.454545454545453" r="3" fill="#58a6ff"/>
+<circle cx="420" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="420" y="24.454545454545453" text-anchor="middle" fill="#58a6ff" font-size="9">14</text>
+<text x="420" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="420" y1="30.454545454545453" x2="460" y2="33.63636363636363" stroke="#58a6ff" stroke-width="2"/>
+<line x1="420" y1="14.545454545454547" x2="460" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="460" cy="33.63636363636363" r="3" fill="#58a6ff"/>
+<circle cx="460" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="460" y="27.636363636363633" text-anchor="middle" fill="#58a6ff" font-size="9">13</text>
+<text x="460" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>
 </div>
-<div class="log">
-<div class="hand"><div class="label">Oops opening hand (mulls: 0)</div><div class="cards">Force of Will, Underground Sea, Oops, All Spells, Ponder, Misty Rainforest, Island, Veil of Summer</div></div>
-<div class="hand"><div class="label">Dimir Flash opening hand (mulls: 0)</div><div class="cards">Island, Island, Polluted Delta, Murktide Regent, Orcish Bowmasters, Brainstorm, Tamiyo, Inquisitive Student</div></div>
-<div class="log-line p2">T1[DIMIR_FLASH] Land: Island (1 lands)</div>
-<div class="log-line p2">T1[DIMIR_FLASH] Tamiyo, Inquisitive Student (0/3)</div>
-<div class="log-line p1">T2[OOPS] Draw: Unmask</div>
-<div class="log-line p1">T2[OOPS] Land: Underground Sea (1 lands)</div>
-<div class="log-line p1">T2[OOPS] Ponder (1 draw)</div>
-<div class="log-line p2">T3[DIMIR_FLASH] Draw: Wasteland</div>
-<div class="log-line p2">T3[DIMIR_FLASH] Land: Island (2 lands)</div>
-<div class="log-line p1">T4[OOPS] Draw: Underground Sea</div>
-<div class="log-line p1">T4[OOPS] Land: Island (2 lands)</div>
-<div class="log-line p2">T5[DIMIR_FLASH] Draw: Undercity Sewers</div>
-<div class="log-line p1">T6[OOPS] Draw: Pact of Negation</div>
-<div class="log-line p1">T6[OOPS] Land: Swamp (3 lands)</div>
-<div class="log-line p2">T7[DIMIR_FLASH] Draw: Scalding Tarn</div>
-<div class="log-line p2">T7[DIMIR_FLASH] Land: Wasteland (3 lands)</div>
-<div class="log-line p2">T7[DIMIR_FLASH] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
-<div class="log-line p1">T8[OOPS] Draw: Cabal Ritual</div>
-<div class="log-line p1">T8[OOPS] Land: Underground Sea (3 lands)</div>
-<div class="log-line p1">T8[OOPS] Cabal Ritual → +2 mana</div>
-<div class="log-line p2">T9[DIMIR_FLASH] Draw: Underground Sea</div>
-<div class="log-line p2">T9[DIMIR_FLASH] Land: Undercity Sewers (3 lands)</div>
-<div class="log-line p2">T9[DIMIR_FLASH] Flash Bowmasters</div>
-<div class="log-line p1">T10[OOPS] Draw: Force of Will</div>
-<div class="log-line p1">T10[OOPS]   Bowmasters T1/1: b -1 life → 19, Orc Army 1/1</div>
-<div class="log-line p1">T10[OOPS] Play+crack Misty Rainforest (−1 life, 18) → Underground Sea</div>
-<div class="log-line p2">T11[DIMIR_FLASH] Draw: Polluted Delta</div>
-<div class="log-line p2">T11[DIMIR_FLASH] Attack: Orcish Bowmasters, Orc Army — 2 unblocked → b at 16</div>
-<div class="log-line p1">T12[OOPS] Draw: Pact of Negation</div>
-<div class="log-line p1">T12[OOPS]   Bowmasters T1/1: b -1 life → 15, Orc Army 2/2</div>
-<div class="log-line p2">T13[DIMIR_FLASH] Draw: Wasteland</div>
-<div class="log-line p2">T13[DIMIR_FLASH] Land: Underground Sea (4 lands)</div>
-<div class="log-line p2">T13[DIMIR_FLASH] Attack: Orcish Bowmasters, Orc Army — 3 unblocked → b at 12</div>
-<div class="log-line p1">T14[OOPS] Draw: Oops, All Spells</div>
-<div class="log-line p1">T14[OOPS]   Bowmasters T1/1: b -1 life → 11, Orc Army 3/3</div>
-<div class="log-line p2">T15[DIMIR_FLASH] Draw: Scalding Tarn</div>
-<div class="log-line p2">T15[DIMIR_FLASH] Attack: Orcish Bowmasters, Orc Army — 4 unblocked → b at 7</div>
-<div class="log-line p1">T16[OOPS] Draw: Brainstorm</div>
-<div class="log-line p1">T16[OOPS]   Bowmasters T1/1: b -1 life → 6, Orc Army 4/4</div>
-<div class="log-line p1">T16[OOPS] Brainstorm (3 draws)</div>
-<div class="log-line p2">T17[DIMIR_FLASH] Draw: Force of Will</div>
-<div class="log-line p2">T17[DIMIR_FLASH] Land: Wasteland (5 lands)</div>
-<div class="log-line p2">T17[DIMIR_FLASH] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
-<div class="log-line p2">T17[DIMIR_FLASH] Attack: Orcish Bowmasters, Orc Army — 5 unblocked → b at 1</div>
-<div class="log-line p1">T18[OOPS] Draw: Island</div>
-<div class="log-line p1">T18[OOPS]   Bowmasters T1/1: b -1 life → 0, Orc Army 5/5</div>
-<div class="log-line p1">T18[OOPS] Land: Swamp (4 lands)</div>
+<div class="turn opp" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T1</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Push</span>
+<span class="pill">Push</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">USea</span>
+<span class="pill">Island</span>
+<span class="pill">FoW</span>
+<span class="pill">USea</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: USea (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">USea</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
 </div></div>
-<div class="game">
-<div class="game-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
-<h2>Game 3 — T9</h2>
-<span class="result w">OOPS wins — Oops + Veil — BUG blue interaction blanked</span>
+<div class="turn bug" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T2</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">MRain</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Island</span>
+<span class="pill">Ponder</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Swamp</span>
 </div>
-<div class="log">
-<div class="hand"><div class="label">Oops opening hand (mulls: 0)</div><div class="cards">Polluted Delta, Pact of Negation, Brainstorm, Swamp, Balustrade Spy, Veil of Summer, Ponder</div></div>
-<div class="hand"><div class="label">Dimir Flash opening hand (mulls: 0)</div><div class="cards">Polluted Delta, Ponder, Underground Sea, Ponder, Ponder, Polluted Delta, Brainstorm</div></div>
-<div class="log-line p1">T2[OOPS] Draw: Ponder</div>
-<div class="log-line p1">T2[OOPS] Land: Swamp (1 lands)</div>
-<div class="log-line p2">T3[DIMIR_FLASH] Draw: Wasteland</div>
-<div class="log-line p2">T3[DIMIR_FLASH] Land: Underground Sea (1 lands)</div>
-<div class="log-line p1">T4[OOPS] Draw: Polluted Delta</div>
-<div class="log-line p1">T4[OOPS] Play+crack Polluted Delta (−1 life, 19) → Underground Sea</div>
-<div class="log-line p1">T4[OOPS] Brainstorm (3 draws)</div>
-<div class="log-line p2">T5[DIMIR_FLASH] Draw: Polluted Delta</div>
-<div class="log-line p1">T6[OOPS] Draw: Island</div>
-<div class="log-line p1">T6[OOPS] Land: Island (3 lands)</div>
-<div class="log-line p1">T6[OOPS] Ponder (1 draw)</div>
-<div class="log-line p1">T6[OOPS] Cabal Ritual → +2 mana</div>
-<div class="log-line p2">T7[DIMIR_FLASH] Draw: Force of Will</div>
-<div class="log-line p2">T7[DIMIR_FLASH] Land: Wasteland (2 lands)</div>
-<div class="log-line p2">T7[DIMIR_FLASH] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
-<div class="log-line key">T8[OOPS] Draw: Veil of Summer</div>
-<div class="log-line p1">T8[OOPS] Land: Island (3 lands)</div>
-<div class="log-line p1">T8[OOPS] Ponder (1 draw)</div>
-<div class="log-line p2">T9[DIMIR_FLASH] Draw: Wan Shi Tong, Librarian</div>
-<div class="log-line p1">T10[OOPS] Draw: Force of Will</div>
-<div class="log-line p1">T10[OOPS] Play+crack Polluted Delta (−1 life, 18) → Bayou</div>
-<div class="log-line p2">T11[DIMIR_FLASH] Draw: Wan Shi Tong, Librarian</div>
-<div class="log-line p1">T12[OOPS] Draw: Brainstorm</div>
-<div class="log-line p1">T12[OOPS] Play+crack Misty Rainforest (−1 life, 17) → Tropical Island</div>
-<div class="log-line p1">T12[OOPS] Brainstorm (3 draws)</div>
-<div class="log-line key">T12[OOPS] Veil of Summer — blue blanked</div>
-<div class="log-line key">T12[OOPS] Oops fizzles (BUG had graveyard hate)</div>
-<div class="log-line p2">T13[DIMIR_FLASH] Draw: Force of Negation</div>
-<div class="log-line p1">T14[OOPS] Draw: Island</div>
-<div class="log-line p1">T14[OOPS] Land: Island (6 lands)</div>
-<div class="log-line p2">T15[DIMIR_FLASH] Draw: Polluted Delta</div>
-<div class="log-line p1">T16[OOPS] Draw: Pact of Negation</div>
-<div class="log-line p1">T16[OOPS] Play+crack Verdant Catacombs (−1 life, 16) → Bayou</div>
-<div class="log-line p2">T17[DIMIR_FLASH] Draw: Scalding Tarn</div>
-<div class="log-line p1">T18[OOPS] Draw: Oops, All Spells</div>
-<div class="log-line p1">T18[OOPS] Play+crack Misty Rainforest (−1 life, 15) → Tropical Island</div>
-<div class="log-line key">T18[OOPS] Veil of Summer — blue blanked</div>
-<div class="log-line key">T18[OOPS] ★ Oops through Veil — wins</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Swamp</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Island (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder (1 draw)</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">USea</div>
+</div>
+</div>
 </div></div>
-<div class="summary"><h3>20-Game Sample Stats</h3>
-<div class="stat"><span class="lbl">Oops win rate</span><span class="val">13/20 (65%)</span></div>
-<div class="stat"><span class="lbl">Fizzle rate</span><span class="val">1/20 (5%)</span></div>
-<div class="stat"><span class="lbl">Games with Veil</span><span class="val">12/20</span></div>
-<div class="stat"><span class="lbl">Avg game length</span><span class="val">T7.0</span></div>
+<div class="turn opp" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T3</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Push</span>
+<span class="pill">Push</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">Island</span>
+<span class="pill">FoW</span>
+<span class="pill">USea</span>
 </div>
-<script>document.querySelectorAll(".log")[0].classList.add("open");</script>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: MRain</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Island (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Wan Shi Tong, Librarian (X=0) enters as 1/1</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T4</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">MRain</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Swamp</span>
+<span class="pill">Swamp</span>
+<span class="pill">PDelta</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Veil of Summer</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Swamp (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T5</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Push</span>
+<span class="pill">Push</span>
+<span class="pill">FoW</span>
+<span class="pill">USea</span>
+<span class="pill">MRain</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Daze</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: USea (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 19</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Wan Shi Tong, Librarian</div>
+<div class="dmg-line">→ 1 unblocked → b at 19</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island, USea</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="5">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T6</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">MRain</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Swamp</span>
+<span class="pill">PDelta</span>
+<span class="pill">Veil of Summer</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Ponder</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Swamp (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder (1 draw)</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 3 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp, Swamp</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder, Ponder</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island, USea</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="6">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T7</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 18</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Push</span>
+<span class="pill">Push</span>
+<span class="pill">FoW</span>
+<span class="pill">MRain</span>
+<span class="pill">Daze</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Thoughtseize</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 18</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Wan Shi Tong, Librarian</div>
+<div class="dmg-line">→ 1 unblocked → b at 18</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 3 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp, Swamp</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder, Ponder</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="7">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T8</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>17 (-1)</b> &nbsp;|&nbsp; Opp: 19</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">MRain</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">PDelta</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">MRain</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Balustrade Spy</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack MRain (−1 life, 17) → Tropical Island</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 4 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp, Swamp, Tropical Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder, Ponder, MRain, MRain</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="8">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T9</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 16</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Push</span>
+<span class="pill">Push</span>
+<span class="pill">FoW</span>
+<span class="pill">Daze</span>
+<span class="pill">Thoughtseize</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Ponder</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 16</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Wan Shi Tong, Librarian</div>
+<div class="dmg-line">→ 1 unblocked → b at 16</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 4 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp, Swamp, Tropical Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder, Ponder, MRain, MRain</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="9">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T10</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>15 (-1)</b> &nbsp;|&nbsp; Opp: 19</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Pact of Negation</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">PDelta</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">MRain</span>
+<span class="pill">Balustrade Spy</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Balustrade Spy</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack PDelta (−1 life, 15) → Bayou</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 5 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp, Swamp, Tropical Island, Bayou</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder, Ponder, MRain, MRain, PDelta, PDelta</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="10">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T11</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 14</span>
+<span style="margin-left:8px"><span style="color:#f85149;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Push</span>
+<span class="pill">Push</span>
+<span class="pill">FoW</span>
+<span class="pill">Daze</span>
+<span class="pill">Thoughtseize</span>
+<span class="pill">Ponder</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Tamiyo</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="action">Tamiyo (0/3)</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 14</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Wan Shi Tong, Librarian</div>
+<div class="dmg-line">→ 1 unblocked → b at 14</div>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span>
+<span class="creature-badge">Tamiyo<span class="pt">0/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 5 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp, Swamp, Tropical Island, Bayou</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder, Ponder, MRain, MRain, PDelta, PDelta</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug open" data-idx="11">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T12</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>13 (-1)</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Pact of Negation</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">MRain</span>
+<span class="pill">Balustrade Spy</span>
+<span class="pill">Balustrade Spy</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Oops, All Spells</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Play+crack MRain (−1 life, 13) → USea</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Veil of Summer — blue blanked</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Oops through Veil — wins</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 6 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Swamp, Swamp, Tropical Island, Bayou, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder, Ponder, MRain, MRain, PDelta, PDelta, MRain, MRain (+2 more)</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 3 lands</h4>
+<div class="board">
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span>
+<span class="creature-badge">Tamiyo<span class="pt">0/3</span> <span class="sick">(sick)</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">USea, Island, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain</div>
+</div>
+</div>
+</div></div>
+<div class="result">
+<h2 class="bug-win">OOPS WINS</h2>
+<div class="reason">Oops + Veil — BUG blue interaction blanked</div>
+<div class="stats">Final life: OOPS 13 | OPP 19 &nbsp;|&nbsp; Length: T12</div>
+<div class="stats" style="margin-top:6px">OPP: 
+<span class="creature-badge">Wan Shi Tong..<span class="pt">1/1</span></span> 
+<span class="creature-badge">Tamiyo<span class="pt">0/3</span></span> 
+</div>
+</div>
+</div>
+<div class="game-panel" id="game-1">
+<div class="meta" style="margin-bottom:12px;color:#8b949e">OOPS is ON THE DRAW &nbsp;|&nbsp; Seed: 99</div>
+<div class="hands">
+<div class="hand-box bug"><h3>OOPS opening (mull 0)</h3>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Unmask</span>
+<span class="pill">Island</span>
+<span class="pill">Tropical Island</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">PDelta</span>
+<span class="pill">Brainstorm</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 3)</h3>
+<span class="pill">FoW</span>
+<span class="pill">Murktide</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">PDelta</span>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 280 80">
+<circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="20" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="20" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="20" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="14.545454545454547" x2="60" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="60" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="60" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="14.545454545454547" x2="100" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="100" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="100" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="100" y1="11.363636363636367" x2="140" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="14.545454545454547" x2="140" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="140" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="140" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="140" y1="11.363636363636367" x2="180" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="140" y1="14.545454545454547" x2="180" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="180" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="180" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="180" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="180" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+<line x1="180" y1="11.363636363636367" x2="220" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="180" y1="14.545454545454547" x2="220" y2="14.545454545454547" stroke="#f85149" stroke-width="2"/>
+<circle cx="220" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="220" cy="14.545454545454547" r="3" fill="#f85149"/>
+<text x="220" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="220" y="26.545454545454547" text-anchor="middle" fill="#f85149" font-size="9">19</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>
+</div>
+<div class="turn opp" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T1</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">Murktide</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">PDelta</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 PDelta</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T2</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Veil of Summer</span>
+<span class="pill">Unmask</span>
+<span class="pill">Island</span>
+<span class="pill">Tropical Island</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">PDelta</span>
+<span class="pill">Brainstorm</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Island</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Island (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Brainstorm (3 draws)</span>
+<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Brainstorm</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 PDelta</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T3</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">Murktide</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Daze</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 PDelta</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Brainstorm</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T4</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Veil of Summer</span>
+<span class="pill">Unmask</span>
+<span class="pill">Tropical Island</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">PDelta</span>
+<span class="pill">Island</span>
+<span class="pill">Swamp</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Veil of Summer</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: PDelta</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Tropical Island (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Brainstorm (3 draws)</span>
+<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Veil of Summer — blue blanked</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="action">Oops fizzles (BUG had graveyard hate)</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Tropical Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Brainstorm, Brainstorm, Veil of Summer, Oops, All Spells</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 PDelta</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T5</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">Murktide</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">Daze</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Sewers</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Sewers (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Sewers</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 PDelta</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Tropical Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Brainstorm, Brainstorm, Veil of Summer, Oops, All Spells</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug open" data-idx="5">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T6</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏1</span> <span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Unmask</span>
+<span class="pill">Pact of Negation</span>
+<span class="pill">PDelta</span>
+<span class="pill">Island</span>
+<span class="pill">Swamp</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">PDelta</span>
+<span class="pill">Verdant Catacombs</span>
+<span class="pill">Brainstorm</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Oops, All Spells</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Island (3 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Brainstorm (3 draws)</span>
+<span class="reasoning">&larr; dig 3 deep, put back 2 worst</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="action">Veil of Summer — blue blanked</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Oops through Veil — wins</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 3 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Island, Tropical Island, Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Brainstorm, Brainstorm, Veil of Summer, Oops, All Spells, Brainstorm, Veil of Summer, Oops, All Spells</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Sewers</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 PDelta</div>
+</div>
+</div>
+</div></div>
+<div class="result">
+<h2 class="bug-win">OOPS WINS</h2>
+<div class="reason">Oops + Veil — BUG blue interaction blanked</div>
+<div class="stats">Final life: OOPS 20 | OPP 19 &nbsp;|&nbsp; Length: T6</div>
+</div>
+</div>
+<div class="game-panel" id="game-2">
+<div class="meta" style="margin-bottom:12px;color:#8b949e">OOPS is ON THE DRAW &nbsp;|&nbsp; Seed: 7</div>
+<div class="hands">
+<div class="hand-box bug"><h3>OOPS opening (mull 0)</h3>
+<span class="pill">FoW</span>
+<span class="pill">Tropical Island</span>
+<span class="pill">Ponder</span>
+<span class="pill">Verdant Catacombs</span>
+<span class="pill">Island</span>
+<span class="pill">Island</span>
+<span class="pill">Balustrade Spy</span>
+</div><div class="hand-box opp"><h3>OPP opening (mull 3)</h3>
+<span class="pill">FoW</span>
+<span class="pill">FoN</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">Tamiyo</span>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 200 80">
+<circle cx="20" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="20" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="20" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="20" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="60" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="60" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="100" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="100" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+<line x1="100" y1="11.363636363636367" x2="140" y2="11.363636363636367" stroke="#58a6ff" stroke-width="2"/>
+<line x1="100" y1="11.363636363636367" x2="140" y2="11.363636363636367" stroke="#f85149" stroke-width="2"/>
+<circle cx="140" cy="11.363636363636367" r="3" fill="#58a6ff"/>
+<circle cx="140" cy="11.363636363636367" r="3" fill="#f85149"/>
+<text x="140" y="5.363636363636367" text-anchor="middle" fill="#58a6ff" font-size="9">20</text>
+<text x="140" y="23.363636363636367" text-anchor="middle" fill="#f85149" font-size="9">20</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>
+</div>
+<div class="turn opp" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T1</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">FoN</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">Tamiyo</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T2</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#58a6ff;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">Tropical Island</span>
+<span class="pill">Ponder</span>
+<span class="pill">Verdant Catacombs</span>
+<span class="pill">Island</span>
+<span class="pill">Island</span>
+<span class="pill">Balustrade Spy</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Veil of Summer</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Tropical Island (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-cantrip">DIG</span>
+<span class="action">Ponder (1 draw)</span>
+<span class="reasoning">&larr; look at top 3, keep the best</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Tropical Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T3</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">FoN</span>
+<span class="pill">Wan Shi Tong, Librarian</span>
+<span class="pill">Tamiyo</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Thoughtseize</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+<div class="board-side bug">
+<h4>OOPS — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Tropical Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug open" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T4</span>
+<span class="player bug">OOPS</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">FoW</span>
+<span class="pill">Verdant Catacombs</span>
+<span class="pill">Island</span>
+<span class="pill">Island</span>
+<span class="pill">Balustrade Spy</span>
+<span class="pill">Veil of Summer</span>
+<span class="pill">Oops, All Spells</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Veil of Summer</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Island (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="action">Veil of Summer — blue blanked</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Oops through Veil — wins</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>OOPS — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Tropical Island, Island</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Ponder, Veil of Summer, Oops, All Spells</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="result">
+<h2 class="bug-win">OOPS WINS</h2>
+<div class="reason">Oops + Veil — BUG blue interaction blanked</div>
+<div class="stats">Final life: OOPS 20 | OPP 20 &nbsp;|&nbsp; Length: T4</div>
+</div>
+</div>
+
+<script>
+function toggle(el) { el.classList.toggle('open'); }
+function expandAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.add('open')); }
+function collapseAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.remove('open')); }
+function showGame(idx) {
+  document.querySelectorAll('.game-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.game-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+}
+document.addEventListener('keydown', e => {
+  const active = document.querySelector('.game-panel.active');
+  if (!active) return;
+  const turns = active.querySelectorAll('.turn');
+  let cur = [...turns].findIndex(t => t.classList.contains('active'));
+  if (e.key === 'ArrowDown') { e.preventDefault(); if(cur<turns.length-1){turns.forEach(t=>t.classList.remove('active'));turns[cur+1].classList.add('active');turns[cur+1].scrollIntoView({behavior:'smooth',block:'center'});} }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); if(cur>0){turns.forEach(t=>t.classList.remove('active'));turns[cur-1].classList.add('active');turns[cur-1].scrollIntoView({behavior:'smooth',block:'center'});} }
+  else if (e.key === 'Enter' && cur>=0) { e.preventDefault(); toggle(turns[cur]); }
+});
+</script>
 </body></html>
