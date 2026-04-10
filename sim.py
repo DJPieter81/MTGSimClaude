@@ -598,11 +598,23 @@ def protagonist_turn(gs, turn, matchup):
 
     # ── Strategy dispatch ──
     from deck_registry import get_strategy
+    spells_before = b.spells_cast_this_turn
     strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
     if strategy_fn:
         strategy_fn(b, o, gs, total_mana, log, log_entries)
     else:
         log(f"No strategy for {matchup} — passing")
+
+    # ── Eidolon of the Great Revel: 2 damage per spell cast (CMC ≤3) ──
+    # Strategies don't call _eidolon_trigger, so apply retroactively
+    if gs.eidolon_active and not gs.game_over:
+        spells_cast = b.spells_cast_this_turn - spells_before
+        if spells_cast > 0:
+            # Estimate: most spells in Legacy are CMC ≤3, apply to all
+            eidolon_dmg = spells_cast * 2
+            b.life -= eidolon_dmg
+            log(f"Eidolon trigger — {spells_cast} spell(s) cast, {eidolon_dmg} damage to P1 ({b.life})")
+            gs.check_life_totals()
 
     # Restore blocked cards and tax-adjusted CMCs
     b.hand.extend(_chalice_blocked)
