@@ -318,8 +318,9 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 if l.card.tag == 'basic' or 'R' in l.card.produces]
         can_fireblast = len(mtns) >= 2
         # Fire when: opponent is low enough that 4 finishes or nearly finishes
-        should_fireblast = (opponent.life <= 7 or
-                            (opponent.life <= 10 and gs.turn >= 3))
+        # Real Burn saves Fireblast for lethal — sac'ing 2 lands is a huge cost
+        should_fireblast = (opponent.life <= 4 or
+                            (opponent.life <= 8 and gs.turn >= 4))
         if can_fireblast and should_fireblast:
             if not _try_counter_any(player, opponent, gs, fireblast, log_entries):
                 player.remove_from_hand(fireblast)

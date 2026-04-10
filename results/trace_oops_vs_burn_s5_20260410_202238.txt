@@ -1,0 +1,274 @@
+══════════════════════════════════════════════════════════════════════
+  OOPS vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: OOPS wins the die roll, goes FIRST
+
+  OOPS (P1):
+  Draw 7:
+    1. Grief (creature 3/2, CMC 4)
+    2. Pact of Negation (instant, CMC 0)
+    3. Turntimber Symbiosis (sorcery, CMC 7)
+    4. Pact of Negation (instant, CMC 0)
+    5. Agadeem's Awakening (sorcery, CMC 3)
+    6. Thassa's Oracle (creature 1/3, CMC 2, win-con)
+    7. Narcomoeba (creature 1/1, CMC 2)
+    [Lands: 0  Creatures: 3  Combo: 1  Other: 3]
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Mulligan #1 — draw 7:
+    1. Agadeem's Awakening (sorcery, CMC 3)
+    2. Summoner's Pact (instant, CMC 0)
+    3. Pact of Negation (instant, CMC 0)
+    4. Balustrade Spy (creature 2/3, CMC 4, combo)
+    5. Grief (creature 3/2, CMC 4)
+    6. Dark Ritual (instant, CMC 1)
+    7. Elvish Spirit Guide (creature 2/2, CMC 3)
+    [Lands: 0  Creatures: 3  Combo: 1  Other: 3]
+  Keep best 6: Balustrade Spy, Grief, Elvish Spirit Guide, Agadeem's Awakening, Summoner's Pact, Pact of Negation
+  Bottom 1: Dark Ritual
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 3 threat(s) for a clock
+
+  BURN (P2):
+  Draw 7:
+    1. Monastery Swiftspear (creature 1/2, CMC 1)
+    2. Chain Lightning (sorcery, CMC 1)
+    3. Mountain (basic)
+    4. Fireblast (instant, CMC 6)
+    5. Goblin Guide (creature 2/1, CMC 1)
+    6. Searing Blaze (instant, CMC 2)
+    7. Inspiring Vantage (land)
+    [Lands: 2  Creatures: 2  Other: 3]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock
+
+━━ TURN 1 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  ── Main ── Mana: 0
+    Hand (6): Balustrade Spy, Grief, Elvish Spirit Guide, Agadeem's Awakening, Summoner's Pact, Pact of Negation
+  Agadeem's Awakening → enters tapped as land (B)
+  Exile Elvish Spirit Guide → +1 mana
+  Grief (evoke, pitch Balustrade Spy) — strips Monastery Swiftspear
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ BURN                             │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 2  Lib: 54  GY: 1        │   Hand: 6  Lib: 53  GY: 1        │
+  │   Lands: Agadeem's Awakening     │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Chain Lightning          │
+  │         Pact of Negation         │         Mountain, Fireblast      │
+  │                                  │         Goblin Guide             │
+  │                                  │         Searing Blaze            │
+  │                                  │         Inspiring Vantage        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Fireblast
+  Land: Mountain (1 lands)
+  ── Main ──
+    Hand (6): Chain Lightning, Fireblast, Goblin Guide, Searing Blaze, Inspiring Vantage, Fireblast
+    Mana available: 1
+      → Goblin Guide goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Goblin Guide — 2 unblocked → b at 18
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ BURN                             │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 2  Lib: 54  GY: 1        │   Hand: 5  Lib: 52  GY: 1        │
+  │   Lands: Agadeem's Awakening     │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Summoner's Pact          │   Hand: Chain Lightning          │
+  │         Pact of Negation         │         Fireblast                │
+  │                                  │         Searing Blaze            │
+  │                                  │         Inspiring Vantage        │
+  │                                  │         Fireblast                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 18 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Summoner's Pact
+  ── Main ── Mana: 1
+    Hand (3): Summoner's Pact, Pact of Negation, Summoner's Pact
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ BURN                             │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 3  Lib: 53  GY: 1        │   Hand: 5  Lib: 52  GY: 1        │
+  │   Lands: Agadeem's Awakening     │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Summoner's Pact          │   Hand: Chain Lightning          │
+  │         Pact of Negation         │         Fireblast                │
+  │         Summoner's Pact          │         Searing Blaze            │
+  │                                  │         Inspiring Vantage        │
+  │                                  │         Fireblast                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 18 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Lightning Bolt
+  Land: Inspiring Vantage (2 lands)
+  ── Main ──
+    Hand (5): Chain Lightning, Fireblast, Searing Blaze, Fireblast, Lightning Bolt
+    Mana available: 2
+  Attack: Goblin Guide — 2 unblocked → b at 16
+      → Chain Lightning goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 13)
+      → Lightning Bolt goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 10)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ BURN                             │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 3  Lib: 53  GY: 1        │   Hand: 3  Lib: 51  GY: 3        │
+  │   Lands: Agadeem's Awakening     │   Lands: Mountain, Inspiring Vantage │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Summoner's Pact          │   Hand: Fireblast                │
+  │         Pact of Negation         │         Searing Blaze, Fireblast │
+  │         Summoner's Pact          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 10 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Turntimber Symbiosis
+  ── Main ── Mana: 1
+    Hand (4): Summoner's Pact, Pact of Negation, Summoner's Pact, Turntimber Symbiosis
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ BURN                             │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 4  Lib: 52  GY: 1        │   Hand: 3  Lib: 51  GY: 3        │
+  │   Lands: Agadeem's Awakening     │   Lands: Mountain, Inspiring Vantage │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Summoner's Pact          │   Hand: Fireblast                │
+  │         Pact of Negation         │         Searing Blaze, Fireblast │
+  │         Summoner's Pact          │                                  │
+  │         Turntimber Symbiosis     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 10 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Price of Progress
+  ── Main ──
+    Hand (4): Fireblast, Searing Blaze, Fireblast, Price of Progress
+    Mana available: 2
+  Attack: Goblin Guide — 2 unblocked → b at 8
+      → Price of Progress goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 6)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ BURN                             │
+  │   Life: 6                        │   Life: 20                       │
+  │   Hand: 4  Lib: 52  GY: 1        │   Hand: 3  Lib: 50  GY: 4        │
+  │   Lands: Agadeem's Awakening     │   Lands: Mountain, Inspiring Vantage │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Summoner's Pact          │   Hand: Fireblast                │
+  │         Pact of Negation         │         Searing Blaze, Fireblast │
+  │         Summoner's Pact          │                                  │
+  │         Turntimber Symbiosis     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 6 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Cabal Ritual
+  ── Main ── Mana: 1
+    Hand (5): Summoner's Pact, Pact of Negation, Summoner's Pact, Turntimber Symbiosis, Cabal Ritual
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ BURN                             │
+  │   Life: 6                        │   Life: 20                       │
+  │   Hand: 5  Lib: 51  GY: 1        │   Hand: 3  Lib: 50  GY: 4        │
+  │   Lands: Agadeem's Awakening     │   Lands: Mountain, Inspiring Vantage │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Summoner's Pact          │   Hand: Fireblast                │
+  │         Pact of Negation         │         Searing Blaze, Fireblast │
+  │         Summoner's Pact          │                                  │
+  │         Turntimber Symbiosis     │                                  │
+  │         Cabal Ritual             │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 6 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Chain Lightning
+  ── Main ──
+    Hand (4): Fireblast, Searing Blaze, Fireblast, Chain Lightning
+    Mana available: 2
+  Attack: Goblin Guide — 2 unblocked → b at 4
+      → Chain Lightning goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 1)
+      → Fireblast goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at -3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ BURN                             │
+  │   Life: -3                       │   Life: 20                       │
+  │   Hand: 5  Lib: 51  GY: 1        │   Hand: 2  Lib: 49  GY: 6        │
+  │   Lands: Agadeem's Awakening     │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Summoner's Pact          │   Hand: Searing Blaze, Fireblast │
+  │         Pact of Negation         │                                  │
+  │         Summoner's Pact          │                                  │
+  │         Turntimber Symbiosis     │                                  │
+  │         Cabal Ritual             │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — BUG life reaches -3 on turn 4
+  Final life: oops -3 | burn 20
+══════════════════════════════════════════════════════════════════════
