@@ -16,7 +16,7 @@ DECK_META schema:
     }
 
 Valid categories:
-    combo, mirror, tempo_mirror, aggro, prison, gy_combo, land_combo,
+    combo, mirror, tempo_mirror, aggro, prison, control, gy_combo, land_combo,
     vial_decks, dimir_only, bowm_decks, fast_combo, tribal
 """
 
