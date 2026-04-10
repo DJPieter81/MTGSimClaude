@@ -2362,12 +2362,12 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     deploy_priority = ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp',
                        'orchid', 'mom', 'recruiter']
 
-    # Hard cast creatures (multiple if mana permits, no Vial)
-    # Also cast via Vial if on board but deploy extras with mana
+    # Hard cast creatures — always deploy when mana available.
+    # Vial handles EXTRA deployments at instant speed (EOT/combat),
+    # but main phase should still hard-cast with available mana.
     deployed_this_turn = 0
-    max_deploys = 1 if not vial_perm else 0  # hard cast 1 if no Vial, Vial handles rest
-    if total_mana >= 4: max_deploys = 2  # with 4+ mana, can double-deploy
-    if not vial_perm or total_mana >= 2:
+    max_deploys = 2 if total_mana >= 4 else 1
+    if True:
         for tag in deploy_priority:
             crea = player.find_tag(tag)
             if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):

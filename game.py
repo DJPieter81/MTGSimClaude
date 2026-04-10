@@ -275,8 +275,9 @@ class GameState:
 
     @property
     def thalia_on_board(self) -> bool:
-        """True iff p2 controls Thalia — noncreature spells cost +1 (CR 613)."""
-        return any(c.card.tag == 'thalia' for c in self.p2.creatures)
+        """True iff ANY player controls Thalia — noncreature spells cost +1 (CR 613)."""
+        return any(c.card.tag == 'thalia'
+                   for c in self.p1.creatures + self.p2.creatures)
 
     @thalia_on_board.setter
     def thalia_on_board(self, value):
@@ -284,9 +285,11 @@ class GameState:
 
     @property
     def narset_active(self) -> bool:
-        """True iff p2 controls Narset, Parter of Veils — p1 can't draw extra cards."""
-        return any(c.card.tag == 'narset' for c in self.p2.planeswalkers
-                   ) if hasattr(self.p2, 'planeswalkers') else False
+        """True iff ANY player controls Narset — opponents can't draw extra cards.
+        Note: Narset's draw lock is applied per-player in play_turn via _narset_lock."""
+        p1_narset = any(c.card.tag == 'narset' for c in self.p1.planeswalkers) if hasattr(self.p1, 'planeswalkers') else False
+        p2_narset = any(c.card.tag == 'narset' for c in self.p2.planeswalkers) if hasattr(self.p2, 'planeswalkers') else False
+        return p1_narset or p2_narset
 
     def log_event(self, player: str, phase: str, message: str, key: bool = False):
         self.log.append(LogEntry(self.turn, player, phase, message, key))
