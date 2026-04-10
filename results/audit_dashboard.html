@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<title>Meta Audit Dashboard</title>
+<style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #1a1a2e; color: #e0e0e0; margin: 20px; }
+    h1 { color: #00d4ff; border-bottom: 2px solid #00d4ff; padding-bottom: 10px; }
+    h2 { color: #ff6b6b; margin-top: 30px; }
+    h3 { color: #ffd93d; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+    th, td { padding: 6px 12px; text-align: left; border-bottom: 1px solid #333; }
+    th { background: #16213e; color: #00d4ff; }
+    .bar { height: 16px; background: linear-gradient(90deg, #00d4ff, #0066ff); border-radius: 3px; }
+    .outlier-row { background: #2a1a1a !important; }
+    .outlier-row td { color: #ff6b6b; }
+    .outlier-card { border: 2px solid #666; border-radius: 8px; padding: 15px; margin: 10px 0; }
+    .outlier-card.high { border-color: #ff4444; background: #2a1515; }
+    .outlier-card.medium { border-color: #ffaa00; background: #2a2215; }
+    .outlier-header { font-size: 1.2em; font-weight: bold; }
+    .outlier-wr { font-size: 1.1em; margin: 5px 0; }
+    .outlier-issues { color: #ffaa00; margin-top: 8px; }
+    .game-card { border: 1px solid #333; border-radius: 6px; padding: 10px; margin: 8px 0; }
+    .game-card.win { border-left: 4px solid #44ff44; }
+    .game-card.loss { border-left: 4px solid #ff4444; }
+    .game-header { font-weight: bold; }
+    .game-meta { color: #888; font-size: 0.9em; }
+    .game-log { background: #0a0a15; padding: 10px; margin: 8px 0; font-family: monospace; font-size: 0.85em; max-height: 400px; overflow-y: auto; }
+    .log-line.key { color: #ffd93d; font-weight: bold; }
+    .win { color: #44ff44; }
+    .loss { color: #ff4444; }
+    button { background: #16213e; color: #00d4ff; border: 1px solid #00d4ff; padding: 4px 12px; cursor: pointer; border-radius: 4px; }
+    button:hover { background: #1a3a5c; }
+    .audit-card { background: #16213e; border-radius: 8px; padding: 15px; margin: 15px 0; }
+    .audit-table td { padding: 4px 10px; }
+    .audit-table td:first-child { color: #00d4ff; font-weight: bold; width: 150px; }
+    .issue-text { color: #ff6b6b; }
+    .summary { background: #16213e; padding: 15px; border-radius: 8px; margin: 15px 0; }
+</style>
+</head><body>
+
+<h1>Meta Audit Dashboard</h1>
+
+<div class="summary">
+    <b>16</b> decks | <b>2</b> outliers flagged
+    (1 HIGH,
+     1 MEDIUM)
+</div>
+
+<h2>Rankings (Meta-Weighted WR, T1+T2)</h2>
+<table>
+<tr><th>#</th><th>Deck</th><th>Tier</th><th>Meta</th><th>WR</th><th></th></tr>
+
+        <tr class="">
+            <td>1</td><td>ur_delver</td><td>T1</td><td>6%</td>
+            <td>74.8%</td>
+            <td><div class="bar" style="width:224px"></div></td>
+        </tr>
+        <tr class="">
+            <td>2</td><td>ocelot</td><td>T1</td><td>12%</td>
+            <td>63.9%</td>
+            <td><div class="bar" style="width:191px"></div></td>
+        </tr>
+        <tr class="">
+            <td>3</td><td>doomsday</td><td>T1</td><td>6%</td>
+            <td>62.9%</td>
+            <td><div class="bar" style="width:188px"></div></td>
+        </tr>
+        <tr class="">
+            <td>4</td><td>sneak_a</td><td>T2</td><td>4%</td>
+            <td>62.7%</td>
+            <td><div class="bar" style="width:187px"></div></td>
+        </tr>
+        <tr class="">
+            <td>5</td><td>sneak_b</td><td>T2</td><td>3%</td>
+            <td>61.6%</td>
+            <td><div class="bar" style="width:184px"></div></td>
+        </tr>
+        <tr class="">
+            <td>6</td><td>uwx</td><td>T2</td><td>3%</td>
+            <td>58.6%</td>
+            <td><div class="bar" style="width:175px"></div></td>
+        </tr>
+        <tr class="">
+            <td>7</td><td>dimir_b</td><td>T1</td><td>5%</td>
+            <td>58.6%</td>
+            <td><div class="bar" style="width:175px"></div></td>
+        </tr>
+        <tr class="">
+            <td>8</td><td>affinity</td><td></td><td>2%</td>
+            <td>58.1%</td>
+            <td><div class="bar" style="width:174px"></div></td>
+        </tr>
+        <tr class="">
+            <td>9</td><td>bug</td><td></td><td>2%</td>
+            <td>56.2%</td>
+            <td><div class="bar" style="width:168px"></div></td>
+        </tr>
+        <tr class="">
+            <td>10</td><td>dimir</td><td>T1</td><td>6%</td>
+            <td>54.2%</td>
+            <td><div class="bar" style="width:162px"></div></td>
+        </tr>
+        <tr class="">
+            <td>11</td><td>eight_cast</td><td>T2</td><td>3%</td>
+            <td>49.6%</td>
+            <td><div class="bar" style="width:148px"></div></td>
+        </tr>
+        <tr class="">
+            <td>12</td><td>prison</td><td>T1</td><td>6%</td>
+            <td>46.7%</td>
+            <td><div class="bar" style="width:139px"></div></td>
+        </tr>
+        <tr class="">
+            <td>13</td><td>painter</td><td>T2</td><td>3%</td>
+            <td>42.9%</td>
+            <td><div class="bar" style="width:128px"></div></td>
+        </tr>
+        <tr class="outlier-row">
+            <td>14</td><td>lands</td><td>T1</td><td>6%</td>
+            <td>42.8%</td>
+            <td><div class="bar" style="width:128px"></div></td>
+        </tr>
+        <tr class="">
+            <td>15</td><td>show</td><td>T2</td><td>3%</td>
+            <td>40.9%</td>
+            <td><div class="bar" style="width:122px"></div></td>
+        </tr>
+        <tr class="outlier-row">
+            <td>16</td><td>oops</td><td>T1</td><td>6%</td>
+            <td>22.6%</td>
+            <td><div class="bar" style="width:67px"></div></td>
+        </tr>
+</table>
+
+<h2>Outliers</h2>
+
+        <div class="outlier-card high">
+            <div class="outlier-header">HIGH: oops (T1, 6% meta)</div>
+            <div class="outlier-wr">Meta-Weighted WR: 22.6% (expected 45%-75%)</div>
+            <div class="outlier-issues">WR 23% below T1 floor 45%</div>
+        </div>
+        <div class="outlier-card medium">
+            <div class="outlier-header">MEDIUM: lands (T1, 6% meta)</div>
+            <div class="outlier-wr">Meta-Weighted WR: 42.8% (expected 45%-75%)</div>
+            <div class="outlier-issues">WR 43% below T1 floor 45%</div>
+        </div>
+
+<h2>Strategy Audits</h2>
+
+        <div class="audit-card">
+            <h3>oops Strategy Audit (30g vs dimir)</h3>
+            <table class="audit-table">
+                <tr><td>Win Rate</td><td>17% (5W-25L)</td></tr>
+                <tr><td>Avg Kill Turn</td><td>N/A</td></tr>
+                <tr><td>Timeouts (T15+)</td><td>4/30</td></tr>
+                <tr><td>Deck</td><td>0L / 60NL, 1 win cons, 9 combo, 27 creatures</td></tr>
+                <tr><td>Issues</td><td class="issue-text">Very low WR: 17% vs dimir<br>Very few lands: 0/60</td></tr>
+                <tr><td>Win Reasons</td><td>3x Oops combo (Balustrade Spy → Oracle)<br>2x Oops combo (Undercity Informer → Oracle)</td></tr>
+                <tr><td>Loss Reasons</td><td>2x BUG life reaches -1 on turn 8<br>2x BUG life reaches -1 on turn 15<br>2x BUG life reaches 0 on turn 13<br>2x Board/life advantage after T15<br>2x BUG life reaches -1 on turn 11</td></tr>
+            </table>
+        </div>
+
+<h2>Game Replays (Outlier Matchups)</h2>
+<h3>oops vs dimir</h3>
+    <div class="game-card loss">
+        <div class="game-header">
+            Seed 0 — <b>oops</b> vs <b>dimir</b>
+            — <span class="loss">P2 WINS</span>
+            T8 | BUG life reaches -1 on turn 8
+        </div>
+        <div class="game-meta">
+            Life: -1-17 |
+            P1 mulls: 0 | P2 mulls: 1 |
+            P1 first: False
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[DIMIR] Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T1[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T2[OOPS] Draw: Undercity Informer</div>
+<div class="log-line ">  T2[OOPS] Grief (evoke, pitch Cabal Ritual) — strips Force of Will</div>
+<div class="log-line ">  T3[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T3[DIMIR] Play+crack Scalding Tarn (−1 life, 18) → Underground Sea</div>
+<div class="log-line ">  T3[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T4[OOPS] Draw: Undercity Informer</div>
+<div class="log-line ">  T5[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T5[DIMIR] Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers</div>
+<div class="log-line ">  T5[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 18</div>
+<div class="log-line ">  T6[OOPS] Draw: Agadeem&#x27;s Awakening</div>
+<div class="log-line ">  T6[OOPS] Agadeem&#x27;s Awakening → enters tapped as land (B)</div>
+<div class="log-line ">  T7[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T7[DIMIR] Land: Wasteland (4 lands)</div>
+<div class="log-line ">  T7[DIMIR] Wasteland [ACTIVATED-uncounterable] → Agadeem&#x27;s Awakening</div>
+<div class="log-line ">  T7[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 16</div>
+<div class="log-line ">  T8[OOPS] Draw: Turntimber Symbiosis</div>
+<div class="log-line ">  T8[OOPS] Turntimber Symbiosis → enters tapped as land (G)</div>
+<div class="log-line ">  T9[DIMIR] Draw: Brazen Borrower</div>
+<div class="log-line ">  T9[DIMIR] Brazen Borrower (3/1)</div>
+<div class="log-line ">  T9[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 14</div>
+<div class="log-line ">  T10[OOPS] Draw: Wild Cantor</div>
+<div class="log-line ">  T10[OOPS] Dark Ritual → mana now 3</div>
+<div class="log-line ">  T11[DIMIR] Draw: Kaito, Bane of Nightmares</div>
+<div class="log-line ">  T11[DIMIR] Attack: Nethergoyf, Brazen Borrower — 5 unblocked → b at 9</div>
+<div class="log-line ">  T12[OOPS] Draw: Lotus Petal</div>
+<div class="log-line ">  T12[OOPS] Lotus Petal → +1 mana</div>
+<div class="log-line ">  T13[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T13[DIMIR] Land: Wasteland (4 lands)</div>
+<div class="log-line ">  T13[DIMIR] Wasteland [ACTIVATED-uncounterable] → Turntimber Symbiosis</div>
+<div class="log-line ">  T13[DIMIR] Attack: Nethergoyf, Brazen Borrower — 5 unblocked → b at 4</div>
+<div class="log-line ">  T14[OOPS] Draw: Chrome Mox</div>
+<div class="log-line ">  T14[OOPS] Chrome Mox → +1 mana</div>
+<div class="log-line ">  T15[DIMIR] Draw: Force of Will</div>
+<div class="log-line ">  T15[DIMIR] Attack: Nethergoyf, Brazen Borrower — 5 unblocked → b at -1</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+    <div class="game-card win">
+        <div class="game-header">
+            Seed 1 — <b>oops</b> vs <b>dimir</b>
+            — <span class="win">P1 WINS</span>
+            T1 | Oops combo (Undercity Informer → Oracle)
+        </div>
+        <div class="game-meta">
+            Life: 20-20 |
+            P1 mulls: 0 | P2 mulls: 0 |
+            P1 first: False
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[DIMIR] Land: Underground Sea (1 lands)</div>
+<div class="log-line ">  T1[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T1[DIMIR] Mishra&#x27;s Bauble (sac, artifact in GY, +1 draw next upkeep)</div>
+<div class="log-line ">  T2[OOPS] Draw: Grief</div>
+<div class="log-line ">  T2[OOPS] Lotus Petal → +1 mana</div>
+<div class="log-line ">  T2[OOPS] Chrome Mox → +1 mana</div>
+<div class="log-line ">  T2[OOPS] Exile Simian Spirit Guide → +1 mana</div>
+<div class="log-line ">  T2[OOPS] Grief (evoke, pitch Balustrade Spy) — strips Ponder</div>
+<div class="log-line key">  T2[OOPS] ★ Undercity Informer → mill entire deck → Thassa&#x27;s Oracle wins!</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+    <div class="game-card loss">
+        <div class="game-header">
+            Seed 2 — <b>oops</b> vs <b>dimir</b>
+            — <span class="loss">P2 WINS</span>
+            T15 | BUG life reaches -1 on turn 15
+        </div>
+        <div class="game-meta">
+            Life: -1-15 |
+            P1 mulls: 0 | P2 mulls: 3 |
+            P1 first: True
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[OOPS] Agadeem&#x27;s Awakening → enters tapped as land (B)</div>
+<div class="log-line ">  T1[OOPS] Exile Elvish Spirit Guide → +1 mana</div>
+<div class="log-line ">  T1[OOPS] Dark Ritual → mana now 3</div>
+<div class="log-line ">  T2[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T2[DIMIR] Land: Underground Sea (1 lands)</div>
+<div class="log-line ">  T2[DIMIR] Ponder (1 draw)</div>
+<div class="log-line ">  T3[OOPS] Draw: Simian Spirit Guide</div>
+<div class="log-line ">  T3[OOPS] Exile Simian Spirit Guide → +1 mana</div>
+<div class="log-line ">  T4[DIMIR] Draw: Bloodstained Mire</div>
+<div class="log-line ">  T4[DIMIR] Land: Wasteland (2 lands)</div>
+<div class="log-line ">  T4[DIMIR] Wasteland [ACTIVATED-uncounterable] → Agadeem&#x27;s Awakening</div>
+<div class="log-line ">  T5[OOPS] Draw: Pact of Negation</div>
+<div class="log-line ">  T6[DIMIR] Draw: Scalding Tarn</div>
+<div class="log-line ">  T6[DIMIR] Land: Wasteland (2 lands)</div>
+<div class="log-line ">  T7[OOPS] Draw: Dark Ritual</div>
+<div class="log-line ">  T8[DIMIR] Draw: Orcish Bowmasters</div>
+<div class="log-line ">  T8[DIMIR] Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T9[OOPS] Draw: Grief</div>
+<div class="log-line ">  T9[OOPS] Grief (evoke, pitch Bridge from Below) — strips Force of Will</div>
+<div class="log-line ">  T10[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T10[DIMIR] Play+crack Scalding Tarn (−1 life, 18) → Underground Sea</div>
+<div class="log-line ">  T11[OOPS] Draw: Chrome Mox</div>
+<div class="log-line ">  T11[OOPS] Chrome Mox → +1 mana</div>
+<div class="log-line ">  T11[OOPS] Dark Ritual → mana now 3</div>
+<div class="log-line ">  T12[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T13[OOPS] Draw: Summoner&#x27;s Pact</div>
+<div class="log-line ">  T14[DIMIR] Draw: Polluted Delta</div>
+<div class="log-line ">  T14[DIMIR] Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers</div>
+<div class="log-line ">  T15[OOPS] Draw: Dark Ritual</div>
+<div class="log-line ">  T16[DIMIR] Draw: Murktide Regent</div>
+<div class="log-line ">  T17[OOPS] Draw: Thassa&#x27;s Oracle</div>
+<div class="log-line ">  T18[DIMIR] Draw: Nethergoyf</div>
+<div class="log-line ">  T18[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T19[OOPS] Draw: Undercity Informer</div>
+<div class="log-line ">  T20[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T20[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 17</div>
+<div class="log-line ">  T21[OOPS] Draw: Simian Spirit Guide</div>
+<div class="log-line ">  T21[OOPS] Exile Simian Spirit Guide → +1 mana</div>
+<div class="log-line ">  T21[OOPS] Dark Ritual → mana now 3</div>
+<div class="log-line ">  T22[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T22[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T22[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T22[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 14</div>
+<div class="log-line ">  T23[OOPS] Draw: Pact of Negation</div>
+<div class="log-line ">  T24[DIMIR] Draw: Orcish Bowmasters</div>
+<div class="log-line ">  T24[DIMIR] Play+crack Polluted Delta (−1 life, 16) → Underground Sea</div>
+<div class="log-line ">  T24[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 11</div>
+<div class="log-line ">  T25[OOPS] Draw: Lotus Petal</div>
+<div class="log-line ">  T25[OOPS] Lotus Petal → +1 mana</div>
+<div class="log-line ">  T26[DIMIR] Draw: Polluted Delta</div>
+<div class="log-line ">  T26[DIMIR] Play+crack Polluted Delta (−1 life, 15) → Island</div>
+<div class="log-line ">  T26[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 8</div>
+<div class="log-line ">  T27[OOPS] Draw: Balustrade Spy</div>
+<div class="log-line ">  T28[DIMIR] Draw: Ponder</div>
+<div class="log-line ">  T28[DIMIR] Ponder (1 draw)</div>
+<div class="log-line ">  T28[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T28[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 5</div>
+<div class="log-line ">  T29[OOPS] Draw: Simian Spirit Guide</div>
+<div class="log-line ">  T29[OOPS] Exile Simian Spirit Guide → +1 mana</div>
+<div class="log-line ">  T30[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T30[DIMIR] Attack: Nethergoyf, Nethergoyf — 6 unblocked → b at -1</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+    <div class="game-card loss">
+        <div class="game-header">
+            Seed 3 — <b>oops</b> vs <b>dimir</b>
+            — <span class="loss">P2 WINS</span>
+            T12 | BUG life reaches -1 on turn 12
+        </div>
+        <div class="game-meta">
+            Life: -1-19 |
+            P1 mulls: 0 | P2 mulls: 0 |
+            P1 first: False
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[DIMIR] Land: Wasteland (1 lands)</div>
+<div class="log-line ">  T1[DIMIR] Mishra&#x27;s Bauble (sac, artifact in GY, +1 draw next upkeep)</div>
+<div class="log-line ">  T2[OOPS] Draw: Chrome Mox</div>
+<div class="log-line ">  T2[OOPS] Turntimber Symbiosis → enters tapped as land (G)</div>
+<div class="log-line ">  T2[OOPS] Lotus Petal → +1 mana</div>
+<div class="log-line ">  T2[OOPS] Chrome Mox → +1 mana</div>
+<div class="log-line ">  T2[OOPS] Exile Elvish Spirit Guide → +1 mana</div>
+<div class="log-line ">  T2[OOPS] Exile Simian Spirit Guide → +1 mana</div>
+<div class="log-line ">  T2[OOPS] Dark Ritual → mana now 7</div>
+<div class="log-line ">  T3[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T3[DIMIR] Land: Island (2 lands)</div>
+<div class="log-line ">  T3[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T3[DIMIR] Wasteland [ACTIVATED-uncounterable] → Turntimber Symbiosis</div>
+<div class="log-line ">  T4[OOPS] Draw: Undercity Informer</div>
+<div class="log-line ">  T5[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T5[DIMIR] Land: Swamp (2 lands)</div>
+<div class="log-line ">  T6[OOPS] Draw: Grief</div>
+<div class="log-line ">  T6[OOPS] Grief (evoke, pitch Undercity Informer) — strips Force of Will</div>
+<div class="log-line ">  T7[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T7[DIMIR] Land: Underground Sea (3 lands)</div>
+<div class="log-line ">  T8[OOPS] Draw: Balustrade Spy</div>
+<div class="log-line ">  T9[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T10[OOPS] Draw: Undercity Informer</div>
+<div class="log-line ">  T11[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T11[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T11[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T12[OOPS] Draw: Balustrade Spy</div>
+<div class="log-line ">  T13[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T13[DIMIR] Land: Underground Sea (4 lands)</div>
+<div class="log-line ">  T13[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 17</div>
+<div class="log-line ">  T14[OOPS] Draw: Agadeem&#x27;s Awakening</div>
+<div class="log-line ">  T14[OOPS] Agadeem&#x27;s Awakening → enters tapped as land (B)</div>
+<div class="log-line ">  T15[DIMIR] Draw: Scalding Tarn</div>
+<div class="log-line ">  T15[DIMIR] Land: Wasteland (5 lands)</div>
+<div class="log-line ">  T15[DIMIR] Wasteland [ACTIVATED-uncounterable] → Agadeem&#x27;s Awakening</div>
+<div class="log-line ">  T15[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 14</div>
+<div class="log-line ">  T16[OOPS] Draw: Chrome Mox</div>
+<div class="log-line ">  T16[OOPS] Chrome Mox → +1 mana</div>
+<div class="log-line ">  T17[DIMIR] Draw: Ponder</div>
+<div class="log-line ">  T17[DIMIR] Play+crack Scalding Tarn (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T17[DIMIR] Ponder (1 draw)</div>
+<div class="log-line ">  T17[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 11</div>
+<div class="log-line ">  T18[OOPS] Draw: Narcomoeba</div>
+<div class="log-line ">  T19[DIMIR] Draw: Tamiyo, Inquisitive Student</div>
+<div class="log-line ">  T19[DIMIR] Land: Wasteland (6 lands)</div>
+<div class="log-line ">  T19[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T19[DIMIR] Attack: Nethergoyf — 4 unblocked → b at 7</div>
+<div class="log-line ">  T20[OOPS] Draw: Dark Ritual</div>
+<div class="log-line ">  T21[DIMIR] Draw: Force of Will</div>
+<div class="log-line ">  T21[DIMIR] Attack: Nethergoyf — 4 unblocked → b at 3</div>
+<div class="log-line ">  T22[OOPS] Draw: Pact of Negation</div>
+<div class="log-line ">  T23[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T23[DIMIR] Attack: Nethergoyf — 4 unblocked → b at -1</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+    <div class="game-card loss">
+        <div class="game-header">
+            Seed 4 — <b>oops</b> vs <b>dimir</b>
+            — <span class="loss">P2 WINS</span>
+            T13 | BUG life reaches 0 on turn 13
+        </div>
+        <div class="game-meta">
+            Life: 0-15 |
+            P1 mulls: 0 | P2 mulls: 0 |
+            P1 first: False
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[DIMIR] Play+crack Polluted Delta (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T2[OOPS] Draw: Turntimber Symbiosis</div>
+<div class="log-line ">  T2[OOPS] Agadeem&#x27;s Awakening → enters tapped as land (B)</div>
+<div class="log-line ">  T2[OOPS] Lotus Petal → +1 mana</div>
+<div class="log-line ">  T2[OOPS] Dark Ritual → mana now 4</div>
+<div class="log-line ">  T2[OOPS] Grief (evoke, pitch Cabal Therapy) — strips Force of Will</div>
+<div class="log-line ">  T3[DIMIR] Draw: Brazen Borrower</div>
+<div class="log-line ">  T3[DIMIR] Land: Wasteland (2 lands)</div>
+<div class="log-line ">  T3[DIMIR] Wasteland [ACTIVATED-uncounterable] → Agadeem&#x27;s Awakening</div>
+<div class="log-line ">  T4[OOPS] Draw: Turntimber Symbiosis</div>
+<div class="log-line ">  T4[OOPS] Turntimber Symbiosis → enters tapped as land (G)</div>
+<div class="log-line ">  T5[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T5[DIMIR] Land: Wasteland (2 lands)</div>
+<div class="log-line ">  T5[DIMIR] Wasteland [ACTIVATED-uncounterable] → Turntimber Symbiosis</div>
+<div class="log-line ">  T6[OOPS] Draw: Chrome Mox</div>
+<div class="log-line ">  T6[OOPS] Turntimber Symbiosis → enters tapped as land (G)</div>
+<div class="log-line ">  T6[OOPS] Chrome Mox → +1 mana</div>
+<div class="log-line ">  T7[DIMIR] Draw: Scalding Tarn</div>
+<div class="log-line ">  T7[DIMIR] Play+crack Scalding Tarn (−1 life, 18) → Underground Sea</div>
+<div class="log-line ">  T8[OOPS] Draw: Balustrade Spy</div>
+<div class="log-line ">  T8[OOPS] Grief (evoke, pitch Balustrade Spy) — strips Force of Will</div>
+<div class="log-line ">  T9[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T10[OOPS] Draw: Agadeem&#x27;s Awakening</div>
+<div class="log-line ">  T11[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T12[OOPS] Draw: Dark Ritual</div>
+<div class="log-line ">  T12[OOPS] Dark Ritual → mana now 3</div>
+<div class="log-line ">  T13[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T13[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T13[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T14[OOPS] Draw: Pact of Negation</div>
+<div class="log-line ">  T15[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T15[DIMIR] Land: Island (3 lands)</div>
+<div class="log-line ">  T15[DIMIR] Brazen Borrower (3/1)</div>
+<div class="log-line ">  T16[OOPS] Draw: Pact of Negation</div>
+<div class="log-line ">  T17[DIMIR] Draw: Polluted Delta</div>
+<div class="log-line ">  T17[DIMIR] Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers</div>
+<div class="log-line ">  T17[DIMIR] Attack: Brazen Borrower — 3 unblocked → b at 17</div>
+<div class="log-line ">  T18[OOPS] Draw: Thassa&#x27;s Oracle</div>
+<div class="log-line ">  T19[DIMIR] Draw: Force of Will</div>
+<div class="log-line ">  T19[DIMIR] Land: Wasteland (5 lands)</div>
+<div class="log-line ">  T19[DIMIR] Wasteland [ACTIVATED-uncounterable] → Turntimber Symbiosis</div>
+<div class="log-line ">  T19[DIMIR] Attack: Brazen Borrower — 3 unblocked → b at 14</div>
+<div class="log-line ">  T20[OOPS] Draw: Wild Cantor</div>
+<div class="log-line ">  T20[OOPS] Agadeem&#x27;s Awakening → enters tapped as land (B)</div>
+<div class="log-line ">  T21[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T21[DIMIR] Play+crack Polluted Delta (−1 life, 16) → Underground Sea</div>
+<div class="log-line ">  T21[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T21[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T21[DIMIR] Attack: Brazen Borrower — 3 unblocked → b at 11</div>
+<div class="log-line ">  T22[OOPS] Draw: Lotus Petal</div>
+<div class="log-line ">  T22[OOPS] Lotus Petal → +1 mana</div>
+<div class="log-line ">  T23[DIMIR] Draw: Tamiyo, Inquisitive Student</div>
+<div class="log-line ">  T23[DIMIR] Play+crack Bloodstained Mire (−1 life, 15) → Underground Sea</div>
+<div class="log-line ">  T23[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T23[DIMIR] Attack: Brazen Borrower, Nethergoyf — 5 unblocked → b at 6</div>
+<div class="log-line ">  T24[OOPS] Draw: Agadeem&#x27;s Awakening</div>
+<div class="log-line ">  T25[DIMIR] Draw: Mishra&#x27;s Bauble</div>
+<div class="log-line ">  T25[DIMIR] Mishra&#x27;s Bauble (1 draw)</div>
+<div class="log-line ">  T25[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T25[DIMIR] Attack: Brazen Borrower, Nethergoyf — 6 unblocked → b at 0</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div><h3>lands vs dimir</h3>
+    <div class="game-card loss">
+        <div class="game-header">
+            Seed 0 — <b>lands</b> vs <b>dimir</b>
+            — <span class="loss">P2 WINS</span>
+            T15 | Board/life advantage after T15
+        </div>
+        <div class="game-meta">
+            Life: 3-17 |
+            P1 mulls: 0 | P2 mulls: 1 |
+            P1 first: False
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[DIMIR] Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T1[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T2[LANDS] Draw: Life from the Loam</div>
+<div class="log-line ">  T2[LANDS] Land: Dark Depths (1 lands)</div>
+<div class="log-line ">  T3[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T3[DIMIR] Play+crack Scalding Tarn (−1 life, 18) → Underground Sea</div>
+<div class="log-line ">  T3[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T4[LANDS] Draw: Life from the Loam</div>
+<div class="log-line ">  T4[LANDS] Land: Thespian&#x27;s Stage (2 lands)</div>
+<div class="log-line ">  T4[LANDS] Dark Depths combo → triggered ability (StackType: TRIGGERED)</div>
+<div class="log-line key">  T4[LANDS] ★ RULES: Triggered ability — FoW/Daze/Counterspell CANNOT counter CR 113.9</div>
+<div class="log-line ">  T4[LANDS] No Borrower — Marit Lage 20/20 flying indestructible in play</div>
+<div class="log-line ">  T5[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T5[DIMIR] Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers</div>
+<div class="log-line ">  T5[DIMIR] Fatal Push [revolt CMC≤4] → kills Marit Lage</div>
+<div class="log-line ">  T5[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 18</div>
+<div class="log-line ">  T6[LANDS] Draw: Boseiju, Who Endures</div>
+<div class="log-line ">  T6[LANDS] Land: Yavimaya, Cradle of Growth (1 lands)</div>
+<div class="log-line ">  T7[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T7[DIMIR] Land: Wasteland (4 lands)</div>
+<div class="log-line ">  T7[DIMIR] Wasteland [ACTIVATED-uncounterable] → Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T7[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 16</div>
+<div class="log-line ">  T8[LANDS] Draw: Forest</div>
+<div class="log-line ">  T8[LANDS] Land: Forest (1 lands)</div>
+<div class="log-line ">  T9[DIMIR] Draw: Brazen Borrower</div>
+<div class="log-line ">  T9[DIMIR] Brazen Borrower (3/1)</div>
+<div class="log-line ">  T9[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 14</div>
+<div class="log-line ">  T10[LANDS] Draw: Maze of Ith</div>
+<div class="log-line ">  T10[LANDS] Land: Boseiju, Who Endures (2 lands)</div>
+<div class="log-line ">  T11[DIMIR] Draw: Kaito, Bane of Nightmares</div>
+<div class="log-line ">  T11[DIMIR] Attack: Nethergoyf, Brazen Borrower — 5 unblocked → b at 9</div>
+<div class="log-line ">  T12[LANDS] Draw: Once Upon a Time</div>
+<div class="log-line ">  T12[LANDS] Land: Maze of Ith (3 lands)</div>
+<div class="log-line ">  T13[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T13[DIMIR] Land: Wasteland (4 lands)</div>
+<div class="log-line ">  T13[DIMIR] Wasteland [ACTIVATED-uncounterable] → Boseiju, Who Endures</div>
+<div class="log-line ">  T13[DIMIR]   Maze of Ith removes Brazen Borrower from combat</div>
+<div class="log-line ">  T13[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 7</div>
+<div class="log-line ">  T14[LANDS] Draw: Grafdigger&#x27;s Cage</div>
+<div class="log-line ">  T14[LANDS] Land: Wasteland (3 lands)</div>
+<div class="log-line ">  T14[LANDS] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line ">  T15[DIMIR] Draw: Force of Will</div>
+<div class="log-line ">  T15[DIMIR]   Maze of Ith removes Brazen Borrower from combat</div>
+<div class="log-line ">  T15[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 5</div>
+<div class="log-line ">  T16[LANDS] Draw: Pithing Needle</div>
+<div class="log-line ">  T16[LANDS] Land: Wasteland (4 lands)</div>
+<div class="log-line ">  T16[LANDS] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line ">  T16[LANDS] Wasteland [ACTIVATED-uncounterable] → Undercity Sewers</div>
+<div class="log-line ">  T17[DIMIR] Draw: Swamp</div>
+<div class="log-line ">  T17[DIMIR] Land: Swamp (1 lands)</div>
+<div class="log-line ">  T17[DIMIR]   Maze of Ith removes Brazen Borrower from combat</div>
+<div class="log-line ">  T17[DIMIR] Attack: Nethergoyf — 2 unblocked → b at 3</div>
+<div class="log-line ">  T18[LANDS] Draw: The Tabernacle at Pendrell Vale</div>
+<div class="log-line ">  T18[LANDS] Land: The Tabernacle at Pendrell Vale (4 lands)</div>
+<div class="log-line ">  T18[LANDS] Tabernacle — BUG sacrifices [&#x27;Nethergoyf&#x27;]</div>
+<div class="log-line ">  T19[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T19[DIMIR]   Maze of Ith removes Brazen Borrower from combat</div>
+<div class="log-line ">  T20[LANDS] Draw: Exploration</div>
+<div class="log-line ">  T21[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T21[DIMIR]   Maze of Ith removes Brazen Borrower from combat</div>
+<div class="log-line ">  T22[LANDS] Draw: Exploration</div>
+<div class="log-line ">  T23[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T23[DIMIR]   Maze of Ith removes Brazen Borrower from combat</div>
+<div class="log-line ">  T24[LANDS] Draw: Urza&#x27;s Saga</div>
+<div class="log-line ">  T24[LANDS] Land: Urza&#x27;s Saga (5 lands)</div>
+<div class="log-line ">  T25[DIMIR] Draw: Tamiyo, Inquisitive Student</div>
+<div class="log-line ">  T25[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T25[DIMIR]   Maze of Ith removes Brazen Borrower from combat</div>
+<div class="log-line ">  T26[LANDS] Draw: Urza&#x27;s Saga</div>
+<div class="log-line ">  T26[LANDS] Land: Urza&#x27;s Saga (6 lands)</div>
+<div class="log-line ">  T26[LANDS] Tabernacle — BUG sacrifices [&#x27;Brazen Borrower&#x27;]</div>
+<div class="log-line ">  T27[DIMIR] Draw: Tamiyo, Inquisitive Student</div>
+<div class="log-line ">  T27[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T28[LANDS] Draw: Malevolent Rumble</div>
+<div class="log-line ">  T29[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T30[LANDS] Draw: Malevolent Rumble</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+    <div class="game-card loss">
+        <div class="game-header">
+            Seed 1 — <b>lands</b> vs <b>dimir</b>
+            — <span class="loss">P2 WINS</span>
+            T6 | BUG life reaches -1 on turn 6
+        </div>
+        <div class="game-meta">
+            Life: -1-16 |
+            P1 mulls: 1 | P2 mulls: 0 |
+            P1 first: True
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[LANDS] Land: Boseiju, Who Endures (1 lands)</div>
+<div class="log-line ">  T2[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T2[DIMIR] Play+crack Polluted Delta (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T2[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T2[DIMIR] Mishra&#x27;s Bauble (sac, artifact in GY, +1 draw next upkeep)</div>
+<div class="log-line ">  T3[LANDS] Draw: Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T3[LANDS] Land: Yavimaya, Cradle of Growth (2 lands)</div>
+<div class="log-line ">  T4[DIMIR] Draw: Polluted Delta</div>
+<div class="log-line ">  T4[DIMIR] Play+crack Scalding Tarn (−1 life, 18) → Undercity Sewers</div>
+<div class="log-line ">  T4[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T5[LANDS] Draw: Urza&#x27;s Saga</div>
+<div class="log-line ">  T5[LANDS] Land: Urza&#x27;s Saga (3 lands)</div>
+<div class="log-line ">  T6[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T6[DIMIR] Play+crack Polluted Delta (−1 life, 17) → Underground Sea</div>
+<div class="log-line ">  T6[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T6[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 17</div>
+<div class="log-line ">  T7[LANDS] Draw: Crop Rotation</div>
+<div class="log-line ">  T7[LANDS] Land: Wasteland (4 lands)</div>
+<div class="log-line ">  T7[LANDS] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line ">  T7[LANDS] Crop Rotation → Dark Depths</div>
+<div class="log-line ">  T8[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T8[DIMIR] Play+crack Polluted Delta (−1 life, 16) → Underground Sea</div>
+<div class="log-line ">  T8[DIMIR] Attack: Nethergoyf, Nethergoyf — 6 unblocked → b at 11</div>
+<div class="log-line ">  T9[LANDS] Draw: Malevolent Rumble</div>
+<div class="log-line ">  T9[LANDS] Wasteland [ACTIVATED-uncounterable] → Undercity Sewers</div>
+<div class="log-line ">  T10[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T10[DIMIR] Land: Wasteland (3 lands)</div>
+<div class="log-line ">  T10[DIMIR] Wasteland [ACTIVATED-uncounterable] → Boseiju, Who Endures</div>
+<div class="log-line ">  T10[DIMIR] Attack: Nethergoyf, Nethergoyf — 6 unblocked → b at 5</div>
+<div class="log-line ">  T11[LANDS] Draw: Malevolent Rumble</div>
+<div class="log-line ">  T11[LANDS] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line ">  T12[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T12[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T12[DIMIR] Attack: Nethergoyf, Nethergoyf — 6 unblocked → b at -1</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+    <div class="game-card win">
+        <div class="game-header">
+            Seed 2 — <b>lands</b> vs <b>dimir</b>
+            — <span class="win">P1 WINS</span>
+            T7 | Opp life reaches -2 on turn 7
+        </div>
+        <div class="game-meta">
+            Life: 20--2 |
+            P1 mulls: 0 | P2 mulls: 3 |
+            P1 first: True
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[LANDS] Land: Yavimaya, Cradle of Growth (1 lands)</div>
+<div class="log-line key">  T1[LANDS]   ★ DIMIR Force of Will counters Crop Rotation (exiles Ponder)</div>
+<div class="log-line ">  T1[LANDS]   Crop Rotation countered!</div>
+<div class="log-line ">  T2[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T2[DIMIR] Land: Underground Sea (1 lands)</div>
+<div class="log-line ">  T3[LANDS] Draw: Disruptor Flute</div>
+<div class="log-line ">  T3[LANDS] Land: Dark Depths (2 lands)</div>
+<div class="log-line ">  T4[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T4[DIMIR] Land: Wasteland (2 lands)</div>
+<div class="log-line ">  T4[DIMIR] Wasteland [ACTIVATED-uncounterable] → Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T5[LANDS] Draw: Thespian&#x27;s Stage</div>
+<div class="log-line ">  T5[LANDS] Land: Urza&#x27;s Saga (2 lands)</div>
+<div class="log-line ">  T6[DIMIR] Draw: Bloodstained Mire</div>
+<div class="log-line ">  T6[DIMIR] Land: Wasteland (2 lands)</div>
+<div class="log-line ">  T6[DIMIR] Wasteland [ACTIVATED-uncounterable] → Dark Depths</div>
+<div class="log-line ">  T7[LANDS] Draw: Dark Depths</div>
+<div class="log-line ">  T7[LANDS] Land: Karakas (2 lands)</div>
+<div class="log-line ">  T8[DIMIR] Draw: Scalding Tarn</div>
+<div class="log-line ">  T8[DIMIR] Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T9[LANDS] Draw: Wasteland</div>
+<div class="log-line ">  T9[LANDS] Land: Thespian&#x27;s Stage (3 lands)</div>
+<div class="log-line ">  T10[DIMIR] Draw: Orcish Bowmasters</div>
+<div class="log-line ">  T10[DIMIR] Play+crack Scalding Tarn (−1 life, 18) → Underground Sea</div>
+<div class="log-line ">  T11[LANDS] Draw: Expedition Map</div>
+<div class="log-line ">  T11[LANDS] Land: Dark Depths (4 lands)</div>
+<div class="log-line ">  T11[LANDS] Dark Depths combo → triggered ability (StackType: TRIGGERED)</div>
+<div class="log-line key">  T11[LANDS] ★ RULES: Triggered ability — FoW/Daze/Counterspell CANNOT counter CR 113.9</div>
+<div class="log-line ">  T11[LANDS] No Borrower — Marit Lage 20/20 flying indestructible in play</div>
+<div class="log-line ">  T12[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T13[LANDS] Draw: Urza&#x27;s Saga</div>
+<div class="log-line ">  T13[LANDS] Land: Urza&#x27;s Saga (3 lands)</div>
+<div class="log-line ">  T13[LANDS] Attack: Marit Lage — 20 unblocked → o at -2</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+    <div class="game-card loss">
+        <div class="game-header">
+            Seed 3 — <b>lands</b> vs <b>dimir</b>
+            — <span class="loss">P2 WINS</span>
+            T12 | BUG life reaches -1 on turn 12
+        </div>
+        <div class="game-meta">
+            Life: -1-19 |
+            P1 mulls: 0 | P2 mulls: 0 |
+            P1 first: False
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[DIMIR] Land: Wasteland (1 lands)</div>
+<div class="log-line ">  T1[DIMIR] Mishra&#x27;s Bauble (sac, artifact in GY, +1 draw next upkeep)</div>
+<div class="log-line ">  T2[LANDS] Draw: Expedition Map</div>
+<div class="log-line ">  T2[LANDS] Land: Forest (1 lands)</div>
+<div class="log-line ">  T2[LANDS] Crop Rotation → Dark Depths</div>
+<div class="log-line ">  T3[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T3[DIMIR] Land: Island (2 lands)</div>
+<div class="log-line ">  T3[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T3[DIMIR] Wasteland [ACTIVATED-uncounterable] → Dark Depths</div>
+<div class="log-line ">  T4[LANDS] Draw: Life from the Loam</div>
+<div class="log-line ">  T4[LANDS] Land: Urza&#x27;s Saga (2 lands)</div>
+<div class="log-line ">  T5[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T5[DIMIR] Land: Swamp (2 lands)</div>
+<div class="log-line ">  T6[LANDS] Draw: Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T6[LANDS] Land: Yavimaya, Cradle of Growth (3 lands)</div>
+<div class="log-line ">  T7[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T7[DIMIR] Land: Underground Sea (3 lands)</div>
+<div class="log-line ">  T8[LANDS] Draw: Exploration</div>
+<div class="log-line ">  T9[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T10[LANDS] Draw: Life from the Loam</div>
+<div class="log-line ">  T11[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T11[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T11[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T12[LANDS] Draw: Exploration</div>
+<div class="log-line ">  T13[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T13[DIMIR] Land: Underground Sea (4 lands)</div>
+<div class="log-line ">  T13[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 17</div>
+<div class="log-line ">  T14[LANDS] Draw: Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T14[LANDS] Land: Yavimaya, Cradle of Growth (4 lands)</div>
+<div class="log-line ">  T15[DIMIR] Draw: Scalding Tarn</div>
+<div class="log-line ">  T15[DIMIR] Land: Wasteland (5 lands)</div>
+<div class="log-line ">  T15[DIMIR] Wasteland [ACTIVATED-uncounterable] → Urza&#x27;s Saga</div>
+<div class="log-line ">  T15[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 14</div>
+<div class="log-line ">  T16[LANDS] Draw: Grafdigger&#x27;s Cage</div>
+<div class="log-line ">  T17[DIMIR] Draw: Ponder</div>
+<div class="log-line ">  T17[DIMIR] Play+crack Scalding Tarn (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T17[DIMIR] Ponder (1 draw)</div>
+<div class="log-line ">  T17[DIMIR] Attack: Nethergoyf — 3 unblocked → b at 11</div>
+<div class="log-line ">  T18[LANDS] Draw: Crop Rotation</div>
+<div class="log-line key">  T18[LANDS]   ★ DIMIR Force of Will counters Crop Rotation (exiles Daze)</div>
+<div class="log-line ">  T18[LANDS]   Crop Rotation countered!</div>
+<div class="log-line ">  T19[DIMIR] Draw: Tamiyo, Inquisitive Student</div>
+<div class="log-line ">  T19[DIMIR] Land: Wasteland (6 lands)</div>
+<div class="log-line ">  T19[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T19[DIMIR] Wasteland [ACTIVATED-uncounterable] → Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T19[DIMIR] Attack: Nethergoyf — 4 unblocked → b at 7</div>
+<div class="log-line ">  T20[LANDS] Draw: Thespian&#x27;s Stage</div>
+<div class="log-line ">  T20[LANDS] Land: Thespian&#x27;s Stage (3 lands)</div>
+<div class="log-line ">  T21[DIMIR] Draw: Force of Will</div>
+<div class="log-line ">  T21[DIMIR] Attack: Nethergoyf — 4 unblocked → b at 3</div>
+<div class="log-line ">  T22[LANDS] Draw: Disruptor Flute</div>
+<div class="log-line ">  T23[DIMIR] Draw: Daze</div>
+<div class="log-line ">  T23[DIMIR] Attack: Nethergoyf — 4 unblocked → b at -1</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+    <div class="game-card loss">
+        <div class="game-header">
+            Seed 4 — <b>lands</b> vs <b>dimir</b>
+            — <span class="loss">P2 WINS</span>
+            T15 | Board/life advantage after T15
+        </div>
+        <div class="game-meta">
+            Life: 5-15 |
+            P1 mulls: 0 | P2 mulls: 0 |
+            P1 first: False
+        </div>
+        <div class="game-log" style="display:none"><div class="log-line ">  T1[DIMIR] Play+crack Polluted Delta (−1 life, 19) → Underground Sea</div>
+<div class="log-line ">  T2[LANDS] Draw: Ghost Quarter</div>
+<div class="log-line ">  T2[LANDS] Land: Yavimaya, Cradle of Growth (1 lands)</div>
+<div class="log-line ">  T3[DIMIR] Draw: Brazen Borrower</div>
+<div class="log-line ">  T3[DIMIR] Land: Wasteland (2 lands)</div>
+<div class="log-line ">  T3[DIMIR] Wasteland [ACTIVATED-uncounterable] → Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T4[LANDS] Draw: Bojuka Bog</div>
+<div class="log-line ">  T4[LANDS] Land: Yavimaya, Cradle of Growth (1 lands)</div>
+<div class="log-line ">  T5[DIMIR] Draw: Fatal Push</div>
+<div class="log-line ">  T5[DIMIR] Land: Wasteland (2 lands)</div>
+<div class="log-line ">  T5[DIMIR] Wasteland [ACTIVATED-uncounterable] → Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T6[LANDS] Draw: Expedition Map</div>
+<div class="log-line ">  T6[LANDS] Land: Urza&#x27;s Saga (1 lands)</div>
+<div class="log-line ">  T7[DIMIR] Draw: Scalding Tarn</div>
+<div class="log-line ">  T7[DIMIR] Play+crack Scalding Tarn (−1 life, 18) → Underground Sea</div>
+<div class="log-line ">  T8[LANDS] Draw: Exploration</div>
+<div class="log-line ">  T8[LANDS] Land: Ghost Quarter (2 lands)</div>
+<div class="log-line ">  T9[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T10[LANDS] Draw: Boseiju, Who Endures</div>
+<div class="log-line ">  T10[LANDS] Land: Bojuka Bog (3 lands)</div>
+<div class="log-line ">  T11[DIMIR] Draw: Thoughtseize</div>
+<div class="log-line ">  T12[LANDS] Draw: Skateboard</div>
+<div class="log-line ">  T12[LANDS] Land: Boseiju, Who Endures (4 lands)</div>
+<div class="log-line ">  T13[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T13[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T13[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T14[LANDS] Draw: Thespian&#x27;s Stage</div>
+<div class="log-line ">  T14[LANDS] Land: Thespian&#x27;s Stage (5 lands)</div>
+<div class="log-line ">  T15[DIMIR] Draw: Wasteland</div>
+<div class="log-line ">  T15[DIMIR] Land: Island (3 lands)</div>
+<div class="log-line ">  T15[DIMIR] Brazen Borrower (3/1)</div>
+<div class="log-line ">  T16[LANDS] Draw: Thespian&#x27;s Stage</div>
+<div class="log-line ">  T16[LANDS] Land: Thespian&#x27;s Stage (6 lands)</div>
+<div class="log-line ">  T17[DIMIR] Draw: Polluted Delta</div>
+<div class="log-line ">  T17[DIMIR] Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers</div>
+<div class="log-line ">  T17[DIMIR] Attack: Brazen Borrower — 3 unblocked → b at 17</div>
+<div class="log-line ">  T18[LANDS] Draw: Crop Rotation</div>
+<div class="log-line ">  T18[LANDS] Land: Wasteland (7 lands)</div>
+<div class="log-line ">  T18[LANDS] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line ">  T18[LANDS] Crop Rotation → Dark Depths</div>
+<div class="log-line ">  T18[LANDS] Dark Depths combo → triggered ability (StackType: TRIGGERED)</div>
+<div class="log-line key">  T18[LANDS] ★ RULES: Triggered ability — FoW/Daze/Counterspell CANNOT counter CR 113.9</div>
+<div class="log-line ">  T18[LANDS] No Borrower — Marit Lage 20/20 flying indestructible in play</div>
+<div class="log-line ">  T19[DIMIR] Draw: Force of Will</div>
+<div class="log-line ">  T19[DIMIR] Land: Wasteland (4 lands)</div>
+<div class="log-line ">  T19[DIMIR] Fatal Push [CMC≤2] → kills Marit Lage</div>
+<div class="log-line ">  T19[DIMIR] Wasteland [ACTIVATED-uncounterable] → Urza&#x27;s Saga</div>
+<div class="log-line ">  T19[DIMIR] Attack: Brazen Borrower — 3 unblocked → b at 14</div>
+<div class="log-line ">  T20[LANDS] Draw: The Tabernacle at Pendrell Vale</div>
+<div class="log-line ">  T20[LANDS] Land: The Tabernacle at Pendrell Vale (5 lands)</div>
+<div class="log-line ">  T20[LANDS] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line ">  T21[DIMIR] Draw: Brainstorm</div>
+<div class="log-line ">  T21[DIMIR] Play+crack Polluted Delta (−1 life, 16) → Underground Sea</div>
+<div class="log-line ">  T21[DIMIR] Brainstorm (3 draws)</div>
+<div class="log-line ">  T21[DIMIR] Nethergoyf (0/1)</div>
+<div class="log-line ">  T21[DIMIR] Attack: Brazen Borrower — 3 unblocked → b at 11</div>
+<div class="log-line ">  T22[LANDS] Draw: Once Upon a Time</div>
+<div class="log-line ">  T22[LANDS] Land: Wasteland (6 lands)</div>
+<div class="log-line ">  T22[LANDS] Wasteland [ACTIVATED-uncounterable] → Undercity Sewers</div>
+<div class="log-line ">  T22[LANDS] Tabernacle — BUG sacrifices [&#x27;Tamiyo, Inquisitive Student&#x27;]</div>
+<div class="log-line ">  T22[LANDS] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line ">  T23[DIMIR] Draw: Tamiyo, Inquisitive Student</div>
+<div class="log-line ">  T23[DIMIR] Play+crack Bloodstained Mire (−1 life, 15) → Underground Sea</div>
+<div class="log-line ">  T23[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T23[DIMIR] Attack: Brazen Borrower, Nethergoyf — 6 unblocked → b at 5</div>
+<div class="log-line ">  T24[LANDS] Draw: Boseiju, Who Endures</div>
+<div class="log-line ">  T24[LANDS] Land: Boseiju, Who Endures (6 lands)</div>
+<div class="log-line ">  T24[LANDS] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line ">  T24[LANDS] Tabernacle — BUG sacrifices [&#x27;Brazen Borrower&#x27;, &#x27;Nethergoyf&#x27;]</div>
+<div class="log-line ">  T25[DIMIR] Draw: Mishra&#x27;s Bauble</div>
+<div class="log-line ">  T25[DIMIR] Mishra&#x27;s Bauble (1 draw)</div>
+<div class="log-line ">  T26[LANDS] Draw: Life from the Loam</div>
+<div class="log-line ">  T27[DIMIR] Draw: Swamp</div>
+<div class="log-line ">  T27[DIMIR] Land: Swamp (2 lands)</div>
+<div class="log-line ">  T27[DIMIR] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line ">  T28[LANDS] Draw: Yavimaya, Cradle of Growth</div>
+<div class="log-line ">  T28[LANDS] Land: Yavimaya, Cradle of Growth (7 lands)</div>
+<div class="log-line ">  T29[DIMIR] Draw: Kaito, Bane of Nightmares</div>
+<div class="log-line ">  T30[LANDS] Draw: Wasteland</div>
+<div class="log-line ">  T30[LANDS] Land: Wasteland (8 lands)</div></div>
+        <button onclick="this.previousElementSibling.style.display=
+            this.previousElementSibling.style.display==='none'?'block':'none';
+            this.textContent=this.textContent==='Show Log'?'Hide Log':'Show Log'">Show Log</button>
+    </div>
+
+</body></html>
