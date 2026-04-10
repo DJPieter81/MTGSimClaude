@@ -36,7 +36,7 @@ DECK_META = {
     'make_deck':  make_uwx_deck,
     'strategy':   _strategy_uwx,
     'keep':       _keep_uwx,
-    'categories': {'mirror'},
+    'categories': {'mirror', 'control'},
     'interaction': {'speed': 5, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.03,
 }
