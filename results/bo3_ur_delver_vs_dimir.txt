@@ -1,0 +1,1057 @@
+
+╔════════════════════════════════════════════════════════════════════╗
+║  GAME 1 of 3  |  Seed: 42  |  Series: UR Delver 0 — Dimir 0            ║
+╚════════════════════════════════════════════════════════════════════╝
+══════════════════════════════════════════════════════════════════════
+  UR_DELVER vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  UR_DELVER (P1):
+  Draw 7:
+    1. Spell Pierce (instant, CMC 1)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Steam Vents (dual)
+    4. Murktide Regent (creature 5/5, CMC 7)
+    5. Lightning Bolt (instant, CMC 1)
+    6. Brainstorm (instant, CMC 1, cantrip)
+    7. Steam Vents (dual)
+    [Lands: 2  Creatures: 1  Cantrips: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Thoughtseize (sorcery, CMC 1)
+    2. Fatal Push (instant, CMC 1, removal)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Underground Sea (dual)
+    5. Island (basic)
+    6. Brainstorm (instant, CMC 1, cantrip)
+    7. Scalding Tarn (fetch)
+    [Lands: 3  Creatures: 1  Cantrips: 1  Removal: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (6): Thoughtseize, Fatal Push, Tamiyo, Inquisitive Student, Island, Brainstorm, Scalding Tarn
+    Mana available: 1
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 8  Lib: 50  GY: 1        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Brainstorm               │         Fatal Push, Tamiyo       │
+  │         Steam Vents              │         Inquisitive Student      │
+  │         Murktide Regent          │         Island, Scalding Tarn    │
+  │         Lightning Bolt           │         Polluted Delta, Ponder   │
+  │         Brainstorm, Steam Vents  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Steam Vents (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Spell Pierce, Brainstorm, Murktide Regent, Lightning Bolt, Brainstorm, Steam Vents, Mountain
+  Brainstorm — cantrip
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 51  GY: 1        │   Hand: 8  Lib: 50  GY: 1        │
+  │   Lands: Steam Vents             │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push, Tamiyo       │
+  │         Lightning Bolt           │         Inquisitive Student      │
+  │         Brainstorm               │         Island, Scalding Tarn    │
+  │         Steam Vents, Mountain    │         Polluted Delta, Ponder   │
+  │         Force of Will            │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Island (2 lands)
+  ── Main ──
+    Hand (8): Thoughtseize, Fatal Push, Tamiyo, Inquisitive Student, Scalding Tarn, Polluted Delta, Ponder, Thoughtseize, Fatal Push
+    Mana available: 2
+  Ponder (1 draw)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 51  GY: 1        │   Hand: 7  Lib: 48  GY: 2        │
+  │   Lands: Steam Vents             │   Lands: Underground Sea, Island │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push               │
+  │         Lightning Bolt           │         Scalding Tarn            │
+  │         Brainstorm               │         Polluted Delta           │
+  │         Steam Vents, Mountain    │         Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Unholy Heat
+  Land: Steam Vents (2 lands)
+  ── Main ── Mana: 2
+    Hand (7): Spell Pierce, Murktide Regent, Lightning Bolt, Brainstorm, Mountain, Force of Will, Unholy Heat
+  Brainstorm — cantrip
+  Lightning Bolt -> Tamiyo, Inquisitive Student
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 49  GY: 3        │   Hand: 7  Lib: 48  GY: 3        │
+  │   Lands: Steam Vents, Steam Vents │   Lands: Underground Sea, Island │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push               │
+  │         Mountain                 │         Scalding Tarn            │
+  │         Force of Will            │         Polluted Delta           │
+  │         Unholy Heat              │         Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  Play+crack Scalding Tarn (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (7): Thoughtseize, Fatal Push, Polluted Delta, Thoughtseize, Fatal Push, Murktide Regent, Nethergoyf
+    Mana available: 3
+      → Nethergoyf goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER has [Force of Will] but PASSES (low-priority target)
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 49  GY: 3        │   Hand: 6  Lib: 46  GY: 5        │
+  │   Lands: Steam Vents, Steam Vents │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (0/1)    │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push               │
+  │         Mountain                 │         Polluted Delta           │
+  │         Force of Will            │         Thoughtseize             │
+  │         Unholy Heat              │         Fatal Push               │
+  │         Murktide Regent          │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 19
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Daze
+  Land: Mountain (3 lands)
+  ── Main ── Mana: 3
+    Hand (6): Spell Pierce, Murktide Regent, Force of Will, Unholy Heat, Murktide Regent, Daze
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 48  GY: 3        │   Hand: 6  Lib: 46  GY: 5        │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push               │
+  │         Force of Will            │         Polluted Delta           │
+  │         Unholy Heat              │         Thoughtseize             │
+  │         Murktide Regent, Daze    │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 19
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  Play+crack Polluted Delta (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (6): Thoughtseize, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent, Tamiyo, Inquisitive Student
+    Mana available: 4
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER evaluates: minor threat + only 2 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Attack: Nethergoyf — 4 unblocked → b at 16
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 16                       │   Life: 18                       │
+  │   Hand: 6  Lib: 48  GY: 3        │   Hand: 5  Lib: 44  GY: 7        │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push               │
+  │         Force of Will            │         Thoughtseize             │
+  │         Unholy Heat              │         Fatal Push               │
+  │         Murktide Regent, Daze    │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 16 | dimir 18
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 3
+    Hand (7): Spell Pierce, Murktide Regent, Force of Will, Unholy Heat, Murktide Regent, Daze, Force of Will
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 16                       │   Life: 18                       │
+  │   Hand: 7  Lib: 47  GY: 3        │   Hand: 5  Lib: 44  GY: 7        │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push               │
+  │         Force of Will            │         Thoughtseize             │
+  │         Unholy Heat              │         Fatal Push               │
+  │         Murktide Regent, Daze    │         Murktide Regent          │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 16 | dimir 18
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Bloodstained Mire
+  Play+crack Bloodstained Mire (−1 life, 17) → Underground Sea
+  ── Main ──
+    Hand (5): Thoughtseize, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent
+    Mana available: 5
+  Attack: Nethergoyf — 4 unblocked → b at 12
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 12                       │   Life: 17                       │
+  │   Hand: 7  Lib: 47  GY: 3        │   Hand: 5  Lib: 42  GY: 9        │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Murktide Regent          │         Fatal Push               │
+  │         Force of Will            │         Thoughtseize             │
+  │         Unholy Heat              │         Fatal Push               │
+  │         Murktide Regent, Daze    │         Murktide Regent          │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 12 | dimir 17
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Scalding Tarn
+  Play+crack Scalding Tarn (−1 life, 11) → Volcanic Island
+  ── Main ── Mana: 4
+    Hand (7): Spell Pierce, Murktide Regent, Force of Will, Unholy Heat, Murktide Regent, Daze, Force of Will
+      → Murktide Regent goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Murktide Regent RESOLVES
+  Murktide Regent (delve 5, paid 2)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 11                       │   Life: 17                       │
+  │   Hand: 6  Lib: 45  GY: 0        │   Hand: 5  Lib: 42  GY: 9        │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Unholy Heat              │         Thoughtseize             │
+  │         Murktide Regent, Daze    │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 11 | dimir 17
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Daze
+  ── Main ──
+    Hand (6): Thoughtseize, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent, Daze
+    Mana available: 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 11                       │   Life: 17                       │
+  │   Hand: 6  Lib: 45  GY: 0        │   Hand: 6  Lib: 41  GY: 9        │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Unholy Heat              │         Thoughtseize             │
+  │         Murktide Regent, Daze    │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 11 | dimir 17
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 4
+    Hand (7): Spell Pierce, Force of Will, Unholy Heat, Murktide Regent, Daze, Force of Will, Force of Will
+  Attack: Murktide Regent — 5 unblocked → o at 12
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 11                       │   Life: 12                       │
+  │   Hand: 7  Lib: 44  GY: 0        │   Hand: 6  Lib: 41  GY: 9        │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Unholy Heat              │         Thoughtseize             │
+  │         Murktide Regent, Daze    │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 11 | dimir 12
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Daze
+  ── Main ──
+    Hand (7): Thoughtseize, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent, Daze, Daze
+    Mana available: 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 11                       │   Life: 12                       │
+  │   Hand: 7  Lib: 44  GY: 0        │   Hand: 7  Lib: 40  GY: 9        │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Unholy Heat              │         Thoughtseize             │
+  │         Murktide Regent, Daze    │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │         Force of Will            │         Daze                     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 11 | dimir 12
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Misty Rainforest
+  Play+crack Misty Rainforest (−1 life, 10) → Volcanic Island
+  ── Main ── Mana: 5
+    Hand (7): Spell Pierce, Force of Will, Unholy Heat, Murktide Regent, Daze, Force of Will, Force of Will
+      → Murktide Regent goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR evaluates: MAJOR THREAT — responds!
+    ★ DIMIR Daze counters Murktide Regent — Underground Sea returned
+    Murktide Regent COUNTERED — goes to graveyard
+  Attack: Murktide Regent — 5 unblocked → o at 7
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 10                       │   Life: 7                        │
+  │   Hand: 6  Lib: 42  GY: 3        │   Hand: 7  Lib: 40  GY: 10       │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Unholy Heat, Daze        │         Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │                                  │         Underground Sea          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 10 | dimir 7
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Force of Will
+  Land: Underground Sea (5 lands)
+  ── Main ──
+    Hand (7): Thoughtseize, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent, Daze, Force of Will
+    Mana available: 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 10                       │   Life: 7                        │
+  │   Hand: 6  Lib: 42  GY: 3        │   Hand: 7  Lib: 39  GY: 10       │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5), Tamiyo,... │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Unholy Heat, Daze        │         Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 10 | dimir 7
+
+  ── Untap ── (5 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Delver of Secrets
+  ── Main ── Mana: 5
+    Hand (7): Spell Pierce, Force of Will, Unholy Heat, Daze, Force of Will, Force of Will, Delver of Secrets
+      → Delver of Secrets goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Daze, Force of Will] but PASSES (low-priority target)
+      → Delver of Secrets RESOLVES
+  Delver of Secrets
+  Attack: Murktide Regent — Tamiyo, Inquisitive Student blocks Murktide Regent. Murktide Regent deals 5, Tamiyo, Inquisitive Student deals 0 back. 0 unblocked damage to player (o at 7)
+      Tamiyo, Inquisitive Student dies.
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 10                       │   Life: 7                        │
+  │   Hand: 6  Lib: 41  GY: 3        │   Hand: 7  Lib: 39  GY: 11       │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: Murktide Regent (5/5), De... │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Unholy Heat, Daze        │         Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 10 | dimir 7
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Daze
+  ── Main ──
+    Hand (8): Thoughtseize, Fatal Push, Thoughtseize, Fatal Push, Murktide Regent, Daze, Force of Will, Daze
+    Mana available: 5
+  Fatal Push [CMC≤2] → kills Delver of Secrets
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 10                       │   Life: 7                        │
+  │   Hand: 6  Lib: 41  GY: 4        │   Hand: 7  Lib: 38  GY: 12       │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Thoughtseize             │
+  │         Unholy Heat, Daze        │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │         Force of Will            │         Force of Will, Daze      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 18 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 10 | dimir 7
+
+  ── Untap ── (5 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ── Mana: 5
+    Hand (7): Spell Pierce, Force of Will, Unholy Heat, Daze, Force of Will, Force of Will, Brainstorm
+  Brainstorm — cantrip
+  Attack: Murktide Regent — 5 unblocked → o at 2
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 10                       │   Life: 2                        │
+  │   Hand: 7  Lib: 39  GY: 5        │   Hand: 7  Lib: 38  GY: 12       │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Thoughtseize             │
+  │         Unholy Heat, Daze        │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │         Force of Will            │         Force of Will, Daze      │
+  │         Dragon's Rage Channeler  │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 19 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 10 | dimir 2
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Kaito, Bane of Nightmares
+  ── Main ──
+    Hand (8): Thoughtseize, Thoughtseize, Fatal Push, Murktide Regent, Daze, Force of Will, Daze, Kaito, Bane of Nightmares
+    Mana available: 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 10                       │   Life: 2                        │
+  │   Hand: 7  Lib: 39  GY: 5        │   Hand: 8  Lib: 37  GY: 12       │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Nethergoyf (4/5)    │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will            │         Thoughtseize             │
+  │         Unholy Heat, Daze        │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │         Force of Will            │         Force of Will, Daze      │
+  │         Dragon's Rage Channeler  │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 20 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 10 | dimir 2
+
+  ── Untap ── (5 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Preordain
+  ── Main ── Mana: 5
+    Hand (8): Spell Pierce, Force of Will, Unholy Heat, Daze, Force of Will, Force of Will, Dragon's Rage Channeler, Preordain
+      → Dragon's Rage Channeler goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Daze, Force of Will] but PASSES (low-priority target)
+      → Dragon's Rage Channeler RESOLVES
+  Dragon's Rage Channeler
+  Preordain — cantrip
+  Unholy Heat (6 dmg) -> Nethergoyf
+  Attack: Murktide Regent — 5 unblocked → o at -3
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 10                       │   Life: -3                       │
+  │   Hand: 6  Lib: 37  GY: 7        │   Hand: 8  Lib: 37  GY: 13       │
+  │   Lands: Steam Vents, Steam Vents,... │   Lands: Island, Underground Sea, ... │
+  │   Creatures: Murktide Regent (5/5), Dr... │   Creatures: (none)              │
+  │   Hand: Spell Pierce             │   Hand: Thoughtseize             │
+  │         Force of Will, Daze      │         Thoughtseize             │
+  │         Force of Will            │         Fatal Push               │
+  │         Force of Will            │         Murktide Regent, Daze    │
+  │         Murktide Regent          │         Force of Will, Daze      │
+  │                                  │         Kaito                    │
+  │                                  │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: UR_DELVER — Opp life reaches -3 on turn 10
+  Final life: ur_delver 10 | dimir -3
+══════════════════════════════════════════════════════════════════════
+
+╔════════════════════════════════════════════════════════════════════╗
+║  GAME 2 of 3  |  Seed: 17  |  Series: UR Delver 1 — Dimir 0            ║
+╚════════════════════════════════════════════════════════════════════╝
+══════════════════════════════════════════════════════════════════════
+  UR_DELVER vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UR_DELVER wins the die roll, goes FIRST
+
+  UR_DELVER (P1):
+  Draw 7:
+    1. Volcanic Island (dual)
+    2. Preordain (sorcery, CMC 1)
+    3. Volcanic Island (dual)
+    4. Preordain (sorcery, CMC 1)
+    5. Volcanic Island (dual)
+    6. Steam Vents (dual)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 4  Cantrips: 1  Other: 2]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Misty Rainforest (fetch)
+    2. Ponder (sorcery, CMC 1, cantrip)
+    3. Mountain (basic)
+    4. Misty Rainforest (fetch)
+    5. Scalding Tarn (fetch)
+    6. Dragon's Rage Channeler (creature 3/3, CMC 1)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 4  Creatures: 1  Cantrips: 2]
+  Keep best 6: Dragon's Rage Channeler, Misty Rainforest, Ponder, Mountain, Misty Rainforest, Scalding Tarn
+  Bottom 1: 
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: doesn't meet deck-specific keep criteria
+  Mulligan #2 — draw 7:
+    1. Force of Will (instant, CMC 5, free counter)
+    2. Misty Rainforest (fetch)
+    3. Expressive Iteration (sorcery, CMC 2)
+    4. Delver of Secrets (creature 3/2, CMC 1)
+    5. Scalding Tarn (fetch)
+    6. Brainstorm (instant, CMC 1, cantrip)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 2  Creatures: 1  Counters: 1  Cantrips: 2  Other: 1]
+  Keep best 5: Force of Will, Delver of Secrets, Misty Rainforest, Scalding Tarn, Brainstorm
+  Bottom 2: Expressive Iteration, Ponder
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 5)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+  DIMIR (P2):
+  Draw 7:
+    1. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    2. Polluted Delta (fetch)
+    3. Underground Sea (dual)
+    4. Undercity Sewers (dual)
+    5. Island (basic)
+    6. Wasteland (land)
+    7. Polluted Delta (fetch)
+    [Lands: 6  Creatures: 1]
+  → MULLIGAN
+    Reason: 6 lands — too flooded, not enough spells
+  Mulligan #1 — draw 7:
+    1. Bloodstained Mire (fetch)
+    2. Fatal Push (instant, CMC 1, removal)
+    3. Nethergoyf (creature 0/1, CMC 2)
+    4. Force of Will (instant, CMC 5, free counter)
+    5. Fatal Push (instant, CMC 1, removal)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Polluted Delta (fetch)
+    [Lands: 2  Creatures: 1  Counters: 2  Removal: 2]
+  Keep best 6: Force of Will, Force of Will, Nethergoyf, Bloodstained Mire, Fatal Push, Fatal Push
+  Bottom 1: Polluted Delta
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Mulligan #2 — draw 7:
+    1. Underground Sea (dual)
+    2. Fatal Push (instant, CMC 1, removal)
+    3. Mishra's Bauble (artifact, CMC 0)
+    4. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    5. Thoughtseize (sorcery, CMC 1)
+    6. Underground Sea (dual)
+    7. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    [Lands: 2  Creatures: 2  Removal: 1  Other: 2]
+  Keep best 5: Tamiyo, Inquisitive Student, Tamiyo, Inquisitive Student, Underground Sea, Fatal Push, Thoughtseize
+  Bottom 2: Mishra's Bauble
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Mulligan #3 — draw 7:
+    1. Bloodstained Mire (fetch)
+    2. Nethergoyf (creature 0/1, CMC 2)
+    3. Brainstorm (instant, CMC 1, cantrip)
+    4. Underground Sea (dual)
+    5. Thoughtseize (sorcery, CMC 1)
+    6. Brainstorm (instant, CMC 1, cantrip)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 2  Creatures: 1  Cantrips: 3  Other: 1]
+  Keep best 4: Nethergoyf, Bloodstained Mire, Brainstorm, Underground Sea
+  Bottom 3: Thoughtseize, Ponder
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 4)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock
+
+━━ TURN 1 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Misty Rainforest (−1 life, 19) → Volcanic Island
+  ── Main ── Mana: 1
+    Hand (4): Force of Will, Delver of Secrets, Scalding Tarn, Brainstorm
+      → Delver of Secrets goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Delver of Secrets RESOLVES
+  Delver of Secrets
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 3  Lib: 54  GY: 2        │   Hand: 4  Lib: 55  GY: 0        │
+  │   Lands: Volcanic Island         │   Lands: (none)                  │
+  │   Creatures: Delver of Secrets (3/2) │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Nethergoyf               │
+  │         Scalding Tarn            │         Bloodstained Mire        │
+  │         Brainstorm               │         Brainstorm               │
+  │                                  │         Underground Sea          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 19 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Scalding Tarn
+  Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (4): Nethergoyf, Brainstorm, Underground Sea, Scalding Tarn
+    Mana available: 1
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 19                       │   Life: 19                       │
+  │   Hand: 3  Lib: 54  GY: 2        │   Hand: 6  Lib: 50  GY: 3        │
+  │   Lands: Volcanic Island         │   Lands: Underground Sea         │
+  │   Creatures: Delver of Secrets (3/2) │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Nethergoyf               │
+  │         Scalding Tarn            │         Underground Sea          │
+  │         Brainstorm               │         Scalding Tarn, Kaito     │
+  │                                  │         Bane of Nightmares       │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 19 | dimir 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  Play+crack Scalding Tarn (−1 life, 18) → Steam Vents
+  ── Main ── Mana: 2
+    Hand (3): Force of Will, Brainstorm, Force of Will
+  Brainstorm — cantrip
+  Attack: Delver of Secrets — 3 unblocked → o at 16
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 18                       │   Life: 16                       │
+  │   Hand: 3  Lib: 51  GY: 5        │   Hand: 6  Lib: 50  GY: 3        │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea         │
+  │   Creatures: Delver of Secrets (3/2) │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Nethergoyf               │
+  │         Force of Will            │         Underground Sea          │
+  │         Murktide Regent          │         Scalding Tarn, Kaito     │
+  │                                  │         Bane of Nightmares       │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 18 | dimir 16
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Mishra's Bauble
+  Land: Underground Sea (2 lands)
+  ── Main ──
+    Hand (6): Nethergoyf, Scalding Tarn, Kaito, Bane of Nightmares, Tamiyo, Inquisitive Student, Thoughtseize, Mishra's Bauble
+    Mana available: 2
+  Mishra's Bauble (1 draw)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER evaluates: minor threat + only 2 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Fatal Push [CMC≤2] → kills Delver of Secrets
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 18                       │   Life: 16                       │
+  │   Hand: 3  Lib: 51  GY: 6        │   Hand: 4  Lib: 48  GY: 5        │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Force of Will            │   Hand: Nethergoyf               │
+  │         Force of Will            │         Scalding Tarn, Kaito     │
+  │         Murktide Regent          │         Bane of Nightmares       │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 18 | dimir 16
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brazen Borrower
+  ── Main ── Mana: 2
+    Hand (4): Force of Will, Force of Will, Murktide Regent, Brazen Borrower
+      → Murktide Regent goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Murktide Regent RESOLVES
+  Murktide Regent (delve 6, paid 2)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 18                       │   Life: 16                       │
+  │   Hand: 3  Lib: 50  GY: 0        │   Hand: 4  Lib: 48  GY: 5        │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Force of Will            │   Hand: Nethergoyf               │
+  │         Force of Will            │         Scalding Tarn, Kaito     │
+  │         Brazen Borrower          │         Bane of Nightmares       │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 18 | dimir 16
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  Play+crack Scalding Tarn (−1 life, 15) → Undercity Sewers
+  ── Main ──
+    Hand (4): Nethergoyf, Kaito, Bane of Nightmares, Thoughtseize, Nethergoyf
+    Mana available: 3
+      → Nethergoyf goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER has counters but cannot use them (conditions not met)
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 3  Lib: 50  GY: 0        │   Hand: 3  Lib: 46  GY: 7        │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Force of Will            │   Hand: Kaito                    │
+  │         Force of Will            │         Bane of Nightmares       │
+  │         Brazen Borrower          │         Thoughtseize, Nethergoyf │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 18 | dimir 15
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ── Mana: 2
+    Hand (4): Force of Will, Force of Will, Brazen Borrower, Brainstorm
+  Brainstorm — cantrip
+  Attack: Murktide Regent — 5 unblocked → o at 10
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 18                       │   Life: 10                       │
+  │   Hand: 4  Lib: 48  GY: 1        │   Hand: 3  Lib: 46  GY: 7        │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Force of Will            │   Hand: Kaito                    │
+  │         Force of Will            │         Bane of Nightmares       │
+  │         Brazen Borrower, Daze    │         Thoughtseize, Nethergoyf │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 18 | dimir 10
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  ── Main ──
+    Hand (4): Kaito, Bane of Nightmares, Thoughtseize, Nethergoyf, Orcish Bowmasters
+    Mana available: 3
+      → Nethergoyf goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER evaluates: MAJOR THREAT — responds!
+    ★ UR_DELVER Force of Will counters Nethergoyf (exiles Daze)
+    Nethergoyf COUNTERED — goes to graveyard
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER has [Force of Will] but PASSES (low-priority target)
+      → Orcish Bowmasters RESOLVES
+  Orcish Bowmasters (1/1, flash)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 18                       │   Life: 10                       │
+  │   Hand: 2  Lib: 48  GY: 2        │   Hand: 2  Lib: 45  GY: 8        │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Force of Will            │   Hand: Kaito                    │
+  │         Brazen Borrower          │         Bane of Nightmares       │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 18 | dimir 10
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Delver of Secrets
+    Bowmasters T1/1: b -1 life → 17, Orc Army 1/1
+  ── Main ── Mana: 2
+    Hand (3): Force of Will, Brazen Borrower, Delver of Secrets
+      → Delver of Secrets goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Delver of Secrets RESOLVES
+  Delver of Secrets
+  Attack: Murktide Regent — Tamiyo, Inquisitive Student blocks Murktide Regent. Murktide Regent deals 5, Tamiyo, Inquisitive Student deals 0 back. 0 unblocked damage to player (o at 10)
+      Tamiyo, Inquisitive Student dies.
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 17                       │   Life: 10                       │
+  │   Hand: 2  Lib: 47  GY: 2        │   Hand: 2  Lib: 45  GY: 9        │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5), De... │   Creatures: Nethergoyf (4/5), Orcish ... │
+  │   Hand: Force of Will            │   Hand: Kaito                    │
+  │         Brazen Borrower          │         Bane of Nightmares       │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 17 | dimir 10
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Polluted Delta (−1 life, 9) → Underground Sea
+  ── Main ──
+    Hand (2): Kaito, Bane of Nightmares, Thoughtseize
+    Mana available: 4
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 17                       │   Life: 9                        │
+  │   Hand: 2  Lib: 47  GY: 2        │   Hand: 2  Lib: 43  GY: 11       │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5), De... │   Creatures: Nethergoyf (4/5), Orcish ... │
+  │   Hand: Force of Will            │   Hand: Kaito                    │
+  │         Brazen Borrower          │         Bane of Nightmares       │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 17 | dimir 9
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Murktide Regent
+    Bowmasters T1/1: b -1 life → 16, Orc Army 2/2
+  ── Main ── Mana: 2
+    Hand (3): Force of Will, Brazen Borrower, Murktide Regent
+  Attack: Murktide Regent, Delver of Secrets — 8 unblocked → o at 1
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 16                       │   Life: 1                        │
+  │   Hand: 3  Lib: 46  GY: 2        │   Hand: 2  Lib: 43  GY: 11       │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5), De... │   Creatures: Nethergoyf (4/5), Orcish ... │
+  │   Hand: Force of Will            │   Hand: Kaito                    │
+  │         Brazen Borrower          │         Bane of Nightmares       │
+  │         Murktide Regent          │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 16 | dimir 1
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Swamp
+  Land: Swamp (5 lands)
+  ── Main ──
+    Hand (2): Kaito, Bane of Nightmares, Thoughtseize
+    Mana available: 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 16                       │   Life: 1                        │
+  │   Hand: 3  Lib: 46  GY: 2        │   Hand: 2  Lib: 42  GY: 11       │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5), De... │   Creatures: Nethergoyf (4/5), Orcish ... │
+  │   Hand: Force of Will            │   Hand: Kaito                    │
+  │         Brazen Borrower          │         Bane of Nightmares       │
+  │         Murktide Regent          │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 16 | dimir 1
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Murktide Regent
+    Bowmasters T1/1: b -1 life → 15, Orc Army 3/3
+  ── Main ── Mana: 2
+    Hand (4): Force of Will, Brazen Borrower, Murktide Regent, Murktide Regent
+  Attack: Murktide Regent, Delver of Secrets — 8 unblocked → o at -7
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_DELVER                        │ DIMIR                            │
+  │   Life: 15                       │   Life: -7                       │
+  │   Hand: 4  Lib: 45  GY: 2        │   Hand: 2  Lib: 42  GY: 11       │
+  │   Lands: Volcanic Island, Steam Vents │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Murktide Regent (5/5), De... │   Creatures: Nethergoyf (4/5), Orcish ... │
+  │   Hand: Force of Will            │   Hand: Kaito                    │
+  │         Brazen Borrower          │         Bane of Nightmares       │
+  │         Murktide Regent          │         Thoughtseize             │
+  │         Murktide Regent          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: UR_DELVER — Opp life reaches -7 on turn 7
+  Final life: ur_delver 15 | dimir -7
+══════════════════════════════════════════════════════════════════════
+
+╔════════════════════════════════════════════════════════════════════╗
+║  MATCH RESULT: UR DELVER wins 2-0                                   ║
+╚════════════════════════════════════════════════════════════════════╝
