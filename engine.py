@@ -3835,6 +3835,16 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     veil_protecting = getattr(gs, 'veil_active', False)
     opp_clock = sum(c.power for c in opponent.creatures if not c.summoning_sick)
     storm_desperate = opp_clock > 0 and player.life <= opp_clock * 2  # dead in ~2 attacks
+    # Also desperate if life is dropping fast (burn spells, not just creatures)
+    # If we've lost 5+ life and opponent has no counters, just go for it
+    life_lost = 20 - player.life
+    opp_has_counters = any(c.tag in ('fow', 'fon', 'daze', 'counter', 'fluster')
+                           for c in opponent.hand)
+    if life_lost >= 5 and not opp_has_counters:
+        storm_desperate = True
+    # Also desperate at ≤10 life regardless (getting close to lethal range)
+    if player.life <= 10:
+        storm_desperate = True
     # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
     opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
     opp_blue_pitch = sum(1 for c in opponent.hand if 'U' in getattr(c, 'colors', set())) >= 2
