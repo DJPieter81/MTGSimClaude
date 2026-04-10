@@ -184,6 +184,7 @@ r.p2_deck
 - `parallel.py` — Multiprocessing for matrix and field runs (~3x speedup)
 - `meta_results.py` — Save/load simulation results as JSON for cross-session use
 - `game_replay.py` — HTML turn-by-turn game replay generator
+- `meta_audit.py` — Post-sim outlier detection + strategy audit + HTML dashboard
 
 ## Key Design Principles
 
