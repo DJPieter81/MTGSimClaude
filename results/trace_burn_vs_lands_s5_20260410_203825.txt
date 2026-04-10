@@ -1,0 +1,301 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs LANDS
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Mountain (basic)
+    2. Fireblast (instant, CMC 6)
+    3. Fiery Islet (land)
+    4. Searing Blaze (instant, CMC 2)
+    5. Mountain (basic)
+    6. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    7. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    [Lands: 3  Creatures: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+  LANDS (P2):
+  Draw 7:
+    1. Boseiju, Who Endures (land)
+    2. Urza's Saga (land)
+    3. Thespian's Stage (land)
+    4. Exploration (CMC 1)
+    5. Wasteland (land)
+    6. Pithing Needle (artifact, CMC 1)
+    7. Malevolent Rumble (sorcery, CMC 2)
+    [Lands: 4  Combo: 1  Other: 2]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Fireblast, Fiery Islet, Searing Blaze, Mountain, Eidolon of the Great Revel, Eidolon of the Great Revel
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 53  GY: 0        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Mountain                │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fiery Islet   │   Hand: Boseiju, Who Endures     │
+  │         Searing Blaze            │         Urza's Saga              │
+  │         Mountain                 │         Thespian's Stage         │
+  │         Eidolon of the Great Rev │         Exploration, Wasteland   │
+  │         el                       │         Pithing Needle           │
+  │         Eidolon of the Great Rev │         Malevolent Rumble        │
+  │         el                       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Urza's Saga
+  Land: Boseiju, Who Endures (1 lands)
+  ── Main ──
+    Hand (7): Urza's Saga, Thespian's Stage, Exploration, Wasteland, Pithing Needle, Malevolent Rumble, Urza's Saga
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 53  GY: 0        │   Hand: 7  Lib: 52  GY: 0        │
+  │   Lands: Mountain                │   Lands: Boseiju, Who Endures    │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fiery Islet   │   Hand: Urza's Saga              │
+  │         Searing Blaze            │         Thespian's Stage         │
+  │         Mountain                 │         Exploration, Wasteland   │
+  │         Eidolon of the Great Rev │         Pithing Needle           │
+  │         el                       │         Malevolent Rumble        │
+  │         Eidolon of the Great Rev │         Urza's Saga              │
+  │         el                       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fiery Islet
+  Land: Mountain (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Fireblast, Fiery Islet, Searing Blaze, Eidolon of the Great Revel, Eidolon of the Great Revel, Fiery Islet
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 52  GY: 0        │   Hand: 7  Lib: 52  GY: 0        │
+  │   Lands: Mountain, Mountain      │   Lands: Boseiju, Who Endures    │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast, Fiery Islet   │   Hand: Urza's Saga              │
+  │         Searing Blaze            │         Thespian's Stage         │
+  │         Eidolon of the Great Rev │         Exploration, Wasteland   │
+  │         el, Fiery Islet          │         Pithing Needle           │
+  │                                  │         Malevolent Rumble        │
+  │                                  │         Urza's Saga              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Ancient Tomb
+  Land: Urza's Saga (2 lands)
+  ── Main ──
+    Hand (7): Thespian's Stage, Exploration, Wasteland, Pithing Needle, Malevolent Rumble, Urza's Saga, Ancient Tomb
+    Mana available: 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 52  GY: 0        │   Hand: 7  Lib: 51  GY: 0        │
+  │   Lands: Mountain, Mountain      │   Lands: Boseiju, Who Endures, Urz... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast, Fiery Islet   │   Hand: Thespian's Stage         │
+  │         Searing Blaze            │         Exploration, Wasteland   │
+  │         Eidolon of the Great Rev │         Pithing Needle           │
+  │         el, Fiery Islet          │         Malevolent Rumble        │
+  │                                  │         Urza's Saga              │
+  │                                  │         Ancient Tomb             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Rift Bolt
+  Land: Fiery Islet (3 lands)
+  ── Main ── Mana: 3
+    Hand (5): Fireblast, Searing Blaze, Eidolon of the Great Revel, Fiery Islet, Rift Bolt
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  Attack: Eidolon of the Great Revel — 2 unblocked → o at 18
+      → Rift Bolt goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Rift Bolt RESOLVES
+  ★ Rift Bolt → 3 damage (opp at 15)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: 15                       │
+  │   Hand: 3  Lib: 51  GY: 1        │   Hand: 7  Lib: 51  GY: 0        │
+  │   Lands: Mountain, Mountain, Fiery... │   Lands: Boseiju, Who Endures, Urz... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Hand: Thespian's Stage         │
+  │         Searing Blaze            │         Exploration, Wasteland   │
+  │         Fiery Islet              │         Pithing Needle           │
+  │                                  │         Malevolent Rumble        │
+  │                                  │         Urza's Saga              │
+  │                                  │         Ancient Tomb             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 15
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Dark Depths
+  Land: Thespian's Stage (3 lands)
+  ── Main ──
+    Hand (7): Exploration, Wasteland, Pithing Needle, Malevolent Rumble, Urza's Saga, Ancient Tomb, Dark Depths
+    Mana available: 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: 15                       │
+  │   Hand: 3  Lib: 51  GY: 1        │   Hand: 7  Lib: 50  GY: 0        │
+  │   Lands: Mountain, Mountain, Fiery... │   Lands: Boseiju, Who Endures, Urz... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Hand: Exploration, Wasteland   │
+  │         Searing Blaze            │         Pithing Needle           │
+  │         Fiery Islet              │         Malevolent Rumble        │
+  │                                  │         Urza's Saga              │
+  │                                  │         Ancient Tomb             │
+  │                                  │         Dark Depths              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 15
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Price of Progress
+  Land: Fiery Islet (4 lands)
+  ── Main ── Mana: 4
+    Hand (3): Fireblast, Searing Blaze, Price of Progress
+  Attack: Eidolon of the Great Revel, Eidolon of the Great Revel — 4 unblocked → o at 11
+      → Price of Progress goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (3 nonbasics) → 6 damage (opp at 5)
+      → Fireblast goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 1)
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: 1                        │
+  │   Hand: 1  Lib: 50  GY: 3        │   Hand: 7  Lib: 50  GY: 0        │
+  │   Lands: Fiery Islet, Fiery Islet │   Lands: Boseiju, Who Endures, Urz... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Hand: Exploration, Wasteland   │
+  │                                  │         Pithing Needle           │
+  │                                  │         Malevolent Rumble        │
+  │                                  │         Urza's Saga              │
+  │                                  │         Ancient Tomb             │
+  │                                  │         Dark Depths              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 1
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Boseiju, Who Endures
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (7): Exploration, Pithing Needle, Malevolent Rumble, Urza's Saga, Ancient Tomb, Dark Depths, Boseiju, Who Endures
+    Mana available: 3
+  Wasteland [ACTIVATED-uncounterable] → Fiery Islet
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: 1                        │
+  │   Hand: 1  Lib: 50  GY: 4        │   Hand: 7  Lib: 49  GY: 1        │
+  │   Lands: Fiery Islet             │   Lands: Boseiju, Who Endures, Urz... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Hand: Exploration              │
+  │                                  │         Pithing Needle           │
+  │                                  │         Malevolent Rumble        │
+  │                                  │         Urza's Saga              │
+  │                                  │         Ancient Tomb             │
+  │                                  │         Dark Depths, Boseiju     │
+  │                                  │         Who Endures              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | lands 1
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Eidolon of the Great Revel
+  ── Main ── Mana: 1
+    Hand (2): Searing Blaze, Eidolon of the Great Revel
+  Attack: Eidolon of the Great Revel, Eidolon of the Great Revel — 4 unblocked → o at -3
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ LANDS                            │
+  │   Life: 20                       │   Life: -3                       │
+  │   Hand: 2  Lib: 49  GY: 4        │   Hand: 7  Lib: 49  GY: 1        │
+  │   Lands: Fiery Islet             │   Lands: Boseiju, Who Endures, Urz... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Hand: Exploration              │
+  │         Eidolon of the Great Rev │         Pithing Needle           │
+  │         el                       │         Malevolent Rumble        │
+  │                                  │         Urza's Saga              │
+  │                                  │         Ancient Tomb             │
+  │                                  │         Dark Depths, Boseiju     │
+  │                                  │         Who Endures              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches -3 on turn 5
+  Final life: burn 20 | lands -3
+══════════════════════════════════════════════════════════════════════
