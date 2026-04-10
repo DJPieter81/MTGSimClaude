@@ -455,10 +455,25 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     import random
     matchup = getattr(gs, 'matchup', '')
 
+    # ── Determine labels for trace ──
+    if gs.trace:
+        c_label = (getattr(gs, 'p1_deck', 'P1') if caster is gs.p1
+                   else getattr(gs, 'p2_deck', 'P2')).upper()
+        d_label = (getattr(gs, 'p1_deck', 'P1') if defender is gs.p1
+                     else getattr(gs, 'p2_deck', 'P2')).upper()
+        log_list.append(f"    → {spell_card.name} goes on the STACK")
+        log_list.append(f"    → Priority passes to {d_label}")
+
     # ── Protection checks ──
     if getattr(gs, 'veil_active', False):
+        if gs.trace:
+            log_list.append(f"    → Veil of Summer active — spell cannot be countered")
+            log_list.append(f"    → {spell_card.name} RESOLVES")
         return False
     if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card, 'colors', set()):
+        if gs.trace:
+            log_list.append(f"    → Allosaurus Shepherd — green spells uncounterable")
+            log_list.append(f"    → {spell_card.name} RESOLVES")
         return False
 
     # ── Scan defender's hand for all counter types ──
@@ -469,6 +484,9 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             counters_by_tag[c.tag] = c
 
     if not counters_by_tag:
+        if gs.trace:
+            log_list.append(f"    → {d_label} has no counters — passes priority")
+            log_list.append(f"    → {spell_card.name} RESOLVES")
         return False
 
     d_fow = counters_by_tag.get('fow')
@@ -490,6 +508,11 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
 
     # ── Don't counter cantrips — save counters for threats ──
     if spell_card.tag in ('bs', 'ponder', 'bauble'):
+        if gs.trace:
+            avail = [c.name for t, c in counters_by_tag.items()]
+            log_list.append(f"    → {d_label} has [{', '.join(avail)}] but PASSES")
+            log_list.append(f"      (cantrip — not worth a counter, saving for threats)")
+            log_list.append(f"    → {spell_card.name} RESOLVES")
         return False
 
     total_counters = sum(1 for c in defender.hand if c.tag in _COUNTER_TAGS)
@@ -518,15 +541,23 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
 
     is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
     if is_minor_threat and total_counters <= 2:
+        if gs.trace:
+            log_list.append(f"    → {d_label} evaluates: minor threat + only {total_counters} counter(s) — PASSES")
+            log_list.append(f"    → {spell_card.name} RESOLVES")
         return False
     if not (is_major_threat or is_minor_threat):
+        if gs.trace:
+            avail = [c.name for t, c in counters_by_tag.items()]
+            reason = "low-priority target"
+            if spell_card.cmc <= 2 and has_removal:
+                reason = f"CMC {spell_card.cmc} creature — better answered by removal later"
+            log_list.append(f"    → {d_label} has [{', '.join(avail)}] but PASSES ({reason})")
+            log_list.append(f"    → {spell_card.name} RESOLVES")
         return False
 
     # ── Determine defender label for log messages ──
-    if defender is gs.p1:
-        d_label = getattr(gs, 'p1_deck', 'P1').upper()
-    else:
-        d_label = getattr(gs, 'p2_deck', 'P2').upper()
+    d_label = (getattr(gs, 'p1_deck', 'P1') if defender is gs.p1
+               else getattr(gs, 'p2_deck', 'P2')).upper()
 
     ctr = []
 
@@ -601,10 +632,16 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
                 ctr.append(f"Daze counters {spell_card.name} — {blue_land.name} returned")
 
     if ctr:
+        if gs.trace:
+            threat_level = "MAJOR THREAT" if is_major_threat else "minor threat"
+            log_list.append(f"    → {d_label} evaluates: {threat_level} — responds!")
         for m in ctr:
             log_list.append(f"  ★ {d_label} {m}")
-        log_list.append(f"  {spell_card.name} countered!")
+        log_list.append(f"  {spell_card.name} COUNTERED — goes to graveyard")
         return True
+    if gs.trace:
+        log_list.append(f"    → {d_label} has counters but cannot use them (conditions not met)")
+        log_list.append(f"    → {spell_card.name} RESOLVES")
     return False
 
 
@@ -1531,7 +1568,6 @@ def bug_turn(gs: GameState, turn: int):
 
     if gs.trace:
         log("── End ──")
-        _trace_board_state(b, o, log)
 
     return log_entries
 
@@ -1781,7 +1817,6 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
 
     if gs.trace:
         log("── End ──")
-        _trace_board_state(o, b, log)
 
     return log_entries
 

@@ -525,6 +525,34 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) ->
     """
     trace_lines = [] if trace else None
 
+    def _hand_detail(hand):
+        """Per-card listing with type annotation."""
+        lines = []
+        for i, c in enumerate(hand, 1):
+            parts = [f"    {i}. {c.name}"]
+            tags = []
+            if c.is_land():
+                if getattr(c, 'is_fetch', False): tags.append('fetch')
+                elif c.is_basic: tags.append('basic')
+                elif getattr(c, 'tag', '') == 'dual': tags.append('dual')
+                else: tags.append('land')
+            else:
+                if c.is_creature(): tags.append(f"creature {c.base_power}/{c.base_toughness}")
+                elif c.card_type.name == 'INSTANT': tags.append('instant')
+                elif c.card_type.name == 'SORCERY': tags.append('sorcery')
+                elif c.card_type.name == 'ARTIFACT': tags.append('artifact')
+                elif c.card_type.name == 'PLANESWALKER': tags.append('planeswalker')
+                tags.append(f"CMC {c.cmc}")
+                if c.is_combo_piece: tags.append('combo')
+                if c.win_condition: tags.append('win-con')
+                if c.tag in ('fow', 'fon'): tags.append('free counter')
+                elif c.tag in ('daze',): tags.append('free counter')
+                elif c.tag in ('counter', 'veto', 'fluster'): tags.append('counter')
+                if c.is_removal and c.tag not in ('fow', 'fon', 'daze'): tags.append('removal')
+                if c.tag in ('bs', 'ponder'): tags.append('cantrip')
+            lines.append(f"{parts[0]} ({', '.join(tags)})")
+        return lines
+
     def _hand_summary(hand):
         lands = sum(1 for c in hand if c.is_land())
         creatures = sum(1 for c in hand if c.is_creature())
@@ -542,6 +570,51 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) ->
         if other > 0: parts.append(f"Other: {other}")
         return '  '.join(parts)
 
+    def _keep_reason(hand, kept):
+        """Generate human-readable explanation for keep/mull decision."""
+        lands = sum(1 for c in hand if c.is_land())
+        threats = sum(1 for c in hand if c.is_creature() or c.win_condition)
+        counters = sum(1 for c in hand if c.tag in ('fow', 'fon', 'daze', 'fluster', 'counter', 'veto'))
+        cantrips = sum(1 for c in hand if c.tag in ('bs', 'ponder'))
+        removal = sum(1 for c in hand if c.is_removal and c.tag not in ('fow', 'fon', 'daze'))
+        combo = sum(1 for c in hand if c.is_combo_piece or c.win_condition)
+        action = threats + counters + cantrips + removal + combo
+
+        if kept:
+            reasons = []
+            if 2 <= lands <= 3:
+                reasons.append(f"{lands} lands — good mana base")
+            elif lands == 1 and cantrips:
+                reasons.append("1 land + cantrip to find more")
+            elif lands == 4:
+                reasons.append("4 lands — slightly land-heavy but playable")
+            if threats >= 1:
+                reasons.append(f"{threats} threat(s) for a clock")
+            if counters >= 1:
+                reasons.append(f"{counters} counter(s) for protection/disruption")
+            if cantrips and not threats:
+                reasons.append("cantrip(s) to dig for threats")
+            if combo >= 2:
+                reasons.append(f"combo pieces present — can threaten early kill")
+            if removal:
+                reasons.append(f"removal for opponent's threats")
+            return "    Reason: " + "; ".join(reasons) if reasons else "    Reason: meets minimum keep criteria"
+        else:
+            problems = []
+            if lands < 1:
+                problems.append("zero lands — can't cast anything")
+            elif lands == 1 and not cantrips:
+                problems.append("only 1 land with no cantrips to find more")
+            elif lands >= 5:
+                problems.append(f"{lands} lands — too flooded, not enough spells")
+            if action == 0:
+                problems.append("no action (threats, counters, or cantrips)")
+            if threats == 0 and combo == 0 and counters >= 3:
+                problems.append("too many counters, no proactive plan")
+            if lands >= 2 and action >= 2 and not problems:
+                problems.append("doesn't meet deck-specific keep criteria")
+            return "    Reason: " + "; ".join(problems) if problems else "    Reason: doesn't meet keep criteria"
+
     for mulls in range(4):  # 0 mulls = keep opening 7, max 3 mulls
         deck = list(deck_fn())
         random.shuffle(deck)
@@ -551,18 +624,21 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) ->
 
         if trace:
             if mulls == 0:
-                trace_lines.append(f"  Draw 7: {', '.join(c.name for c in hand7)}")
+                trace_lines.append(f"  Draw 7:")
             else:
-                trace_lines.append(f"  Mulligan #{mulls} — draw 7: {', '.join(c.name for c in hand7)}")
-            trace_lines.append(f"    {_hand_summary(hand7)}")
+                trace_lines.append(f"  Mulligan #{mulls} — draw 7:")
+            trace_lines += _hand_detail(hand7)
+            trace_lines.append(f"    [{_hand_summary(hand7)}]")
 
         if mulls == 0:
             if keep_fn(hand7, matchup):
                 if trace:
-                    trace_lines.append(f"    → KEEP (opening 7)")
+                    trace_lines.append(f"  → KEEP (opening 7)")
+                    trace_lines.append(_keep_reason(hand7, True))
                 return (hand7, rest, 0, trace_lines) if trace else (hand7, rest, 0)
             if trace:
-                trace_lines.append(f"    → MULLIGAN")
+                trace_lines.append(f"  → MULLIGAN")
+                trace_lines.append(_keep_reason(hand7, False))
             continue
 
         # Keep the best (7 - mulls) cards from the 7 seen
@@ -571,15 +647,18 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) ->
         library = rest + bottomed  # bottomed go to... bottom
 
         if trace:
-            trace_lines.append(f"    Keep best {7 - mulls}: {', '.join(c.name for c in hand)}")
-            trace_lines.append(f"    Bottom {mulls}: {', '.join(c.name for c in bottomed)}")
+            trace_lines.append(f"  Keep best {7 - mulls}: {', '.join(c.name for c in hand)}")
+            trace_lines.append(f"  Bottom {mulls}: {', '.join(c.name for c in bottomed)}")
+            trace_lines.append(f"    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)")
 
         if keep_fn(hand, matchup):
             if trace:
-                trace_lines.append(f"    → KEEP (mull to {7 - mulls})")
+                trace_lines.append(f"  → KEEP (mull to {7 - mulls})")
+                trace_lines.append(_keep_reason(hand, True))
             return (hand, library, mulls, trace_lines) if trace else (hand, library, mulls)
         if trace:
-            trace_lines.append(f"    → MULLIGAN")
+            trace_lines.append(f"  → MULLIGAN")
+            trace_lines.append(_keep_reason(hand, False))
 
     # Forced keep after 3 mulligans — still draw 7, keep best 4
     deck = list(deck_fn())
@@ -589,8 +668,10 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) ->
     hand  = _choose_best_n(hand7, 4)  # choose best 4 (prioritises lands)
     bottomed = [c for c in hand7 if c not in hand]
     if trace:
-        trace_lines.append(f"  Forced keep (mull to 4): {', '.join(c.name for c in hand)}")
-        trace_lines.append(f"    Bottom 3: {', '.join(c.name for c in bottomed)}")
+        trace_lines.append(f"  Forced keep after 3 mulligans — draw 7:")
+        trace_lines += _hand_detail(hand7)
+        trace_lines.append(f"  Keep best 4: {', '.join(c.name for c in hand)}")
+        trace_lines.append(f"  Bottom 3: {', '.join(c.name for c in bottomed)}")
     result = (hand, rest + bottomed, 3)
     return (*result, trace_lines) if trace else result
 
