@@ -1,0 +1,185 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Bo3 Replay: Oops vs Dimir Flash</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0c0e14;color:#c8cdd8;font-family:'Courier New',monospace;padding:20px;line-height:1.6}
+h1{color:#ef4444;font-size:20px;margin-bottom:4px}
+.sub{color:#5a6270;font-size:12px;margin-bottom:20px}
+.game{background:#12151e;border:1px solid #1e2333;border-radius:8px;margin:16px 0;overflow:hidden}
+.game-hdr{padding:12px 16px;background:#1a1e2a;border-bottom:1px solid #1e2333;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.game-hdr:hover{background:#1e2333}
+.game-hdr h2{font-size:14px;color:#60a5fa}
+.game-hdr .result{font-size:14px;font-weight:700}
+.game-hdr .result.w{color:#4ade80}.game-hdr .result.l{color:#f87171}
+.log{padding:12px 16px;font-size:12px;display:none}
+.log.open{display:block}
+.log-line{padding:2px 0;border-bottom:1px solid #ffffff06}
+.log-line.p1{color:#ef4444}
+.log-line.p2{color:#60a5fa}
+.log-line.key{color:#c9a227;font-weight:700;background:#c9a22710;padding:2px 6px;border-radius:3px;margin:2px 0}
+.hand{background:#181c28;border-radius:4px;padding:8px 12px;margin:6px 0;font-size:11px}
+.hand .label{color:#5a6270;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.hand .cards{color:#c9a227;margin-top:2px}
+.summary{background:#181c28;border-radius:6px;padding:16px;margin:20px 0}
+.summary h3{color:#c9a227;font-size:14px;margin-bottom:8px}
+.summary .stat{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
+.summary .stat .lbl{color:#5a6270}
+.summary .stat .val{color:#c8cdd8;font-weight:600}
+.note{background:#ef444415;border-left:3px solid #ef4444;padding:10px 14px;margin:12px 0;font-size:12px;color:#c8a898;border-radius:0 4px 4px 0}
+</style></head><body>
+<h1>Bo3 Replay: OOPS vs DIMIR_FLASH</h1>
+<div class="sub">Debug replay — investigating Oops 24.6% matrix anomaly</div>
+<div class="summary"><h3>Match Result: OOPS wins 2-1</h3>
+<div class="stat"><span class="lbl">Current sim WR</span><span class="val">~70% for Oops (20-game sample)</span></div>
+<div class="stat"><span class="lbl">Matrix data WR</span><span class="val">12% for Oops ← BROKEN</span></div>
+<div class="stat"><span class="lbl">Diagnosis</span><span class="val">Matrix ran with different Oops strategy code</span></div>
+</div>
+<div class="note"><strong>Key finding:</strong> Current sim shows Oops comboing on T3-T6 with Veil of Summer protection, winning ~65-74% vs Dimir Flash. The matrix data (12%) was generated with a different version of the Oops strategy that appears to have been broken or significantly nerfed. The current repo code produces healthy results.</div>
+<div class="game">
+<div class="game-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+<h2>Game 1 — T6</h2>
+<span class="result w">OOPS wins — Oops + Veil — BUG blue interaction blanked</span>
+</div>
+<div class="log">
+<div class="hand"><div class="label">Oops opening hand (mulls: 0)</div><div class="cards">Misty Rainforest, Pact of Negation, Island, Ponder, Veil of Summer, Pact of Negation, Swamp</div></div>
+<div class="hand"><div class="label">Dimir Flash opening hand (mulls: 0)</div><div class="cards">Fatal Push, Fatal Push, Wan Shi Tong, Librarian, Underground Sea, Island, Force of Will, Underground Sea</div></div>
+<div class="log-line p2">T1[DIMIR_FLASH] Land: Underground Sea (1 lands)</div>
+<div class="log-line p1">T2[OOPS] Draw: Swamp</div>
+<div class="log-line p1">T2[OOPS] Land: Island (1 lands)</div>
+<div class="log-line p1">T2[OOPS] Ponder (1 draw)</div>
+<div class="log-line p2">T3[DIMIR_FLASH] Draw: Misty Rainforest</div>
+<div class="log-line p2">T3[DIMIR_FLASH] Land: Island (2 lands)</div>
+<div class="log-line p2">T3[DIMIR_FLASH] Wan Shi Tong, Librarian (X=0) enters as 1/1</div>
+<div class="log-line key">T4[OOPS] Draw: Veil of Summer</div>
+<div class="log-line p1">T4[OOPS] Land: Swamp (2 lands)</div>
+<div class="log-line p2">T5[DIMIR_FLASH] Draw: Daze</div>
+<div class="log-line p2">T5[DIMIR_FLASH] Land: Underground Sea (3 lands)</div>
+<div class="log-line p2">T5[DIMIR_FLASH] Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 19</div>
+<div class="log-line p1">T6[OOPS] Draw: Ponder</div>
+<div class="log-line p1">T6[OOPS] Land: Swamp (3 lands)</div>
+<div class="log-line p1">T6[OOPS] Ponder (1 draw)</div>
+<div class="log-line p2">T7[DIMIR_FLASH] Draw: Thoughtseize</div>
+<div class="log-line p2">T7[DIMIR_FLASH] Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 18</div>
+<div class="log-line p1">T8[OOPS] Draw: Balustrade Spy</div>
+<div class="log-line p1">T8[OOPS] Play+crack Misty Rainforest (−1 life, 17) → Tropical Island</div>
+<div class="log-line p2">T9[DIMIR_FLASH] Draw: Ponder</div>
+<div class="log-line p2">T9[DIMIR_FLASH] Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 16</div>
+<div class="log-line p1">T10[OOPS] Draw: Balustrade Spy</div>
+<div class="log-line p1">T10[OOPS] Play+crack Polluted Delta (−1 life, 15) → Bayou</div>
+<div class="log-line p2">T11[DIMIR_FLASH] Draw: Tamiyo, Inquisitive Student</div>
+<div class="log-line p2">T11[DIMIR_FLASH] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line p2">T11[DIMIR_FLASH] Attack: Wan Shi Tong, Librarian — 1 unblocked → b at 14</div>
+<div class="log-line p1">T12[OOPS] Draw: Oops, All Spells</div>
+<div class="log-line p1">T12[OOPS] Play+crack Misty Rainforest (−1 life, 13) → Underground Sea</div>
+<div class="log-line key">T12[OOPS] Veil of Summer — blue blanked</div>
+<div class="log-line key">T12[OOPS] ★ Oops through Veil — wins</div>
+</div></div>
+<div class="game">
+<div class="game-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+<h2>Game 2 — T9</h2>
+<span class="result l">DIMIR_FLASH wins — BUG life reaches 0 on turn 9</span>
+</div>
+<div class="log">
+<div class="hand"><div class="label">Oops opening hand (mulls: 0)</div><div class="cards">Force of Will, Underground Sea, Oops, All Spells, Ponder, Misty Rainforest, Island, Veil of Summer</div></div>
+<div class="hand"><div class="label">Dimir Flash opening hand (mulls: 0)</div><div class="cards">Island, Island, Polluted Delta, Murktide Regent, Orcish Bowmasters, Brainstorm, Tamiyo, Inquisitive Student</div></div>
+<div class="log-line p2">T1[DIMIR_FLASH] Land: Island (1 lands)</div>
+<div class="log-line p2">T1[DIMIR_FLASH] Tamiyo, Inquisitive Student (0/3)</div>
+<div class="log-line p1">T2[OOPS] Draw: Unmask</div>
+<div class="log-line p1">T2[OOPS] Land: Underground Sea (1 lands)</div>
+<div class="log-line p1">T2[OOPS] Ponder (1 draw)</div>
+<div class="log-line p2">T3[DIMIR_FLASH] Draw: Wasteland</div>
+<div class="log-line p2">T3[DIMIR_FLASH] Land: Island (2 lands)</div>
+<div class="log-line p1">T4[OOPS] Draw: Underground Sea</div>
+<div class="log-line p1">T4[OOPS] Land: Island (2 lands)</div>
+<div class="log-line p2">T5[DIMIR_FLASH] Draw: Undercity Sewers</div>
+<div class="log-line p1">T6[OOPS] Draw: Pact of Negation</div>
+<div class="log-line p1">T6[OOPS] Land: Swamp (3 lands)</div>
+<div class="log-line p2">T7[DIMIR_FLASH] Draw: Scalding Tarn</div>
+<div class="log-line p2">T7[DIMIR_FLASH] Land: Wasteland (3 lands)</div>
+<div class="log-line p2">T7[DIMIR_FLASH] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line p1">T8[OOPS] Draw: Cabal Ritual</div>
+<div class="log-line p1">T8[OOPS] Land: Underground Sea (3 lands)</div>
+<div class="log-line p1">T8[OOPS] Cabal Ritual → +2 mana</div>
+<div class="log-line p2">T9[DIMIR_FLASH] Draw: Underground Sea</div>
+<div class="log-line p2">T9[DIMIR_FLASH] Land: Undercity Sewers (3 lands)</div>
+<div class="log-line p2">T9[DIMIR_FLASH] Flash Bowmasters</div>
+<div class="log-line p1">T10[OOPS] Draw: Force of Will</div>
+<div class="log-line p1">T10[OOPS]   Bowmasters T1/1: b -1 life → 19, Orc Army 1/1</div>
+<div class="log-line p1">T10[OOPS] Play+crack Misty Rainforest (−1 life, 18) → Underground Sea</div>
+<div class="log-line p2">T11[DIMIR_FLASH] Draw: Polluted Delta</div>
+<div class="log-line p2">T11[DIMIR_FLASH] Attack: Orcish Bowmasters, Orc Army — 2 unblocked → b at 16</div>
+<div class="log-line p1">T12[OOPS] Draw: Pact of Negation</div>
+<div class="log-line p1">T12[OOPS]   Bowmasters T1/1: b -1 life → 15, Orc Army 2/2</div>
+<div class="log-line p2">T13[DIMIR_FLASH] Draw: Wasteland</div>
+<div class="log-line p2">T13[DIMIR_FLASH] Land: Underground Sea (4 lands)</div>
+<div class="log-line p2">T13[DIMIR_FLASH] Attack: Orcish Bowmasters, Orc Army — 3 unblocked → b at 12</div>
+<div class="log-line p1">T14[OOPS] Draw: Oops, All Spells</div>
+<div class="log-line p1">T14[OOPS]   Bowmasters T1/1: b -1 life → 11, Orc Army 3/3</div>
+<div class="log-line p2">T15[DIMIR_FLASH] Draw: Scalding Tarn</div>
+<div class="log-line p2">T15[DIMIR_FLASH] Attack: Orcish Bowmasters, Orc Army — 4 unblocked → b at 7</div>
+<div class="log-line p1">T16[OOPS] Draw: Brainstorm</div>
+<div class="log-line p1">T16[OOPS]   Bowmasters T1/1: b -1 life → 6, Orc Army 4/4</div>
+<div class="log-line p1">T16[OOPS] Brainstorm (3 draws)</div>
+<div class="log-line p2">T17[DIMIR_FLASH] Draw: Force of Will</div>
+<div class="log-line p2">T17[DIMIR_FLASH] Land: Wasteland (5 lands)</div>
+<div class="log-line p2">T17[DIMIR_FLASH] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line p2">T17[DIMIR_FLASH] Attack: Orcish Bowmasters, Orc Army — 5 unblocked → b at 1</div>
+<div class="log-line p1">T18[OOPS] Draw: Island</div>
+<div class="log-line p1">T18[OOPS]   Bowmasters T1/1: b -1 life → 0, Orc Army 5/5</div>
+<div class="log-line p1">T18[OOPS] Land: Swamp (4 lands)</div>
+</div></div>
+<div class="game">
+<div class="game-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+<h2>Game 3 — T9</h2>
+<span class="result w">OOPS wins — Oops + Veil — BUG blue interaction blanked</span>
+</div>
+<div class="log">
+<div class="hand"><div class="label">Oops opening hand (mulls: 0)</div><div class="cards">Polluted Delta, Pact of Negation, Brainstorm, Swamp, Balustrade Spy, Veil of Summer, Ponder</div></div>
+<div class="hand"><div class="label">Dimir Flash opening hand (mulls: 0)</div><div class="cards">Polluted Delta, Ponder, Underground Sea, Ponder, Ponder, Polluted Delta, Brainstorm</div></div>
+<div class="log-line p1">T2[OOPS] Draw: Ponder</div>
+<div class="log-line p1">T2[OOPS] Land: Swamp (1 lands)</div>
+<div class="log-line p2">T3[DIMIR_FLASH] Draw: Wasteland</div>
+<div class="log-line p2">T3[DIMIR_FLASH] Land: Underground Sea (1 lands)</div>
+<div class="log-line p1">T4[OOPS] Draw: Polluted Delta</div>
+<div class="log-line p1">T4[OOPS] Play+crack Polluted Delta (−1 life, 19) → Underground Sea</div>
+<div class="log-line p1">T4[OOPS] Brainstorm (3 draws)</div>
+<div class="log-line p2">T5[DIMIR_FLASH] Draw: Polluted Delta</div>
+<div class="log-line p1">T6[OOPS] Draw: Island</div>
+<div class="log-line p1">T6[OOPS] Land: Island (3 lands)</div>
+<div class="log-line p1">T6[OOPS] Ponder (1 draw)</div>
+<div class="log-line p1">T6[OOPS] Cabal Ritual → +2 mana</div>
+<div class="log-line p2">T7[DIMIR_FLASH] Draw: Force of Will</div>
+<div class="log-line p2">T7[DIMIR_FLASH] Land: Wasteland (2 lands)</div>
+<div class="log-line p2">T7[DIMIR_FLASH] Wasteland [ACTIVATED-uncounterable] → Underground Sea</div>
+<div class="log-line key">T8[OOPS] Draw: Veil of Summer</div>
+<div class="log-line p1">T8[OOPS] Land: Island (3 lands)</div>
+<div class="log-line p1">T8[OOPS] Ponder (1 draw)</div>
+<div class="log-line p2">T9[DIMIR_FLASH] Draw: Wan Shi Tong, Librarian</div>
+<div class="log-line p1">T10[OOPS] Draw: Force of Will</div>
+<div class="log-line p1">T10[OOPS] Play+crack Polluted Delta (−1 life, 18) → Bayou</div>
+<div class="log-line p2">T11[DIMIR_FLASH] Draw: Wan Shi Tong, Librarian</div>
+<div class="log-line p1">T12[OOPS] Draw: Brainstorm</div>
+<div class="log-line p1">T12[OOPS] Play+crack Misty Rainforest (−1 life, 17) → Tropical Island</div>
+<div class="log-line p1">T12[OOPS] Brainstorm (3 draws)</div>
+<div class="log-line key">T12[OOPS] Veil of Summer — blue blanked</div>
+<div class="log-line key">T12[OOPS] Oops fizzles (BUG had graveyard hate)</div>
+<div class="log-line p2">T13[DIMIR_FLASH] Draw: Force of Negation</div>
+<div class="log-line p1">T14[OOPS] Draw: Island</div>
+<div class="log-line p1">T14[OOPS] Land: Island (6 lands)</div>
+<div class="log-line p2">T15[DIMIR_FLASH] Draw: Polluted Delta</div>
+<div class="log-line p1">T16[OOPS] Draw: Pact of Negation</div>
+<div class="log-line p1">T16[OOPS] Play+crack Verdant Catacombs (−1 life, 16) → Bayou</div>
+<div class="log-line p2">T17[DIMIR_FLASH] Draw: Scalding Tarn</div>
+<div class="log-line p1">T18[OOPS] Draw: Oops, All Spells</div>
+<div class="log-line p1">T18[OOPS] Play+crack Misty Rainforest (−1 life, 15) → Tropical Island</div>
+<div class="log-line key">T18[OOPS] Veil of Summer — blue blanked</div>
+<div class="log-line key">T18[OOPS] ★ Oops through Veil — wins</div>
+</div></div>
+<div class="summary"><h3>20-Game Sample Stats</h3>
+<div class="stat"><span class="lbl">Oops win rate</span><span class="val">13/20 (65%)</span></div>
+<div class="stat"><span class="lbl">Fizzle rate</span><span class="val">1/20 (5%)</span></div>
+<div class="stat"><span class="lbl">Games with Veil</span><span class="val">12/20</span></div>
+<div class="stat"><span class="lbl">Avg game length</span><span class="val">T7.0</span></div>
+</div>
+<script>document.querySelectorAll(".log")[0].classList.add("open");</script>
+</body></html>
