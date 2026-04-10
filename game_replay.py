@@ -109,28 +109,51 @@ def reason(line):
 
 
 def classify_play(line):
-    """Classify a play line into a visual category."""
+    """Classify a play line into a visual category. Minimize 'other' — everything gets a badge."""
     lo = line.lower()
     if lo.startswith('draw:') or 'upkeep draw' in lo: return 'draw'
     if 'play+crack' in lo and '→' in lo: return 'fetch'
     if lo.startswith('land:') or lo.startswith('play '): return 'land'
     if 'attack:' in lo or 'attacks for' in lo or 'unblocked' in lo or 'blocks' in lo: return 'combat'
-    if 'counter' in lo or ('daze' in lo and 'counter' in lo) or ('fow' in lo and 'counter' in lo): return 'counter'
-    if 'thoughtseize' in lo or 'strips' in lo or 'unmask' in lo: return 'discard'
-    if 'dies' in lo or 'destroyed' in lo: return 'death'
-    if 'exile' in lo and ('ending' in lo or 'binding' in lo or 'swords' in lo): return 'exile'
+    # Counter — before removal so "FoW counters X" isn't tagged removal
+    if 'counter' in lo or 'countered' in lo or 'fluster' in lo: return 'counter'
+    # Hand disruption (including TKS exile, abbreviated names)
+    if 'thoughtseize' in lo or 'unmask' in lo or 'strips' in lo: return 'discard'
+    if 'tks exiles' in lo or ('exile' in lo and ('fow' in lo or 'force' in lo)): return 'discard'
+    # Death/destruction
+    if 'dies' in lo or 'destroyed' in lo or 'kills' in lo: return 'death'
+    # Exile removal
+    if 'exile' in lo and ('ending' in lo or 'binding' in lo or 'swords' in lo or 'stp' in lo): return 'exile'
+    # SBA
     if 'legend rule' in lo or 'sacrifice' in lo: return 'sba'
-    if 'kills' in lo or ('push' in lo and '→' in lo) or 'snuff' in lo: return 'removal'
-    if '★' in line or 'combo' in lo or 'lethal' in lo: return 'combo'
+    # Removal — bolt/push/heat/snuff targeting creatures (check → or ->)
+    if ('bolt' in lo or 'push' in lo or 'heat' in lo or 'snuff' in lo) and ('→' in lo or '->' in lo or '&gt;' in lo): return 'removal'
+    # Combo / lethal / wins
+    if '★' in line or 'combo' in lo or 'lethal' in lo or 'wins' in lo: return 'combo'
+    # Wasteland / mana denial (abbreviated 'Waste →' or full 'Wasteland destroys')
+    if ('waste' in lo and ('→' in lo or '->' in lo or '&gt;' in lo)) or ('wasteland' in lo and 'destroy' in lo): return 'interact'
+    # Cantrips and draw spells (including abbreviated KozCmd)
+    if 'brainstorm' in lo or 'ponder' in lo or 'stock' in lo or 'preordain' in lo: return 'cantrip'
+    if ('kozcmd' in lo or "kozilek's command" in lo) and 'draw' in lo: return 'cantrip'
+    # Fast mana (abbreviated SSG, Petal, etc.)
+    if 'petal' in lo or 'mox' in lo or 'ritual' in lo or 'ssg' in lo or 'spirit guide' in lo: return 'mana'
+    if '+1 mana' in lo or '+2 mana' in lo or 'mana=' in lo: return 'mana'
+    # Explicit casts
     if 'cast ' in lo or 'flash ' in lo: return 'spell'
-    if 'bowmasters t' in lo or 'orc army' in lo or 'enters' in lo or 'trigger' in lo or 'etb' in lo: return 'trigger'
-    if 'brainstorm' in lo or 'ponder' in lo or 'stock' in lo: return 'cantrip'
-    if 'wasteland' in lo and 'destroys' in lo: return 'interact'
-    if 'petal' in lo or 'mox' in lo or 'ritual' in lo or 'spirit guide' in lo: return 'mana'
+    # Triggers / ETB
+    if 'bowmasters' in lo or 'orc army' in lo or 'enters' in lo or 'trigger' in lo or 'etb' in lo or 'energy' in lo: return 'trigger'
+    # Planeswalker
+    if 'flips' in lo or 'loyalty' in lo or 'planeswalker' in lo: return 'pw'
+    # Damage / life
     if 'damage' in lo or 'drain' in lo or 'ping' in lo: return 'damage'
     if 'life' in lo and ('gain' in lo or 'pay' in lo or 'lose' in lo): return 'life'
-    if 'planeswalker' in lo or 'flips' in lo or 'loyalty' in lo: return 'pw'
-    if 'bolt' in lo and ('→' in lo or 'damage' in lo): return 'removal'
+    # Veil of Summer / protection
+    if 'veil' in lo or 'blanked' in lo: return 'counter'
+    # Chalice lock
+    if 'chalice' in lo and 'blank' in lo: return 'combo'
+    # Fallback: any non-empty line is a spell/creature deployment
+    if lo.strip() and not lo.startswith('(') and not lo.startswith('-'):
+        return 'spell'
     return 'other'
 
 
