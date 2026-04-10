@@ -51,6 +51,51 @@ class GameResult:
     def bug_went_first(self): return self.p1_went_first
 
 
+def _trace_dual_board(log, gs, deck1, deck2):
+    """Append both-player board state in side-by-side table format."""
+    def _col(label, player, w=32):
+        lines = []
+        lines.append(f"{label:<{w}}")
+        lines.append(f"  Life: {player.life:<{w-8}}")
+        lines.append(f"  Hand: {len(player.hand)}  Lib: {len(player.library)}  GY: {len(player.graveyard)}")
+        land_names = ', '.join(l.card.name for l in player.lands) or '(none)'
+        if len(land_names) > w - 4:
+            land_names = land_names[:w-7] + '...'
+        lines.append(f"  Lands: {land_names}")
+        cre = ', '.join(f"{c.card.name} ({c.power}/{c.toughness})" for c in player.creatures) or '(none)'
+        if len(cre) > w - 4:
+            cre = cre[:w-7] + '...'
+        lines.append(f"  Creatures: {cre}")
+        arts = ', '.join(a.card.name for a in player.artifacts)
+        if arts:
+            if len(arts) > w - 4:
+                arts = arts[:w-7] + '...'
+            lines.append(f"  Artifacts: {arts}")
+        hand_str = ', '.join(c.name for c in player.hand) or '(empty)'
+        # Wrap hand across multiple lines if needed
+        hand_lines = []
+        prefix = "  Hand: "
+        while len(prefix + hand_str) > w:
+            cut = hand_str.rfind(', ', 0, w - len(prefix))
+            if cut <= 0:
+                cut = w - len(prefix)
+            hand_lines.append(prefix + hand_str[:cut])
+            hand_str = hand_str[cut:].lstrip(', ')
+            prefix = "        "
+        hand_lines.append(prefix + hand_str)
+        lines += hand_lines
+        return lines
+
+    left = _col(deck1.upper(), gs.p1)
+    right = _col(deck2.upper(), gs.p2)
+    # Pad to same height
+    max_h = max(len(left), len(right))
+    left += [''] * (max_h - len(left))
+    right += [''] * (max_h - len(right))
+    for l, r in zip(left, right):
+        log.append(f"  │ {l:<32} │ {r:<32} │")
+
+
 def run_game(deck1: str, deck2: str = None, verbose: bool = False,
              trace: bool = False) -> GameResult:
     """
@@ -138,8 +183,8 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
             if trace:
                 # Turn header with life totals
                 life_str = f"{deck1} {gs.p1.life} | {deck2} {gs.p2.life}"
-                header = f"── T{display_turn} [{label}] "
-                all_log.append(f"{header}{'─' * max(1, 56 - len(header))} Life: {life_str}")
+                header = f"━━ TURN {display_turn} — {label} "
+                all_log.append(f"{header}{'━' * max(1, 50 - len(header))} Life: {life_str}")
                 all_log.append("")
 
             lines = play_turn(gs, turn, who)
@@ -147,6 +192,11 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
             if trace:
                 for l in lines:
                     all_log.append(f"  {l}")
+                # Both-player board state
+                all_log.append("")
+                all_log.append(f"  ┌{'─' * 34}┬{'─' * 34}┐")
+                _trace_dual_board(all_log, gs, deck1, deck2)
+                all_log.append(f"  └{'─' * 34}┴{'─' * 34}┘")
                 all_log.append("")
             else:
                 all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
@@ -563,9 +613,7 @@ def protagonist_turn(gs, turn, matchup):
     gs.state_based_actions()
 
     if gs.trace:
-        from engine import _trace_board_state
         log("── End ──")
-        _trace_board_state(b, o, log)
 
     return log_entries
 
