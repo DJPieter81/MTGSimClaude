@@ -1,0 +1,353 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Price of Progress (instant, CMC 2)
+    2. Monastery Swiftspear (creature 1/2, CMC 1)
+    3. Barbarian Ring (land)
+    4. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    5. Mountain (basic)
+    6. Searing Blaze (instant, CMC 2)
+    7. Mountain (basic)
+    [Lands: 3  Creatures: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Rishadan Port (land)
+    2. Stoneforge Mystic (creature 1/2, CMC 2)
+    3. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    4. Aether Vial (artifact, CMC 1)
+    5. Flooded Strand (fetch)
+    6. Plains (basic)
+    7. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    [Lands: 3  Creatures: 3  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 3 threat(s) for a clock
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Rishadan Port (1 lands)
+  ── Main ──
+    Hand (6): Stoneforge Mystic, Phelia, Exuberant Shepherd, Aether Vial, Flooded Strand, Plains, Thalia, Guardian of Thraben
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Rishadan Port           │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Hand: Stoneforge Mystic        │
+  │         Monastery Swiftspear     │         Phelia                   │
+  │         Barbarian Ring           │         Exuberant Shepherd       │
+  │         Eidolon of the Great Rev │         Aether Vial              │
+  │         el, Mountain             │         Flooded Strand, Plains   │
+  │         Searing Blaze, Mountain  │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lava Spike
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Price of Progress, Monastery Swiftspear, Barbarian Ring, Eidolon of the Great Revel, Searing Blaze, Mountain, Lava Spike
+      → Monastery Swiftspear goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Monastery Swiftspear RESOLVES
+  Monastery Swiftspear enters the battlefield
+  Attack: Monastery Swiftspear — 1 unblocked → o at 19
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Mountain                │   Lands: Rishadan Port           │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Hand: Stoneforge Mystic        │
+  │         Barbarian Ring           │         Phelia                   │
+  │         Eidolon of the Great Rev │         Exuberant Shepherd       │
+  │         el, Searing Blaze        │         Aether Vial              │
+  │         Mountain, Lava Spike     │         Flooded Strand, Plains   │
+  │                                  │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 19
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Stoneforge Mystic
+  Play+crack Flooded Strand (−1 life, 18) → Plains
+  ── Main ──
+    Hand (6): Stoneforge Mystic, Phelia, Exuberant Shepherd, Aether Vial, Plains, Thalia, Guardian of Thraben, Stoneforge Mystic
+    Mana available: 1
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+      → Aether Vial goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Aether Vial RESOLVES
+  Aether Vial enters play
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 5  Lib: 51  GY: 2        │
+  │   Lands: Mountain                │   Lands: Rishadan Port, Plains   │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Artifacts: Aether Vial         │
+  │         Barbarian Ring           │   Hand: Stoneforge Mystic        │
+  │         Eidolon of the Great Rev │         Phelia                   │
+  │         el, Searing Blaze        │         Exuberant Shepherd       │
+  │         Mountain, Lava Spike     │         Plains, Thalia           │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Goblin Guide
+  Land: Mountain (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Price of Progress, Barbarian Ring, Eidolon of the Great Revel, Searing Blaze, Lava Spike, Goblin Guide
+      → Goblin Guide goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Monastery Swiftspear, Goblin Guide — 3 unblocked → o at 15
+      → Lava Spike goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lava Spike RESOLVES
+  ★ Lava Spike → 3 damage (opp at 12)
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 12                       │
+  │   Hand: 4  Lib: 51  GY: 1        │   Hand: 5  Lib: 51  GY: 2        │
+  │   Lands: Mountain, Mountain      │   Lands: Rishadan Port, Plains   │
+  │   Creatures: Monastery Swiftspear (1/2... │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Artifacts: Aether Vial         │
+  │         Barbarian Ring           │   Hand: Stoneforge Mystic        │
+  │         Eidolon of the Great Rev │         Phelia                   │
+  │         el, Searing Blaze        │         Exuberant Shepherd       │
+  │                                  │         Plains, Thalia           │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 12
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Swords to Plowshares
+  Land: Plains (3 lands)
+  ── Main ──
+    Hand (5): Stoneforge Mystic, Phelia, Exuberant Shepherd, Thalia, Guardian of Thraben, Stoneforge Mystic, Swords to Plowshares
+    Mana available: 2
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  Swords to Plowshares exiles Monastery Swiftspear (+1 life)
+  Aether Vial — 1 counter(s)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 21                       │   Life: 12                       │
+  │   Hand: 4  Lib: 51  GY: 1        │   Hand: 4  Lib: 50  GY: 3        │
+  │   Lands: Mountain, Mountain      │   Lands: Rishadan Port, Plains, Pl... │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Artifacts: Aether Vial         │
+  │         Barbarian Ring           │   Hand: Stoneforge Mystic        │
+  │         Eidolon of the Great Rev │         Phelia                   │
+  │         el, Searing Blaze        │         Exuberant Shepherd       │
+  │                                  │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 21 | dnt 12
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Price of Progress
+  Land: Barbarian Ring (3 lands)
+  ── Main ── Mana: 3
+    Hand (4): Price of Progress, Eidolon of the Great Revel, Searing Blaze, Price of Progress
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  Attack: Goblin Guide — 2 unblocked → o at 10
+  Eidolon trigger — 1 spell(s) cast, 2 damage to P1 (19)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 19                       │   Life: 10                       │
+  │   Hand: 3  Lib: 50  GY: 1        │   Hand: 4  Lib: 50  GY: 3        │
+  │   Lands: Mountain, Mountain, Barba... │   Lands: Rishadan Port, Plains, Pl... │
+  │   Creatures: Goblin Guide (2/1), Eidol... │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Stoneforge Mystic        │
+  │         Price of Progress        │         Phelia                   │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 19 | dnt 10
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Solitude
+  ── Main ──
+    Hand (5): Stoneforge Mystic, Phelia, Exuberant Shepherd, Thalia, Guardian of Thraben, Stoneforge Mystic, Solitude
+    Mana available: 2
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ★ Solitude (evoke, pitch Phelia, Exuberant Shepherd) exiles Eidolon of the Great Revel (+2 life)
+  Aether Vial — 2 counter(s)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 19                       │   Life: 12                       │
+  │   Hand: 3  Lib: 50  GY: 1        │   Hand: 3  Lib: 49  GY: 4        │
+  │   Lands: Mountain, Mountain, Barba... │   Lands: Rishadan Port, Plains, Pl... │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Stoneforge Mystic        │
+  │         Price of Progress        │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 19 | dnt 12
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lava Spike
+  ── Main ── Mana: 3
+    Hand (4): Price of Progress, Searing Blaze, Price of Progress, Lava Spike
+    Goblin Guide trigger → reveals Flooded Strand (land) — opponent draws it
+  ★ Vial [2] combat ambush → Thalia, Guardian of Thraben (2/1) enters as blocker
+  Attack: Goblin Guide — Thalia, Guardian of Thraben blocks Goblin Guide. Goblin Guide deals 2, Thalia, Guardian of Thraben deals 2 back. 0 unblocked damage to player (o at 12)
+      Thalia, Guardian of Thraben dies.
+      Goblin Guide dies.
+      → Price of Progress goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 10)
+      → Lava Spike goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lava Spike RESOLVES
+  ★ Lava Spike → 3 damage (opp at 7)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 19                       │   Life: 7                        │
+  │   Hand: 2  Lib: 49  GY: 5        │   Hand: 3  Lib: 48  GY: 5        │
+  │   Lands: Mountain, Mountain, Barba... │   Lands: Rishadan Port, Plains, Pl... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Artifacts: Aether Vial         │
+  │         Price of Progress        │   Hand: Stoneforge Mystic        │
+  │                                  │         Stoneforge Mystic        │
+  │                                  │         Flooded Strand           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 19 | dnt 7
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Flickerwisp
+  Play+crack Flooded Strand (−1 life, 6) → Plains
+  ── Main ──
+    Hand (3): Stoneforge Mystic, Stoneforge Mystic, Flickerwisp
+    Mana available: 3
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  Aether Vial — 3 counter(s)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 19                       │   Life: 6                        │
+  │   Hand: 2  Lib: 49  GY: 5        │   Hand: 3  Lib: 46  GY: 7        │
+  │   Lands: Mountain, Mountain, Barba... │   Lands: Rishadan Port, Plains, Pl... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Artifacts: Aether Vial         │
+  │         Price of Progress        │   Hand: Stoneforge Mystic        │
+  │                                  │         Stoneforge Mystic        │
+  │                                  │         Flickerwisp              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 19 | dnt 6
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  ── Main ── Mana: 3
+    Hand (3): Searing Blaze, Price of Progress, Lightning Bolt
+      → Price of Progress goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 4)
+      → Lightning Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 1)
+  ★ Barbarian Ring (threshold) → 2 damage (opp at -1)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 19                       │   Life: -1                       │
+  │   Hand: 1  Lib: 48  GY: 8        │   Hand: 3  Lib: 46  GY: 7        │
+  │   Lands: Mountain, Mountain      │   Lands: Rishadan Port, Plains, Pl... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Stoneforge Mystic        │
+  │                                  │         Stoneforge Mystic        │
+  │                                  │         Flickerwisp              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches -1 on turn 5
+  Final life: burn 19 | dnt -1
+══════════════════════════════════════════════════════════════════════

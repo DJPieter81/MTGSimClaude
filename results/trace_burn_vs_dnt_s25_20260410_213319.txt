@@ -1,0 +1,321 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Fireblast (instant, CMC 6)
+    2. Rift Bolt (sorcery, CMC 3)
+    3. Mountain (basic)
+    4. Price of Progress (instant, CMC 2)
+    5. Fireblast (instant, CMC 6)
+    6. Monastery Swiftspear (creature 1/2, CMC 1)
+    7. Inspiring Vantage (land)
+    [Lands: 2  Creatures: 1  Other: 4]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Rishadan Port (land)
+    2. Skyclave Apparition (creature 2/2, CMC 3, removal)
+    3. Karakas (land)
+    4. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    5. Flickerwisp (creature 3/1, CMC 3)
+    6. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    7. Arid Mesa (fetch)
+    [Lands: 3  Creatures: 4  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 4 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Fireblast, Rift Bolt, Price of Progress, Fireblast, Monastery Swiftspear, Inspiring Vantage
+      → Monastery Swiftspear goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Monastery Swiftspear RESOLVES
+  Monastery Swiftspear enters the battlefield
+  Attack: Monastery Swiftspear — 1 unblocked → o at 19
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 5  Lib: 53  GY: 0        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Mountain                │   Lands: (none)                  │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Fireblast, Rift Bolt     │   Hand: Rishadan Port            │
+  │         Price of Progress        │         Skyclave Apparition      │
+  │         Fireblast                │         Karakas, Thalia          │
+  │         Inspiring Vantage        │         Guardian of Thraben      │
+  │                                  │         Flickerwisp, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Arid Mesa                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 19
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Recruiter of the Guard
+  Land: Rishadan Port (1 lands)
+  ── Main ──
+    Hand (7): Skyclave Apparition, Karakas, Thalia, Guardian of Thraben, Flickerwisp, Thalia, Guardian of Thraben, Arid Mesa, Recruiter of the Guard
+    Mana available: 0
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 5  Lib: 53  GY: 0        │   Hand: 7  Lib: 52  GY: 0        │
+  │   Lands: Mountain                │   Lands: Rishadan Port           │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Fireblast, Rift Bolt     │   Hand: Skyclave Apparition      │
+  │         Price of Progress        │         Karakas, Thalia          │
+  │         Fireblast                │         Guardian of Thraben      │
+  │         Inspiring Vantage        │         Flickerwisp, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Arid Mesa                │
+  │                                  │         Recruiter of the Guard   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (2 lands)
+  ── Main ── Mana: 2
+    Hand (5): Fireblast, Rift Bolt, Price of Progress, Fireblast, Inspiring Vantage
+  Attack: Monastery Swiftspear — 1 unblocked → o at 18
+      → Price of Progress goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 16)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 16                       │
+  │   Hand: 4  Lib: 52  GY: 1        │   Hand: 7  Lib: 52  GY: 0        │
+  │   Lands: Mountain, Mountain      │   Lands: Rishadan Port           │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Fireblast, Rift Bolt     │   Hand: Skyclave Apparition      │
+  │         Fireblast                │         Karakas, Thalia          │
+  │         Inspiring Vantage        │         Guardian of Thraben      │
+  │                                  │         Flickerwisp, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Arid Mesa                │
+  │                                  │         Recruiter of the Guard   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 16
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Land: Karakas (2 lands)
+  ── Main ──
+    Hand (7): Skyclave Apparition, Thalia, Guardian of Thraben, Flickerwisp, Thalia, Guardian of Thraben, Arid Mesa, Recruiter of the Guard, Wasteland
+    Mana available: 1
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 16                       │
+  │   Hand: 4  Lib: 52  GY: 1        │   Hand: 7  Lib: 51  GY: 0        │
+  │   Lands: Mountain, Mountain      │   Lands: Rishadan Port, Karakas  │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Fireblast, Rift Bolt     │   Hand: Skyclave Apparition      │
+  │         Fireblast                │         Thalia                   │
+  │         Inspiring Vantage        │         Guardian of Thraben      │
+  │                                  │         Flickerwisp, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Arid Mesa                │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 16
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  Land: Inspiring Vantage (3 lands)
+  ── Main ── Mana: 3
+    Hand (4): Fireblast, Rift Bolt, Fireblast, Lightning Bolt
+  Attack: Monastery Swiftspear — 1 unblocked → o at 15
+      → Rift Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Rift Bolt RESOLVES
+  ★ Rift Bolt → 3 damage (opp at 12)
+      → Lightning Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 9)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 9                        │
+  │   Hand: 2  Lib: 51  GY: 3        │   Hand: 7  Lib: 51  GY: 0        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Rishadan Port, Karakas  │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Hand: Skyclave Apparition      │
+  │                                  │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Flickerwisp, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Arid Mesa                │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 9
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Plains
+  Play+crack Arid Mesa (−1 life, 8) → Plains
+  ── Main ──
+    Hand (7): Skyclave Apparition, Thalia, Guardian of Thraben, Flickerwisp, Thalia, Guardian of Thraben, Recruiter of the Guard, Wasteland, Plains
+    Mana available: 2
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+      → Thalia, Guardian of Thraben goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Thalia, Guardian of Thraben RESOLVES
+  Thalia, Guardian of Thraben (2/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 8                        │
+  │   Hand: 2  Lib: 51  GY: 3        │   Hand: 6  Lib: 49  GY: 2        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Rishadan Port, Karakas, P... │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: Thalia, Guardian of Thrab... │
+  │   Hand: Fireblast, Fireblast     │   Hand: Skyclave Apparition      │
+  │                                  │         Flickerwisp, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Wasteland, Plains        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 8
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fiery Islet
+  Land: Fiery Islet (4 lands)
+  ── Main ── Mana: 4
+    Hand (2): Fireblast, Fireblast
+  Thalia tax — 2 noncreature spells cost +1
+  Attack: Monastery Swiftspear — Thalia, Guardian of Thraben blocks Monastery Swiftspear. Monastery Swiftspear deals 1, Thalia, Guardian of Thraben deals 2 back. 0 unblocked damage to player (o at 8)
+      Thalia, Guardian of Thraben dies.
+      Monastery Swiftspear dies.
+      → Fireblast goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 4)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 4                        │
+  │   Hand: 1  Lib: 50  GY: 6        │   Hand: 6  Lib: 49  GY: 3        │
+  │   Lands: Inspiring Vantage, Fiery ... │   Lands: Rishadan Port, Karakas, P... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Hand: Skyclave Apparition      │
+  │                                  │         Flickerwisp, Thalia      │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Wasteland, Plains        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 4
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Solitude
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (6): Skyclave Apparition, Flickerwisp, Thalia, Guardian of Thraben, Recruiter of the Guard, Plains, Solitude
+    Mana available: 2
+  Rishadan Port taps Inspiring Vantage (BUG loses 1 mana)
+      → Thalia, Guardian of Thraben goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Thalia, Guardian of Thraben RESOLVES
+  Thalia, Guardian of Thraben (2/1)
+  Wasteland → destroys Inspiring Vantage
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 4                        │
+  │   Hand: 1  Lib: 50  GY: 7        │   Hand: 5  Lib: 48  GY: 4        │
+  │   Lands: Fiery Islet             │   Lands: Rishadan Port, Karakas, P... │
+  │   Creatures: (none)              │   Creatures: Thalia, Guardian of Thrab... │
+  │   Hand: Fireblast                │   Hand: Skyclave Apparition      │
+  │                                  │         Flickerwisp              │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Plains, Solitude         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 4
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Inspiring Vantage
+  Land: Inspiring Vantage (2 lands)
+  ── Main ── Mana: 2
+    Hand (1): Fireblast
+  Thalia tax — 1 noncreature spells cost +1
+      → Fireblast goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 0)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 0                        │
+  │   Hand: 0  Lib: 49  GY: 8        │   Hand: 5  Lib: 48  GY: 4        │
+  │   Lands: (none)                  │   Lands: Rishadan Port, Karakas, P... │
+  │   Creatures: (none)              │   Creatures: Thalia, Guardian of Thrab... │
+  │   Hand: (empty)                  │   Hand: Skyclave Apparition      │
+  │                                  │         Flickerwisp              │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Plains, Solitude         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches 0 on turn 5
+  Final life: burn 20 | dnt 0
+══════════════════════════════════════════════════════════════════════
