@@ -2362,8 +2362,12 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     deploy_priority = ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp',
                        'orchid', 'mom', 'recruiter']
 
-    # Hard cast ONE creature if no Vial (mana-limited)
-    if not vial_perm:
+    # Hard cast creatures (multiple if mana permits, no Vial)
+    # Also cast via Vial if on board but deploy extras with mana
+    deployed_this_turn = 0
+    max_deploys = 1 if not vial_perm else 0  # hard cast 1 if no Vial, Vial handles rest
+    if total_mana >= 4: max_deploys = 2  # with 4+ mana, can double-deploy
+    if not vial_perm or total_mana >= 2:
         for tag in deploy_priority:
             crea = player.find_tag(tag)
             if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
@@ -2375,9 +2379,14 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
                 # ETB triggers
                 if tag == 'skyclave' and opponent.creatures:
-                    target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
+                    # Priority: Eidolon (punishes all our spells) > biggest threat
+                    target = next((c for c in opponent.creatures if c.card.tag == 'eidolon'), None)
+                    if not target:
+                        target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
                     if target:
                         opponent.remove_creature(target)
+                        if target.card.tag == 'eidolon':
+                            gs.eidolon_active = False
                         log_fn(f"  Skyclave Apparition exiles {target.card.name}")
                 if tag == 'recruiter':
                     found = next((c for c in player.library
@@ -2400,7 +2409,9 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                         update_goyf(gs)
             else:
                 player.add_to_grave(crea)
-            break  # one hard cast per turn
+            deployed_this_turn += 1
+            if deployed_this_turn >= max_deploys:
+                break
 
     # SFM activated: put equipment into play
     sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)
