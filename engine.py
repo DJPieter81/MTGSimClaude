@@ -2266,9 +2266,71 @@ def _strategy_elves(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
-    """Death and Taxes: Aether Vial + tax creatures + land denial."""
+    """Death and Taxes: Aether Vial + tax creatures + land denial.
 
-    # Aether Vial — highest priority, cast T1-T3 (real DnT casts it ASAP)
+    Priority vs aggro (creatures on opponent's board):
+      1. Swords to Plowshares (exile + life gain)
+      2. Solitude (free evoke exile + life gain)
+      3. Thalia (taxes noncreature spells)
+      4. Aether Vial (free creature deployment)
+      5. Other creatures via Vial or hard-cast
+
+    Priority vs combo/control (no creatures):
+      1. Aether Vial T1
+      2. Thalia T2 (tax their cantrips/rituals)
+      3. Stoneforge Mystic (tutor equipment)
+      4. Wasteland + Port (deny mana)
+    """
+
+    # ── 0. Swords to Plowshares — FIRST PRIORITY vs any creature ──
+    # Real DnT always fires STP before deploying own threats.
+    # Exile their best threat and GAIN LIFE (critical vs Burn).
+    while True:
+        stp = player.find_tag('stp')
+        if not stp or not opponent.creatures:
+            break
+        if not opp_can_cast(stp, total_mana, gs, caster=player):
+            break
+        target = max(opponent.creatures, key=lambda c: c.power + c.toughness)
+        if target.power < 1:
+            break  # don't waste STP on 0-power creatures
+        player.remove_from_hand(stp); player.add_to_grave(stp)
+        total_mana -= 1
+        life_gain = MTGRules.stp_life_gain(target)
+        opponent.remove_creature(target, to_exile=True)
+        opponent.life += life_gain
+        log_fn(f"Swords to Plowshares exiles {target.card.name} (+{life_gain} life)")
+        update_goyf(gs)
+        if not opponent.creatures:
+            break
+
+    # ── 1. Solitude — free evoke (exile white card) vs any creature ──
+    # Evoke = free, exile opponent's creature, player gains life = toughness.
+    # Critical vs Burn: removes Eidolon/Guide/Swiftspear AND gains life.
+    # NEVER pitch Thalia (too valuable as tax piece).
+    solitude = player.find_tag('solitude')
+    if solitude and opponent.creatures:
+        # Prefer pitching low-value white cards (not Thalia, not STP)
+        _pitch_priority = {'recruiter': 1, 'orchid': 1, 'flickerwisp': 2,
+                           'phelia': 2, 'mom': 2, 'sfm': 3, 'equipment': 3,
+                           'kaldra': 3, 'skyclave': 3, 'solitude': 5}
+        white_candidates = [c for c in player.hand
+                            if 'W' in getattr(c, 'colors', set())
+                            and c is not solitude and c.tag != 'thalia' and c.tag != 'stp']
+        white_pitch = min(white_candidates, key=lambda c: _pitch_priority.get(c.tag, 4),
+                          default=None) if white_candidates else None
+        if white_pitch:
+            target = max(opponent.creatures, key=lambda c: c.power + c.toughness)
+            if target.power >= 1:
+                player.remove_from_hand(solitude); player.add_to_grave(solitude)
+                player.remove_from_hand(white_pitch); player.exile.append(white_pitch)
+                life_gain = target.toughness
+                opponent.remove_creature(target, to_exile=True)
+                player.life += life_gain
+                log_fn(f"★ Solitude (evoke, pitch {white_pitch.name}) exiles {target.card.name} (+{life_gain} life)", True)
+                update_goyf(gs)
+
+    # ── 2. Aether Vial — highest priority T1-T3 ──
     vial = player.find_tag('vial')
     vial_on_board = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
     if vial and not vial_on_board and total_mana >= 1 and gs.turn <= 3:
@@ -2276,102 +2338,85 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
         if not _try_counter_any(player, opponent, gs, vial, log_entries):
             player.put_artifact_in_play(vial)
             gs.vial_counters = 0
-            gs._vial_entered_last_turn = True  # no tick until next upkeep (CR 702.12)
+            gs._vial_entered_last_turn = True
+            total_mana -= 1
             log_fn("Aether Vial enters play")
         else:
             player.add_to_grave(vial)
-    # Vial upkeep tick — always tick toward cap; EOT hook deploys at current counter level
-    vial_tags = ('mom', 'thalia', 'phelia', 'skyclave', 'recruiter', 'flickerwisp',
+
+    # Vial upkeep tick
+    vial_tags = ('thalia', 'mom', 'phelia', 'skyclave', 'recruiter', 'flickerwisp',
                  'solitude', 'sfm', 'orchid', 'eidolon', 'bowm')
     vial_perm = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
     if vial_perm:
         if gs._vial_entered_last_turn:
-            gs._vial_entered_last_turn = False  # first upkeep skip after entry gs.turn
+            gs._vial_entered_last_turn = False
         elif gs.vial_counters < 3:
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
 
-    # Hard cast creatures — only when Vial is NOT on board (Vial handles deployment).
-    # DnT preserves hand for Vial EOT deploy + combat ambush (instant speed).
-    if not vial_perm:
-        for tag in vial_tags:
-            crea = player.find_tag(tag)
-            if crea and opp_can_cast(crea, total_mana, gs, caster=player):
-                player.remove_from_hand(crea)
-                if not _try_counter_any(player, opponent, gs, crea, log_entries):
-                    player.put_creature_in_play(crea)
-                    total_mana -= crea.cmc
-                    log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
-                    if tag == 'skyclave' and opponent.creatures:
-                        target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
-                        if target:
-                            opponent.remove_creature(target)
-                            log_fn(f"  Skyclave Apparition exiles {target.card.name}")
-                    if tag == 'solitude' and opponent.creatures:
-                        target = opponent.creatures[-1]
-                        opponent.remove_creature(target)
-                        log_fn(f"  Solitude exiles {target.card.name}")
-                    if tag == 'flickerwisp':
-                        tgt = max(opponent.creatures, key=lambda c: c.power, default=None)
-                        if tgt:
-                            opponent.remove_creature(tgt)
-                            new_p = opponent.put_creature_in_play(tgt.card)
-                            new_p.summoning_sick = True
-                            log_fn(f"  Flickerwisp blinks {tgt.card.name} (re-enters sick, misses combat)")
-                            update_goyf(gs)
-                        elif opponent.lands:
-                            tgt_land = opponent.lands[-1]
-                            opponent.lands.remove(tgt_land)
-                            opponent.revolt_this_turn = True
-                            from rules import LandPermanent
-                            new_land = LandPermanent(card=tgt_land.card, controller=('b' if player is gs.p1 else 'o'), tapped=True)
-                            opponent.lands.append(new_land)
-                            log_fn(f"  Flickerwisp blinks {tgt_land.card.name} (re-enters tapped)")
-                    if tag == 'recruiter':
-                        found = next((c for c in player.library
-                                      if c.is_creature() and c.base_power <= 2), None)
-                        if found:
-                            player.library.remove(found); player.hand.append(found)
-                            log_fn(f"  Recruiter tutors {found.name} (CMC {found.cmc})")
-                    if crea.tag == 'sfm':
-                        equip = next((c for c in player.library if c.tag in CR.EQUIPMENT_SET), None)
-                        if equip:
-                            player.library.remove(equip)
-                            player.hand.append(equip)
-                            log_fn(f"  Stoneforge Mystic tutors {equip.name}")
-                else:
-                    player.add_to_grave(crea)
-                break  # one hard cast per turn (mana-limited)
+    # ── 3. Deploy creatures — priority order matters ──
+    # Thalia FIRST (taxes opponent's spells), then SFM (tutors equipment),
+    # then other threats. Recruiter last (value, not tempo).
+    deploy_priority = ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp',
+                       'orchid', 'mom', 'recruiter']
 
-    # SFM activated: put equipment into play, equip to a creature
+    # Hard cast ONE creature if no Vial (mana-limited)
+    if not vial_perm:
+        for tag in deploy_priority:
+            crea = player.find_tag(tag)
+            if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
+                continue
+            player.remove_from_hand(crea)
+            if not _try_counter_any(player, opponent, gs, crea, log_entries):
+                player.put_creature_in_play(crea)
+                total_mana -= crea.cmc
+                log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
+                # ETB triggers
+                if tag == 'skyclave' and opponent.creatures:
+                    target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
+                    if target:
+                        opponent.remove_creature(target)
+                        log_fn(f"  Skyclave Apparition exiles {target.card.name}")
+                if tag == 'recruiter':
+                    found = next((c for c in player.library
+                                  if c.is_creature() and c.base_power <= 2), None)
+                    if found:
+                        player.library.remove(found); player.hand.append(found)
+                        log_fn(f"  Recruiter tutors {found.name}")
+                if tag == 'sfm':
+                    equip = next((c for c in player.library if c.tag in CR.EQUIPMENT_SET), None)
+                    if equip:
+                        player.library.remove(equip); player.hand.append(equip)
+                        log_fn(f"  Stoneforge Mystic tutors {equip.name}")
+                if tag == 'flickerwisp':
+                    tgt = max(opponent.creatures, key=lambda c: c.power, default=None)
+                    if tgt:
+                        opponent.remove_creature(tgt)
+                        new_p = opponent.put_creature_in_play(tgt.card)
+                        new_p.summoning_sick = True
+                        log_fn(f"  Flickerwisp blinks {tgt.card.name}")
+                        update_goyf(gs)
+            else:
+                player.add_to_grave(crea)
+            break  # one hard cast per turn
+
+    # SFM activated: put equipment into play
     sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)
     equip_card = player.find_tag('equipment') or player.find_tag('kaldra')
     if sfm_perm and equip_card and total_mana >= 1:
         player.remove_from_hand(equip_card)
-        equip_perm = player.put_artifact_in_play(equip_card)
-        # Give biggest opp creature +3/+3 and indestructible (Kaldra) or lifelink/trample
+        player.put_artifact_in_play(equip_card)
         if player.creatures:
             biggest = max((c for c in player.creatures if c.card.tag != 'sfm'),
                          key=lambda c: c.power, default=None)
             if biggest:
-                biggest.power_mod += 3
-                biggest.toughness_mod += 3
-                log_fn(f"  {equip_card.name} equipped to {biggest.name} (+3/+3)", True)
+                biggest.power_mod += 3; biggest.toughness_mod += 3
+                log_fn(f"  {equip_card.name} equipped to {biggest.card.name} (+3/+3)", True)
 
-    # Swords to Plowshares
-    stp = player.find_tag('stp')
-    if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
-        target = max(opponent.creatures, key=lambda c: c.card.base_power)
-        player.remove_from_hand(stp); player.add_to_grave(stp)
-        life_gain = MTGRules.stp_life_gain(target)
-        opponent.remove_creature(target, to_exile=True)
-        opponent.life += life_gain
-        log_fn(f"Swords to Plowshares exiles {target.card.name} (+{life_gain} life)")
-        update_goyf(gs)
-
-    # Wasteland — destroy BUG's nonbasic lands when DnT has board presence
+    # ── 4. Wasteland — destroy opponent's nonbasic lands ──
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
-    if wl and len(player.creatures) >= 2:  # only waste when ahead on board
+    if wl:
         targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
         if targets:
             target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
@@ -2382,37 +2427,51 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Wasteland → destroys {target.card.name}")
             update_goyf(gs)
 
-    # Karakas — bounce only Murktide (the biggest threat DnT can't block)
+    # Karakas — bounce legendary creatures
     for karakas in [l for l in player.lands if l.card.tag == 'karakas' and not l.tapped]:
         murktide = next((c for c in opponent.creatures if c.card.tag == 'murk'), None)
         if murktide:
             karakas.tapped = True
             opponent.creatures.remove(murktide)
             opponent.hand.append(murktide.card)
-            opponent.revolt_this_turn = True
-            log_fn(f"★ Karakas → returns {murktide.card.name} to BUG's hand", True)
+            log_fn(f"★ Karakas → returns {murktide.card.name}", True)
             break
 
-    # UWx combat: total-power evaluation
-    bug_max_blocker_toughness = max((c.toughness for c in opponent.creatures), default=0)
-    total_uwx_power = sum(c.power for c in player.creatures if not c.summoning_sick and c.power > 0)
-    unblocked = max(0, total_uwx_power - bug_max_blocker_toughness)
-    should_alpha = (unblocked >= 6 or (opponent.life <= 10 and unblocked >= 3) or (opponent.life <= 5 and total_uwx_power >= 2))
+    # ── 4b. Rishadan Port — tap opponent's lands to deny mana ──
+    # Port is devastating vs low-land decks like Burn: each Port tap = 1 fewer spell.
+    for port in [l for l in player.lands if l.card.tag == 'port' and not l.tapped]:
+        opp_untapped = [l for l in opponent.lands if not l.tapped]
+        if opp_untapped:
+            def _land_val(l):
+                if l.card.tag == 'dual': return 3
+                if l.card.is_basic: return 2
+                return 1
+            target = max(opp_untapped, key=_land_val)
+            target.tapped = True
+            port.tapped = True
+            log_fn(f"Rishadan Port taps {target.card.name} (opponent loses 1 mana)")
 
-    attackers_this_turn = []
+    # ── 5. Combat — attack strategically ──
+    # Thalia attacks only when DnT has 3+ creatures (board superiority).
+    # SFM stays back if it hasn't activated equipment yet.
+    # Recruiter (1/1) only attacks in alpha strikes.
+    board_size = len([c for c in player.creatures if not c.summoning_sick])
+    opp_blockers = len(opponent.creatures)
+    total_power = sum(c.power for c in player.creatures if not c.summoning_sick)
+    alpha_strike = total_power >= opponent.life or (board_size >= 3 and opp_blockers == 0)
+
+    attackers = []
     for c in player.creatures:
         if c.summoning_sick: continue
-        if should_alpha:
-            if c.power > 0: attackers_this_turn.append(c)
-        elif c.card.tag == 'riddler':
-            if c.power > bug_max_blocker_toughness: attackers_this_turn.append(c)
-        elif c.card.tag == 'phelia':
-            if not any(blk.power >= 1 for blk in opponent.creatures): attackers_this_turn.append(c)
-        elif c.card.tag == 'tamiyo':
-            pass  # 0/3 defender
-        else:
-            attackers_this_turn.append(c)
-    combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
+        if c.card.tag == 'thalia' and board_size < 3 and not alpha_strike:
+            continue  # keep Thalia back as tax piece when we need her
+        if c.card.tag == 'sfm' and equip_card:
+            continue  # keep SFM for activation
+        if c.card.tag == 'recruiter' and not alpha_strike:
+            continue  # 1/1 not worth risking
+        if c.power > 0:
+            attackers.append(c)
+    combat_declare(player, opponent, gs, log_entries, attackers)
 
 
 

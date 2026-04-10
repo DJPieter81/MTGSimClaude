@@ -21,13 +21,23 @@ def _keep_dnt(hand, matchup=''):
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
-    threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
     tags = {c.tag for c in hand}
-    has_t1 = 'vial' in tags or any(c.is_creature() for c in nonlands)
-    return 2 <= lc <= 4 and has_t1
+    has_vial = 'vial' in tags
+    has_thalia = 'thalia' in tags
+    has_stp = 'stp' in tags
+    has_solitude = 'solitude' in tags
+    has_removal = has_stp or has_solitude
+    has_creature = any(c.is_creature() for c in nonlands)
+    has_t1_play = has_vial or has_creature
+    # Need 2-4 lands + at least one proactive play
+    if not (2 <= lc <= 4 and has_t1_play):
+        return False
+    # Strong keeps: Vial + Thalia, or removal + threat
+    if has_vial and (has_thalia or has_removal):
+        return True
+    # Acceptable: 2-3 lands + 2+ action cards
+    action = sum(1 for c in nonlands if c.is_creature() or c.tag in ('vial', 'stp'))
+    return action >= 2
 
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
