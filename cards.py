@@ -448,11 +448,15 @@ def make_uwx_deck() -> List[Card]:
     d += [creature('Snapcaster Mage', 2, {'U':1,'generic':1}, {'U'}, 2, 1, tag='snap', flash=True)] * 2
     d += [enchantment('Back to Basics', 3, {'U':1,'generic':2}, {'U'}, tag='b2b',     lock_piece=True)] * 2
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 2
-    # 26 lands
+    # Spell Pierce: {U} instant, counters noncreature spells unless opponent pays {2}
+    d += [instant('Spell Pierce', 1, {'U':1}, {'U'}, tag='fluster')] * 1
+    # Preordain: 1 mana cantrip — additional card selection
+    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 2
+    # 22 lands (reduced from 25 — Legacy control runs 20-22 lands)
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
-    d += [fetch_land('Scalding Tarn', ['Island','Mountain'])] * 3
-    d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 4
-    d += [basic_land('Island', 'U', 'Island')] * 9
+    d += [fetch_land('Scalding Tarn', ['Island','Mountain'])] * 2
+    d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 3
+    d += [basic_land('Island', 'U', 'Island')] * 8
     d += [basic_land('Plains', 'W', 'Plains')] * 5
     assert len(d) == 60, f"UWx deck: {len(d)}"
     return d
@@ -1979,9 +1983,9 @@ def make_dimir_flash_deck() -> List[Card]:
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder')] * 4
     d += [instant('Fatal Push', 1, {'B':1}, {'B'}, tag='push')] * 4
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 3
-    d += [fetch_land('Polluted Delta', ['Underground Sea', 'Tropical Island'])] * 4
-    d += [fetch_land('Misty Rainforest', ['Underground Sea', 'Tropical Island'])] * 2
-    d += [fetch_land('Scalding Tarn', ['Underground Sea', 'Volcanic Island'])] * 2
+    d += [fetch_land('Polluted Delta', ['Island', 'Swamp'])] * 4
+    d += [fetch_land('Misty Rainforest', ['Island', 'Swamp'])] * 2
+    d += [fetch_land('Scalding Tarn', ['Island', 'Swamp'])] * 2
     d += [dual_land('Underground Sea', ['U', 'B'], ['Island', 'Swamp'])] * 4
     d += [dual_land_tapped('Undercity Sewers', ['U', 'B'], ['Island', 'Swamp'])] * 2
     d += [utility_land('Wasteland', ['C'], 'wl')] * 4

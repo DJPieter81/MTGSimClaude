@@ -1,0 +1,884 @@
+══════════════════════════════════════════════════════════════════════
+  OOPS vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: OOPS wins the die roll, goes FIRST
+
+  OOPS (P1):
+  Draw 7:
+    1. Agadeem's Awakening (sorcery, CMC 3)
+    2. Dark Ritual (instant, CMC 1)
+    3. Summoner's Pact (instant, CMC 0)
+    4. Narcomoeba (creature 1/1, CMC 2)
+    5. Elvish Spirit Guide (creature 2/2, CMC 3)
+    6. Bridge from Below (CMC 3)
+    7. Undercity Informer (creature 2/3, CMC 3, combo)
+    [Lands: 0  Creatures: 3  Combo: 1  Other: 3]
+  → KEEP (opening 7)
+    Reason: 3 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Fatal Push (instant, CMC 1, removal)
+    2. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Thoughtseize (sorcery, CMC 1)
+    6. Murktide Regent (creature 3/3, CMC 7)
+    7. Undercity Sewers (dual)
+    [Lands: 1  Creatures: 4  Removal: 1  Other: 1]
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Mulligan #1 — draw 7:
+    1. Undercity Sewers (dual)
+    2. Underground Sea (dual)
+    3. Underground Sea (dual)
+    4. Wasteland (land)
+    5. Polluted Delta (fetch)
+    6. Thoughtseize (sorcery, CMC 1)
+    7. Force of Will (instant, CMC 5, free counter)
+    [Lands: 5  Counters: 1  Other: 1]
+  Keep best 6: Force of Will, Undercity Sewers, Underground Sea, Underground Sea, Wasteland, Polluted Delta
+  Bottom 1: Thoughtseize
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: 5 lands — too flooded, not enough spells
+  Mulligan #2 — draw 7:
+    1. Brazen Borrower (creature 3/1, CMC 3)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Force of Will (instant, CMC 5, free counter)
+    4. Nethergoyf (creature 0/1, CMC 2)
+    5. Kaito, Bane of Nightmares (planeswalker, CMC 3)
+    6. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 0  Creatures: 3  Counters: 1  Cantrips: 2  Other: 1]
+  Keep best 5: Force of Will, Brazen Borrower, Nethergoyf, Tamiyo, Inquisitive Student, Brainstorm
+  Bottom 2: Kaito, Bane of Nightmares, Ponder
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Mulligan #3 — draw 7:
+    1. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    2. Force of Will (instant, CMC 5, free counter)
+    3. Nethergoyf (creature 0/1, CMC 2)
+    4. Island (basic)
+    5. Underground Sea (dual)
+    6. Daze (instant, CMC 2, free counter)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 2  Creatures: 2  Counters: 2  Cantrips: 1]
+  Keep best 4: Force of Will, Tamiyo, Inquisitive Student, Nethergoyf, Island
+  Bottom 3: Underground Sea, Daze, Ponder
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Forced keep after 3 mulligans — draw 7:
+    1. Ponder (sorcery, CMC 1, cantrip)
+    2. Underground Sea (dual)
+    3. Wasteland (land)
+    4. Daze (instant, CMC 2, free counter)
+    5. Swamp (basic)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Brainstorm (instant, CMC 1, cantrip)
+  Keep best 4: Force of Will, Ponder, Underground Sea, Wasteland
+  Bottom 3: Daze, Swamp, Brainstorm
+
+━━ TURN 1 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  ── Main ── Mana: 0
+    Hand (7): Agadeem's Awakening, Dark Ritual, Summoner's Pact, Narcomoeba, Elvish Spirit Guide, Bridge from Below, Undercity Informer
+  Agadeem's Awakening → enters tapped as land (B)
+  Exile Elvish Spirit Guide → +1 mana
+  Dark Ritual → mana now 3
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 53  GY: 1        │   Hand: 4  Lib: 56  GY: 0        │
+  │   Lands: Agadeem's Awakening     │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Force of Will, Ponder    │
+  │         Narcomoeba               │         Underground Sea          │
+  │         Bridge from Below        │         Wasteland                │
+  │         Undercity Informer       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (4): Force of Will, Ponder, Wasteland, Thoughtseize
+    Mana available: 1
+  Ponder (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 53  GY: 1        │   Hand: 4  Lib: 54  GY: 1        │
+  │   Lands: Agadeem's Awakening     │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Force of Will            │
+  │         Narcomoeba               │         Wasteland                │
+  │         Bridge from Below        │         Thoughtseize, Wasteland  │
+  │         Undercity Informer       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Simian Spirit Guide
+  ── Main ── Mana: 1
+    Hand (5): Summoner's Pact, Narcomoeba, Bridge from Below, Undercity Informer, Simian Spirit Guide
+  Exile Simian Spirit Guide → +1 mana
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 52  GY: 1        │   Hand: 4  Lib: 54  GY: 1        │
+  │   Lands: Agadeem's Awakening     │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Force of Will            │
+  │         Narcomoeba               │         Wasteland                │
+  │         Bridge from Below        │         Thoughtseize, Wasteland  │
+  │         Undercity Informer       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Bloodstained Mire
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (4): Force of Will, Thoughtseize, Wasteland, Bloodstained Mire
+    Mana available: 2
+  Wasteland [ACTIVATED-uncounterable] → Agadeem's Awakening
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 52  GY: 2        │   Hand: 4  Lib: 53  GY: 2        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Force of Will            │
+  │         Narcomoeba               │         Thoughtseize             │
+  │         Bridge from Below        │         Wasteland                │
+  │         Undercity Informer       │         Bloodstained Mire        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Pact of Negation
+  ── Main ── Mana: 0
+    Hand (5): Summoner's Pact, Narcomoeba, Bridge from Below, Undercity Informer, Pact of Negation
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 51  GY: 2        │   Hand: 4  Lib: 53  GY: 2        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Force of Will            │
+  │         Narcomoeba               │         Thoughtseize             │
+  │         Bridge from Below        │         Wasteland                │
+  │         Undercity Informer       │         Bloodstained Mire        │
+  │         Pact of Negation         │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Scalding Tarn
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (4): Force of Will, Thoughtseize, Bloodstained Mire, Scalding Tarn
+    Mana available: 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 51  GY: 2        │   Hand: 4  Lib: 52  GY: 2        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wasteland │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Force of Will            │
+  │         Narcomoeba               │         Thoughtseize             │
+  │         Bridge from Below        │         Bloodstained Mire        │
+  │         Undercity Informer       │         Scalding Tarn            │
+  │         Pact of Negation         │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Dark Ritual
+  ── Main ── Mana: 0
+    Hand (6): Summoner's Pact, Narcomoeba, Bridge from Below, Undercity Informer, Pact of Negation, Dark Ritual
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 50  GY: 2        │   Hand: 4  Lib: 52  GY: 2        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wasteland │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Force of Will            │
+  │         Narcomoeba               │         Thoughtseize             │
+  │         Bridge from Below        │         Bloodstained Mire        │
+  │         Undercity Informer       │         Scalding Tarn            │
+  │         Pact of Negation         │                                  │
+  │         Dark Ritual              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (4): Force of Will, Thoughtseize, Scalding Tarn, Orcish Bowmasters
+    Mana available: 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 50  GY: 2        │   Hand: 4  Lib: 50  GY: 4        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Force of Will            │
+  │         Narcomoeba               │         Thoughtseize             │
+  │         Bridge from Below        │         Scalding Tarn            │
+  │         Undercity Informer       │         Orcish Bowmasters        │
+  │         Pact of Negation         │                                  │
+  │         Dark Ritual              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 19
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Grief
+  ── Main ── Mana: 0
+    Hand (7): Summoner's Pact, Narcomoeba, Bridge from Below, Undercity Informer, Pact of Negation, Dark Ritual, Grief
+  Grief (evoke, pitch Bridge from Below) — strips Force of Will
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 5  Lib: 49  GY: 3        │   Hand: 3  Lib: 50  GY: 5        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Scalding Tarn            │
+  │         Undercity Informer       │         Orcish Bowmasters        │
+  │         Pact of Negation         │                                  │
+  │         Dark Ritual              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 19
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Play+crack Scalding Tarn (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (3): Thoughtseize, Orcish Bowmasters, Thoughtseize
+    Mana available: 4
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 5  Lib: 49  GY: 3        │   Hand: 3  Lib: 48  GY: 7        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │                                  │
+  │         Dark Ritual              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 18
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Chrome Mox
+  ── Main ── Mana: 0
+    Hand (6): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Dark Ritual, Chrome Mox
+  Chrome Mox → +1 mana
+  Dark Ritual → mana now 3
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 48  GY: 5        │   Hand: 3  Lib: 48  GY: 7        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 18
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ──
+    Hand (4): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push
+    Mana available: 4
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 48  GY: 5        │   Hand: 4  Lib: 47  GY: 7        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize, Fatal Push │
+  │         Pact of Negation         │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 18
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Summoner's Pact
+  ── Main ── Mana: 0
+    Hand (5): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 5  Lib: 47  GY: 5        │   Hand: 4  Lib: 47  GY: 7        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize, Fatal Push │
+  │         Pact of Negation         │                                  │
+  │         Summoner's Pact          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 18
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers
+  ── Main ──
+    Hand (4): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push
+    Mana available: 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 5  Lib: 47  GY: 5        │   Hand: 4  Lib: 45  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize, Fatal Push │
+  │         Pact of Negation         │                                  │
+  │         Summoner's Pact          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 17
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Dark Ritual
+  ── Main ── Mana: 0
+    Hand (6): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact, Dark Ritual
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 6  Lib: 46  GY: 5        │   Hand: 4  Lib: 45  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize, Fatal Push │
+  │         Pact of Negation         │                                  │
+  │         Summoner's Pact          │                                  │
+  │         Dark Ritual              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 17
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Murktide Regent
+  ── Main ──
+    Hand (5): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push, Murktide Regent
+    Mana available: 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 6  Lib: 46  GY: 5        │   Hand: 5  Lib: 44  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent          │
+  │         Dark Ritual              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 17
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Thassa's Oracle
+  ── Main ── Mana: 0
+    Hand (7): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact, Dark Ritual, Thassa's Oracle
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 7  Lib: 45  GY: 5        │   Hand: 5  Lib: 44  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent          │
+  │         Dark Ritual              │                                  │
+  │         Thassa's Oracle          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 18 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 17
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  ── Main ──
+    Hand (6): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push, Murktide Regent, Nethergoyf
+    Mana available: 5
+      → Nethergoyf goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 7  Lib: 45  GY: 5        │   Hand: 5  Lib: 43  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (0/1)    │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent          │
+  │         Dark Ritual              │                                  │
+  │         Thassa's Oracle          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 19 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 17
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Undercity Informer
+  ── Main ── Mana: 0
+    Hand (8): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact, Dark Ritual, Thassa's Oracle, Undercity Informer
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 8  Lib: 44  GY: 5        │   Hand: 5  Lib: 43  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4)    │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent          │
+  │         Dark Ritual              │                                  │
+  │         Thassa's Oracle          │                                  │
+  │         Undercity Informer       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 20 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dimir 17
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Daze
+  ── Main ──
+    Hand (6): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push, Murktide Regent, Daze
+    Mana available: 5
+  Attack: Nethergoyf — 3 unblocked → b at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 17                       │   Life: 17                       │
+  │   Hand: 8  Lib: 44  GY: 5        │   Hand: 6  Lib: 42  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4)    │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent, Daze    │
+  │         Dark Ritual              │                                  │
+  │         Thassa's Oracle          │                                  │
+  │         Undercity Informer       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 21 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 17 | dimir 17
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Simian Spirit Guide
+  ── Main ── Mana: 0
+    Hand (9): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact, Dark Ritual, Thassa's Oracle, Undercity Informer, Simian Spirit Guide
+  Exile Simian Spirit Guide → +1 mana
+  Dark Ritual → mana now 3
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 17                       │   Life: 17                       │
+  │   Hand: 7  Lib: 43  GY: 6        │   Hand: 6  Lib: 42  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4)    │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent, Daze    │
+  │         Thassa's Oracle          │                                  │
+  │         Undercity Informer       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 22 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 17 | dimir 17
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ──
+    Hand (7): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push, Murktide Regent, Daze, Brainstorm
+    Mana available: 5
+  Brainstorm (3 draws)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Attack: Nethergoyf — 3 unblocked → b at 14
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 14                       │   Life: 17                       │
+  │   Hand: 7  Lib: 43  GY: 6        │   Hand: 8  Lib: 38  GY: 10       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent, Daze    │
+  │         Thassa's Oracle          │         Kaito                    │
+  │         Undercity Informer       │         Bane of Nightmares       │
+  │                                  │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 23 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 14 | dimir 17
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Pact of Negation
+  ── Main ── Mana: 0
+    Hand (8): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact, Thassa's Oracle, Undercity Informer, Pact of Negation
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 14                       │   Life: 17                       │
+  │   Hand: 8  Lib: 42  GY: 6        │   Hand: 8  Lib: 38  GY: 10       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent, Daze    │
+  │         Thassa's Oracle          │         Kaito                    │
+  │         Undercity Informer       │         Bane of Nightmares       │
+  │         Pact of Negation         │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 24 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 14 | dimir 17
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  Play+crack Polluted Delta (−1 life, 16) → Underground Sea
+  ── Main ──
+    Hand (8): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push, Murktide Regent, Daze, Kaito, Bane of Nightmares, Orcish Bowmasters
+    Mana available: 6
+  Attack: Nethergoyf — 3 unblocked → b at 11
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 11                       │   Life: 16                       │
+  │   Hand: 8  Lib: 42  GY: 6        │   Hand: 8  Lib: 36  GY: 12       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent, Daze    │
+  │         Thassa's Oracle          │         Kaito                    │
+  │         Undercity Informer       │         Bane of Nightmares       │
+  │         Pact of Negation         │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 25 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 11 | dimir 16
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lotus Petal
+  ── Main ── Mana: 1
+    Hand (9): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact, Thassa's Oracle, Undercity Informer, Pact of Negation, Lotus Petal
+  Lotus Petal → +1 mana
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 11                       │   Life: 16                       │
+  │   Hand: 8  Lib: 41  GY: 7        │   Hand: 8  Lib: 36  GY: 12       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push               │
+  │         Summoner's Pact          │         Murktide Regent, Daze    │
+  │         Thassa's Oracle          │         Kaito                    │
+  │         Undercity Informer       │         Bane of Nightmares       │
+  │         Pact of Negation         │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 26 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 11 | dimir 16
+
+  ── Untap ── (6 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Polluted Delta (−1 life, 15) → Island
+  ── Main ──
+    Hand (8): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push, Murktide Regent, Daze, Kaito, Bane of Nightmares, Orcish Bowmasters
+    Mana available: 7
+      → Murktide Regent goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Murktide Regent RESOLVES
+  Murktide Regent (3/3)
+  Attack: Nethergoyf — 3 unblocked → b at 8
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 8                        │   Life: 15                       │
+  │   Hand: 8  Lib: 41  GY: 7        │   Hand: 7  Lib: 34  GY: 14       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push, Daze         │
+  │         Summoner's Pact          │         Kaito                    │
+  │         Thassa's Oracle          │         Bane of Nightmares       │
+  │         Undercity Informer       │         Orcish Bowmasters        │
+  │         Pact of Negation         │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 27 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 8 | dimir 15
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Balustrade Spy
+  ── Main ── Mana: 0
+    Hand (9): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact, Thassa's Oracle, Undercity Informer, Pact of Negation, Balustrade Spy
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 8                        │   Life: 15                       │
+  │   Hand: 9  Lib: 40  GY: 7        │   Hand: 7  Lib: 34  GY: 14       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push, Daze         │
+  │         Summoner's Pact          │         Kaito                    │
+  │         Thassa's Oracle          │         Bane of Nightmares       │
+  │         Undercity Informer       │         Orcish Bowmasters        │
+  │         Pact of Negation         │                                  │
+  │         Balustrade Spy           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 28 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 8 | dimir 15
+
+  ── Untap ── (7 lands)
+  ── Draw ──
+  Draw: Ponder
+  ── Main ──
+    Hand (8): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push, Daze, Kaito, Bane of Nightmares, Orcish Bowmasters, Ponder
+    Mana available: 7
+  Ponder (1 draw)
+      → Nethergoyf goes on the STACK
+      → Priority passes to OOPS
+      → OOPS has no counters — passes priority
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  Attack: Nethergoyf, Murktide Regent — 6 unblocked → b at 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 2                        │   Life: 15                       │
+  │   Hand: 9  Lib: 40  GY: 7        │   Hand: 7  Lib: 32  GY: 15       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push, Daze         │
+  │         Summoner's Pact          │         Kaito                    │
+  │         Thassa's Oracle          │         Bane of Nightmares       │
+  │         Undercity Informer       │         Orcish Bowmasters        │
+  │         Pact of Negation         │                                  │
+  │         Balustrade Spy           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 29 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 2 | dimir 15
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Simian Spirit Guide
+  ── Main ── Mana: 0
+    Hand (10): Summoner's Pact, Narcomoeba, Undercity Informer, Pact of Negation, Summoner's Pact, Thassa's Oracle, Undercity Informer, Pact of Negation, Balustrade Spy, Simian Spirit Guide
+  Exile Simian Spirit Guide → +1 mana
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: 2                        │   Life: 15                       │
+  │   Hand: 9  Lib: 39  GY: 7        │   Hand: 7  Lib: 32  GY: 15       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push, Daze         │
+  │         Summoner's Pact          │         Kaito                    │
+  │         Thassa's Oracle          │         Bane of Nightmares       │
+  │         Undercity Informer       │         Orcish Bowmasters        │
+  │         Pact of Negation         │                                  │
+  │         Balustrade Spy           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 30 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 2 | dimir 15
+
+  ── Untap ── (7 lands)
+  ── Draw ──
+  Draw: Daze
+  ── Main ──
+    Hand (8): Thoughtseize, Orcish Bowmasters, Thoughtseize, Fatal Push, Daze, Kaito, Bane of Nightmares, Orcish Bowmasters, Daze
+    Mana available: 7
+  Attack: Nethergoyf, Murktide Regent, Nethergoyf — 9 unblocked → b at -7
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DIMIR                            │
+  │   Life: -7                       │   Life: 15                       │
+  │   Hand: 9  Lib: 39  GY: 7        │   Hand: 8  Lib: 31  GY: 15       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Wastelan... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (3/4), Tamiyo,... │
+  │   Hand: Summoner's Pact          │   Hand: Thoughtseize             │
+  │         Narcomoeba               │         Orcish Bowmasters        │
+  │         Undercity Informer       │         Thoughtseize             │
+  │         Pact of Negation         │         Fatal Push, Daze         │
+  │         Summoner's Pact          │         Kaito                    │
+  │         Thassa's Oracle          │         Bane of Nightmares       │
+  │         Undercity Informer       │         Orcish Bowmasters, Daze  │
+  │         Pact of Negation         │                                  │
+  │         Balustrade Spy           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DIMIR — BUG life reaches -7 on turn 15
+  Final life: oops -7 | dimir 15
+══════════════════════════════════════════════════════════════════════

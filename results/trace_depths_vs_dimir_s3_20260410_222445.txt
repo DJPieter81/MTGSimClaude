@@ -1,0 +1,251 @@
+══════════════════════════════════════════════════════════════════════
+  DEPTHS vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  DEPTHS (P1):
+  Draw 7:
+    1. Green Sun's Zenith (sorcery, CMC 1, combo)
+    2. Sylvan Scrying (sorcery, CMC 2)
+    3. Wasteland (land)
+    4. Exploration (CMC 1)
+    5. Bayou (dual)
+    6. Knight of the Reliquary (creature 4/4, CMC 3)
+    7. Crop Rotation (instant, CMC 1, combo)
+    [Lands: 2  Creatures: 1  Combo: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DIMIR (P2):
+  Draw 7:
+    1. Wasteland (land)
+    2. Fatal Push (instant, CMC 1, removal)
+    3. Mishra's Bauble (artifact, CMC 0)
+    4. Murktide Regent (creature 3/3, CMC 7)
+    5. Fatal Push (instant, CMC 1, removal)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Island (basic)
+    [Lands: 2  Creatures: 1  Counters: 1  Removal: 2  Other: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock; 1 counter(s) for protection/disruption; removal for opponent's threats
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Wasteland (1 lands)
+  ── Main ──
+    Hand (6): Fatal Push, Mishra's Bauble, Murktide Regent, Fatal Push, Force of Will, Island
+    Mana available: 1
+  Mishra's Bauble (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 52  GY: 1        │
+  │   Lands: (none)                  │   Lands: Wasteland               │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Green Sun's Zenith       │   Hand: Fatal Push               │
+  │         Sylvan Scrying           │         Murktide Regent          │
+  │         Wasteland, Exploration   │         Fatal Push               │
+  │         Bayou                    │         Force of Will, Island    │
+  │         Knight of the Reliquary, │         Brainstorm               │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mox Diamond
+  Land: Bayou (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Green Sun's Zenith, Sylvan Scrying, Wasteland, Exploration, Knight of the Reliquary, Crop Rotation, Mox Diamond
+  Mox Diamond (discard Wasteland) → mana=2
+      → Exploration goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Exploration RESOLVES
+  Exploration → extra land drops
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR evaluates: MAJOR THREAT — responds!
+    ★ DIMIR Force of Will counters Crop Rotation (exiles Brainstorm)
+    Crop Rotation COUNTERED — goes to graveyard
+  Crop Rotation countered
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 52  GY: 2        │   Hand: 4  Lib: 52  GY: 2        │
+  │   Lands: Bayou                   │   Lands: Wasteland               │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push               │
+  │   Hand: Green Sun's Zenith       │         Murktide Regent          │
+  │         Sylvan Scrying           │         Fatal Push, Island       │
+  │         Knight of the Reliquary, │                                  │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Land: Island (2 lands)
+  ── Main ──
+    Hand (4): Fatal Push, Murktide Regent, Fatal Push, Thoughtseize
+    Mana available: 2
+  Wasteland [ACTIVATED-uncounterable] → Bayou
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 52  GY: 3        │   Hand: 4  Lib: 51  GY: 3        │
+  │   Lands: (none)                  │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push               │
+  │   Hand: Green Sun's Zenith       │         Murktide Regent          │
+  │         Sylvan Scrying           │         Fatal Push, Thoughtseize │
+  │         Knight of the Reliquary, │                                  │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Thespian's Stage
+  Land: Thespian's Stage (1 lands)
+  ── Main ── Mana: 1
+    Hand (4): Green Sun's Zenith, Sylvan Scrying, Knight of the Reliquary, Crop Rotation
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 51  GY: 3        │   Hand: 4  Lib: 51  GY: 3        │
+  │   Lands: Thespian's Stage        │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push               │
+  │   Hand: Green Sun's Zenith       │         Murktide Regent          │
+  │         Sylvan Scrying           │         Fatal Push, Thoughtseize │
+  │         Knight of the Reliquary, │                                  │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Swamp
+  Land: Swamp (2 lands)
+  ── Main ──
+    Hand (4): Fatal Push, Murktide Regent, Fatal Push, Thoughtseize
+    Mana available: 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 51  GY: 3        │   Hand: 4  Lib: 50  GY: 3        │
+  │   Lands: Thespian's Stage        │   Lands: Island, Swamp           │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push               │
+  │   Hand: Green Sun's Zenith       │         Murktide Regent          │
+  │         Sylvan Scrying           │         Fatal Push, Thoughtseize │
+  │         Knight of the Reliquary, │                                  │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Windswept Heath
+  Play+crack Windswept Heath → ?
+  ── Main ── Mana: 1
+    Hand (4): Green Sun's Zenith, Sylvan Scrying, Knight of the Reliquary, Crop Rotation
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 4  Lib: 50  GY: 4        │   Hand: 4  Lib: 50  GY: 3        │
+  │   Lands: Thespian's Stage        │   Lands: Island, Swamp           │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push               │
+  │   Hand: Green Sun's Zenith       │         Murktide Regent          │
+  │         Sylvan Scrying           │         Fatal Push, Thoughtseize │
+  │         Knight of the Reliquary, │                                  │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | dimir 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Underground Sea
+  Land: Underground Sea (3 lands)
+  ── Main ──
+    Hand (4): Fatal Push, Murktide Regent, Fatal Push, Thoughtseize
+    Mana available: 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 4  Lib: 50  GY: 4        │   Hand: 4  Lib: 49  GY: 3        │
+  │   Lands: Thespian's Stage        │   Lands: Island, Swamp, Undergroun... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push               │
+  │   Hand: Green Sun's Zenith       │         Murktide Regent          │
+  │         Sylvan Scrying           │         Fatal Push, Thoughtseize │
+  │         Knight of the Reliquary, │                                  │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Dark Depths
+  Land: Dark Depths (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Green Sun's Zenith, Sylvan Scrying, Knight of the Reliquary, Crop Rotation
+  ★ Stage copies Depths → Marit Lage 20/20!
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage — 20 unblocked → o at 0
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 19                       │   Life: 0                        │
+  │   Hand: 4  Lib: 49  GY: 6        │   Hand: 4  Lib: 49  GY: 3        │
+  │   Lands: (none)                  │   Lands: Island, Swamp, Undergroun... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push               │
+  │   Hand: Green Sun's Zenith       │         Murktide Regent          │
+  │         Sylvan Scrying           │         Fatal Push, Thoughtseize │
+  │         Knight of the Reliquary, │                                  │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DEPTHS — Opp life reaches 0 on turn 4
+  Final life: depths 19 | dimir 0
+══════════════════════════════════════════════════════════════════════

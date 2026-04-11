@@ -1,0 +1,440 @@
+══════════════════════════════════════════════════════════════════════
+  REANIMATOR vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: REANIMATOR wins the die roll, goes FIRST
+
+  REANIMATOR (P1):
+  Draw 7:
+    1. Underground Sea (dual)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Polluted Delta (fetch)
+    4. Exhume (sorcery, CMC 2, combo)
+    5. Animate Dead (CMC 2, combo)
+    6. Swamp (basic)
+    7. Reanimate (sorcery, CMC 1, combo)
+    [Lands: 3  Combo: 3  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; combo pieces present — can threaten early kill
+
+  DIMIR (P2):
+  Draw 7:
+    1. Fatal Push (instant, CMC 1, removal)
+    2. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Thoughtseize (sorcery, CMC 1)
+    6. Murktide Regent (creature 3/3, CMC 7)
+    7. Undercity Sewers (dual)
+    [Lands: 1  Creatures: 4  Removal: 1  Other: 1]
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Mulligan #1 — draw 7:
+    1. Undercity Sewers (dual)
+    2. Underground Sea (dual)
+    3. Underground Sea (dual)
+    4. Wasteland (land)
+    5. Polluted Delta (fetch)
+    6. Thoughtseize (sorcery, CMC 1)
+    7. Force of Will (instant, CMC 5, free counter)
+    [Lands: 5  Counters: 1  Other: 1]
+  Keep best 6: Force of Will, Undercity Sewers, Underground Sea, Underground Sea, Wasteland, Polluted Delta
+  Bottom 1: Thoughtseize
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: 5 lands — too flooded, not enough spells
+  Mulligan #2 — draw 7:
+    1. Brazen Borrower (creature 3/1, CMC 3)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Force of Will (instant, CMC 5, free counter)
+    4. Nethergoyf (creature 0/1, CMC 2)
+    5. Kaito, Bane of Nightmares (planeswalker, CMC 3)
+    6. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 0  Creatures: 3  Counters: 1  Cantrips: 2  Other: 1]
+  Keep best 5: Force of Will, Brazen Borrower, Nethergoyf, Tamiyo, Inquisitive Student, Brainstorm
+  Bottom 2: Kaito, Bane of Nightmares, Ponder
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Mulligan #3 — draw 7:
+    1. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    2. Force of Will (instant, CMC 5, free counter)
+    3. Nethergoyf (creature 0/1, CMC 2)
+    4. Island (basic)
+    5. Underground Sea (dual)
+    6. Daze (instant, CMC 2, free counter)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 2  Creatures: 2  Counters: 2  Cantrips: 1]
+  Keep best 4: Force of Will, Tamiyo, Inquisitive Student, Nethergoyf, Island
+  Bottom 3: Underground Sea, Daze, Ponder
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Forced keep after 3 mulligans — draw 7:
+    1. Ponder (sorcery, CMC 1, cantrip)
+    2. Underground Sea (dual)
+    3. Wasteland (land)
+    4. Daze (instant, CMC 2, free counter)
+    5. Swamp (basic)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Brainstorm (instant, CMC 1, cantrip)
+  Keep best 4: Force of Will, Ponder, Underground Sea, Wasteland
+  Bottom 3: Daze, Swamp, Brainstorm
+
+━━ TURN 1 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Thoughtseize, Polluted Delta, Exhume, Animate Dead, Swamp, Reanimate
+      → Thoughtseize goes on the STACK
+      → Priority passes to DIMIR
+  Thoughtseize → takes Force of Will (−2 life, 18)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 5  Lib: 53  GY: 1        │   Hand: 3  Lib: 56  GY: 1        │
+  │   Lands: Underground Sea         │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta, Exhume   │   Hand: Ponder                   │
+  │         Animate Dead, Swamp      │         Underground Sea          │
+  │         Reanimate                │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 18 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (3): Ponder, Wasteland, Thoughtseize
+    Mana available: 1
+  Ponder (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 5  Lib: 53  GY: 1        │   Hand: 3  Lib: 54  GY: 2        │
+  │   Lands: Underground Sea         │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta, Exhume   │   Hand: Wasteland                │
+  │         Animate Dead, Swamp      │         Thoughtseize, Wasteland  │
+  │         Reanimate                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Archon of Cruelty
+  Land: Swamp (2 lands)
+  ── Main ── Mana: 2
+    Hand (5): Polluted Delta, Exhume, Animate Dead, Reanimate, Archon of Cruelty
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 5  Lib: 52  GY: 1        │   Hand: 3  Lib: 54  GY: 2        │
+  │   Lands: Underground Sea, Swamp  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta, Exhume   │   Hand: Wasteland                │
+  │         Animate Dead             │         Thoughtseize, Wasteland  │
+  │         Reanimate                │                                  │
+  │         Archon of Cruelty        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Bloodstained Mire
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (3): Thoughtseize, Wasteland, Bloodstained Mire
+    Mana available: 2
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 5  Lib: 52  GY: 2        │   Hand: 3  Lib: 53  GY: 3        │
+  │   Lands: Swamp                   │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta, Exhume   │   Hand: Thoughtseize             │
+  │         Animate Dead             │         Wasteland                │
+  │         Reanimate                │         Bloodstained Mire        │
+  │         Archon of Cruelty        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 18 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+  Play+crack Polluted Delta (−1 life, 17) → Underground Sea
+  ── Main ── Mana: 2
+    Hand (5): Exhume, Animate Dead, Reanimate, Archon of Cruelty, Brainstorm
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 5  Lib: 50  GY: 4        │   Hand: 3  Lib: 53  GY: 3        │
+  │   Lands: Swamp, Underground Sea  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Exhume, Animate Dead     │   Hand: Thoughtseize             │
+  │         Reanimate                │         Wasteland                │
+  │         Archon of Cruelty        │         Bloodstained Mire        │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 17 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Scalding Tarn
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (3): Thoughtseize, Bloodstained Mire, Scalding Tarn
+    Mana available: 2
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 5  Lib: 50  GY: 5        │   Hand: 3  Lib: 52  GY: 4        │
+  │   Lands: Swamp                   │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Exhume, Animate Dead     │   Hand: Thoughtseize             │
+  │         Reanimate                │         Bloodstained Mire        │
+  │         Archon of Cruelty        │         Scalding Tarn            │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 17 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ── Mana: 1
+    Hand (6): Exhume, Animate Dead, Reanimate, Archon of Cruelty, Brainstorm, Thoughtseize
+      → Thoughtseize goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Thoughtseize RESOLVES
+  Thoughtseize → takes Thoughtseize (−2 life, 15)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 15                       │   Life: 20                       │
+  │   Hand: 5  Lib: 49  GY: 6        │   Hand: 2  Lib: 52  GY: 5        │
+  │   Lands: Swamp                   │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Exhume, Animate Dead     │   Hand: Bloodstained Mire        │
+  │         Reanimate                │         Scalding Tarn            │
+  │         Archon of Cruelty        │                                  │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 15 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (2): Scalding Tarn, Orcish Bowmasters
+    Mana available: 2
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to REANIMATOR
+      → REANIMATOR has no counters — passes priority
+      → Orcish Bowmasters RESOLVES
+  Orcish Bowmasters (1/1, flash)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 15                       │   Life: 19                       │
+  │   Hand: 5  Lib: 49  GY: 6        │   Hand: 1  Lib: 50  GY: 7        │
+  │   Lands: Swamp                   │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Hand: Exhume, Animate Dead     │   Hand: Scalding Tarn            │
+  │         Reanimate                │                                  │
+  │         Archon of Cruelty        │                                  │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 15 | dimir 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Polluted Delta
+    Bowmasters T1/1: b -1 life → 14, Orc Army 1/1
+  Play+crack Polluted Delta (−1 life, 13) → Underground Sea
+  ── Main ── Mana: 2
+    Hand (5): Exhume, Animate Dead, Reanimate, Archon of Cruelty, Brainstorm
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 13                       │   Life: 19                       │
+  │   Hand: 5  Lib: 47  GY: 8        │   Hand: 1  Lib: 50  GY: 7        │
+  │   Lands: Swamp, Underground Sea  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Hand: Exhume, Animate Dead     │   Hand: Scalding Tarn            │
+  │         Reanimate                │                                  │
+  │         Archon of Cruelty        │                                  │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 13 | dimir 19
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Play+crack Scalding Tarn (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (1): Thoughtseize
+    Mana available: 3
+  Attack: Orcish Bowmasters, Orc Army, Orc Army — 3 unblocked → b at 10
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 10                       │   Life: 18                       │
+  │   Hand: 5  Lib: 47  GY: 8        │   Hand: 1  Lib: 48  GY: 9        │
+  │   Lands: Swamp, Underground Sea  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Hand: Exhume, Animate Dead     │   Hand: Thoughtseize             │
+  │         Reanimate                │                                  │
+  │         Archon of Cruelty        │                                  │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 10 | dimir 18
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+    Bowmasters T1/1: b -1 life → 9, Orc Army 2/2
+  ── Main ── Mana: 2
+    Hand (6): Exhume, Animate Dead, Reanimate, Archon of Cruelty, Brainstorm, Force of Will
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 9                        │   Life: 18                       │
+  │   Hand: 6  Lib: 46  GY: 8        │   Hand: 1  Lib: 48  GY: 9        │
+  │   Lands: Swamp, Underground Sea  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Hand: Exhume, Animate Dead     │   Hand: Thoughtseize             │
+  │         Reanimate                │                                  │
+  │         Archon of Cruelty        │                                  │
+  │         Brainstorm               │                                  │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 9 | dimir 18
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ──
+    Hand (2): Thoughtseize, Fatal Push
+    Mana available: 3
+  Attack: Orcish Bowmasters, Orc Army, Orc Army — 4 unblocked → b at 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 5                        │   Life: 18                       │
+  │   Hand: 6  Lib: 46  GY: 8        │   Hand: 2  Lib: 47  GY: 9        │
+  │   Lands: Swamp, Underground Sea  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Hand: Exhume, Animate Dead     │   Hand: Thoughtseize, Fatal Push │
+  │         Reanimate                │                                  │
+  │         Archon of Cruelty        │                                  │
+  │         Brainstorm               │                                  │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 5 | dimir 18
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+    Bowmasters T1/1: b -1 life → 4, Orc Army 3/3
+  ── Main ── Mana: 2
+    Hand (7): Exhume, Animate Dead, Reanimate, Archon of Cruelty, Brainstorm, Force of Will, Brainstorm
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 4                        │   Life: 18                       │
+  │   Hand: 7  Lib: 45  GY: 8        │   Hand: 2  Lib: 47  GY: 9        │
+  │   Lands: Swamp, Underground Sea  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Hand: Exhume, Animate Dead     │   Hand: Thoughtseize, Fatal Push │
+  │         Reanimate                │                                  │
+  │         Archon of Cruelty        │                                  │
+  │         Brainstorm               │                                  │
+  │         Force of Will            │                                  │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 4 | dimir 18
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers
+  ── Main ──
+    Hand (2): Thoughtseize, Fatal Push
+    Mana available: 4
+  Attack: Orcish Bowmasters, Orc Army, Orc Army — 5 unblocked → b at -1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: -1                       │   Life: 17                       │
+  │   Hand: 7  Lib: 45  GY: 8        │   Hand: 2  Lib: 45  GY: 11       │
+  │   Lands: Swamp, Underground Sea  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Hand: Exhume, Animate Dead     │   Hand: Thoughtseize, Fatal Push │
+  │         Reanimate                │                                  │
+  │         Archon of Cruelty        │                                  │
+  │         Brainstorm               │                                  │
+  │         Force of Will            │                                  │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DIMIR — BUG life reaches -1 on turn 7
+  Final life: reanimator -1 | dimir 17
+══════════════════════════════════════════════════════════════════════

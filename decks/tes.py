@@ -31,20 +31,23 @@ def make_tes_deck():
 
     # ── Lands (14) ────────────────────────────────────────────────────────────
     from rules import Card, CardType
-    # Volcanic Island: U/R dual
+    # Volcanic Island: U/R dual (Island Mountain subtypes for fetch targeting)
     for _ in range(4):
         c = Card('Volcanic Island', CardType.LAND, cmc=0, mana_cost={},
-                 colors={'U','R'}, tag='dual', produces={'U','R'}, gy_type='land')
+                 colors={'U','R'}, tag='dual', produces={'U','R'}, gy_type='land',
+                 subtypes={'Island', 'Mountain'})
         d.append(c)
-    # Underground Sea: U/B dual
+    # Underground Sea: U/B dual (Island Swamp subtypes)
     for _ in range(4):
         c = Card('Underground Sea', CardType.LAND, cmc=0, mana_cost={},
-                 colors={'U','B'}, tag='dual', produces={'U','B'}, gy_type='land')
+                 colors={'U','B'}, tag='dual', produces={'U','B'}, gy_type='land',
+                 subtypes={'Island', 'Swamp'})
         d.append(c)
-    # Scalding Tarn / Polluted Delta (fetches)
+    # Scalding Tarn / Polluted Delta (fetches) — fetch Island or Mountain
     for _ in range(6):
         c = Card('Scalding Tarn', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='fetch', gy_type='land')
+                 colors=set(), tag='fetch', gy_type='land',
+                 fetch_targets={'Island', 'Mountain'})
         c.is_fetch = True
         c.produces = set()
         d.append(c)

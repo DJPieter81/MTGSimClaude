@@ -541,7 +541,13 @@ def protagonist_turn(gs, turn, matchup):
         if stp and o.creatures and total_mana >= 1 and not gs.spell_blocked_by_chalice(stp.cmc):
             valid_stp = [c for c in o.creatures if c.card.tag != _mom_protected]
             target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
-            if target and target.power >= 2:
+            # Exile any creature with power >= 2, OR any creature vs aggro/burn
+            # (Swiftspear/Guide at 1 power deal 2-3 per turn with prowess/haste)
+            p2_deck = getattr(gs, 'p2_deck', '')
+            from config import MatchupCategory as _MC
+            opp_is_aggro = p2_deck in _MC.AGGRO or p2_deck == 'burn'
+            stp_threshold = 1 if opp_is_aggro else 2
+            if target and target.power >= stp_threshold:
                 b.remove_from_hand(stp)
                 countered = _try_counter_any(b, o, gs, stp, log_entries)
                 if not countered:
@@ -578,6 +584,11 @@ def protagonist_turn(gs, turn, matchup):
     # ── Post-strategy: Eidolon damage + restore lock adjustments ──
     apply_eidolon_damage(gs, b, spells_before, log)
     restore_lock_effects(b, _adjustments)
+
+    # ── Tamiyo flip check — oracle: flip when you draw your 3rd card in a turn ──
+    # Centralized here so it works for ALL decks, not just BUG.
+    from engine import _check_tamiyo_flip
+    _check_tamiyo_flip(gs, b, log)
 
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
     combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)

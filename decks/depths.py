@@ -40,8 +40,11 @@ def make_depths_deck():
 
     # ── Land Tutors / Combo Enablers (13) ────────────────────────────────────
     # Crop Rotation: sacrifice a land, tutor any land to battlefield
+    # Combo piece: instant-speed tutor for Dark Depths or Thespian's Stage
     for _ in range(4):
-        d.append(instant('Crop Rotation', 1, {'G': 1}, {'G'}, tag='crop'))
+        c = instant('Crop Rotation', 1, {'G': 1}, {'G'}, tag='crop')
+        c.is_combo_piece = True
+        d.append(c)
 
     # Elvish Reclaimer: 1/2, sac a land -> tutor any land
     for _ in range(4):
@@ -54,9 +57,11 @@ def make_depths_deck():
                          tag='scrying'))
 
     # Green Sun's Zenith: tutor green creature to battlefield
+    # Combo piece: fetches Elvish Reclaimer which assembles the combo
     for _ in range(4):
-        d.append(sorcery("Green Sun's Zenith", 1, {'G': 1}, {'G'},
-                         tag='gsz'))
+        c = sorcery("Green Sun's Zenith", 1, {'G': 1}, {'G'}, tag='gsz')
+        c.is_combo_piece = True
+        d.append(c)
 
     # Knight of the Reliquary: backup beater + land tutor
     for _ in range(2):
@@ -117,14 +122,16 @@ def make_depths_deck():
     # ── Fetch Lands (8) ──────────────────────────────────────────────────────
     for _ in range(4):
         c = Card('Windswept Heath', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='fetch', gy_type='land')
+                 colors=set(), tag='fetch', gy_type='land',
+                 fetch_targets={'Forest', 'Plains'})
         c.is_fetch = True
         c.produces = set()
         d.append(c)
 
     for _ in range(4):
         c = Card('Verdant Catacombs', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='fetch', gy_type='land')
+                 colors=set(), tag='fetch', gy_type='land',
+                 fetch_targets={'Swamp', 'Forest'})
         c.is_fetch = True
         c.produces = set()
         d.append(c)
@@ -133,24 +140,26 @@ def make_depths_deck():
     for _ in range(2):
         c = Card('Savannah', CardType.LAND, cmc=0, mana_cost={},
                  colors={'G', 'W'}, tag='dual', produces={'G', 'W'},
-                 gy_type='land')
+                 subtypes={'Forest', 'Plains'}, gy_type='land')
         d.append(c)
 
     for _ in range(2):
         c = Card('Bayou', CardType.LAND, cmc=0, mana_cost={},
                  colors={'B', 'G'}, tag='dual', produces={'B', 'G'},
-                 gy_type='land')
+                 subtypes={'Swamp', 'Forest'}, gy_type='land')
         d.append(c)
 
     # ── Basic Lands (3) ─────────────────────────────────────────────────────
     for _ in range(2):
         c = Card('Forest', CardType.LAND, cmc=0, mana_cost={},
-                 colors={'G'}, tag='basic', produces={'G'}, gy_type='land')
+                 colors={'G'}, tag='basic', produces={'G'}, gy_type='land',
+                 subtypes={'Forest'}, is_basic=True)
         d.append(c)
 
     for _ in range(1):
         c = Card('Plains', CardType.LAND, cmc=0, mana_cost={},
-                 colors={'W'}, tag='basic', produces={'W'}, gy_type='land')
+                 colors={'W'}, tag='basic', produces={'W'}, gy_type='land',
+                 subtypes={'Plains'}, is_basic=True)
         d.append(c)
 
     assert len(d) == 60, f"Dark Depths deck: {len(d)} cards (expected 60)"
@@ -265,7 +274,9 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
         marit = creature('Marit Lage', 0, {}, set(), 20, 20, tag='marit',
                          flying=True, indestructible=True)
         perm = player.put_creature_in_play(marit)
-        perm.summoning_sick = False  # token created, attacks immediately
+        # Marit Lage token has summoning sickness (CR 302.6).
+        # It enters the battlefield this turn but can't attack until next turn.
+        # This gives the opponent one more draw step to find an answer.
         marit_lage_created = True
         marit_in_play = [perm]
 
@@ -358,7 +369,7 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                                      tag='marit', flying=True,
                                      indestructible=True)
                     perm = player.put_creature_in_play(marit)
-                    perm.summoning_sick = False
+                    # Marit Lage has summoning sickness (CR 302.6)
                     marit_lage_created = True
                     marit_in_play = [perm]
             else:
@@ -443,7 +454,7 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                                  tag='marit', flying=True,
                                  indestructible=True)
                 perm = player.put_creature_in_play(marit)
-                perm.summoning_sick = False
+                # Marit Lage has summoning sickness (CR 302.6)
                 marit_lage_created = True
                 marit_in_play = [perm]
 

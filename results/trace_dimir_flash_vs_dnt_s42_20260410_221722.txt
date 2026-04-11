@@ -1,0 +1,449 @@
+══════════════════════════════════════════════════════════════════════
+  DIMIR_FLASH vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  DIMIR_FLASH (P1):
+  Draw 7:
+    1. Polluted Delta (fetch)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Wasteland (land)
+    4. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    5. Force of Will (instant, CMC 5, free counter)
+    6. Daze (instant, CMC 1, free counter)
+    7. Wasteland (land)
+    [Lands: 3  Creatures: 1  Counters: 2  Cantrips: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; 2 counter(s) for protection/disruption
+
+  DNT (P2):
+  Draw 7:
+    1. Rishadan Port (land)
+    2. Pre-War Formalwear (artifact, CMC 4)
+    3. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    4. Plains (basic)
+    5. Plains (basic)
+    6. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    7. Plains (basic)
+    [Lands: 4  Creatures: 2  Other: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 2 threat(s) for a clock
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Rishadan Port (1 lands)
+  ── Main ──
+    Hand (6): Pre-War Formalwear, Thalia, Guardian of Thraben, Plains, Plains, Phelia, Exuberant Shepherd, Plains
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Rishadan Port           │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Polluted Delta           │   Hand: Pre-War Formalwear       │
+  │         Brainstorm, Wasteland    │         Thalia                   │
+  │         Tamiyo                   │         Guardian of Thraben      │
+  │         Inquisitive Student      │         Plains, Plains, Phelia   │
+  │         Force of Will, Daze      │         Exuberant Shepherd       │
+  │         Wasteland                │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Island
+  Land: Island (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Polluted Delta, Brainstorm, Wasteland, Tamiyo, Inquisitive Student, Force of Will, Daze, Wasteland
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Island                  │   Lands: Rishadan Port           │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Polluted Delta           │   Hand: Pre-War Formalwear       │
+  │         Brainstorm, Wasteland    │         Thalia                   │
+  │         Force of Will, Daze      │         Guardian of Thraben      │
+  │         Wasteland                │         Plains, Plains, Phelia   │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 20 | dnt 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Karakas
+  Land: Plains (2 lands)
+  ── Main ──
+    Hand (6): Pre-War Formalwear, Thalia, Guardian of Thraben, Plains, Phelia, Exuberant Shepherd, Plains, Karakas
+    Mana available: 2
+  Rishadan Port taps Island (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Island                  │   Lands: Rishadan Port, Plains   │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Polluted Delta           │   Hand: Pre-War Formalwear       │
+  │         Brainstorm, Wasteland    │         Thalia                   │
+  │         Force of Will, Daze      │         Guardian of Thraben      │
+  │         Wasteland                │         Plains, Phelia           │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Plains, Karakas          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 20 | dnt 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fatal Push
+  Play+crack Polluted Delta → ?
+  ── Main ── Mana: 1
+    Hand (6): Brainstorm, Wasteland, Force of Will, Daze, Wasteland, Fatal Push
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 6  Lib: 51  GY: 1        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Island                  │   Lands: Rishadan Port, Plains   │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Brainstorm, Wasteland    │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Thalia                   │
+  │         Wasteland, Fatal Push    │         Guardian of Thraben      │
+  │                                  │         Plains, Phelia           │
+  │                                  │         Exuberant Shepherd       │
+  │                                  │         Plains, Karakas          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 19 | dnt 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Flickerwisp
+  Land: Plains (3 lands)
+  ── Main ──
+    Hand (6): Pre-War Formalwear, Thalia, Guardian of Thraben, Phelia, Exuberant Shepherd, Plains, Karakas, Flickerwisp
+    Mana available: 3
+  Rishadan Port taps Island (BUG loses 1 mana)
+      → Thalia, Guardian of Thraben goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Thalia, Guardian of Thraben RESOLVES
+  Thalia, Guardian of Thraben (2/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 6  Lib: 51  GY: 1        │   Hand: 5  Lib: 51  GY: 0        │
+  │   Lands: Island                  │   Lands: Rishadan Port, Plains, Pl... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Thalia, Guardian of Thrab... │
+  │   Hand: Brainstorm, Wasteland    │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Phelia                   │
+  │         Wasteland, Fatal Push    │         Exuberant Shepherd       │
+  │                                  │         Plains, Karakas          │
+  │                                  │         Flickerwisp              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 19 | dnt 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Daze
+  Land: Wasteland (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Brainstorm, Force of Will, Daze, Wasteland, Fatal Push, Daze
+  Wasteland [ACTIVATED-uncounterable] → Rishadan Port
+      → Fatal Push goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Fatal Push RESOLVES
+  Fatal Push → Thalia, Guardian of Thraben (revolt)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 5  Lib: 50  GY: 2        │   Hand: 5  Lib: 51  GY: 2        │
+  │   Lands: Island, Wasteland       │   Lands: Plains, Plains          │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Phelia                   │
+  │         Wasteland, Daze          │         Exuberant Shepherd       │
+  │                                  │         Plains, Karakas          │
+  │                                  │         Flickerwisp              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 19 | dnt 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Rishadan Port
+  Land: Plains (3 lands)
+  ── Main ──
+    Hand (5): Pre-War Formalwear, Phelia, Exuberant Shepherd, Karakas, Flickerwisp, Rishadan Port
+    Mana available: 3
+      → Phelia, Exuberant Shepherd goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Phelia, Exuberant Shepherd RESOLVES
+  Phelia, Exuberant Shepherd (2/2)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 5  Lib: 50  GY: 2        │   Hand: 4  Lib: 50  GY: 2        │
+  │   Lands: Island, Wasteland       │   Lands: Plains, Plains, Plains  │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Karakas, Flickerwisp     │
+  │         Wasteland, Daze          │         Rishadan Port            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 19 | dnt 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Murktide Regent
+  Land: Wasteland (3 lands)
+  ── Main ── Mana: 3
+    Hand (5): Brainstorm, Force of Will, Daze, Daze, Murktide Regent
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 5  Lib: 49  GY: 2        │   Hand: 4  Lib: 50  GY: 2        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Plains, Plains, Plains  │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Karakas, Flickerwisp     │
+  │         Daze, Murktide Regent    │         Rishadan Port            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 19 | dnt 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Kaldra Compleat
+  Land: Karakas (4 lands)
+  ── Main ──
+    Hand (4): Pre-War Formalwear, Flickerwisp, Rishadan Port, Kaldra Compleat
+    Mana available: 4
+      → Flickerwisp goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Flickerwisp RESOLVES
+  Flickerwisp (3/1)
+    Flickerwisp blinks Tamiyo, Inquisitive Student
+  Attack: Phelia, Exuberant Shepherd — 2 unblocked → b at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 5  Lib: 49  GY: 3        │   Hand: 3  Lib: 49  GY: 2        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Plains, Plains, Plains, K... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Rishadan Port            │
+  │         Daze, Murktide Regent    │         Kaldra Compleat          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 17 | dnt 20
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ── Mana: 3
+    Hand (6): Brainstorm, Force of Will, Daze, Daze, Murktide Regent, Thoughtseize
+  Wasteland [ACTIVATED-uncounterable] → Karakas
+      → Thoughtseize goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Thoughtseize RESOLVES
+  Thoughtseize → takes Kaldra Compleat (−2 life, 15)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 15                       │   Life: 20                       │
+  │   Hand: 5  Lib: 48  GY: 4        │   Hand: 2  Lib: 49  GY: 4        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Plains, Plains, Plains  │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Rishadan Port            │
+  │         Daze, Murktide Regent    │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 15 | dnt 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Skyclave Apparition
+  Land: Rishadan Port (4 lands)
+  ── Main ──
+    Hand (2): Pre-War Formalwear, Skyclave Apparition
+    Mana available: 4
+  Rishadan Port taps Island (BUG loses 1 mana)
+      → Skyclave Apparition goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Skyclave Apparition RESOLVES
+  Skyclave Apparition (2/2)
+    Skyclave Apparition exiles Tamiyo, Inquisitive Student
+  Attack: Phelia, Exuberant Shepherd, Flickerwisp — 5 unblocked → b at 10
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 5  Lib: 48  GY: 5        │   Hand: 1  Lib: 48  GY: 4        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │                                  │
+  │         Daze, Murktide Regent    │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | dnt 20
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ── Mana: 3
+    Hand (6): Brainstorm, Force of Will, Daze, Daze, Murktide Regent, Fatal Push
+  Wasteland [ACTIVATED-uncounterable] → Rishadan Port
+      → Fatal Push goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Fatal Push RESOLVES
+  Fatal Push → Flickerwisp (revolt)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 5  Lib: 47  GY: 6        │   Hand: 1  Lib: 48  GY: 6        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Plains, Plains, Plains  │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │                                  │
+  │         Daze, Murktide Regent    │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 10 | dnt 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Recruiter of the Guard
+  ── Main ──
+    Hand (2): Pre-War Formalwear, Recruiter of the Guard
+    Mana available: 3
+      → Recruiter of the Guard goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has [Force of Will, Daze] but PASSES (low-priority target)
+      → Recruiter of the Guard RESOLVES
+  Recruiter of the Guard (1/1)
+    Recruiter tutors Stoneforge Mystic
+  Attack: Phelia, Exuberant Shepherd, Skyclave Apparition — 4 unblocked → b at 6
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 6                        │   Life: 20                       │
+  │   Hand: 5  Lib: 47  GY: 6        │   Hand: 2  Lib: 46  GY: 6        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Plains, Plains, Plains  │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Stoneforge Mystic        │
+  │         Daze, Murktide Regent    │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 6 | dnt 20
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Scalding Tarn
+  Play+crack Scalding Tarn → ?
+  ── Main ── Mana: 3
+    Hand (5): Brainstorm, Force of Will, Daze, Daze, Murktide Regent
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 5                        │   Life: 20                       │
+  │   Hand: 5  Lib: 46  GY: 7        │   Hand: 2  Lib: 46  GY: 6        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Plains, Plains, Plains  │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Brainstorm               │   Hand: Pre-War Formalwear       │
+  │         Force of Will, Daze      │         Stoneforge Mystic        │
+  │         Daze, Murktide Regent    │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: dimir_flash 5 | dnt 20
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Arid Mesa
+  Play+crack Arid Mesa (−1 life, 19) → Plains
+  ── Main ──
+    Hand (2): Pre-War Formalwear, Stoneforge Mystic
+    Mana available: 4
+      → Stoneforge Mystic goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH evaluates: MAJOR THREAT — responds!
+    ★ DIMIR_FLASH Force of Will counters Stoneforge Mystic (exiles Brainstorm)
+    Stoneforge Mystic COUNTERED — goes to graveyard
+  Attack: Phelia, Exuberant Shepherd, Skyclave Apparition, Recruiter of the Guard — 5 unblocked → b at 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DIMIR_FLASH                      │ DNT                              │
+  │   Life: 0                        │   Life: 19                       │
+  │   Hand: 3  Lib: 46  GY: 8        │   Hand: 1  Lib: 44  GY: 9        │
+  │   Lands: Island, Wasteland, Wasteland │   Lands: Plains, Plains, Plains, P... │
+  │   Creatures: (none)              │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Daze, Daze               │   Hand: Pre-War Formalwear       │
+  │         Murktide Regent          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DNT — BUG life reaches 0 on turn 8
+  Final life: dimir_flash 0 | dnt 19
+══════════════════════════════════════════════════════════════════════

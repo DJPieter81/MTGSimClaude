@@ -1,0 +1,351 @@
+══════════════════════════════════════════════════════════════════════
+  UR_TEMPO vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UR_TEMPO wins the die roll, goes FIRST
+
+  UR_TEMPO (P1):
+  Draw 7:
+    1. Murktide Regent (creature 5/5, CMC 7)
+    2. Flooded Strand (fetch)
+    3. Cori-Steel Cutter (creature 3/1, CMC 2)
+    4. Daze (instant, CMC 2, free counter)
+    5. Volcanic Island (dual)
+    6. Volcanic Island (dual)
+    7. Lightning Bolt (instant, CMC 1)
+    [Lands: 3  Creatures: 2  Counters: 1  Other: 1]
+  → MULLIGAN
+    Reason: doesn't meet deck-specific keep criteria
+  Mulligan #1 — draw 7:
+    1. Cori-Steel Cutter (creature 3/1, CMC 2)
+    2. Murktide Regent (creature 5/5, CMC 7)
+    3. Force of Will (instant, CMC 5, free counter)
+    4. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    5. Dragon's Rage Channeler (creature 3/3, CMC 1)
+    6. Volcanic Island (dual)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 1  Creatures: 4  Counters: 1  Cantrips: 1]
+  Keep best 6: Force of Will, Cori-Steel Cutter, Murktide Regent, Tamiyo, Inquisitive Student, Dragon's Rage Channeler, Volcanic Island
+  Bottom 1: Ponder
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Mulligan #2 — draw 7:
+    1. Unholy Heat (instant, CMC 1)
+    2. Cori-Steel Cutter (creature 3/1, CMC 2)
+    3. Dragon's Rage Channeler (creature 3/3, CMC 1)
+    4. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    5. Brainstorm (instant, CMC 1, cantrip)
+    6. Polluted Delta (fetch)
+    7. Wasteland (land)
+    [Lands: 2  Creatures: 3  Cantrips: 1  Other: 1]
+  Keep best 5: Cori-Steel Cutter, Dragon's Rage Channeler, Tamiyo, Inquisitive Student, Brainstorm, Polluted Delta
+  Bottom 2: Unholy Heat, Wasteland
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 5)
+    Reason: 1 land + cantrip to find more; 3 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Scalding Tarn (fetch)
+    2. Mishra's Bauble (artifact, CMC 0)
+    3. Wasteland (land)
+    4. Brainstorm (instant, CMC 1, cantrip)
+    5. Undercity Sewers (dual)
+    6. Scalding Tarn (fetch)
+    7. Kaito, Bane of Nightmares (planeswalker, CMC 3)
+    [Lands: 4  Cantrips: 1  Other: 2]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Daze (instant, CMC 2, free counter)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Bloodstained Mire (fetch)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Daze (instant, CMC 2, free counter)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Brazen Borrower (creature 3/1, CMC 3)
+    [Lands: 1  Creatures: 2  Counters: 3  Other: 1]
+  Keep best 6: Force of Will, Orcish Bowmasters, Brazen Borrower, Thoughtseize, Bloodstained Mire, Daze
+  Bottom 1: 
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: only 1 land with no cantrips to find more
+  Mulligan #2 — draw 7:
+    1. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    2. Murktide Regent (creature 3/3, CMC 7)
+    3. Brazen Borrower (creature 3/1, CMC 3)
+    4. Brainstorm (instant, CMC 1, cantrip)
+    5. Thoughtseize (sorcery, CMC 1)
+    6. Daze (instant, CMC 2, free counter)
+    7. Wasteland (land)
+    [Lands: 1  Creatures: 3  Counters: 1  Cantrips: 1  Other: 1]
+  Keep best 5: Tamiyo, Inquisitive Student, Murktide Regent, Brazen Borrower, Brainstorm, Thoughtseize
+  Bottom 2: Daze, Wasteland
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Mulligan #3 — draw 7:
+    1. Force of Will (instant, CMC 5, free counter)
+    2. Force of Will (instant, CMC 5, free counter)
+    3. Daze (instant, CMC 2, free counter)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Wasteland (land)
+    6. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    7. Underground Sea (dual)
+    [Lands: 2  Creatures: 2  Counters: 3]
+  Keep best 4: Force of Will, Force of Will, Orcish Bowmasters, Tamiyo, Inquisitive Student
+  Bottom 3: Daze, Wasteland, Underground Sea
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Forced keep after 3 mulligans — draw 7:
+    1. Undercity Sewers (dual)
+    2. Scalding Tarn (fetch)
+    3. Underground Sea (dual)
+    4. Force of Will (instant, CMC 5, free counter)
+    5. Polluted Delta (fetch)
+    6. Daze (instant, CMC 2, free counter)
+    7. Fatal Push (instant, CMC 1, removal)
+  Keep best 4: Force of Will, Undercity Sewers, Scalding Tarn, Underground Sea
+  Bottom 3: Polluted Delta, Daze, Fatal Push
+
+━━ TURN 1 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Polluted Delta (−1 life, 19) → Volcanic Island
+  ── Main ── Mana: 1
+    Hand (4): Cori-Steel Cutter, Dragon's Rage Channeler, Tamiyo, Inquisitive Student, Brainstorm
+      → Dragon's Rage Channeler goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Dragon's Rage Channeler RESOLVES
+  Dragon's Rage Channeler
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 3  Lib: 54  GY: 2        │   Hand: 4  Lib: 56  GY: 0        │
+  │   Lands: Volcanic Island         │   Lands: (none)                  │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Cori-Steel Cutter        │   Hand: Force of Will            │
+  │         Tamiyo                   │         Undercity Sewers         │
+  │         Inquisitive Student      │         Scalding Tarn            │
+  │         Brainstorm               │         Underground Sea          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  Land: Undercity Sewers (1 lands)
+  ── Main ──
+    Hand (4): Force of Will, Scalding Tarn, Underground Sea, Tamiyo, Inquisitive Student
+    Mana available: 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 3  Lib: 54  GY: 2        │   Hand: 4  Lib: 55  GY: 0        │
+  │   Lands: Volcanic Island         │   Lands: Undercity Sewers        │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Cori-Steel Cutter        │   Hand: Force of Will            │
+  │         Tamiyo                   │         Scalding Tarn            │
+  │         Inquisitive Student      │         Underground Sea          │
+  │         Brainstorm               │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ── Mana: 1
+    Hand (4): Cori-Steel Cutter, Tamiyo, Inquisitive Student, Brainstorm, Force of Will
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student
+  Attack: Dragon's Rage Channeler — 3 unblocked → o at 17
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 19                       │   Life: 17                       │
+  │   Hand: 3  Lib: 53  GY: 2        │   Hand: 4  Lib: 55  GY: 0        │
+  │   Lands: Volcanic Island         │   Lands: Undercity Sewers        │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Cori-Steel Cutter        │   Hand: Force of Will            │
+  │         Brainstorm               │         Scalding Tarn            │
+  │         Force of Will            │         Underground Sea          │
+  │                                  │         Tamiyo                   │
+  │                                  │         Inquisitive Student      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Play+crack Scalding Tarn (−1 life, 16) → Underground Sea
+  ── Main ──
+    Hand (4): Force of Will, Underground Sea, Tamiyo, Inquisitive Student, Wasteland
+    Mana available: 2
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 19                       │   Life: 16                       │
+  │   Hand: 3  Lib: 53  GY: 2        │   Hand: 3  Lib: 53  GY: 2        │
+  │   Lands: Volcanic Island         │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Cori-Steel Cutter        │   Hand: Force of Will            │
+  │         Brainstorm               │         Underground Sea          │
+  │         Force of Will            │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 19 | dimir 16
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Flooded Strand
+  Play+crack Flooded Strand (−1 life, 18) → Volcanic Island
+  ── Main ── Mana: 2
+    Hand (3): Cori-Steel Cutter, Brainstorm, Force of Will
+      → Cori-Steel Cutter goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Force of Will] but PASSES (low-priority target)
+      → Cori-Steel Cutter RESOLVES
+  Cori-Steel Cutter (3/1 haste)
+  Attack: Dragon's Rage Channeler, Cori-Steel Cutter — 6 unblocked → o at 10
+  ── Combat ── (3 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 10                       │
+  │   Hand: 2  Lib: 51  GY: 4        │   Hand: 3  Lib: 53  GY: 2        │
+  │   Lands: Volcanic Island, Volcanic... │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Brainstorm               │   Hand: Force of Will            │
+  │         Force of Will            │         Underground Sea          │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 10
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  Land: Underground Sea (3 lands)
+  ── Main ──
+    Hand (3): Force of Will, Wasteland, Tamiyo, Inquisitive Student
+    Mana available: 3
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to UR_TEMPO
+      → UR_TEMPO evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 10                       │
+  │   Hand: 2  Lib: 51  GY: 4        │   Hand: 2  Lib: 52  GY: 3        │
+  │   Lands: Volcanic Island, Volcanic... │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Brainstorm               │   Hand: Force of Will, Wasteland │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 10
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  ── Main ── Mana: 2
+    Hand (3): Brainstorm, Force of Will, Lightning Bolt
+  Brainstorm — cantrip
+  Lightning Bolt -> Tamiyo, Inquisitive Student
+  Attack: Dragon's Rage Channeler, Tamiyo, Inquisitive Student, Cori-Steel Cutter — 6 unblocked → o at 4
+  ── Combat ── (3 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 4                        │
+  │   Hand: 2  Lib: 49  GY: 6        │   Hand: 2  Lib: 52  GY: 4        │
+  │   Lands: Volcanic Island, Volcanic... │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Force of Will, Wasteland │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 4
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (2): Force of Will, Thoughtseize
+    Mana available: 4
+  Wasteland [ACTIVATED-uncounterable] → Volcanic Island
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: 4                        │
+  │   Hand: 2  Lib: 49  GY: 7        │   Hand: 2  Lib: 51  GY: 5        │
+  │   Lands: Volcanic Island         │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Force of Will            │
+  │         Force of Will            │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — UR_TEMPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_tempo 18 | dimir 4
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Murktide Regent
+  ── Main ── Mana: 1
+    Hand (3): Force of Will, Force of Will, Murktide Regent
+  Attack: Dragon's Rage Channeler, Tamiyo, Inquisitive Student, Cori-Steel Cutter — 6 unblocked → o at -2
+  ── Combat ── (3 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UR_TEMPO                         │ DIMIR                            │
+  │   Life: 18                       │   Life: -2                       │
+  │   Hand: 3  Lib: 48  GY: 7        │   Hand: 2  Lib: 51  GY: 5        │
+  │   Lands: Volcanic Island         │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Dragon's Rage Channeler (... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Force of Will            │
+  │         Force of Will            │         Thoughtseize             │
+  │         Murktide Regent          │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: UR_TEMPO — Opp life reaches -2 on turn 5
+  Final life: ur_tempo 18 | dimir -2
+══════════════════════════════════════════════════════════════════════
