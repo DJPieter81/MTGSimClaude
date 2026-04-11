@@ -258,6 +258,10 @@ Meta-weighted WR uses only T1+T2 opponents, weighted by meta share:
 - `top_tier=N` is deterministic: always takes the top N decks by meta share
 - Shares based on Legacy Showcase Qualifier + Challenge 32 (2026-04-04/05)
 
+## Logging
+
+Logs are saved to `replays/{deck1}_vs_{deck2}_s{seed}.txt` and committed after every run.
+
 ## Reproducibility
 
 Use `random.seed(N)` or `-s N` flag for deterministic results:
