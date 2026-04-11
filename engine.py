@@ -733,9 +733,17 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
                 attacker_player.remove_creature(atk)
                 block_parts.append(f"  {atk.name} dies.")
         else:
-            # Unblocked — deals damage to player
-            total_unblocked_dmg += atk.power
+            # Unblocked — route through deal_damage (handles infect → poison)
             gs._combat_unblocked_tags.add(atk.card.tag)
+            if getattr(atk.card, 'infect', False):
+                # Infect: damage as poison counters via deal_damage
+                def _log_dmg(msg, key=False):
+                    log_list.append(msg)
+                deal_damage(gs, atk.card.tag, defender_player, atk.power,
+                            damage_type='infect', log_fn=_log_dmg,
+                            source_card=atk.card, attacker_player=attacker_player)
+            else:
+                total_unblocked_dmg += atk.power
             if atk.card.lifelink:
                 attacker_player.life += atk.power
 
@@ -750,7 +758,7 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
             log_list.append(f"  {total_unblocked_dmg} unblocked → {defender_player.name} at {defender_player.life}")
         else:
             log_list.append(f"Attack: {atk_names} — {total_unblocked_dmg} unblocked → {defender_player.name} at {defender_player.life}")
-    elif not block_parts:
+    elif not block_parts and total_unblocked_dmg == 0 and not any(getattr(a.card, 'infect', False) for a in attackers):
         log_list.append(f"Attack: {atk_names} — 0 damage (all blocked)")
 
     update_goyf(gs)
