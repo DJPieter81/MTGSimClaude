@@ -15,6 +15,7 @@ from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
                    instant, sorcery, artifact, creature)
 from game import GameState, PlayerState, london_mulligan, opp_keep
 from engine import opp_turn, play_turn, update_goyf
+from config import GameRules as GR, CombatThresholds as CT
 
 
 @dataclass
@@ -159,7 +160,7 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
             all_log += p2_mull_trace
         all_log.append("")
 
-    for turn in range(1, 16):
+    for turn in range(1, GR.MAX_TURNS + 1):
         if gs.game_over:
             break
         gs.turn = turn
@@ -520,7 +521,7 @@ def protagonist_turn(gs, turn, matchup):
             p2_deck = getattr(gs, 'p2_deck', '')
             from config import MatchupCategory as _MC
             opp_is_aggro = p2_deck in _MC.AGGRO or p2_deck == 'burn'
-            stp_threshold = 1 if opp_is_aggro else 2
+            stp_threshold = CT.STP_THRESHOLD_AGGRO if opp_is_aggro else CT.STP_THRESHOLD_FAIR
             if target and target.power >= stp_threshold:
                 b.remove_from_hand(stp)
                 countered = _try_counter_any(b, o, gs, stp, log_entries)
@@ -629,7 +630,7 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         gs.p2_deck = antagonist
 
         all_log = []
-        for turn in range(1, 16):
+        for turn in range(1, GR.MAX_TURNS + 1):
             if gs.game_over: break
             gs.turn = turn
 

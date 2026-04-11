@@ -22,7 +22,8 @@ from cards import DECKS, artifact, creature
 from gameplan import GAMEPLANS, assess, active_goal, Goal
 from interaction import (best_reactive_answer, best_proactive_target,
                          should_push_now, classify_threat, ThreatLevel)
-from config import CardRoles as CR, MatchupCategory as MC, InteractionParams as IP
+from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as IP,
+                    GameRules as GR, CombatThresholds as CT, CounterLogic as CL)
 
 
 # ─────────────────────────────────────────────
@@ -39,7 +40,7 @@ _ORC_ARMY_PROTO = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
                        base_power=0, base_toughness=0, gy_type='creature')
 
 
-def _select_attackers(player, opponent, hold_tags=('bowm', 'tamiyo'), desperate_life=8):
+def _select_attackers(player, opponent, hold_tags=CT.HOLD_ATTACK_TAGS, desperate_life=CT.DESPERATE_LIFE):
     """Shared attacker selection for aggro/midrange strategies.
     Returns list of creatures to attack with. Holds back value engines and 0-power."""
     opp_has_blockers = len(opponent.creatures) > 0
@@ -654,7 +655,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         return False
 
     # ── Scan defender's hand for all counter types ──
-    _COUNTER_TAGS = {'fow', 'fon', 'daze', 'consign', 'counter', 'fluster', 'pyro', 'reb'}
+    _COUNTER_TAGS = CL.COUNTER_TAGS
     counters_by_tag = {}
     for c in defender.hand:
         if c.tag in _COUNTER_TAGS and c.tag not in counters_by_tag:
@@ -684,7 +685,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         return False
 
     # ── Don't counter cantrips — save counters for threats ──
-    if spell_card.tag in ('bs', 'ponder', 'bauble'):
+    if spell_card.tag in CL.NEVER_COUNTER_TAGS:
         if gs.trace:
             avail = [c.name for t, c in counters_by_tag.items()]
             log_list.append(f"    → {d_label} has [{', '.join(avail)}] but PASSES")
@@ -711,8 +712,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     )
 
     # Burn spells: major threat when defender is at low life or spell is lethal
-    _BURN_TAGS = {'bolt', 'pop', 'chain', 'spike', 'fireblast', 'rift',
-                  'blaze', 'skullcrack', 'heat', 'lball', 'price'}
+    _BURN_TAGS = CL.BURN_TAGS
     if spell_card.tag in _BURN_TAGS and not is_major_threat:
         nonbasics = sum(1 for l in defender.lands if not l.card.is_basic)
         est_damage = 3  # default burn spell damage
@@ -725,7 +725,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         elif spell_card.tag == 'skullcrack':
             est_damage = 3
         # Counter if lethal or defender at ≤7 life
-        if est_damage >= defender.life or defender.life <= 7:
+        if est_damage >= defender.life or defender.life <= CT.BURN_COUNTER_LIFE:
             is_major_threat = True
 
     # Eidolon of the Great Revel: major threat for any deck that casts CMC≤3 spells
@@ -848,7 +848,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         blue_land = next((l for l in defender.lands if not l.tapped and 'U' in l.effective_produces()), None)
         if blue_land:
             is_combo = is_in_category(matchup, 'combo') or is_in_category(matchup, 'fast_combo')
-            pay_threshold = 0.55 if is_combo else 0.30
+            pay_threshold = CL.DAZE_PAY_PROB_COMBO if is_combo else CL.DAZE_PAY_PROB_FAIR
             can_pay = (spell_card.cmc >= 1 and
                        (gs.turn >= 3 or is_combo) and
                        random.random() < pay_threshold)
@@ -3175,7 +3175,7 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
     # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
     # or if Mardu is so far behind it must race.
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
+    mardu_desperate  = player.life < CT.DESPERATE_LIFE   # racing, need every point
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick: continue
@@ -3514,7 +3514,7 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
     # or if Mardu is so far behind it must race.
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
+    mardu_desperate  = player.life < CT.DESPERATE_LIFE   # racing, need every point
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick: continue
@@ -3641,7 +3641,7 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
     # or if Mardu is so far behind it must race.
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
+    mardu_desperate  = player.life < CT.DESPERATE_LIFE   # racing, need every point
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick: continue
@@ -4505,7 +4505,7 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Combat — Bowmasters holds back
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8
+    mardu_desperate  = player.life < CT.DESPERATE_LIFE
     attackers = []
     for c in player.creatures:
         if c.summoning_sick: continue

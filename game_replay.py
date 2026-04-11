@@ -5,6 +5,7 @@ Usage: python3 game_replay.py [matchup] [seed]
   e.g. python3 game_replay.py sneak_a 2
 """
 
+from config import GameRules as GR
 import sys, random, html, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -152,10 +153,10 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
 
     turns_data = []
     display_turn = 0
-    life_pro = [20]
-    life_opp = [20]
+    life_pro = [GR.STARTING_LIFE]
+    life_opp = [GR.STARTING_LIFE]
 
-    for rnd in range(1, 16):
+    for rnd in range(1, GR.MAX_TURNS + 1):
         if gs.game_over: break
         gs.turn = rnd
 
