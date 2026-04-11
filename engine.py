@@ -168,11 +168,21 @@ def assess_board(player, opponent):
 # another (see: Thalia fix, Eidolon fix, Trinisphere lesson).
 
 def apply_lock_effects(gs, player, log):
-    """Pre-strategy: apply Chalice blocking, Trinisphere, Thalia taxes.
+    """Pre-strategy: apply continuous cost effects (Omniscience, Chalice, Trinisphere, Thalia).
     Returns a dict of adjustments to pass to restore_lock_effects().
     """
     hand = player.hand
-    adjustments = {'chalice': [], 'trini': [], 'thalia': []}
+    adjustments = {'chalice': [], 'trini': [], 'thalia': [], 'omni': []}
+
+    # Omniscience: all spells cost 0 (CR 601.2f alternative cost)
+    # Must come BEFORE Trinisphere — Omni sets to 0, Trini overrides to 3
+    if getattr(gs, 'omniscience_active', False):
+        for card in hand:
+            if not card.is_land():
+                adjustments['omni'].append((card, card.cmc))
+                card.cmc = 0
+        if adjustments['omni']:
+            log(f"Omniscience active — {len(adjustments['omni'])} spells cost 0")
 
     # Chalice of the Void: remove spells with CMC == chalice_x from hand
     if gs.chalice_x is not None:
@@ -205,8 +215,10 @@ def apply_lock_effects(gs, player, log):
 
 
 def restore_lock_effects(player, adjustments):
-    """Post-strategy: restore Chalice-blocked cards and tax-adjusted CMCs."""
+    """Post-strategy: restore Chalice-blocked cards and all adjusted CMCs."""
     player.hand.extend(adjustments['chalice'])
+    for card, orig_cmc in adjustments.get('omni', []):
+        card.cmc = orig_cmc
     for card, orig_cmc in adjustments['thalia']:
         card.cmc = orig_cmc
     for card, orig_cmc in adjustments['trini']:
@@ -651,6 +663,9 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
         # 3. Don't block if blocking loses the blocker for nothing
 
         def blocker_outcome(b):
+            # Wall: high-toughness creature that survives combat and prevents damage
+            if b.toughness > atk.power and atk.power > 0:
+                return 0  # favorable — wall blocks indefinitely
             a_dies = (b.power >= atk.toughness or
                       (b.card.deathtouch and b.power > 0))
             b_dies = (atk.power >= b.toughness or
@@ -718,9 +733,17 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
                 attacker_player.remove_creature(atk)
                 block_parts.append(f"  {atk.name} dies.")
         else:
-            # Unblocked — deals damage to player
-            total_unblocked_dmg += atk.power
+            # Unblocked — route through deal_damage (handles infect → poison)
             gs._combat_unblocked_tags.add(atk.card.tag)
+            if getattr(atk.card, 'infect', False):
+                # Infect: damage as poison counters via deal_damage
+                def _log_dmg(msg, key=False):
+                    log_list.append(msg)
+                deal_damage(gs, atk.card.tag, defender_player, atk.power,
+                            damage_type='infect', log_fn=_log_dmg,
+                            source_card=atk.card, attacker_player=attacker_player)
+            else:
+                total_unblocked_dmg += atk.power
             if atk.card.lifelink:
                 attacker_player.life += atk.power
 
@@ -735,7 +758,7 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
             log_list.append(f"  {total_unblocked_dmg} unblocked → {defender_player.name} at {defender_player.life}")
         else:
             log_list.append(f"Attack: {atk_names} — {total_unblocked_dmg} unblocked → {defender_player.name} at {defender_player.life}")
-    elif not block_parts:
+    elif not block_parts and total_unblocked_dmg == 0 and not any(getattr(a.card, 'infect', False) for a in attackers):
         log_list.append(f"Attack: {atk_names} — 0 damage (all blocked)")
 
     update_goyf(gs)
@@ -1910,6 +1933,9 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     # ── Post-strategy: Eidolon damage + restore lock adjustments ──
     apply_eidolon_damage(gs, o, spells_before, log)
     restore_lock_effects(o, _adjustments)
+
+    # ── Tamiyo flip check (P2's Tamiyo can flip if drew 3+ this turn) ──
+    _check_tamiyo_flip(gs, o, log)
 
     # ── P1 instant-speed responses during P2's turn ──
     if not gs.game_over:
@@ -3172,9 +3198,13 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
 
         vos = player.find_tag('vos')
         if vos and can_afford(player, vos.mana_cost):
-            # Cast Veil first — blanks BUG's blue/black counters
-            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True  # protect all spells this turn
-            log_fn("Veil of Summer — BUG blue/black counters blanked this gs.turn")
+            # Cast Veil first — but opponent gets a counter window
+            if not _try_counter_any(player, opponent, gs, vos, log_entries):
+                player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
+                log_fn("Veil of Summer — BUG blue/black counters blanked this gs.turn")
+            else:
+                player.remove_from_hand(vos); player.add_to_grave(vos)
+                log_fn("Veil of Summer countered")
             player.remove_from_hand(sat); player.add_to_grave(sat)
             player.remove_from_hand(win_card)
             # BUG gets to put its best permanent in play too
@@ -3476,10 +3506,15 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         # Try Veil protection first
         vos = player.find_tag('vos')
         if vos and total_mana >= combo_cost + 1:
-            player.remove_from_hand(vos); player.add_to_grave(vos)
-            gs.veil_active = True
-            total_mana -= 1
-            log_fn("Veil of Summer — blue interaction blanked")
+            if not _try_counter_any(player, opponent, gs, vos, log_entries):
+                player.remove_from_hand(vos); player.add_to_grave(vos)
+                gs.veil_active = True
+                total_mana -= 1
+                log_fn("Veil of Summer — blue interaction blanked")
+            else:
+                player.remove_from_hand(vos); player.add_to_grave(vos)
+                total_mana -= 1
+                log_fn("Veil of Summer countered")
 
         # Mindbreak Trap check
         mindbreak_o = opponent.find_tag('mindbreak')
@@ -3675,8 +3710,12 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         dd_resolved = False
         vos = player.find_tag('vos')
         if vos:
-            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
-            log_fn("Veil of Summer — blue interaction blanked")
+            if not _try_counter_any(player, opponent, gs, vos, log_entries):
+                player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
+                log_fn("Veil of Summer — blue interaction blanked")
+            else:
+                player.remove_from_hand(vos); player.add_to_grave(vos)
+                log_fn("Veil of Summer countered")
             player.remove_from_hand(dd); player.add_to_grave(dd)
             log_fn("★ Doomsday resolves through Veil", True)
             dd_resolved = True
@@ -3734,15 +3773,35 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
 def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     rem = total_mana  # remaining mana this gs.turn — deduct after each spell cast
 
-    # ── 0. Deploy T1 threats FIRST (Tamiyo is the best T1 play) ──
+    # ── 0a. Thoughtseize — proactive disruption (early turns) ──
+    from config import MatchupCategory as MC
+    from interaction_model import best_proactive_target
+    ts = player.find_tag('ts')
+    ts_turn_cap = 6 if MC.is_combo(gs) else 3  # vs combo: strip through turn 6; vs fair: turn 3
+    if ts and gs.turn <= ts_turn_cap and rem >= 1:
+        target = best_proactive_target(gs) if hasattr(gs, 'p2') else None
+        if target:
+            player.remove_from_hand(ts)
+            player.add_to_grave(ts)
+            rem -= 1
+            opponent.hand.remove(target)
+            opponent.add_to_grave(target)
+            player.life -= 2
+            log_fn(f"Thoughtseize → takes {target.name} (−2 life, {player.life})", True)
+
+    # ── 0b. Deploy T1 threats (Tamiyo is the best T1 play) ──
     # Real Dimir plays T1 Tamiyo (starts flip clock, 0/3 blocks) or T1 Thoughtseize.
-    # Cantrips are better held for later turns when there's more info.
+    # Against aggro, prioritize Bowmasters over Tamiyo
+    opp_is_aggro = MC.is_aggro(gs)
     # Priority: Tamiyo > Nethergoyf > other cheap creatures
-    _deploy_priority = {'tamiyo': 0, 'nether': 1, 'barrow': 1, 'borrow': 3}
+    if opp_is_aggro:
+        _deploy_priority = {'bowm': 0, 'tamiyo': 3, 'nether': 1, 'barrow': 1, 'borrow': 4}
+    else:
+        _deploy_priority = {'tamiyo': 0, 'nether': 1, 'barrow': 1, 'borrow': 3}
     cheap_threats = [(c, _deploy_priority.get(c.tag, 2))
                      for c in player.hand
                      if c.is_creature() and c.cmc <= rem
-                     and c.tag not in ('bowm', 'snuffout', 'murk')]
+                     and c.tag not in ('snuffout', 'murk')]
     cheap_threats.sort(key=lambda x: x[1])
 
     for thr, _ in cheap_threats[:1]:  # deploy one creature

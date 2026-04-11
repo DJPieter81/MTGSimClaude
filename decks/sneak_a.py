@@ -111,7 +111,7 @@ def make_sneak_a_deck():
                           {'W': 1, 'U': 1, 'B': 1, 'G': 2, 'generic': 2},
                           {'W', 'U', 'B', 'G'}, 7, 7, tag='atraxa',
                           flying=True, lifelink=True, vigilance=True,
-                          win_condition=True))
+                          deathtouch=True, win_condition=True))
 
     # Omniscience x2
     for _ in range(2):

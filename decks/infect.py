@@ -31,11 +31,11 @@ def make_infect_deck():
     # ── Creatures (12) ───────────────────────────────────────────────────────
     # Glistener Elf: 1/1 infect for {G}
     d += [creature('Glistener Elf', 1, {'G': 1}, {'G'}, power=1, toughness=1,
-                   tag='glistener')] * 4
+                   tag='glistener', infect=True)] * 4
 
     # Blighted Agent: 1/1 infect unblockable for {1U}
     d += [creature('Blighted Agent', 2, {'U': 1, 'generic': 1}, {'U'}, power=1,
-                   toughness=1, tag='blighted')] * 4
+                   toughness=1, tag='blighted', infect=True)] * 4
 
     # Noble Hierarch: 0/1 exalted for {G}
     d += [creature('Noble Hierarch', 1, {'G': 1}, {'G'}, power=0, toughness=1,
@@ -130,9 +130,11 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
 
     mana = total_mana
 
-    # ── Initialize poison tracking ───────────────────────────────────────────
+    # ── Initialize poison tracking (use per-player fields on GameState) ─────
+    # Use p1_poison/p2_poison from GameState; keep opp_poison as alias for compat
+    opp_poison_key = 'p2_poison' if player is gs.p1 else 'p1_poison'
     if not hasattr(gs, 'opp_poison'):
-        gs.opp_poison = 0
+        gs.opp_poison = getattr(gs, opp_poison_key, 0)
 
     if gs.game_over:
         return
@@ -471,6 +473,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         poison = getattr(gs, 'opp_poison', 0)
         poison += total_power
         gs.opp_poison = poison
+        setattr(gs, opp_poison_key, poison)  # sync per-player field
         log_fn(f"★ {attacker.card.name} deals {total_power} poison "
                f"({poison}/10)", True)
 
@@ -529,6 +532,8 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     else:
         log_fn(f"  {attacker.card.name} — no damage (0 power)")
 
+    # Mark combat as done — prevents fallback combat from firing a second attack
+    gs.combat_this_turn = True
     gs.state_based_actions()
 
 

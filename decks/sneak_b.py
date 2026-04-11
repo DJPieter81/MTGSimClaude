@@ -121,13 +121,13 @@ def make_sneak_b_deck():
                           {'W': 1, 'U': 1, 'B': 1, 'G': 2, 'generic': 2},
                           {'W', 'U', 'B', 'G'}, 7, 7, tag='atraxa',
                           flying=True, lifelink=True, vigilance=True,
-                          win_condition=True))
+                          deathtouch=True, win_condition=True))
 
     # Archon of Cruelty x1
     for _ in range(1):
         d.append(creature('Archon of Cruelty', 8,
                           {'B': 1, 'generic': 7}, {'B'}, 6, 6, tag='archon',
-                          flying=True, win_condition=True))
+                          flying=True, lifelink=True, win_condition=True))
 
     # Omniscience x1
     for _ in range(1):

@@ -74,7 +74,7 @@ def make_goblins_deck():
     # Fury: 3/3, {3RR}, evoke: exile red card, 4 damage divided
     for _ in range(2):
         d.append(creature('Fury', 5, {'R': 2, 'generic': 3}, {'R'}, 3, 3,
-                          tag='fury', haste=True))
+                          tag='fury', haste=True, trample=True))
 
     # ── Artifacts (6) ─────────────────────────────────────────────────────────
     # Aether Vial: {1}

@@ -17,7 +17,7 @@ def make_ocelot_deck():
     d += [creature('Guide of Souls', 1, {'W':1}, {'W'}, 1, 1, tag='guide')] * 4
     d += [creature('Ajani, Nacatl Pariah', 2, {'W':1,'generic':1}, {'W'}, 2, 1, tag='ajani')] * 4
     d += [creature('Amped Raptor', 2, {'R':1,'generic':1}, {'R'}, 2, 1, tag='raptor')] * 4
-    d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm')] * 4
+    d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm', flash=True)] * 4
     d += [creature('Voice of Victory', 2, {'W':1,'generic':1}, {'W'}, 2, 2, tag='voice')] * 4
     # Spells (13)
     d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'}, tag='stp', is_removal=True)] * 4

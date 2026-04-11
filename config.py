@@ -140,7 +140,7 @@ class MatchupCategory:
     # Built-in (cards.py) deck sets — these don't have DECK_META
     _BUILTIN_COMBO   = frozenset({'storm', 'oops', 'doomsday', 'reanimator', 'show'})
     _BUILTIN_MIRROR  = frozenset({'dimir', 'dimir_b', 'dimir_flash', 'uwx'})
-    _BUILTIN_AGGRO   = frozenset({'boros', 'ur_aggro', 'mardu', 'mono_black', 'eldrazi'})
+    _BUILTIN_AGGRO   = frozenset({'boros', 'ur_aggro', 'mardu', 'mono_black', 'eldrazi', 'burn'})
     _BUILTIN_PRISON  = frozenset({'prison', 'dnt', 'boros'})
     _BUILTIN_GY      = frozenset({'reanimator', 'oops', 'doomsday'})
     _BUILTIN_LAND    = frozenset({'lands', 'show'})
