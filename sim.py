@@ -367,6 +367,11 @@ def protagonist_turn(gs, turn, matchup):
     for player in [b, o]:
         for c in player.creatures:
             c.damage_marked = 0
+            # Clear hexproof granted by until-EOT effects (Vines of Vastwood,
+            # Blossoming Defense). Permanent hexproof (e.g. Kaito) is on the
+            # card object, not the permanent, so this only clears temporary grants.
+            if hasattr(c, 'hexproof'):
+                del c.hexproof
 
     # ── Untap ──
     b.untap_all()
