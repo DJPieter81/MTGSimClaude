@@ -202,18 +202,48 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             return False  # would kill ourselves
         return True  # trust the rules engine — Eidolon damage is self-regulating
 
-    # ── Pre-combat: cast ALL cheap burn spells for prowess triggers ─────
-    # Real Burn casts every cheap spell Main Phase 1 to maximize Swiftspear
-    # prowess damage in combat. We cast chain/spike/bolt/rift (R), then
-    # Price of Progress (1R), then skullcrack (1R) pre-combat for prowess.
+    # ── Pre-combat: bolt DRC while it's still 1/1 (before delirium) ───────
+    # DRC is 1/1 without delirium but becomes 3/3 with delirium. Once 3/3
+    # it still dies to bolt, but has already gotten surveil value. Bolt it
+    # now while it's small — this also triggers prowess for Swiftspear.
+    if mana >= 1 and not gs.game_over:
+        bolt_for_drc = player.find_tag('bolt')
+        if bolt_for_drc:
+            drc_targets = [c for c in opponent.creatures
+                           if c.card.tag == 'drc' and c.power <= 1
+                           and (c.toughness - c.damage_marked) <= 3]
+            # Only bolt DRC if opponent isn't already in lethal range
+            burn_in_hand_count = sum(1 for c in player.hand if c.tag in
+                                     ('bolt', 'chain', 'spike', 'rift', 'skullcrack', 'fireblast'))
+            if drc_targets and opponent.life > 3 * burn_in_hand_count:
+                target = drc_targets[0]
+                budget = [mana]
+                if cast_spell(player, opponent, gs, bolt_for_drc, budget, log_fn, log_entries,
+                              on_resolve=lambda c, t=target: (
+                                  player.add_to_grave(c),
+                                  setattr(t, 'damage_marked', t.damage_marked + 3),
+                                  log_fn(f"★ Lightning Bolt → {t.card.name} (pre-combat, deny delirium)", True),
+                                  gs.state_based_actions())):
+                    pass
+                else:
+                    log_fn("Lightning Bolt countered")
+                mana = budget[0]
+
+    # ── Pre-combat: cast face-only burn spells for prowess triggers ──────
+    # Cast spike/rift/chain (R) pre-combat to maximize Swiftspear prowess,
+    # then Price of Progress (1R), then skullcrack (1R).
+    # Lightning Bolt is saved for post-combat — it's the only instant and
+    # can target creatures, so we preserve that flexibility. Face-only
+    # sorceries (spike/rift/chain) are better counter-bait: if opponent
+    # has FoW, they waste it on an inflexible spell instead of bolt.
     # Searing Blaze is also cast pre-combat when landfall + opponent has creatures.
     swiftspear_in_play = any(c.card.tag == 'swiftspear' for c in player.creatures
                              if not c.summoning_sick)
     if swiftspear_in_play:
-        # Cast all R-cost burn spells pre-combat
+        # Cast face-only R-cost burn spells pre-combat (bolt saved for post-combat)
         while mana >= 1 and not gs.game_over:
-            pre_combat_spell = (player.find_tag('chain') or player.find_tag('spike')
-                                or player.find_tag('bolt') or player.find_tag('rift'))
+            pre_combat_spell = (player.find_tag('spike') or player.find_tag('rift')
+                                or player.find_tag('chain'))
             if not pre_combat_spell or not _worth_casting(3):
                 break
             budget = [mana]
@@ -256,7 +286,10 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 targets = list(opponent.creatures)
                 if not targets:
                     break  # needs a creature target
-                target = targets[0]
+                # Smart targeting: prefer creatures that die to 3 damage,
+                # picking highest power among those; else target highest power.
+                _killable = [c for c in targets if (c.toughness - c.damage_marked) <= 3]
+                target = max(_killable, key=lambda c: c.power) if _killable else max(targets, key=lambda c: c.power)
                 budget = [mana]
                 if cast_spell(player, opponent, gs, blaze, budget, log_fn, log_entries,
                               on_resolve=lambda c, t=target: (
@@ -462,7 +495,10 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             targets = list(opponent.creatures)
             if not targets:
                 break  # needs a creature target
-            target = targets[0]
+            # Smart targeting: prefer creatures that die to 3 damage,
+            # picking highest power among those; else target highest power.
+            _killable = [c for c in targets if (c.toughness - c.damage_marked) <= 3]
+            target = max(_killable, key=lambda c: c.power) if _killable else max(targets, key=lambda c: c.power)
             budget = [mana]
             if cast_spell(player, opponent, gs, blaze, budget, log_fn, log_entries,
                           on_resolve=lambda c, t=target: (
