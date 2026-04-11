@@ -382,6 +382,38 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(karn)
 
+    # ── Equip Shadowspear — +1/+1, trample, lifelink ────────────────────────
+    # Cast first if in hand (1 mana), then attach to highest-power creature.
+    # Mirrors the equip logic in affinity.py: set lifelink/trample on card so
+    # resolve_combat (which reads atk.card.lifelink) sees the keyword.
+    shadowspear = player.find_tag('shadowspear')
+    if shadowspear and mana >= 1:
+        player.remove_from_hand(shadowspear)
+        player.put_artifact_in_play(shadowspear)
+        mana -= 1
+        log_fn("Shadowspear")
+
+    spear_in_play = next((a for a in player.artifacts if a.card.tag == 'shadowspear'), None)
+    if spear_in_play:
+        eligible = [c for c in player.creatures if c.power > 0]
+        if eligible:
+            spear_target = max(eligible, key=lambda c: c.power)
+            # Un-equip from previous bearer if the spear moves to a new creature
+            for c in player.creatures:
+                if getattr(c, '_spear_equipped', False) and c is not spear_target:
+                    c._spear_equipped = False
+                    c.power_mod     = max(0, c.power_mod - 1)
+                    c.toughness_mod = max(0, c.toughness_mod - 1)
+                    c.card.trample  = False
+                    c.card.lifelink = False
+            if not getattr(spear_target, '_spear_equipped', False):
+                spear_target._spear_equipped = True
+                spear_target.power_mod     += 1
+                spear_target.toughness_mod += 1
+                spear_target.card.trample  = True
+                spear_target.card.lifelink = True
+                log_fn(f"Shadowspear equipped to {spear_target.card.name} (+1/+1, trample, lifelink)")
+
     # ── Combat ───────────────────────────────────────────────────────────────
     attackers = [c for c in player.creatures if not c.summoning_sick]
     if attackers:

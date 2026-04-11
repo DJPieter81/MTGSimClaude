@@ -178,10 +178,13 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     1. Deploy free artifacts (Baubles, Lotus Petal, Mox Opal) to build artifact count
     2. Deploy Patchwork Automaton early (grows with each artifact cast)
     3. Deploy Emry (engine — casts artifacts from GY)
-    4. Deploy Pinnacle Emissary / Thought Monitor / Kappa Cannoneer with affinity
-    5. Cast Thoughtcast to draw cards (affinity makes it cheap)
-    6. Urza's Saga — tick chapters, generate constructs, tutor artifacts
-    7. Attack with all creatures
+    4. Cast Thought Monitor (draws 2 — maximises hand before deploying creatures)
+    5. Cast Thoughtcast (draws 2 — deploy all draw spells before big creatures)
+    6. Deploy Pinnacle Emissary with any newly drawn copies included
+    7. Deploy Kappa Cannoneer
+    8. Deploy Krang, Master Mind
+    9. Urza's Saga — tick chapters, generate constructs, tutor artifacts
+    10. Attack with all creatures
     """
     from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
     from rules import Card as _Card, CardType as _CT, Permanent
@@ -232,6 +235,13 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     mana = total_mana
     art_count = _artifact_count(player)
     artifacts_cast_this_turn = 0
+
+    # Reset cant_be_blocked on all Cannoneers at the start of each turn.
+    # The "can't be blocked" ability only applies for the turn artifacts entered;
+    # it does not persist. If no artifacts enter this turn, Cannoneer is blockable.
+    for c in player.creatures:
+        if c.card.tag == 'cannoneer':
+            c.cant_be_blocked = False
 
     # cannoneer_on_board: Kappa Cannoneer gives +1/+1 to itself for each
     # artifact that enters the battlefield while it's on the battlefield.
@@ -344,25 +354,9 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             else:
                 player.add_to_grave(emry)
 
-    # ── 6. Pinnacle Emissary — affinity creature ────────────────────────────
-    while True:
-        emissary = player.find_tag('emissary')
-        if not emissary:
-            break
-        eff_cost = _affinity_cost(4, player)
-        _sac_petal_if_needed(eff_cost)
-        if mana < eff_cost:
-            break
-        player.remove_from_hand(emissary)
-        if not _try_counter_any(player, opponent, gs, emissary, log_entries):
-            player.put_creature_in_play(emissary)
-            mana -= eff_cost
-            art_count += 1
-            log_fn(f"Pinnacle Emissary (3/3, affinity {eff_cost})")
-        else:
-            player.add_to_grave(emissary)
-
-    # ── 7. Thought Monitor — affinity, draws 2 ──────────────────────────────
+    # ── 6. Thought Monitor — affinity, draws 2 ──────────────────────────────
+    # Cast BEFORE Emissary/Cannoneer so the 2 drawn cards can be deployed
+    # in the same turn (e.g. a freshly drawn Emissary or second Monitor).
     while True:
         monitor = player.find_tag('monitor')
         if not monitor:
@@ -385,7 +379,46 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         if gs.game_over:
             return
 
-    # ── 8. Kappa Cannoneer — big affinity threat ────────────────────────────
+    # ── 7. Thoughtcast — affinity draw spell (cast all copies in hand) ────────
+    # Cast BEFORE big creatures so drawn cards can also be deployed this turn.
+    while True:
+        cast = player.find_tag('cast')
+        if not cast:
+            break
+        eff_cost = _affinity_cost(5, player)
+        _sac_petal_if_needed(eff_cost)
+        if mana < eff_cost or not _has_blue():
+            break
+        player.remove_from_hand(cast)
+        player.add_to_grave(cast)
+        mana -= eff_cost
+        drawn = player.draw(2)
+        log_fn(f"Thoughtcast (affinity {eff_cost}) — draws 2")
+        bowmasters_triggers(2, gs, log_entries,
+                            controller='o' if player is gs.p1 else 'b')
+        if gs.game_over:
+            return
+
+    # ── 8. Pinnacle Emissary — affinity creature ────────────────────────────
+    # Deployed AFTER draw spells so any Emissaries drawn this turn are included.
+    while True:
+        emissary = player.find_tag('emissary')
+        if not emissary:
+            break
+        eff_cost = _affinity_cost(4, player)
+        _sac_petal_if_needed(eff_cost)
+        if mana < eff_cost:
+            break
+        player.remove_from_hand(emissary)
+        if not _try_counter_any(player, opponent, gs, emissary, log_entries):
+            player.put_creature_in_play(emissary)
+            mana -= eff_cost
+            art_count += 1
+            log_fn(f"Pinnacle Emissary (3/3, affinity {eff_cost})")
+        else:
+            player.add_to_grave(emissary)
+
+    # ── 9. Kappa Cannoneer — big affinity threat ────────────────────────────
     while True:
         cannoneer = player.find_tag('cannoneer')
         if not cannoneer:
@@ -405,7 +438,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(cannoneer)
 
-    # ── 9. Krang, Master Mind ────────────────────────────────────────────────
+    # ── 10. Krang, Master Mind ────────────────────────────────────────────────
     # Krang costs {U}{B}{3} — requires BOTH blue AND black mana.
     # This deck has no natural black sources; black can only come from
     # Mox Opal (metalcraft) or Lotus Petal. Both colours must be available.
@@ -420,25 +453,6 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn("Krang, Master Mind (4/5)")
         else:
             player.add_to_grave(krang)
-
-    # ── 10. Thoughtcast — affinity draw spell (cast all copies in hand) ────────
-    while True:
-        cast = player.find_tag('cast')
-        if not cast:
-            break
-        eff_cost = _affinity_cost(5, player)
-        _sac_petal_if_needed(eff_cost)
-        if mana < eff_cost or not _has_blue():
-            break
-        player.remove_from_hand(cast)
-        player.add_to_grave(cast)
-        mana -= eff_cost
-        drawn = player.draw(2)
-        log_fn(f"Thoughtcast (affinity {eff_cost}) — draws 2")
-        bowmasters_triggers(2, gs, log_entries,
-                            controller='o' if player is gs.p1 else 'b')
-        if gs.game_over:
-            return
 
     # ── 11. Equipment — Lavaspur Boots / Shadowspear ─────────────────────────
     for equip_tag in ('boots', 'spear'):
@@ -475,6 +489,10 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             art_count = _artifact_count(player)
             perm.power_mod = art_count
             perm.toughness_mod = art_count
+            # Construct is an artifact ETB — triggers Cannoneer and Automaton
+            artifacts_cast_this_turn += 1
+            if cannoneer_on_board:
+                cannoneer_triggers += 1
             log_fn(f"Urza's Saga Ch.2 — Construct {art_count}/{art_count} enters", True)
         elif chapter >= 3:
             # Ch.3: tutor 0-1 CMC artifact, then sacrifice Saga
@@ -604,9 +622,16 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                     return 3   # Equipment
                 return 4       # Generic artifacts
 
-            target = min(gy_artifacts, key=_emry_priority)
-            player.graveyard.remove(target)
-            emry_perm.tapped = True  # Emry taps to activate the ability
+            # Emry casts the artifact, so its mana cost must be paid.
+            # Only consider artifacts we can currently afford (CMC 0 are always free).
+            castable = [c for c in gy_artifacts if c.cmc == 0 or mana >= c.cmc]
+            if not castable:
+                castable = None  # nothing affordable — leave Emry untapped for now
+
+            if castable:
+                target = min(castable, key=_emry_priority)
+                player.graveyard.remove(target)
+                emry_perm.tapped = True  # Emry taps to activate the ability
 
             if target.tag == 'petal':
                 # Lotus Petal: enters, immediately sacrifice for mana
