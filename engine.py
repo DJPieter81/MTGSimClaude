@@ -60,6 +60,94 @@ def _deduct(budget: list, cmc: int, card) -> bool:
     return True
 
 
+class ManaManager:
+    """Unified mana budget tracker for strategies.
+
+    Replaces the three divergent patterns:
+      - Pattern A: budget = [total_mana] + _deduct(budget, cost, card)
+      - Pattern B: rem = total_mana + rem -= cost
+      - Pattern C: mana_ref = [total_mana] + custom spend functions
+
+    Usage in a strategy:
+        mm = ManaManager(total_mana, gs, log_fn)
+        if mm.can_pay(card.cmc):
+            mm.spend(card)
+            ...
+        remaining = mm.available
+    """
+
+    def __init__(self, total_mana: int, gs: 'GameState', log_fn=None):
+        self.mana = total_mana
+        self.gs = gs
+        self.log_fn = log_fn
+
+    @property
+    def available(self) -> int:
+        return self.mana
+
+    def can_pay(self, cost: int) -> bool:
+        return self.mana >= cost
+
+    def spend(self, card) -> None:
+        """Deduct effective cost (respects Trinisphere/Thalia) and fire Eidolon."""
+        cost = self.effective_cmc(card)
+        self.mana = max(0, self.mana - cost)
+        _eidolon_trigger(self.gs, card, self.log_fn)
+
+    def spend_amount(self, amount: int) -> None:
+        """Deduct a raw mana amount (for activated abilities, generic costs)."""
+        self.mana = max(0, self.mana - amount)
+
+    def effective_cmc(self, card) -> int:
+        """Card's effective cost accounting for Trinisphere and Thalia."""
+        base = max(card.cmc, 3 if self.gs.trinisphere_active else 0)
+        if not card.is_creature() and self.gs.thalia_on_board:
+            base += 1
+        return base
+
+    def refresh(self, player) -> None:
+        """Refresh mana from current board state (e.g. after land drop)."""
+        self.mana = player.available_mana_count()
+
+
+def assess_board(player, opponent):
+    """Shared board state assessment for tempo/midrange strategies.
+
+    Returns (state, metrics) where state is one of:
+      'racing'  — both players threaten lethal in ≤3 turns
+      'ahead'   — player has board advantage
+      'behind'  — opponent has board advantage
+      'parity'  — roughly even
+
+    Metrics dict contains: board_power, opp_power, threat_count, opp_threats,
+    turns_to_kill, turns_to_die, has_threats_in_hand.
+    """
+    board_power  = sum(c.power for c in player.creatures)
+    opp_power    = sum(c.power for c in opponent.creatures)
+    threat_count = len(player.creatures)
+    opp_threats  = len(opponent.creatures)
+    ttk = (opponent.life / board_power) if board_power > 0 else 999
+    ttd = (player.life / opp_power)    if opp_power > 0 else 999
+    has_threats  = any(c.is_creature() for c in player.hand)
+
+    if ttk <= 3 and ttd <= 3:
+        state = 'racing'
+    elif board_power > opp_power + 2 or threat_count > opp_threats + 1:
+        state = 'ahead'
+    elif opp_power > board_power + 2 or opp_threats > threat_count + 1:
+        state = 'behind'
+    else:
+        state = 'parity'
+
+    metrics = {
+        'board_power': board_power, 'opp_power': opp_power,
+        'threat_count': threat_count, 'opp_threats': opp_threats,
+        'turns_to_kill': ttk, 'turns_to_die': ttd,
+        'has_threats': has_threats,
+    }
+    return state, metrics
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Shared lock/tax enforcement — used by protagonist_turn & opp_turn
 # ─────────────────────────────────────────────────────────────────────
@@ -875,22 +963,13 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     # ═══════════════════════════════════════════════════════════
     # GAME STATE ASSESSMENT — informs all decisions this turn
     # ═══════════════════════════════════════════════════════════
-    bug_board_power  = sum(c.power for c in player.creatures)
-    opp_board_power  = sum(c.power for c in opponent.creatures)
-    bug_threat_count = len(player.creatures)
-    opp_threat_count = len(opponent.creatures)
-    bug_has_threats  = any(c.is_creature() for c in player.hand)
-    turns_to_kill_opp = (opponent.life / bug_board_power) if bug_board_power > 0 else 999
-    turns_to_die      = (player.life  / opp_board_power) if opp_board_power > 0 else 999
-    opp_has_cantrips  = any(c.is_cantrip for c in opponent.hand)
-    if turns_to_kill_opp <= 3 and turns_to_die <= 3:
-        game_state = 'racing'
-    elif bug_board_power > opp_board_power + 2 or bug_threat_count > opp_threat_count + 1:
-        game_state = 'ahead'
-    elif opp_board_power > bug_board_power + 2 or opp_threat_count > bug_threat_count + 1:
-        game_state = 'behind'
-    else:
-        game_state = 'parity'
+    game_state, _m = assess_board(player, opponent)
+    bug_board_power  = _m['board_power']
+    opp_board_power  = _m['opp_power']
+    bug_threat_count = _m['threat_count']
+    opp_threat_count = _m['opp_threats']
+    bug_has_threats  = _m['has_threats']
+    opp_has_cantrips = any(c.is_cantrip for c in opponent.hand)
 
     # ── Wasteland (activated ability — uncounterable, no mana cost) ──
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
