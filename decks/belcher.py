@@ -63,7 +63,7 @@ def make_belcher_deck():
 
     # Simian Spirit Guide: exile from hand → add {R}
     for _ in range(4):
-        d.append(creature('Simian Spirit Guide', 2, {'R': 2, 'generic': 1},
+        d.append(creature('Simian Spirit Guide', 3, {'R': 1, 'generic': 2},
                           'R', power=2, toughness=2, tag='ssg'))
 
     # ── Rituals (16) ─────────────────────────────────────────────────────────

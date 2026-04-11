@@ -33,7 +33,7 @@ def make_ur_delver_deck() -> List[Card]:
     # Delver of Secrets: enters as 1/1 (unflipped). Strategy checks for flip
     # each upkeep (~60% with this deck's instant/sorcery density).
     d += [creature('Delver of Secrets', 1, {'U': 1}, {'U'}, 1, 1,
-                   tag='delver', flying=True)] * 4
+                   tag='delver', flying=False)] * 4
     # Dragon's Rage Channeler: 1/1 base, delirium → 3/3
     # Strategy checks delirium (4+ card types in GY) each turn
     d += [creature("Dragon's Rage Channeler", 1, {'R': 1}, {'R'}, 1, 1,
@@ -115,6 +115,7 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
             if random.random() < DELVER_FLIP_RATE:
                 c.power_mod += 2   # 1 + 2 = 3 power
                 c.toughness_mod += 1  # 1 + 1 = 2 toughness
+                c.card.flying = True  # Insectile Aberration has flying
                 log_fn("Delver of Secrets flips → Insectile Aberration (3/2 flying)")
             else:
                 log_fn("Delver upkeep — no flip (stays 1/1)")
@@ -355,10 +356,10 @@ def test_ur_delver():
 
     # Test 6: Delver has flying, enters as 1/1 (unflipped)
     delver = next(c for c in deck if c.tag == 'delver')
-    assert getattr(delver, 'flying', False), "Delver should have flying"
+    assert not getattr(delver, 'flying', False), "Delver (unflipped) should not have flying"
     assert delver.base_power == 1, f"Delver should be 1/1 unflipped, got {delver.base_power}/{delver.base_toughness}"
     assert delver.base_toughness == 1, f"Delver should be 1/1 unflipped"
-    results.append("OK  Delver has flying, enters as 1/1")
+    results.append("OK  Delver has no flying (unflipped), enters as 1/1")
 
     # Test 7: Murktide has delve + flying
     murk = next(c for c in deck if c.tag == 'murk')

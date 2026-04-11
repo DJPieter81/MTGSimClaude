@@ -298,7 +298,7 @@ def make_show_deck() -> List[Card]:
     # Combo (14)
     d += [sorcery('Show and Tell', 3, {'U':1,'generic':2}, {'U'}, tag='sat', is_combo_piece=True, win_condition=True)] * 4
     d += [creature('Atraxa, Grand Unifier', 7, {'G':1,'W':1,'U':1,'B':1,'generic':3}, {'G','W','U','B'}, 7, 7,
-                   tag='atraxa', flying=True, lifelink=True, win_condition=True)] * 4
+                   tag='atraxa', flying=True, lifelink=True, deathtouch=True, vigilance=True, win_condition=True)] * 4
     d += [creature('Emrakul, the Aeons Torn', 15, {'generic':15}, set(), 15, 15,
                    tag='emrakul', flying=True, trample=True, haste=True,
                    win_condition=True)] * 2
@@ -377,7 +377,7 @@ def make_oops_deck() -> List[Card]:
                     is_combo_piece=True)] * 4
     d += [creature("Thassa's Oracle", 2, {'U':1,'generic':1}, {'U'}, 1, 3, tag='oracle',
                     win_condition=True)] * 1
-    d += [creature('Narcomoeba', 2, {'U':1,'generic':1}, {'U'}, 1, 1, tag='narco')] * 4
+    d += [creature('Narcomoeba', 2, {'U':1,'generic':1}, {'U'}, 1, 1, tag='narco', flying=True)] * 4
     d += [sorcery('Dread Return', 4, {'B':1,'generic':3}, {'B'}, tag='dread',
                    is_combo_piece=True)] * 1
     # Free mana
@@ -394,7 +394,7 @@ def make_oops_deck() -> List[Card]:
     d += [instant('Pact of Negation', 0, {}, {'U'}, tag='pact', free_cast_if_blue=True)] * 4
     d += [instant("Summoner's Pact", 0, {}, {'G'}, tag='spact')] * 4
     # Disruption
-    d += [creature('Grief', 4, {'B':1,'generic':3}, {'B'}, 3, 2, tag='grief')] * 4
+    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief')] * 4
     d += [sorcery('Cabal Therapy', 1, {'B':1}, {'B'}, tag='therapy')] * 2
     # MDFC "lands" (spell side: these count as spells, not lands in the library)
     d += [sorcery("Agadeem's Awakening", 3, {'B':1,'generic':2}, {'B'}, tag='agadeem',
@@ -416,7 +416,7 @@ def make_prison_deck() -> List[Card]:
     d += [artifact('Ensnaring Bridge', 3, {'generic':3}, tag='bridge',  lock_piece=True)] * 3
     d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(), tag='karn', engine=True, lock_piece=True)] * 4
     d += [creature('Thought-Knot Seer', 4, {'C':1,'generic':3}, set(), 4, 4, tag='tks')] * 4
-    d += [artifact("Painter's Servant", 2, {'generic':2}, tag='painter', is_combo_piece=True)] * 3
+    d += [creature("Painter's Servant", 2, {'generic':2}, set(), 1, 3, tag='painter', is_combo_piece=True)] * 3
     d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', win_condition=True)] * 3
     d += [artifact('Null Rod', 2, {'generic':2}, tag='nullrod')] * 2
     d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
@@ -499,7 +499,7 @@ def make_eldrazi_deck() -> List[Card]:
     # Kozilek's Command: modal colorless instant, ~CMC 2-4
     d += [instant("Kozilek's Command", 3, {'generic':3}, set(), tag='kcommand')] * 4
     # Simian Spirit Guide: exile→{R}, CANNOT pay Chalice (generic), but kept as body
-    d += [creature('Simian Spirit Guide', 2, {'R':1,'generic':2}, {'R'}, 2, 2,
+    d += [creature('Simian Spirit Guide', 3, {'R':1,'generic':2}, {'R'}, 2, 2,
                    tag='ssg')] * 4
 
     # ── Lands (24) ──
@@ -623,7 +623,7 @@ def make_mono_black_deck() -> List[Card]:
     d = []
     # Creatures (20)
     d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief', flash=True)] * 4  # evoke exile black
-    d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm',    draw_trigger=True)] * 4
+    d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm',    draw_trigger=True, flash=True)] * 4
     d += [creature('Dauthi Voidwalker', 2, {'B':2}, {'B'}, 3, 2, tag='dauthi')] * 4
     d += [creature('Carnage Interpreter', 2, {'B':1,'generic':1}, {'B'}, 2, 2, tag='carnage')] * 4
     d += [creature('Braids, Arisen Nightmare', 4, {'B':2,'generic':2}, {'B'}, 3, 3, tag='braids')] * 4
@@ -1006,7 +1006,7 @@ def make_elves_deck() -> List[Card]:
     d += [creature('Reclamation Sage',  2, {'G':1,'generic':1}, {'G'}, 2, 1, tag='recsage', is_removal=True)] * 1
     # ── Finisher ──
     d += [creature('Craterhoof Behemoth', 8, {'G':1,'generic':7}, {'G'}, 5, 5,
-                   tag='hoof', win_condition=True, engine=True)] * 1
+                   tag='hoof', win_condition=True, engine=True, trample=True, haste=True)] * 1
     # ── Spells ──
     d += [sorcery('Glimpse of Nature',  1, {'G':1}, {'G'}, tag='glimpse',    is_combo_piece=True)] * 4
     d += [sorcery("Green Sun's Zenith", 1, {'G':1}, {'G'}, tag='gsz',       is_combo_piece=True)] * 4
@@ -1860,9 +1860,9 @@ def make_reanimator_deck() -> List[Card]:
     d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit', mana_ritual=True)] * 4
     # Win conditions
     d += [creature('Griselbrand', 8, {'B':4,'generic':4}, {'B'}, 7, 7,
-                   tag='gris', flying=True, win_condition=True)] * 4
+                   tag='gris', flying=True, lifelink=True, win_condition=True)] * 4
     d += [creature('Archon of Cruelty', 8, {'B':2,'generic':6}, {'B'}, 6, 6,
-                   tag='archon', flying=True, win_condition=True)] * 2
+                   tag='archon', flying=True, lifelink=True, win_condition=True)] * 2
     # Protection / disruption
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 4
@@ -1884,7 +1884,7 @@ def make_reanimator_deck() -> List[Card]:
 def make_mardu_deck() -> List[Card]:
     d = []
     # Free evoke engine
-    d += [creature('Grief', 3, {'B':1,'generic':2}, {'B'}, 3, 2,
+    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2,
                    tag='grief', flash=True, is_combo_piece=True)] * 4
     d += [creature('Fury', 5, {'R':1,'generic':4}, {'R'}, 3, 3,
                    tag='fury', flash=True, trample=True, is_combo_piece=True)] * 4
@@ -1931,7 +1931,7 @@ def make_ur_aggro_deck() -> List[Card]:
     d += [creature('Dragon\'s Rage Channeler', 1, {'R':1}, {'R'}, 3, 3,
                    tag='drc')] * 4
     d += [creature('Murktide Regent', 7, {'U':1,'generic':6}, {'U'}, 8, 8,
-                   tag='murk', delve=True)] * 4
+                   tag='murk', delve=True, flying=True)] * 4
     d += [creature('Brazen Borrower', 3, {'U':1,'generic':2}, {'U'}, 3, 1,
                    tag='borrow', flash=True, flying=True)] * 2
     # Burn / removal

@@ -102,7 +102,7 @@ def make_depths_deck():
     # Endurance: graveyard hate + flash 3/4
     for _ in range(3):
         d.append(creature('Endurance', 3, {'G': 2, 'generic': 1}, {'G'},
-                          3, 4, tag='endurance', flash=True))
+                          3, 4, tag='endurance', flash=True, reach=True))
 
     # ── Utility Lands (7) ────────────────────────────────────────────────────
     # Wasteland: destroy nonbasic land
