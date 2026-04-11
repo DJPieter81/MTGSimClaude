@@ -1687,6 +1687,10 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     for player in [b, o]:
         for c in player.creatures:
             c.damage_marked = 0
+            # Clear hexproof granted by until-EOT effects (Vines of Vastwood,
+            # Blossoming Defense). Permanent hexproof is on the card, not the perm.
+            if hasattr(c, 'hexproof'):
+                del c.hexproof
 
     # ── Untap ──
     o.untap_all()
@@ -1933,29 +1937,37 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
     """
     P2 instant-speed responses during P1's turn (after P1 combat).
     Handles: STP, Fatal Push, Snuff Out, Lightning Bolt on P1 creatures.
+    Hexproof creatures (e.g. protected by Vines of Vastwood) cannot be
+    targeted by any of these spells (CR 702.11b).
     """
     b, o = gs.p1, gs.p2
+
+    def _targetable(c):
+        """Return True if creature can be targeted by opponent's removal."""
+        return not getattr(c, 'hexproof', False)
 
     # ── STP: exile P1's biggest creature if power >= 3 ──
     stp = o.find_tag('stp')
     if stp and b.creatures and o.available_mana_count() >= 1:
-        target = max(b.creatures, key=lambda c: c.power)
-        if target.power >= 3:
-            o.remove_from_hand(stp)
-            o.add_to_grave(stp)
-            life_gain = target.power
-            b.creatures.remove(target)
-            b.life += life_gain
-            log_fn(f"★ P2 STP (instant, P1's turn) → exiles {target.card.name} "
-                   f"(P1 +{life_gain} life → {b.life})", True)
-            update_goyf(gs)
+        valid = [c for c in b.creatures if _targetable(c)]
+        if valid:
+            target = max(valid, key=lambda c: c.power)
+            if target.power >= 3:
+                o.remove_from_hand(stp)
+                o.add_to_grave(stp)
+                life_gain = target.power
+                b.creatures.remove(target)
+                b.life += life_gain
+                log_fn(f"★ P2 STP (instant, P1's turn) → exiles {target.card.name} "
+                       f"(P1 +{life_gain} life → {b.life})", True)
+                update_goyf(gs)
 
     # ── Fatal Push on P1 creature (CMC ≤ 2, or ≤ 4 with revolt) ──
     push = o.find_tag('push')
     if push and b.creatures and o.available_mana_count() >= 1:
         revolt = o.revolt_this_turn
         targets = [c for c in b.creatures
-                   if MTGRules.fatal_push_valid_target(c, revolt)]
+                   if MTGRules.fatal_push_valid_target(c, revolt) and _targetable(c)]
         if targets:
             target = max(targets, key=lambda c: c.power)
             if target.power >= 1:  # worth pushing any real threat
@@ -1972,7 +1984,8 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
     if snuff and b.creatures and o.life > 6:
         has_swamp = any('B' in l.effective_produces() for l in o.lands)
         if has_swamp:
-            targets = [c for c in b.creatures if 'B' not in getattr(c.card, 'colors', set())]
+            targets = [c for c in b.creatures
+                       if 'B' not in getattr(c.card, 'colors', set()) and _targetable(c)]
             if targets:
                 target = max(targets, key=lambda c: c.power)
                 if target.power >= 2:
@@ -1987,7 +2000,8 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
     # ── Lightning Bolt on P1 creature ──
     bolt = o.find_tag('bolt') or o.find_tag('heat')
     if bolt and b.creatures and o.available_mana_count() >= 1:
-        targets = [c for c in b.creatures if c.toughness <= 3 and c.power >= 2]
+        targets = [c for c in b.creatures
+                   if c.toughness <= 3 and c.power >= 2 and _targetable(c)]
         if targets:
             target = max(targets, key=lambda c: c.power)
             o.remove_from_hand(bolt)
@@ -2071,7 +2085,9 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
                 = 'b' if player is gs.p2 (bug has Bowmasters, pings gs.p2)
     """
     bowm_ctrl = 'o' if player is gs.p1 else 'b'
-    mana_ref  = [total_mana]   # mutable so do_natural_order can deduct
+    # Elves mana includes untapped mana dorks (Heritage Druid, Llanowar, etc.)
+    dork_mana = player.available_mana_count(include_dorks=True) - player.available_mana_count()
+    mana_ref  = [total_mana + dork_mana]  # mutable so do_natural_order can deduct
 
     def elf_count():
         return len(player.creatures)
@@ -2841,7 +2857,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         _p1_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
 
     # ── 3. Painter's Servant + Grindstone combo — instant mill kill ──
-    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
     grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
 
     # If both pieces in play → win
@@ -2878,7 +2894,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(grind)
 
     # Check combo again after deploying pieces
-    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
     grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
     if painter_in_play and grind_in_play and total_mana >= 3:
         log_fn("★ Painter + Grindstone — mills entire library!", True)
@@ -3940,7 +3956,7 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         break
 
     # ── 1. Check if combo is already assembled ──
-    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
     grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
 
     if painter_in_play and grind_in_play and total_mana >= 3:
@@ -4104,10 +4120,11 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
         storm_desperate = True
     # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
     opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
-    opp_blue_pitch = sum(1 for c in opponent.hand if 'U' in getattr(c, 'colors', set())) >= 2
+    opp_blue_pitch = any(c for c in opponent.hand
+                         if 'U' in getattr(c, 'colors', set()) and c.tag not in ('fow', 'fon'))
     opp_has_free_counter = opp_fow and opp_blue_pitch
     # Need enough mana sources to support a ritual chain (land mana, not just LED)
-    has_mana_base = total_mana >= 2 or len(rituals) >= 2
+    has_mana_base = total_mana >= 1 or len(rituals) >= 1
     safe_to_combo = (veil_protecting or storm_desperate or
                      (has_mana_base and not opp_has_free_counter))
     itutor   = player.find_tag('itutor')
@@ -4127,9 +4144,13 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     win_available = ((tendrils and not tendrils_blocked) or (itutor and not itutor_blocked))
 
     # Estimate storm count from castable spells before Tendrils resolves.
+    # Count ALL spells that would be cast: rituals, LED, tutor, cantrips, Veil, PiF.
     # Tendrils = 2 damage per copy (1 original + N storm copies).
     # Lethal needs storm >= ceil(opponent.life / 2) - 1, typically 9 for 20 life.
-    est_storm = len(rituals) + (1 if led else 0) + (1 if itutor_proxy else 0)
+    cantrips_in_hand = sum(1 for c in player.hand if c.is_cantrip)
+    vos_in_hand = player.find_tag('vos')
+    est_storm = (len(rituals) + (1 if led else 0) + (1 if itutor_proxy else 0)
+                 + cantrips_in_hand + (1 if vos_in_hand else 0) + (1 if pif else 0))
     lethal_storm = max(1, (opponent.life + 1) // 2 - 1)  # storm copies needed for lethal
     # Ad Nauseam / Past in Flames self-generate storm during resolution (draw 15+ / replay GY)
     self_assembles = False
@@ -4587,7 +4608,7 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     stp = player.find_tag('stp')
     if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
         target = max(opponent.creatures, key=lambda c: c.power)
-        if target.power >= 3:  # only exile big threats, not cheap 1-2 power creatures
+        if target.power >= 1:  # exile any creature — Mardu is aggressive with removal
             player.remove_from_hand(stp); player.add_to_grave(stp)
             total_mana -= 1
             opponent.remove_creature(target)
@@ -4630,12 +4651,15 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             attackers.append(c)
     combat_declare(player, opponent, gs, log_entries, attackers)
 
-    # Ragavan trigger
+    # Ragavan trigger — creates Treasure token on combat damage
     rag_perm = next((c for c in player.creatures if c.card.tag == 'ragavan' and c.tapped), None)
     if rag_perm and opponent.library:
         stolen = opponent.library.pop(0)
-        treasure = getattr(gs, 'p2_treasure', 0) + 1
-        log_fn(f"★ Ragavan exiles {stolen.name} from BUG library + creates Treasure", True)
+        # Track treasure for the active player (whoever controls Ragavan)
+        tkey = 'p1_treasure' if player is gs.p1 else 'p2_treasure'
+        treasure = getattr(gs, tkey, 0) + 1
+        setattr(gs, tkey, treasure)
+        log_fn(f"★ Ragavan exiles {stolen.name} + creates Treasure ({treasure} total)", True)
         update_goyf(gs)
         if not stolen.is_land() and stolen.cmc <= treasure and stolen.cmc > 0:
             treasure -= stolen.cmc
