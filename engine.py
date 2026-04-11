@@ -3267,9 +3267,11 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Summoner's Pact → tutors Balustrade Spy (free)", True)
 
     # ── 3. Grief (free evoke: exile black card from hand) ──
+    # Don't pitch combo pieces (Spy, Informer, Oracle) or rituals
     grief = player.find_tag('grief')
-    if grief and sum(1 for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief) >= 1:
-        pitch = next(c for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief)
+    _grief_protected = {'spy', 'informer', 'oracle', 'dread', 'darkrit', 'cabalrit'}
+    if grief and sum(1 for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief and c.tag not in _grief_protected) >= 1:
+        pitch = next(c for c in player.hand if 'B' in getattr(c, 'colors', set()) and c is not grief and c.tag not in _grief_protected)
         player.remove_from_hand(grief); player.add_to_grave(grief)
         player.remove_from_hand(pitch); player.exile.append(pitch)
         if opponent.hand:
@@ -3315,50 +3317,43 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(combo_card)
         if not _try_counter_any(player, opponent, gs, combo_card, log_entries):
             player.add_to_grave(combo_card)
-            # Combo success rate derived from interaction model
-            from interaction_model import get_or_infer_interaction, compute_combo_fizzle_rate
-            _oops_int = get_or_infer_interaction('oops')
-            _fizzle = compute_combo_fizzle_rate(_oops_int, veil_active=gs.veil_active)
-            if random.random() >= _fizzle:
-                # Mill entire library (no lands to stop it)
-                milled = list(player.library)
-                player.graveyard.extend(milled)
-                player.library.clear()
-                log_fn(f"★ {combo_card.name} → mill entire deck ({len(milled)} cards)", True)
+            # Mill entire library (no lands to stop it)
+            milled = list(player.library)
+            player.graveyard.extend(milled)
+            player.library.clear()
+            log_fn(f"★ {combo_card.name} → mill entire deck ({len(milled)} cards)", True)
 
-                # Narcomoebas enter battlefield from graveyard (triggered ability)
-                narcos = [c for c in player.graveyard if c.tag == 'narco']
-                for n in narcos:
-                    player.graveyard.remove(n)
-                    player.put_creature_in_play(n)
-                log_fn(f"  {len(narcos)} Narcomoeba(s) enter from graveyard", True)
+            # Narcomoebas enter battlefield from graveyard (triggered ability)
+            narcos = [c for c in player.graveyard if c.tag == 'narco']
+            for n in narcos:
+                player.graveyard.remove(n)
+                player.put_creature_in_play(n)
+            log_fn(f"  {len(narcos)} Narcomoeba(s) enter from graveyard", True)
 
-                # Flashback Dread Return: sac 3 creatures, reanimate Oracle
-                oracle_in_gy = next((c for c in player.graveyard if c.tag == 'oracle'), None)
-                dread_in_gy = next((c for c in player.graveyard if c.tag == 'dread'), None)
-                if dread_in_gy and oracle_in_gy and len(player.creatures) >= 3:
-                    for _ in range(3):
-                        if player.creatures:
-                            sac = player.creatures.pop()
-                            player.add_to_grave(sac.card)
-                    player.graveyard.remove(dread_in_gy)
-                    player.exile.append(dread_in_gy)
-                    log_fn("  Flashback Dread Return (sac 3) → Thassa's Oracle", True)
+            # Flashback Dread Return: sac 3 creatures, reanimate Oracle
+            oracle_in_gy = next((c for c in player.graveyard if c.tag == 'oracle'), None)
+            dread_in_gy = next((c for c in player.graveyard if c.tag == 'dread'), None)
+            if dread_in_gy and oracle_in_gy and len(player.creatures) >= 3:
+                for _ in range(3):
+                    if player.creatures:
+                        sac = player.creatures.pop()
+                        player.add_to_grave(sac.card)
+                player.graveyard.remove(dread_in_gy)
+                player.exile.append(dread_in_gy)
+                log_fn("  Flashback Dread Return (sac 3) → Thassa's Oracle", True)
 
-                    if not _try_counter_any(player, opponent, gs, dread_in_gy, log_entries):
-                        player.graveyard.remove(oracle_in_gy)
-                        player.put_creature_in_play(oracle_in_gy)
-                        log_fn("  ★ Thassa's Oracle ETB — library empty → WIN", True)
-                        gs.game_over = True
-                        gs.winner = 'p1' if player is gs.p1 else 'p2'
-                        gs.win_reason = f"Oops combo ({combo_card.name} → Oracle)"
-                        gs.kill_turn = gs.turn
-                    else:
-                        log_fn("  Dread Return countered — combo fizzles")
+                if not _try_counter_any(player, opponent, gs, dread_in_gy, log_entries):
+                    player.graveyard.remove(oracle_in_gy)
+                    player.put_creature_in_play(oracle_in_gy)
+                    log_fn("  ★ Thassa's Oracle ETB — library empty → WIN", True)
+                    gs.game_over = True
+                    gs.winner = 'p1' if player is gs.p1 else 'p2'
+                    gs.win_reason = f"Oops combo ({combo_card.name} → Oracle)"
+                    gs.kill_turn = gs.turn
                 else:
-                    log_fn(f"  Missing pieces for Oracle win (oracle={oracle_in_gy is not None}, dread={dread_in_gy is not None}, creatures={len(player.creatures)})")
+                    log_fn("  Dread Return countered — combo fizzles")
             else:
-                log_fn(f"{combo_card.name} resolves but opponent had graveyard hate")
+                log_fn(f"  Missing pieces for Oracle win (oracle={oracle_in_gy is not None}, dread={dread_in_gy is not None}, creatures={len(player.creatures)})")
         else:
             player.add_to_grave(combo_card)
 
