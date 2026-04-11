@@ -244,9 +244,14 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     prowess_boosted = []
 
     # ── Burn spells at face ──────────────────────────────────────────────
+    # Realistic pacing: Burn casts ~2-3 burn spells per turn post-combat
+    # (limited by hand size, not just mana). Cap at 3 to prevent unrealistic
+    # spell density that pushes WR far above real Legacy Burn's ~50%.
+    burn_spells_this_turn = 0
+    BURN_SPELLS_PER_TURN = 2
 
     # --- Price of Progress: best when opp has nonbasic lands ---
-    while mana >= 2:
+    while mana >= 2 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
         pop = player.find_tag('pop')
         if not pop:
             break
@@ -261,10 +266,12 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(pop)
             mana -= 2
             player.spells_cast_this_turn += 1
+            burn_spells_this_turn += 1
             deal_face_damage(pop_damage, f"Price of Progress ({nonbasics} nonbasics)")
         else:
             player.add_to_grave(pop)
             player.spells_cast_this_turn += 1
+            burn_spells_this_turn += 1
             mana -= 2
             log_fn("Price of Progress countered")
         if gs.game_over:
@@ -273,7 +280,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     # --- Cheap 3-damage spells: Chain Lightning, Lava Spike, Rift Bolt ---
     cheap_burn_tags = ['chain', 'spike', 'rift']
     for tag in cheap_burn_tags:
-        while mana >= 1:
+        while mana >= 1 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
             card = player.find_tag(tag)
             if not card:
                 break
@@ -286,17 +293,19 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(card)
                 mana -= cast_cost
                 player.spells_cast_this_turn += 1
+                burn_spells_this_turn += 1
                 deal_face_damage(3, card.name)
             else:
                 player.add_to_grave(card)
                 player.spells_cast_this_turn += 1
+                burn_spells_this_turn += 1
                 mana -= cast_cost
                 log_fn(f"{card.name} countered")
             if gs.game_over:
                 return
 
     # --- Lightning Bolt at face (or at a key creature) ---
-    while mana >= 1:
+    while mana >= 1 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
         bolt = player.find_tag('bolt')
         if not bolt:
             break
@@ -315,12 +324,14 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(bolt)
                 mana -= 1
                 player.spells_cast_this_turn += 1
+                burn_spells_this_turn += 1
                 target.damage_marked += 3
                 log_fn(f"★ Lightning Bolt → {target.card.name} (3 damage)", True)
                 gs.state_based_actions()
             else:
                 player.add_to_grave(bolt)
                 player.spells_cast_this_turn += 1
+                burn_spells_this_turn += 1
                 mana -= 1
                 log_fn("Lightning Bolt countered")
         else:
@@ -330,6 +341,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(bolt)
                 mana -= 1
                 player.spells_cast_this_turn += 1
+                burn_spells_this_turn += 1
                 deal_face_damage(3, 'Lightning Bolt')
             else:
                 player.add_to_grave(bolt)
@@ -340,7 +352,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             return
 
     # --- Skullcrack: 3 damage, opponent can't gain life ---
-    while mana >= 2:
+    while mana >= 2 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
         crack = player.find_tag('skullcrack')
         if not crack:
             break
@@ -362,7 +374,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # --- Searing Blaze: 3 to creature + 3 to player (needs landfall) ---
     if landfall:
-        while mana >= 2:
+        while mana >= 2 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
             blaze = player.find_tag('blaze')
             if not blaze:
                 break
