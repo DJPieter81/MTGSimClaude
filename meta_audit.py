@@ -87,6 +87,69 @@ def detect_outliers(matrix_data, threshold=0.15):
     return outliers
 
 
+def check_symmetry(matrix_data, tolerance=0.20):
+    """Flag all matchup pairs where A_vs_B + B_vs_A deviates from 100% by > tolerance."""
+    decks = matrix_data['decks']
+    matchups = matrix_data['matchups']
+    violations = []
+    for i, d1 in enumerate(decks):
+        for d2 in decks[i+1:]:
+            k1, k2 = f"{d1}_vs_{d2}", f"{d2}_vs_{d1}"
+            if k1 in matchups and k2 in matchups:
+                total = matchups[k1] + matchups[k2]
+                if abs(total - 1.0) > tolerance:
+                    violations.append((d1, d2, matchups[k1], matchups[k2], total))
+    violations.sort(key=lambda x: abs(x[4] - 1.0), reverse=True)
+    return violations
+
+
+def check_extremes(matrix_data, threshold_hi=0.90, threshold_lo=0.10):
+    """Flag any matchup with WR > threshold_hi or < threshold_lo."""
+    extremes = []
+    for key, wr in matrix_data['matchups'].items():
+        if wr > threshold_hi or wr < threshold_lo:
+            extremes.append((key, wr))
+    extremes.sort(key=lambda x: x[1])
+    return extremes
+
+
+def post_matrix_audit(matrix_data):
+    """Run all post-matrix holistic controls. Print warnings if any fail."""
+    print("\n" + "=" * 60)
+    print("POST-MATRIX HOLISTIC AUDIT")
+    print("=" * 60)
+
+    # Control 6: Symmetry
+    sym = check_symmetry(matrix_data)
+    if sym:
+        print(f"\n⚠ SYMMETRY VIOLATIONS ({len(sym)} pairs >20% off):")
+        for d1, d2, w1, w2, total in sym[:10]:
+            print(f"  {d1} vs {d2}: {w1:.0%} + {w2:.0%} = {total:.0%} (off by {abs(total-1):.0%})")
+    else:
+        print("\n✓ All matchup pairs within symmetry tolerance")
+
+    # Control 7: Extreme matchups
+    ext = check_extremes(matrix_data)
+    if ext:
+        print(f"\n⚠ EXTREME MATCHUPS ({len(ext)} matchups >90% or <10%):")
+        for key, wr in ext[:10]:
+            print(f"  {key}: {wr:.0%}")
+    else:
+        print("\n✓ No extreme matchups (all within 10-90%)")
+
+    # Control 8: Burn ceiling
+    evs = matrix_data.get('meta_ev', {})
+    burn_wr = evs.get('burn', None)
+    if burn_wr is not None:
+        if burn_wr > 0.55:
+            print(f"\n⚠ BURN CEILING EXCEEDED: {burn_wr:.0%} (limit: 55%)")
+        else:
+            print(f"\n✓ Burn meta WR: {burn_wr:.0%} (within 55% ceiling)")
+
+    print("=" * 60 + "\n")
+    return len(sym), len(ext)
+
+
 # ── 2. Strategy Audit ─────────────────────────────────────────────────────────
 
 def audit_strategy(deck_key, n_games=50, opponent='dimir'):

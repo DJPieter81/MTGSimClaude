@@ -332,7 +332,7 @@ class CombatThresholds:
     STP_THRESHOLD_FAIR = 2                                # exile power >= 2 vs fair
     SNUFF_LIFE_BUFFER = 8                                 # need > 8 life to cast Snuff Out
     SNUFF_LIFE_FLOOR_AGGRO = 6                            # need > 6 life to Snuff vs aggro
-    BURN_COUNTER_LIFE = 7                                 # always counter burn spells at <= 7 life
+    BURN_COUNTER_LIFE = 12                                # counter burn at <= 12 life (was 7 — POP went uncountered)
 
 
 # ═══════════════════════════════════════════════════════════════════

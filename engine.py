@@ -309,21 +309,21 @@ def cast_spell(player, opponent, gs, card, mana_budget, log_fn, log_entries,
     # Step 2: Increment spell count (for storm, Eidolon aggregate tracking)
     player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
 
-    # Step 3: Eidolon trigger (CMC ≤ 3 deals 2 damage to caster)
-    _eidolon_trigger(gs, card, log_fn, caster=player)
-
-    # Step 4: Counter window
+    # Step 3: Counter window (before Eidolon — countered spells shouldn't trigger)
     countered = _try_counter_any(player, opponent, gs, card, log_entries)
 
     if countered:
-        # Step 5b: Countered — card to graveyard
+        # Step 3b: Countered — card to graveyard, NO Eidolon damage
         if on_counter:
             on_counter(card)
         else:
             player.add_to_grave(card)
         return False
 
-    # Step 5a: Resolved — deduct mana and call resolution callback
+    # Step 4: Eidolon trigger — only on resolved spells (CMC ≤ 3 deals 2 to caster)
+    _eidolon_trigger(gs, card, log_fn, caster=player)
+
+    # Step 5: Resolved — deduct mana and call resolution callback
     if mana_budget is not None:
         cost = cost_override if cost_override is not None else card.cmc
         mana_budget[0] = max(0, mana_budget[0] - cost)
@@ -881,7 +881,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     has_removal = any(c.tag == 'stp' for c in defender.hand)
     is_major_threat = (
         spell_card.win_condition or spell_card.is_combo_piece or
-        spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 4 or
+        spell_card.tag in ('murk', 'kaito') or spell_card.cmc >= 5 or  # was 4 — vanilla 4-drops not worth FoW
         getattr(spell_card, 'lock_piece', False) or  # lock pieces shut down entire strategies
         getattr(spell_card, 'engine', False)          # engines snowball if not answered
     )
@@ -899,8 +899,8 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             est_damage = 3
         elif spell_card.tag == 'skullcrack':
             est_damage = 3
-        # Counter if lethal or defender at ≤7 life
-        if est_damage >= defender.life or defender.life <= CT.BURN_COUNTER_LIFE:
+        # Counter if lethal, high damage (POP), or defender at low-ish life
+        if est_damage >= defender.life or defender.life <= CT.BURN_COUNTER_LIFE or est_damage >= 6:
             is_major_threat = True
 
     # Eidolon of the Great Revel: major threat for any deck that casts CMC≤3 spells
@@ -1032,7 +1032,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             if is_combo:
                 pay_threshold = CL.DAZE_PAY_PROB_COMBO  # combo decks often tap out
             elif gs.turn <= 2:
-                pay_threshold = 0.15 if caster_spare >= 1 else 0.0
+                pay_threshold = 0.15 if caster_spare >= 1 else 0.10  # was 0.0 — small chance even tapped out
             elif gs.turn == 3:
                 pay_threshold = 0.50 if caster_spare >= 1 else 0.20
             else:
@@ -1085,7 +1085,7 @@ def play_turn(gs: GameState, turn: int, who: str = 'p1'):
     )
     # Leyline of the Void: if opponent has Leyline, this player's cards → exile
     opponent.leyline_exile = gs.leyline_active and any(
-        p.card.tag == 'leyline' for p in player.enchantments
+        p.card.tag == 'leyline' for p in opponent.enchantments
     )
 
     if who == 'p1':
@@ -2930,9 +2930,8 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(tri)
 
-    # FoV reactive: destroy Trinisphere + Chalice + Bridge
-    if gs.chalice_x is not None or gs.bridge_on_board or gs.trinisphere_active:
-        _p1_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
+    # (FoV is handled by _p1_respond_on_opp_turn, not here — removed
+    #  self-destructive call that destroyed Prison's own lock pieces as P2)
 
     # ── 3. Painter's Servant + Grindstone combo — instant mill kill ──
     painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
@@ -3169,9 +3168,8 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
     tomb_untapped = sum(1 for l in player.lands if l.card.tag == 'tomb' and not l.tapped)
     city_untapped = sum(1 for l in player.lands if l.card.tag == 'city' and not l.tapped)
     petals        = [c for c in player.hand if c.tag == 'petal']
-    # Charge Ancient Tomb life loss before accounting for mana
-    if tomb_untapped > 0:
-        player.life -= tomb_untapped * 2
+    # (Ancient Tomb life loss already deducted in protagonist_turn/opp_turn
+    #  — removed redundant deduction that was double-charging Show 4 life/Tomb)
     # Effective mana: each untapped Tomb/City adds +1 (base already counts 1 from land)
     om_eff = total_mana + tomb_untapped + city_untapped + len(petals)
 
@@ -3710,15 +3708,22 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         dd_resolved = False
         vos = player.find_tag('vos')
         if vos:
-            if not _try_counter_any(player, opponent, gs, vos, log_entries):
-                player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
+            veil_resolved = not _try_counter_any(player, opponent, gs, vos, log_entries)
+            player.remove_from_hand(vos); player.add_to_grave(vos)
+            if veil_resolved:
+                gs.veil_active = True
                 log_fn("Veil of Summer — blue interaction blanked")
             else:
-                player.remove_from_hand(vos); player.add_to_grave(vos)
                 log_fn("Veil of Summer countered")
-            player.remove_from_hand(dd); player.add_to_grave(dd)
-            log_fn("★ Doomsday resolves through Veil", True)
-            dd_resolved = True
+            # DD must still pass counter check if Veil was countered
+            player.remove_from_hand(dd)
+            if veil_resolved or not _try_counter_any(player, opponent, gs, dd, log_entries):
+                player.add_to_grave(dd)
+                log_fn("★ Doomsday resolves" + (" through Veil" if veil_resolved else ""), True)
+                dd_resolved = True
+            else:
+                player.add_to_grave(dd)
+                log_fn("Doomsday countered")
         else:
             player.remove_from_hand(dd)
             if not _try_counter_any(player, opponent, gs, dd, log_entries):
@@ -3777,7 +3782,7 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     from config import MatchupCategory as MC
     from interaction_model import best_proactive_target
     ts = player.find_tag('ts')
-    ts_turn_cap = 6 if MC.is_combo(gs) else 3  # vs combo: strip through turn 6; vs fair: turn 3
+    ts_turn_cap = 3 if MC.is_combo(gs) else 2  # aligned with config (was 6/3 — too oppressive vs combo)
     if ts and gs.turn <= ts_turn_cap and rem >= 1:
         target = best_proactive_target(gs) if hasattr(gs, 'p2') else None
         if target:
@@ -4509,12 +4514,10 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(kill_spell)
                 for r in list(rituals): player.remove_from_hand(r); player.add_to_grave(r)
                 kill_type = 'Ad Nauseam' if kill_C else 'Past in Flames' if kill_D else 'Tendrils chain'
-                # Storm success rate derived from interaction model
-                from interaction_model import get_or_infer_interaction, compute_combo_fizzle_rate
-                _storm_int = get_or_infer_interaction('storm')
-                _fizzle = compute_combo_fizzle_rate(_storm_int, veil_active=veil_up)
+                # Storm success — non-GY combo, no post-resolution fizzle (was double-jeopardy)
+                # Fizzle gate is only for GY combos (Oops, Reanimator) where hate can whiff the combo
                 import random as _rr2
-                if _rr2.random() >= _fizzle:  # fizzle_rate = P(fail), so succeed if >= fizzle
+                if True:  # Storm always wins if Tendrils resolves through counters
                     log_fn(f"★ Storm {kill_type} — wins (est. storm ~{est_storm + len(rituals)})", True)
                     gs.game_over = True
                     gs.kill_turn = gs.turn
