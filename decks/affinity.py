@@ -344,6 +344,10 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.put_creature_in_play(emry)
                 mana -= eff_cost
                 art_count += 1
+                # Emry is an artifact creature — triggers Automaton/Cannoneer
+                artifacts_cast_this_turn += 1
+                if cannoneer_on_board:
+                    cannoneer_triggers += 1
                 # Self-mill 4
                 milled = []
                 for _ in range(min(4, len(player.library))):
@@ -514,7 +518,12 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 # Priority 4: Baubles for card draw
                 bauble_targets = [c for c in targets if c.tag in ('bauble', 'ubauble')]
 
-                if art_count_now < 3 and not has_opal_in_play and opal_targets:
+                # Priority 0: If life is low, Shadowspear is critical for lifelink
+                spear_targets = [c for c in targets if c.tag == 'spear']
+                has_spear = any(a.card.tag == 'spear' for a in player.artifacts)
+                if player.life <= 14 and has_creatures and not has_spear and spear_targets:
+                    target = spear_targets[0]
+                elif art_count_now < 3 and not has_opal_in_play and opal_targets:
                     target = opal_targets[0]
                 elif has_creatures and not has_equipment and equip_targets:
                     target = equip_targets[0]
@@ -594,6 +603,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── 13. Emry — tap to cast artifact from graveyard ───────────────────────
     # Emry's tap ability: {T} — cast an artifact card from your graveyard.
+    # Artifact creatures are valid targets — they are artifact spells on the
+    # stack. Recasting them requires paying the affinity-reduced mana cost.
     # Find an untapped, non-summoning-sick Emry on the battlefield.
     emry_perm = next(
         (c for c in player.creatures
@@ -601,91 +612,166 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         None
     )
     if emry_perm:
-        # Artifact cards sitting in graveyard (Card objects, not Permanents)
+        # Artifact cards sitting in graveyard (Card objects, not Permanents).
+        # Artifact creatures (emissary, automaton, monitor, cannoneer) are also
+        # valid Emry targets — they are artifact spells while on the stack.
         gy_artifacts = [c for c in player.graveyard
                         if c.card_type == _CT.ARTIFACT
                         or c.tag in ARTIFACT_CREATURE_TAGS]
 
         if gy_artifacts:
-            # Priority: Mox Opal (metalcraft) > baubles > Lotus Petal > equipment > others
-            opal_in_play_now = any(a.card.tag == 'opal' for a in player.artifacts)
+            # Base CMCs for artifact creatures (used to compute affinity costs)
+            _CREATURE_BASE_CMC = {
+                'cannoneer': 6, 'monitor': 7, 'emissary': 4,
+                'automaton': 2, 'emry': 3,
+            }
             art_count_now = _artifact_count(player)
+            opal_in_play_now = any(a.card.tag == 'opal' for a in player.artifacts)
+
+            def _emry_can_afford(c):
+                """True if we have enough mana (and blue if needed) to recast c."""
+                base = _CREATURE_BASE_CMC.get(c.tag)
+                if base is None:
+                    return True  # Non-creature artifacts have 0 effective cast cost
+                eff = _affinity_cost(base, player)
+                if c.tag in ('cannoneer', 'monitor', 'emry') and not _has_blue():
+                    return False
+                return mana >= eff
 
             def _emry_priority(c):
+                # Artifact creatures: rank by impact, but only if we can pay for them
+                if c.tag == 'cannoneer':
+                    # 4/4 trample ward — highest-impact recursion target
+                    return 0 if _emry_can_afford(c) else 10
+                if c.tag == 'monitor':
+                    # Draws 2 on ETB — strong card-advantage refuel
+                    return 1 if _emry_can_afford(c) else 10
+                if c.tag == 'emissary':
+                    # 3/3 body for cheap — solid threat
+                    return 2 if _emry_can_afford(c) else 10
+                if c.tag == 'automaton':
+                    # Grows with artifacts; modest base stats
+                    return 3 if _emry_can_afford(c) else 10
+                if c.tag == 'emry':
+                    # Legend rule: recasting a second Emry would sacrifice one;
+                    # skip unless nothing else is available.
+                    return 10
+                # Pure artifacts (no creature type): always free to recur via Emry
                 if c.tag == 'opal' and not opal_in_play_now and art_count_now >= 2:
-                    return 0   # Mox Opal — metalcraft mana engine (skip if already in play)
+                    return 4   # Mox Opal — metalcraft mana engine
                 if c.tag in ('bauble', 'ubauble'):
-                    return 1   # Baubles — free cantrip, builds artifact count
+                    return 5   # Baubles — free cantrip, builds artifact count
                 if c.tag == 'petal':
-                    return 2   # Lotus Petal — burst mana
+                    return 6   # Lotus Petal — burst mana
                 if c.tag in ('boots', 'spear'):
-                    return 3   # Equipment
-                return 4       # Generic artifacts
+                    return 7   # Equipment
+                return 8       # Generic artifacts
 
-            # Emry casts the artifact, so its mana cost must be paid.
-            # Only consider artifacts we can currently afford (CMC 0 are always free).
-            castable = [c for c in gy_artifacts if c.cmc == 0 or mana >= c.cmc]
+            # Prefer targets we can fully resolve; fall back to anything if needed.
+            # For artifact creatures, _emry_can_afford() returns False when we
+            # can't pay the affinity cost, so they get priority 10 and are excluded
+            # from the first pass.
+            actionable = [c for c in gy_artifacts if _emry_priority(c) < 10]
+            if not actionable:
+                actionable = gy_artifacts  # fall back: recur whatever is available
 
-            if castable:
-                target = min(castable, key=_emry_priority)
-                player.graveyard.remove(target)
-                emry_perm.tapped = True  # Emry taps to activate the ability
+            target = min(actionable, key=_emry_priority)
+            player.graveyard.remove(target)
+            emry_perm.tapped = True  # Emry taps to activate the ability
 
-                if target.tag == 'petal':
-                    # Lotus Petal (CMC 0): enters, immediately sacrifice for mana
-                    player.exile.append(target)
-                    mana += 1
-                    artifacts_cast_this_turn += 1
-                    art_count = _artifact_count(player)
-                    log_fn(f"Emry recurs {target.name} — sacrifice for mana")
-
-                elif target.tag in ('bauble', 'ubauble'):
-                    # Baubles (CMC 0): enter and immediately cantrip into graveyard
-                    player.add_to_grave(target)
-                    player.draw(1)
-                    artifacts_cast_this_turn += 1
-                    art_count = _artifact_count(player)
-                    log_fn(f"Emry recurs {target.name} — cantrip")
-                    bowmasters_triggers(1, gs, log_entries,
-                                        controller='o' if player is gs.p1 else 'b')
-                    if gs.game_over:
-                        return
-
-                elif target.tag == 'opal':
-                    # Mox Opal (CMC 0): put into play; tap for mana if metalcraft (3+ artifacts)
-                    player.put_artifact_in_play(target)
-                    artifacts_cast_this_turn += 1
-                    art_count = _artifact_count(player)
-                    if art_count >= 3:
-                        mana += 1
-                        log_fn(f"Emry recurs {target.name} (Metalcraft — +1 mana)")
+            if target.tag in ARTIFACT_CREATURE_TAGS:
+                # Recasting an artifact creature from GY: pay affinity-reduced cost
+                base_cmc = _CREATURE_BASE_CMC.get(target.tag, target.cmc)
+                eff_cost = _affinity_cost(base_cmc, player)
+                needs_blue = target.tag in ('cannoneer', 'monitor', 'emry')
+                if mana >= eff_cost and (not needs_blue or _has_blue()):
+                    if not _try_counter_any(player, opponent, gs, target, log_entries):
+                        player.put_creature_in_play(target)
+                        mana -= eff_cost
+                        art_count += 1
+                        artifacts_cast_this_turn += 1
+                        if cannoneer_on_board and target.tag != 'cannoneer':
+                            cannoneer_triggers += 1
+                        if target.tag == 'monitor':
+                            player.draw(2)
+                            bowmasters_triggers(2, gs, log_entries,
+                                                controller='o' if player is gs.p1 else 'b')
+                            log_fn(f"Emry recurs {target.name} (affinity {eff_cost}) — draws 2")
+                        elif target.tag == 'cannoneer':
+                            # Cannoneer itself entering does not trigger its own
+                            # counter ability (it wasn't on board when it entered).
+                            cannoneer_on_board = True
+                            log_fn(f"Emry recurs {target.name} (4/4 trample ward, affinity {eff_cost})")
+                        else:
+                            log_fn(f"Emry recurs {target.name} (affinity {eff_cost})")
+                        if gs.game_over:
+                            return
                     else:
-                        log_fn(f"Emry recurs {target.name}")
-
+                        player.add_to_grave(target)
                 else:
-                    # Equipment (CMC 1) or other non-zero-cost artifact: pay the mana cost.
-                    mana -= target.cmc
-                    player.put_artifact_in_play(target)
-                    artifacts_cast_this_turn += 1
-                    art_count = _artifact_count(player)
-                    log_fn(f"Emry recurs {target.name} (cost {target.cmc})")
+                    # Can't afford right now — restore card and leave Emry untapped
+                    player.graveyard.append(target)
+                    emry_perm.tapped = False
 
-                # Cannoneer trigger for Emry's artifact cast
+            elif target.tag == 'petal':
+                # Lotus Petal (CMC 0): enters, immediately sacrifice for mana
+                player.exile.append(target)
+                mana += 1
+                artifacts_cast_this_turn += 1
+                art_count = _artifact_count(player)
                 if cannoneer_on_board:
                     cannoneer_triggers += 1
+                log_fn(f"Emry recurs {target.name} — sacrifice for mana")
 
-                # Recount after Emry activation; update Construct token sizes
+            elif target.tag in ('bauble', 'ubauble'):
+                # Baubles (CMC 0): enter and immediately cantrip into graveyard
+                player.add_to_grave(target)
+                player.draw(1)
+                artifacts_cast_this_turn += 1
                 art_count = _artifact_count(player)
-                for c in player.creatures:
-                    if c.card.tag == 'construct':
-                        c.power_mod = art_count
-                        c.toughness_mod = art_count
+                if cannoneer_on_board:
+                    cannoneer_triggers += 1
+                log_fn(f"Emry recurs {target.name} — cantrip")
+                bowmasters_triggers(1, gs, log_entries,
+                                    controller='o' if player is gs.p1 else 'b')
+                if gs.game_over:
+                    return
 
-                # Credit Automaton for the artifact cast via Emry
-                for c in player.creatures:
-                    if c.card.tag == 'automaton':
-                        c.power_mod = getattr(c, 'power_mod', 0) + 1
-                        c.toughness_mod = getattr(c, 'toughness_mod', 0) + 1
+            elif target.tag == 'opal':
+                # Mox Opal (CMC 0): put into play; tap for mana if metalcraft (3+ artifacts)
+                player.put_artifact_in_play(target)
+                artifacts_cast_this_turn += 1
+                art_count = _artifact_count(player)
+                if cannoneer_on_board:
+                    cannoneer_triggers += 1
+                if art_count >= 3:
+                    mana += 1
+                    log_fn(f"Emry recurs {target.name} (Metalcraft — +1 mana)")
+                else:
+                    log_fn(f"Emry recurs {target.name}")
+
+            else:
+                # Equipment (CMC 1) or other pure non-creature artifact: pay mana cost
+                mana -= target.cmc
+                player.put_artifact_in_play(target)
+                artifacts_cast_this_turn += 1
+                art_count = _artifact_count(player)
+                if cannoneer_on_board:
+                    cannoneer_triggers += 1
+                log_fn(f"Emry recurs {target.name} (cost {target.cmc})")
+
+            # Recount after Emry activation; update Construct token sizes
+            art_count = _artifact_count(player)
+            for c in player.creatures:
+                if c.card.tag == 'construct':
+                    c.power_mod = art_count
+                    c.toughness_mod = art_count
+
+            # Credit Automaton for the artifact cast via Emry
+            for c in player.creatures:
+                if c.card.tag == 'automaton':
+                    c.power_mod = getattr(c, 'power_mod', 0) + 1
+                    c.toughness_mod = getattr(c, 'toughness_mod', 0) + 1
 
     # ── 13b. Sink into Stupor — bounce blocker or discard mode ───────────────
     # Priority 1: bounce a big blocker (power >= 3) before combat

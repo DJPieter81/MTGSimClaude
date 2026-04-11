@@ -1322,8 +1322,11 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                             (l.card.is_basic and 'B' in l.effective_produces())
                             for l in player.lands)
             if snuff_early and has_swamp and not gs.spell_blocked_by_chalice(snuff_early.cmc):
+                # Snuff Out is free (pay life) — all mana remains available for ward
+                _snuff_mana_for_ward = budget[0]
                 target_early = next((c for c in sorted(opponent.creatures, key=lambda x: -x.power)
-                                     if 'B' not in c.card.colors), None)
+                                     if 'B' not in c.card.colors
+                                     and _can_target(c, _snuff_mana_for_ward)), None)
                 if target_early and player.life > CT.SNUFF_LIFE_FLOOR_AGGRO:
                     player.cast_spell(snuff_early, log_fn=log_fn)
                     opponent.remove_creature(target_early)
@@ -1439,8 +1442,10 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Fatal Push — C1: needs 1B ──
     push = player.find_tag('push')
     if push and not _did_early_push and not gs.spell_blocked_by_chalice(push.cmc) and opponent.creatures:
+        _push_mana_after = budget[0] - effective_cmc(push)  # mana remaining for ward after paying Push
         push_targets = [c for c in opponent.creatures
-                        if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)]
+                        if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)
+                        and _can_target(c, _push_mana_after)]
         target = (
             next((c for c in push_targets if (c.card.haste or c.card.draw_trigger)), None) or
             next((c for c in push_targets if c.card.deathtouch or c.card.lifelink), None) or
@@ -1478,8 +1483,11 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     snuffout = player.find_tag('snuffout')
     if snuffout and not _did_early_snuff and not gs.spell_blocked_by_chalice(snuffout.cmc) and opponent.creatures:
         has_swamp = any('B' in l.effective_produces() for l in player.lands)
+        # Snuff Out is free (pay life) — all budget mana remains available for ward
+        _snuff_mana_for_ward = budget[0]
         snuff_targets = [c for c in opponent.creatures if c.card.tag not in ('bowm',) and
-                         'B' not in getattr(c.card, 'colors', set())]  # nonblack only
+                         'B' not in getattr(c.card, 'colors', set())  # nonblack only
+                         and _can_target(c, _snuff_mana_for_ward)]
         if has_swamp and snuff_targets and player.life > 4 + 4:  # keep 4 life buffer
             # Priority: highest CMC (targets Push can't reach) or biggest blocker
             target = max(snuff_targets, key=lambda c: (c.cmc, c.power))
@@ -1495,7 +1503,11 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Dismember — C1: needs 1 mana, L2/L3 ──
     dis = player.find_tag('dismember')
     if dis and not gs.spell_blocked_by_chalice(dis.cmc) and opponent.creatures:
-        big = next((c for c in opponent.creatures if c.power >= 4 and not player.creatures), None)
+        # Dismember costs 1 generic (+ 4 life); mana after = budget - 1 for ward check
+        _dismember_mana_after = budget[0] - 1
+        big = next((c for c in opponent.creatures
+                    if c.power >= 4 and not player.creatures
+                    and _can_target(c, _dismember_mana_after)), None)
         if big and budget[0] >= 1 and player.available_mana_count() >= 1:
             if MTGRules.dismember_kills(big):  # L3: only cast if it will kill
                 _deduct(budget, 1, None)   # L2: pay the 1 generic
@@ -2483,9 +2495,12 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             break
         if not opp_can_cast(stp, total_mana, gs, caster=player):
             break
-        target = max(opponent.creatures, key=lambda c: c.power + c.toughness)
-        if target.power < 1:
-            break  # don't waste STP on 0-power creatures
+        # STP costs 1W; mana remaining after casting = total_mana - 1 (for ward check)
+        mana_after_stp = total_mana - 1
+        valid_stp = [c for c in opponent.creatures if _can_target(c, mana_after_stp)]
+        target = max(valid_stp, key=lambda c: c.power + c.toughness) if valid_stp else None
+        if not target or target.power < 1:
+            break  # don't waste STP on 0-power creatures or ward-protected targets
         player.remove_from_hand(stp); player.add_to_grave(stp)
         total_mana -= 1
         life_gain = MTGRules.stp_life_gain(target)
@@ -2512,8 +2527,10 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
         white_pitch = min(white_candidates, key=lambda c: _pitch_priority.get(c.tag, 4),
                           default=None) if white_candidates else None
         if white_pitch:
-            target = max(opponent.creatures, key=lambda c: c.power + c.toughness)
-            if target.power >= 1:
+            # Solitude evoke is free (pitch + 0 mana); full mana available for ward
+            valid_sol = [c for c in opponent.creatures if _can_target(c, total_mana)]
+            target = max(valid_sol, key=lambda c: c.power + c.toughness) if valid_sol else None
+            if target and target.power >= 1:
                 player.remove_from_hand(solitude); player.add_to_grave(solitude)
                 player.remove_from_hand(white_pitch); player.exile.append(white_pitch)
                 life_gain = target.toughness
@@ -2807,8 +2824,11 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         stp = player.find_tag('stp')
         if not (stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player)):
             break
-        target = max(opponent.creatures, key=lambda c: c.power)
-        if target.power < 1: break
+        # STP costs 1W; mana after casting = total_mana - 1 (for ward check)
+        mana_after_stp = total_mana - 1
+        valid_stp = [c for c in opponent.creatures if _can_target(c, mana_after_stp)]
+        target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
+        if not target or target.power < 1: break
         player.remove_from_hand(stp); player.add_to_grave(stp)
         total_mana -= 1
         life_gain = MTGRules.stp_life_gain(target)
@@ -2838,8 +2858,9 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
         # Burn face if: BUG life ≤ 12 (3-bolt kill range), or no threatening blocker
         go_face = opponent.life <= 12 or not any(c.toughness <= 3 for c in opponent.creatures)
+        # Bolt costs 1R; after paying, mana remaining = total_mana (already decremented above)
         small = next((c for c in sorted(opponent.creatures, key=lambda x: x.toughness)
-                      if c.toughness <= 3), None)
+                      if c.toughness <= 3 and _can_target(c, total_mana)), None)
         if go_face or not small:
             opponent.life -= 3
             log_fn(f"Lightning Bolt — BUG face ({opponent.life})", True)
