@@ -149,14 +149,19 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             card = player.find_tag(tag)
             if not card or card.cmc > mana:
                 break
-            # Eidolon gating: don't deploy T1 (no haste, waste of tempo)
-            # and don't deploy late when burn spells deal more damage per mana
+            # Eidolon gating: skip when self-tax exceeds value
             if tag == 'eidolon':
                 if gs.turn <= 1:
                     break  # T1 Eidolon is a waste — no haste, no damage
                 # Late game: prefer casting a 3-damage burn spell over a no-haste 2/2
                 if gs.turn >= 6 and any(c.tag in ('bolt', 'chain', 'spike', 'rift')
                                         for c in player.hand):
+                    break
+                # Hand-density check: skip if 3+ cheap spells remain (self-tax
+                # would cost 6+ life vs 0 opponent damage in many matchups)
+                cheap_in_hand = sum(1 for c in player.hand
+                                    if c.cmc <= 3 and not c.is_land() and c.tag != 'eidolon')
+                if cheap_in_hand >= 3:
                     break
             budget = [mana]
             if cast_spell(player, opponent, gs, card, budget, log_fn, log_entries,
@@ -197,9 +202,9 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── Pre-combat: cast ALL cheap burn spells for prowess triggers ─────
     # Real Burn casts every cheap spell Main Phase 1 to maximize Swiftspear
-    # prowess damage in combat. We cast chain/spike/bolt/rift (R) and
-    # skullcrack (1R) but NOT Price of Progress (save for post-combat board
-    # evaluation) and NOT Searing Blaze (needs a creature target).
+    # prowess damage in combat. We cast chain/spike/bolt/rift (R), then
+    # Price of Progress (1R), then skullcrack (1R) pre-combat for prowess.
+    # Searing Blaze is also cast pre-combat when landfall + opponent has creatures.
     swiftspear_in_play = any(c.card.tag == 'swiftspear' for c in player.creatures
                              if not c.summoning_sick)
     if swiftspear_in_play:
@@ -215,6 +220,52 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                                                 deal_face_damage(3, f"{c.name} (pre-combat)"))):
                 pass  # resolved — on_resolve handled damage + graveyard
             mana = budget[0]
+        # Cast Price of Progress pre-combat (1R, 2 per nonbasic)
+        # Opponent's nonbasic count doesn't change during our turn, so no
+        # reason to delay — casting now gives an extra prowess trigger.
+        while mana >= 2 and not gs.game_over:
+            pop = player.find_tag('pop')
+            if not pop:
+                break
+            nonbasics = sum(1 for l in opponent.lands if not l.card.is_basic)
+            pop_damage = nonbasics * 2
+            if pop_damage <= 0:
+                break  # don't waste it if opp has no nonbasics
+            if not _worth_casting(pop_damage):
+                break
+            budget = [mana]
+            if cast_spell(player, opponent, gs, pop, budget, log_fn, log_entries,
+                          on_resolve=lambda c, dmg=pop_damage, nb=nonbasics: (
+                              player.add_to_grave(c),
+                              deal_face_damage(dmg, f"Price of Progress ({nb} nonbasics, pre-combat)"))):
+                pass
+            else:
+                log_fn("Price of Progress countered")
+            mana = budget[0]
+            if gs.game_over:
+                # Clean up and return (prowess cleanup happens below)
+                break
+        # Cast Searing Blaze pre-combat (RR, 3 creature + 3 face) for prowess
+        if landfall:
+            while mana >= 2 and not gs.game_over:
+                blaze = player.find_tag('blaze')
+                if not blaze:
+                    break
+                targets = list(opponent.creatures)
+                if not targets:
+                    break  # needs a creature target
+                target = targets[0]
+                budget = [mana]
+                if cast_spell(player, opponent, gs, blaze, budget, log_fn, log_entries,
+                              on_resolve=lambda c, t=target: (
+                                  player.add_to_grave(c),
+                                  setattr(t, 'damage_marked', t.damage_marked + 3),
+                                  deal_face_damage(3, f"Searing Blaze pre-combat ({t.card.name} takes 3)"),
+                                  gs.state_based_actions())):
+                    pass
+                else:
+                    log_fn("Searing Blaze countered")
+                mana = budget[0]
         # Cast Skullcrack pre-combat too (1R, 3 damage)
         while mana >= 2 and not gs.game_over:
             crack = player.find_tag('skullcrack')
@@ -271,7 +322,8 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     # No artificial per-turn cap — mana availability and hand size are the
     # natural constraints, just like real Legacy Burn.
 
-    # --- Price of Progress: best when opp has nonbasic lands ---
+    # --- Price of Progress: cast post-combat if not already cast pre-combat ---
+    # (Pre-combat PoP is gated on swiftspear_in_play; this catches the rest.)
     while mana >= 2:
         pop = player.find_tag('pop')
         if not pop:
@@ -475,11 +527,14 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                     return
 
     # --- Fiery Islet: topdeck mode — sac for 1 life, draw a card ---
-    # When we have no castable spells left and an Islet in play, sacrifice it
-    # to dig for one more burn spell. Could find lethal.
+    # Activate when no castable burn spells remain in hand. Hand might still
+    # have Fireblast (needs Mountains) or Eidolon (gated), but those aren't
+    # the damage sources we're digging for.
     if not gs.game_over:
-        has_castable = any(not c.is_land() for c in player.hand)
-        if not has_castable and player.life >= 2:
+        _burn_tags = ('bolt', 'chain', 'spike', 'rift', 'skullcrack', 'pop', 'blaze')
+        has_castable_burn = any(c.tag in _burn_tags and c.cmc <= mana
+                                for c in player.hand)
+        if not has_castable_burn and player.life >= 2:
             islet_lands = [l for l in player.lands if l.card.tag == 'islet']
             if islet_lands:
                 islet = islet_lands[0]
