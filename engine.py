@@ -54,6 +54,17 @@ def _select_attackers(player, opponent, hold_tags=('bowm', 'tamiyo'), desperate_
     return attackers
 
 
+def _check_tamiyo_flip(gs, player, log):
+    """Check if Tamiyo should flip (drew 3+ cards this turn)."""
+    tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
+    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
+        if player.draws_this_turn >= 3:
+            gs.tamiyo_flipped = True
+            tam_perm.power_mod = 3
+            tam_perm.toughness_mod = 0
+            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
+
+
 def _deduct(budget: list, cmc: int, card) -> bool:
     """Spend mana from budget. Returns True (cost always 0 for free spells)."""
     budget[0] = max(0, budget[0] - max(0, cmc))

@@ -365,11 +365,11 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
         # Lackey combat damage trigger: put a Goblin from hand into play
         lackey_atk = next((c for c in attackers if c.card.tag == 'lackey'), None)
         if lackey_atk:
-            # Check if lackey would be blocked
+            # Lackey triggers on combat damage to a player (unblocked).
+            # It connects if opponent lacks enough blockers for all attackers.
             blockers = [c for c in opponent.creatures if not c.summoning_sick]
-            lackey_blocked = len(blockers) > 0 and not any(
-                c.card.tag == 'lackey' for c in attackers if c is not lackey_atk)
-            if not lackey_blocked or len(attackers) > len(blockers):
+            lackey_connects = len(blockers) == 0 or len(attackers) > len(blockers)
+            if lackey_connects:
                 # Lackey gets through — put best Goblin from hand
                 best = next((c for c in player.hand if c.tag == 'muxus'), None)
                 if not best:
@@ -390,7 +390,7 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
                             if card.is_creature() and card.tag in (
                                 'lackey', 'matron', 'ringleader', 'warchief',
                                 'expert', 'sling', 'cratermaker', 'pashalik',
-                                'prospector'):
+                                'prospector', 'fury'):
                                 player.library.remove(card)
                                 p2 = player.put_creature_in_play(card)
                                 p2.summoning_sick = False
