@@ -13,7 +13,7 @@ from cards import make_dimir_flash_deck
 def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries):
     """
     Dimir Flash strategy — tempo deck with Wan Shi Tong, Bowmasters, Murktide.
-    Priority: removal (kill threats) → cantrips → WST → Murktide (delve) → other threats → combat.
+    Priority: removal → threats (WST, Murktide, Bowmasters, Tamiyo) → cantrips → combat.
     Murktide uses delve: effective cost = max(2, 7 - graveyard_count).
     """
     from engine import (opp_can_cast, _try_counter_any, bowmasters_triggers,
@@ -60,19 +60,7 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
             log_fn(f"Fatal Push {rev} -> kills {target.name}")
             update_goyf(gs)
 
-    # ── Cantrips: dig for threats/answers ──
-    can = next((c for c in player.hand if c.is_cantrip and rem >= 1), None)
-    if can:
-        player.remove_from_hand(can); player.add_to_grave(can)
-        rem -= 1
-        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-        player.draw(draws)
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(draws, gs, ctr)
-            for m in ctr: log_entries.append(m)
-
-    # ── Wan Shi Tong — cast with maximum X affordable ──
+    # ── Wan Shi Tong — cast with maximum X affordable (threat before cantrips) ──
     wst_card = player.find_tag('wst')
     wst_on_board = next((p for p in player.creatures if p.card.tag == 'wst'), None)
     if wst_card and not wst_on_board and rem >= 2:
@@ -99,7 +87,7 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
             else:
                 player.add_to_grave(wst_card)
 
-    # ── Murktide Regent via delve ──
+    # ── Murktide Regent via delve (threat before cantrips) ──
     murk = player.find_tag('murk')
     if murk and not any(c.card.tag == 'murk' for c in player.creatures):
         gy_count = len([c for c in player.graveyard
@@ -127,7 +115,7 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
             else:
                 player.add_to_grave(murk)
 
-    # ── Bowmasters at flash speed ──
+    # ── Bowmasters at flash speed (threat before cantrips) ──
     bowm = player.find_tag('bowm')
     if bowm and rem >= 2:
         player.remove_from_hand(bowm)
@@ -150,13 +138,15 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
             else:
                 player.add_to_grave(thr)
 
-    # ── Second cantrip if mana available ──
-    can2 = next((c for c in player.hand if c.is_cantrip and rem >= 1), None)
-    if can2:
-        player.remove_from_hand(can2); player.add_to_grave(can2)
+    # ── Cantrips: dig for threats/answers (after deploying threats) ──
+    for _ in range(2):  # cast up to 2 cantrips with remaining mana
+        can = next((c for c in player.hand if c.is_cantrip and rem >= 1), None)
+        if not can:
+            break
+        player.remove_from_hand(can); player.add_to_grave(can)
         rem -= 1
-        draws = MTGRules.brainstorm_draws() if can2.tag == 'bs' else 1
-        log_fn(f"{can2.name} ({draws} draw{'s' if draws > 1 else ''})")
+        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
+        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
         player.draw(draws)
         if gs.bowmasters_on_board:
             ctr = []; bowmasters_triggers(draws, gs, ctr)
@@ -172,6 +162,20 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland [ACTIVATED-uncounterable] -> {wt.name}")
             update_goyf(gs)
+
+    # ── WST search trigger: check if opponent fetched this turn ──
+    # Wan Shi Tong oracle: "Whenever an opponent searches their library,
+    # put a +1/+1 counter on WST and draw a card."
+    # opponent.revolt_this_turn is set when they crack a fetch (same turn cycle).
+    wst_perm = next((p for p in player.creatures if p.card.tag == 'wst'), None)
+    if wst_perm and opponent.revolt_this_turn:
+        wst_perm.power_mod += 1
+        wst_perm.toughness_mod += 1
+        drawn = player.draw(1)
+        if drawn:
+            log_fn(f"WST trigger: opp searched → Wan Shi Tong grows ({wst_perm.power}/{wst_perm.toughness}), draws {drawn[0].name}")
+        else:
+            log_fn(f"WST trigger: Wan Shi Tong grows ({wst_perm.power}/{wst_perm.toughness})")
 
     # ── Combat: attack with non-summoning-sick creatures ──
     opp_has_blockers = len(opponent.creatures) > 0

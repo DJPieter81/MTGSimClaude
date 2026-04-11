@@ -85,12 +85,19 @@ class PlayerState:
                         land.tap_for_mana(self.mana, color)
                         break
 
-    def available_mana_count(self) -> int:
-        """Count untapped mana-producing lands (for quick checks)."""
+    def available_mana_count(self, include_dorks=False) -> int:
+        """Count untapped mana-producing lands (+ mana dorks if requested)."""
         count = 0
         for l in self.lands:
             if not l.tapped and not l.is_fetch and l.effective_produces():
                 count += 1
+        if include_dorks:
+            # Count untapped creatures that produce mana (Llanowar Elves, Heritage Druid, etc.)
+            dork_tags = {'llanowar', 'mystic', 'heritage', 'nettle', 'deathrite',
+                         'bop', 'arbor', 'druid', 'priest', 'prospector'}
+            for c in self.creatures:
+                if not c.summoning_sick and not c.tapped and c.card.tag in dork_tags:
+                    count += 1
         return count
 
     def untap_all(self):

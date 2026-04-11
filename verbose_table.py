@@ -4,6 +4,7 @@ verbose_table.py — Turn-by-turn game replay with AI reasoning.
 Usage: python3 verbose_table.py [matchup] [seed]
 """
 
+from config import GameRules as GR
 import sys, random
 sys.path.insert(0, '.')
 
@@ -203,7 +204,7 @@ def run_table_game(matchup, seed=None, protagonist='bug'):
 
     display_turn = 0
 
-    for rnd in range(1, 16):
+    for rnd in range(1, GR.MAX_TURNS + 1):
         if gs.game_over:
             break
         gs.turn = rnd
@@ -321,7 +322,7 @@ def run_game_data(matchup, seed=None, protagonist='bug'):
     turns = []
     display_turn = 0
 
-    for rnd in range(1, 16):
+    for rnd in range(1, GR.MAX_TURNS + 1):
         if gs.game_over:
             break
         gs.turn = rnd
@@ -572,7 +573,7 @@ def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False, protagonis
         gs.p1_deck = protagonist
         gs.p2_deck = matchup
         try:
-            for t in range(1, 16):
+            for t in range(1, GR.MAX_TURNS + 1):
                 if gs.game_over:
                     break
                 gs.turn = t

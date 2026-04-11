@@ -156,19 +156,13 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── Phase 3: Deploy infect creature ─────────────────────────────────────
-    # Prefer Glistener Elf (1 mana) over Blighted Agent (2 mana)
+    # Prefer Blighted Agent (unblockable) over Glistener Elf when mana allows.
+    # Blighted Agent cannot be blocked, making it the superior attacker in
+    # every matchup — Glistener Elf is only deployed when we can't afford 2 mana.
     glistener = player.find_tag('glistener')
     blighted = player.find_tag('blighted')
 
-    if glistener and mana >= 1:
-        player.remove_from_hand(glistener)
-        if not _try_counter_any(player, opponent, gs, glistener, log_entries):
-            player.put_creature_in_play(glistener)
-            log_fn("Glistener Elf (infect)")
-        else:
-            player.add_to_grave(glistener)
-        mana -= 1
-    elif blighted and mana >= 2:
+    if blighted and mana >= 2:
         player.remove_from_hand(blighted)
         if not _try_counter_any(player, opponent, gs, blighted, log_entries):
             player.put_creature_in_play(blighted)
@@ -176,6 +170,14 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(blighted)
         mana -= 2
+    elif glistener and mana >= 1:
+        player.remove_from_hand(glistener)
+        if not _try_counter_any(player, opponent, gs, glistener, log_entries):
+            player.put_creature_in_play(glistener)
+            log_fn("Glistener Elf (infect)")
+        else:
+            player.add_to_grave(glistener)
+        mana -= 1
 
     if gs.game_over:
         return
@@ -297,6 +299,59 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         pump_bonus += 1  # +1 power (+2 toughness not tracked for damage)
         log_fn("Pendelhaven — target 1/1 gets +1/+2")
 
+    # ── Defensive protection: grant hexproof before pumping ────────────────
+    # Real Infect holds Vines of Vastwood / Blossoming Defense to protect
+    # against removal (Fatal Push, Lightning Bolt, Snuff Out, STP).
+    # If opponent has untapped mana or free removal (Snuff Out, Solitude),
+    # cast protection FIRST to make the creature hexproof, then pump.
+    opp_has_mana = opponent.available_mana_count() >= 1
+    opp_has_free_removal = any(c.tag in ('snuffout', 'solitude')
+                               for c in opponent.hand)
+    opp_removal_threat = opp_has_mana or opp_has_free_removal
+    has_hexproof = False
+
+    # If removal is likely, cast Vines of Vastwood (unkicked: {G}, hexproof
+    # only, no pump; kicked: {GG}, hexproof + pump). Or Blossoming Defense
+    # ({G}, hexproof + pump). Priority: protect the creature first.
+    if opp_removal_threat:
+        # Try Vines of Vastwood first — kicked if we can afford it (2 mana)
+        vines = player.find_tag('vines')
+        if vines and mana >= 1:
+            kicked = (mana >= 2)
+            player.remove_from_hand(vines)
+            cost = 2 if kicked else 1
+            if not _try_counter_any(player, opponent, gs, vines, log_entries):
+                has_hexproof = True
+                attacker.hexproof = True
+                if kicked:
+                    pump_bonus += 4
+                    log_fn("Vines of Vastwood (kicked) — hexproof + +4/+4 [protection]")
+                else:
+                    log_fn("Vines of Vastwood (unkicked) — hexproof [protection]")
+            else:
+                player.add_to_grave(vines)
+            mana -= cost
+
+        if gs.game_over:
+            return
+
+        # If still no hexproof, try Blossoming Defense
+        if not has_hexproof:
+            defense = player.find_tag('defense')
+            if defense and mana >= 1:
+                player.remove_from_hand(defense)
+                if not _try_counter_any(player, opponent, gs, defense, log_entries):
+                    has_hexproof = True
+                    attacker.hexproof = True
+                    pump_bonus += 2
+                    log_fn("Blossoming Defense — hexproof + +2/+2 [protection]")
+                else:
+                    player.add_to_grave(defense)
+                mana -= 1
+
+        if gs.game_over:
+            return
+
     # ── Cast free pump spells ────────────────────────────────────────────────
     # Invigorate: free (alt cost: opp gains 3 life), +4/+4
     for _ in range(4):
@@ -334,13 +389,15 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     if gs.game_over:
         return
 
-    # Vines of Vastwood (kicked): +4/+4 + hexproof — costs {G}{G} (2 mana)
+    # Remaining Vines of Vastwood: cast kicked for +4/+4 + hexproof
     for _ in range(2):
         vines = player.find_tag('vines')
         if vines and mana >= 2:
             player.remove_from_hand(vines)
             if not _try_counter_any(player, opponent, gs, vines, log_entries):
                 pump_bonus += 4
+                has_hexproof = True
+                attacker.hexproof = True
                 log_fn("Vines of Vastwood (kicked) — +4/+4, hexproof")
             else:
                 player.add_to_grave(vines)
@@ -351,13 +408,15 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     if gs.game_over:
         return
 
-    # Blossoming Defense: +2/+2 + hexproof — costs {G} (1 mana)
+    # Remaining Blossoming Defense: +2/+2 + hexproof
     for _ in range(2):
         defense = player.find_tag('defense')
         if defense and mana >= 1:
             player.remove_from_hand(defense)
             if not _try_counter_any(player, opponent, gs, defense, log_entries):
                 pump_bonus += 2
+                has_hexproof = True
+                attacker.hexproof = True
                 log_fn("Blossoming Defense — +2/+2, hexproof")
             else:
                 player.add_to_grave(defense)

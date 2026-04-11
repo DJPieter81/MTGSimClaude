@@ -22,7 +22,8 @@ from cards import DECKS, artifact, creature
 from gameplan import GAMEPLANS, assess, active_goal, Goal
 from interaction import (best_reactive_answer, best_proactive_target,
                          should_push_now, classify_threat, ThreatLevel)
-from config import CardRoles as CR, MatchupCategory as MC, InteractionParams as IP
+from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as IP,
+                    GameRules as GR, CombatThresholds as CT, CounterLogic as CL)
 
 
 # ─────────────────────────────────────────────
@@ -39,7 +40,7 @@ _ORC_ARMY_PROTO = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
                        base_power=0, base_toughness=0, gy_type='creature')
 
 
-def _select_attackers(player, opponent, hold_tags=('bowm', 'tamiyo'), desperate_life=8):
+def _select_attackers(player, opponent, hold_tags=CT.HOLD_ATTACK_TAGS, desperate_life=CT.DESPERATE_LIFE):
     """Shared attacker selection for aggro/midrange strategies.
     Returns list of creatures to attack with. Holds back value engines and 0-power."""
     opp_has_blockers = len(opponent.creatures) > 0
@@ -52,6 +53,17 @@ def _select_attackers(player, opponent, hold_tags=('bowm', 'tamiyo'), desperate_
             continue
         attackers.append(c)
     return attackers
+
+
+def _check_tamiyo_flip(gs, player, log):
+    """Check if Tamiyo should flip (drew 3+ cards this turn)."""
+    tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
+    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
+        if player.draws_this_turn >= 3:
+            gs.tamiyo_flipped = True
+            tam_perm.power_mod = 3
+            tam_perm.toughness_mod = 0
+            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
 
 
 def _deduct(budget: list, cmc: int, card) -> bool:
@@ -230,8 +242,8 @@ def _eidolon_trigger(gs: GameState, card, log_fn, caster=None) -> None:
     Eidolon deals 2 damage to that spell's caster."""
     if not gs.eidolon_active:
         return
-    if card is None or card.cmc < 2:
-        return
+    if card is None or card.cmc > 3:
+        return  # Eidolon only triggers on CMC ≤ 3
     # Damage goes to the caster, not always p1
     target = caster if caster is not None else gs.p1
     target.life -= 2
@@ -645,7 +657,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         return False
 
     # ── Scan defender's hand for all counter types ──
-    _COUNTER_TAGS = {'fow', 'fon', 'daze', 'consign', 'counter', 'fluster', 'pyro', 'reb'}
+    _COUNTER_TAGS = CL.COUNTER_TAGS
     counters_by_tag = {}
     for c in defender.hand:
         if c.tag in _COUNTER_TAGS and c.tag not in counters_by_tag:
@@ -675,7 +687,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         return False
 
     # ── Don't counter cantrips — save counters for threats ──
-    if spell_card.tag in ('bs', 'ponder', 'bauble'):
+    if spell_card.tag in CL.NEVER_COUNTER_TAGS:
         if gs.trace:
             avail = [c.name for t, c in counters_by_tag.items()]
             log_list.append(f"    → {d_label} has [{', '.join(avail)}] but PASSES")
@@ -702,8 +714,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     )
 
     # Burn spells: major threat when defender is at low life or spell is lethal
-    _BURN_TAGS = {'bolt', 'pop', 'chain', 'spike', 'fireblast', 'rift',
-                  'blaze', 'skullcrack', 'heat', 'lball', 'price'}
+    _BURN_TAGS = CL.BURN_TAGS
     if spell_card.tag in _BURN_TAGS and not is_major_threat:
         nonbasics = sum(1 for l in defender.lands if not l.card.is_basic)
         est_damage = 3  # default burn spell damage
@@ -716,7 +727,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         elif spell_card.tag == 'skullcrack':
             est_damage = 3
         # Counter if lethal or defender at ≤7 life
-        if est_damage >= defender.life or defender.life <= 7:
+        if est_damage >= defender.life or defender.life <= CT.BURN_COUNTER_LIFE:
             is_major_threat = True
 
     # Eidolon of the Great Revel: major threat for any deck that casts CMC≤3 spells
@@ -839,7 +850,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         blue_land = next((l for l in defender.lands if not l.tapped and 'U' in l.effective_produces()), None)
         if blue_land:
             is_combo = is_in_category(matchup, 'combo') or is_in_category(matchup, 'fast_combo')
-            pay_threshold = 0.55 if is_combo else 0.30
+            pay_threshold = CL.DAZE_PAY_PROB_COMBO if is_combo else CL.DAZE_PAY_PROB_FAIR
             can_pay = (spell_card.cmc >= 1 and
                        (gs.turn >= 3 or is_combo) and
                        random.random() < pay_threshold)
@@ -1575,6 +1586,17 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
         log_fn("★ Bowmasters EOT flash (mirror — fires on their upkeep/cantrip)", True)
 
 
+def _check_tamiyo_flip(gs, player, log):
+    """Check if Tamiyo should flip (drew 3+ cards this turn)."""
+    tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
+    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
+        if player.draws_this_turn >= 3:
+            gs.tamiyo_flipped = True
+            tam_perm.power_mod = 3
+            tam_perm.toughness_mod = 0
+            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
+
+
 def _trace_board_state(player, opponent, log):
     """Emit trace-level board state summary at end of turn."""
     creatures = ', '.join(f"{c.card.name} ({c.power}/{c.toughness})" for c in player.creatures) or '(none)'
@@ -1594,83 +1616,6 @@ def _trace_board_state(player, opponent, log):
 # OPPONENT turn
 # ─────────────────────────────────────────────
 
-def _opp_dimir(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_dimir(player, opponent, gs, om, _logfn, le)
-
-
-def _opp_dimir_flash(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_dimir_flash(player, opponent, gs, om, _logfn, le)
-
-
-def _opp_elves(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_elves(player, opponent, gs, om, _l, le)
-
-def _opp_dnt(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_dnt(player, opponent, gs, om, _l, le)
-
-def _opp_mono_black(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_mono_black(player, opponent, gs, om, _l, le)
-
-def _opp_boros(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_boros(player, opponent, gs, om, _l, le)
-
-def _opp_prison(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_prison(player, opponent, gs, om, _l, le)
-
-def _opp_eldrazi(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_eldrazi(player, opponent, gs, om, _l, le)
-
-def _opp_show(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_show(player, opponent, gs, om, _l, le)
-
-def _opp_lands(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_lands(player, opponent, gs, om, _l, le)
-
-def _opp_oops(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_oops(player, opponent, gs, om, _l, le)
-
-def _opp_doomsday(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_doomsday(player, opponent, gs, om, _l, le)
-
-def _opp_uwx(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_uwx(player, opponent, gs, om, _l, le)
-
-def _opp_painter(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_painter(player, opponent, gs, om, _l, le)
-
-def _opp_storm(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _l(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_storm(player, opponent, gs, om, _l, le)
-
 def opp_turn(gs: GameState, turn: int, matchup: str):
     """P2's turn — symmetric counterpart to protagonist_turn (P1)."""
     player = gs.p2             # active player this turn (P2)
@@ -1689,6 +1634,10 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     for player in [b, o]:
         for c in player.creatures:
             c.damage_marked = 0
+            # Clear hexproof granted by until-EOT effects (Vines of Vastwood,
+            # Blossoming Defense). Permanent hexproof is on the card, not the perm.
+            if hasattr(c, 'hexproof'):
+                del c.hexproof
 
     # ── Untap ──
     o.untap_all()
@@ -1781,17 +1730,17 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
 
     # ── Matchup dispatch (all decks via registry) ──
     spells_before = o.spells_cast_this_turn
-    if matchup in ('bug', 'bug_sb'):
-        _opp_dimir(gs, om, log, log_entries)  # BUG mirror uses Dimir strategy
-    else:
-        from deck_registry import get_strategy
-        strategy_fn = get_strategy(matchup)
-        if strategy_fn:
-            player, opponent = gs.p2, gs.p1
-            def _plugin_log(msg, key=False):
-                gs.log_event('o', 'main', msg, key)
-                log_entries.append(msg)
+    from deck_registry import get_strategy
+    strategy_fn = get_strategy(matchup)
+    if strategy_fn:
+        player, opponent = gs.p2, gs.p1
+        def _plugin_log(msg, key=False):
+            gs.log_event('o', 'main', msg, key)
+            log_entries.append(msg)
+        try:
             strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
+        except Exception as e:
+            log(f"⚠ Strategy error ({matchup}): {e} — forfeiting turn")
 
     # ── Post-strategy: Eidolon damage + restore lock adjustments ──
     apply_eidolon_damage(gs, o, spells_before, log)
@@ -1828,13 +1777,6 @@ def opp_to_grave_or_exile(gs, card):
     else:
         gs.p2.add_to_grave(card)
 
-
-def _opp_cast(card, o, gs):
-    """Track spell cast for Mindbreak Trap free condition."""
-    o.spells_cast_this_turn += 1
-    # Flag if the spell is blue or black (for Veil of Summer draw condition)
-    if 'U' in card.colors or 'B' in card.colors:
-        gs.p1.opp_cast_blue_black_this_turn = True
 
 
 
@@ -1935,29 +1877,37 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
     """
     P2 instant-speed responses during P1's turn (after P1 combat).
     Handles: STP, Fatal Push, Snuff Out, Lightning Bolt on P1 creatures.
+    Hexproof creatures (e.g. protected by Vines of Vastwood) cannot be
+    targeted by any of these spells (CR 702.11b).
     """
     b, o = gs.p1, gs.p2
+
+    def _targetable(c):
+        """Return True if creature can be targeted by opponent's removal."""
+        return not getattr(c, 'hexproof', False)
 
     # ── STP: exile P1's biggest creature if power >= 3 ──
     stp = o.find_tag('stp')
     if stp and b.creatures and o.available_mana_count() >= 1:
-        target = max(b.creatures, key=lambda c: c.power)
-        if target.power >= 3:
-            o.remove_from_hand(stp)
-            o.add_to_grave(stp)
-            life_gain = target.power
-            b.creatures.remove(target)
-            b.life += life_gain
-            log_fn(f"★ P2 STP (instant, P1's turn) → exiles {target.card.name} "
-                   f"(P1 +{life_gain} life → {b.life})", True)
-            update_goyf(gs)
+        valid = [c for c in b.creatures if _targetable(c)]
+        if valid:
+            target = max(valid, key=lambda c: c.power)
+            if target.power >= 3:
+                o.remove_from_hand(stp)
+                o.add_to_grave(stp)
+                life_gain = target.power
+                b.creatures.remove(target)
+                b.life += life_gain
+                log_fn(f"★ P2 STP (instant, P1's turn) → exiles {target.card.name} "
+                       f"(P1 +{life_gain} life → {b.life})", True)
+                update_goyf(gs)
 
     # ── Fatal Push on P1 creature (CMC ≤ 2, or ≤ 4 with revolt) ──
     push = o.find_tag('push')
     if push and b.creatures and o.available_mana_count() >= 1:
         revolt = o.revolt_this_turn
         targets = [c for c in b.creatures
-                   if MTGRules.fatal_push_valid_target(c, revolt)]
+                   if MTGRules.fatal_push_valid_target(c, revolt) and _targetable(c)]
         if targets:
             target = max(targets, key=lambda c: c.power)
             if target.power >= 1:  # worth pushing any real threat
@@ -1974,7 +1924,8 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
     if snuff and b.creatures and o.life > 6:
         has_swamp = any('B' in l.effective_produces() for l in o.lands)
         if has_swamp:
-            targets = [c for c in b.creatures if 'B' not in getattr(c.card, 'colors', set())]
+            targets = [c for c in b.creatures
+                       if 'B' not in getattr(c.card, 'colors', set()) and _targetable(c)]
             if targets:
                 target = max(targets, key=lambda c: c.power)
                 if target.power >= 2:
@@ -1989,7 +1940,8 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
     # ── Lightning Bolt on P1 creature ──
     bolt = o.find_tag('bolt') or o.find_tag('heat')
     if bolt and b.creatures and o.available_mana_count() >= 1:
-        targets = [c for c in b.creatures if c.toughness <= 3 and c.power >= 2]
+        targets = [c for c in b.creatures
+                   if c.toughness <= 3 and c.power >= 2 and _targetable(c)]
         if targets:
             target = max(targets, key=lambda c: c.power)
             o.remove_from_hand(bolt)
@@ -1998,64 +1950,6 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
             log_fn(f"★ P2 Bolt (instant, P1's turn) → {target.card.name} takes 3 damage", True)
             gs.state_based_actions()
             update_goyf(gs)
-
-
-def _opp_vial_tick_and_deploy(gs, log, le, creature_tags_in_priority, max_counters=3):
-    """
-    Aether Vial logic (CR 702.12):
-    - Upkeep: add 1 counter (only if Vial was already in play at start of turn)
-    - Activated: tap, remove X counters matching creature CMC → put creature into play
-    - Real players stop incrementing when they reach a useful CMC — cap at max_counters
-    Returns True if a creature was vialed in.
-    """
-    o = gs.p2
-    vial_perm = next((p for p in o.artifacts if p.card.tag == 'vial'), None)
-    if not vial_perm:
-        return False
-
-    # Only tick if Vial was already in play (vial_counters > 0 means it survived
-    # at least one prior turn). First turn it enters, counters stay at 0 and
-    # the first tick happens next upkeep.
-    if gs.vial_counters == 0 and not getattr(gs, '_vial_entered_last_turn', False):
-        # Vial just entered this turn — no tick yet, mark for next turn
-        gs._vial_entered_last_turn = True
-        return False
-
-    gs._vial_entered_last_turn = False
-
-    # Cap at max_counters — real players stop incrementing at their target CMC
-    if gs.vial_counters < max_counters:
-        gs.vial_counters += 1
-        log(f"Aether Vial — {gs.vial_counters} counter(s)")
-
-    # Try to deploy a creature matching current counter count
-    for tag in creature_tags_in_priority:
-        crea = o.find_tag(tag)
-        if crea and crea.cmc == gs.vial_counters:
-            o.remove_from_hand(crea)
-            o.put_creature_in_play(crea)
-            log(f"Aether Vial [{gs.vial_counters}] → {crea.name} enters (uncounterable)", True)
-            b = gs.p1
-            if crea.tag == 'skyclave' and b.creatures:
-                target = next((c for c in b.creatures if c.card.cmc <= 4), None)
-                if target:
-                    b.remove_creature(target)
-                    log(f"  Skyclave Apparition exiles {target.card.name}")
-            if crea.tag == 'solitude' and b.creatures:
-                target = b.creatures[-1]
-                b.remove_creature(target)
-                log(f"  Solitude exiles {target.card.name}")
-            if crea.tag == 'recruiter':
-                # Recruiter oracle: 'search for creature with power 2 or less'
-                    found = next((c for c in o.library
-                                  if c.is_creature() and c.base_power <= 2), None)
-                    if found:
-                        o.library.remove(found); o.hand.append(found)
-                        log(f"  Recruiter tutors {found.name} (CMC {found.cmc})")
-            return True
-    return False
-
-
 
 
 def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
@@ -2073,7 +1967,9 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
                 = 'b' if player is gs.p2 (bug has Bowmasters, pings gs.p2)
     """
     bowm_ctrl = 'o' if player is gs.p1 else 'b'
-    mana_ref  = [total_mana]   # mutable so do_natural_order can deduct
+    # Elves mana includes untapped mana dorks (Heritage Druid, Llanowar, etc.)
+    dork_mana = player.available_mana_count(include_dorks=True) - player.available_mana_count()
+    mana_ref  = [total_mana + dork_mana]  # mutable so do_natural_order can deduct
 
     def elf_count():
         return len(player.creatures)
@@ -2843,7 +2739,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         _p1_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
 
     # ── 3. Painter's Servant + Grindstone combo — instant mill kill ──
-    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
     grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
 
     # If both pieces in play → win
@@ -2880,7 +2776,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(grind)
 
     # Check combo again after deploying pieces
-    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
     grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
     if painter_in_play and grind_in_play and total_mana >= 3:
         log_fn("★ Painter + Grindstone — mills entire library!", True)
@@ -3285,7 +3181,7 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
     # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
     # or if Mardu is so far behind it must race.
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
+    mardu_desperate  = player.life < CT.DESPERATE_LIFE   # racing, need every point
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick: continue
@@ -3424,10 +3320,43 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             _oops_int = get_or_infer_interaction('oops')
             _fizzle = compute_combo_fizzle_rate(_oops_int, veil_active=gs.veil_active)
             if random.random() >= _fizzle:
-                log_fn(f"★ {combo_card.name} → mill entire deck → Thassa's Oracle wins!", True)
-                gs.game_over = True
-                gs.winner = 'p1' if player is gs.p1 else 'p2'
-                gs.win_reason = f"Oops combo ({combo_card.name} → Oracle)"
+                # Mill entire library (no lands to stop it)
+                milled = list(player.library)
+                player.graveyard.extend(milled)
+                player.library.clear()
+                log_fn(f"★ {combo_card.name} → mill entire deck ({len(milled)} cards)", True)
+
+                # Narcomoebas enter battlefield from graveyard (triggered ability)
+                narcos = [c for c in player.graveyard if c.tag == 'narco']
+                for n in narcos:
+                    player.graveyard.remove(n)
+                    player.put_creature_in_play(n)
+                log_fn(f"  {len(narcos)} Narcomoeba(s) enter from graveyard", True)
+
+                # Flashback Dread Return: sac 3 creatures, reanimate Oracle
+                oracle_in_gy = next((c for c in player.graveyard if c.tag == 'oracle'), None)
+                dread_in_gy = next((c for c in player.graveyard if c.tag == 'dread'), None)
+                if dread_in_gy and oracle_in_gy and len(player.creatures) >= 3:
+                    for _ in range(3):
+                        if player.creatures:
+                            sac = player.creatures.pop()
+                            player.add_to_grave(sac.card)
+                    player.graveyard.remove(dread_in_gy)
+                    player.exile.append(dread_in_gy)
+                    log_fn("  Flashback Dread Return (sac 3) → Thassa's Oracle", True)
+
+                    if not _try_counter_any(player, opponent, gs, dread_in_gy, log_entries):
+                        player.graveyard.remove(oracle_in_gy)
+                        player.put_creature_in_play(oracle_in_gy)
+                        log_fn("  ★ Thassa's Oracle ETB — library empty → WIN", True)
+                        gs.game_over = True
+                        gs.winner = 'p1' if player is gs.p1 else 'p2'
+                        gs.win_reason = f"Oops combo ({combo_card.name} → Oracle)"
+                        gs.kill_turn = gs.turn
+                    else:
+                        log_fn("  Dread Return countered — combo fizzles")
+                else:
+                    log_fn(f"  Missing pieces for Oracle win (oracle={oracle_in_gy is not None}, dread={dread_in_gy is not None}, creatures={len(player.creatures)})")
             else:
                 log_fn(f"{combo_card.name} resolves but opponent had graveyard hate")
         else:
@@ -3436,18 +3365,110 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
-    rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, total_mana, gs, caster=player)]
+    """Doomsday combo: cast Doomsday (BBB, pay half life, build 5-card pile),
+    then cycle Street Wraith (pay 2 life) to draw into pile, cast Thassa's Oracle
+    (UU) to win when devotion to blue >= cards left in library.
+    Handles both same-turn win and next-turn win after DD resolved previously."""
+
+    dd_already_resolved = getattr(gs, '_doomsday_pile_built', False)
+    mana = total_mana  # track remaining mana
+
+    # ── Helper: cycle cards from hand (activated abilities — uncounterable) ──
+    # Repeatedly cycle: each Wraith/Edge drawn from the pile can itself be cycled,
+    # chaining through the pile to thin the library for Oracle.
+    def _cycle_draw_cards():
+        for _ in range(10):  # generous limit for chain-cycling through pile
+            wraith = player.find_tag('wraith')
+            edge = player.find_tag('edge')
+            if wraith and player.life > 2:
+                player.remove_from_hand(wraith); player.add_to_grave(wraith)
+                player.life -= 2
+                drawn = player.draw(1)
+                drawn_name = drawn[0].name if drawn else 'nothing'
+                log_fn(f"  Street Wraith cycles (−2 life → {player.life}) — draws {drawn_name}")
+            elif edge and player.lands:
+                player.remove_from_hand(edge); player.add_to_grave(edge)
+                sac = player.lands.pop(); player.add_to_grave(sac.card)
+                drawn = player.draw(1)
+                drawn_name = drawn[0].name if drawn else 'nothing'
+                log_fn(f"  Edge of Autumn cycles (sac land) — draws {drawn_name}")
+            else:
+                break
+            if gs.bowmasters_on_board:
+                ctr = []; bowmasters_triggers(1, gs, ctr)
+                for m in ctr: log_entries.append(m)
+
+    # ── Helper: cast Thassa's Oracle and check ETB win ──
+    def _try_cast_oracle(avail_mana):
+        oracle = player.find_tag('oracle')
+        if not oracle or avail_mana < 2:
+            return False
+        # Pre-check: only cast Oracle when devotion will be high enough to win.
+        # Oracle gives 2 blue devotion (UU); count other blue permanents too.
+        expected_devotion = 2  # Oracle's own UU
+        for c in player.creatures:
+            expected_devotion += c.card.mana_cost.get('U', 0)
+        if expected_devotion < len(player.library):
+            return False  # don't waste Oracle if it won't win yet
+
+        player.remove_from_hand(oracle)
+        countered = False
+        if not gs.veil_active:
+            countered = _try_counter_any(player, opponent, gs, oracle, log_entries)
+        if not countered:
+            player.put_creature_in_play(oracle)
+            lib_size = len(player.library)
+            log_fn(f"  ★ Thassa's Oracle ETB — devotion {expected_devotion}, "
+                   f"library {lib_size}", True)
+            gs.game_over = True
+            gs.winner = 'p1' if player is gs.p1 else 'p2'
+            gs.win_reason = (f"Doomsday → Oracle (devotion {expected_devotion} "
+                             f"≥ library {lib_size})")
+            return True
+        else:
+            player.add_to_grave(oracle)
+            log_fn("  Oracle countered — Doomsday pile stranded")
+            return True  # spell was attempted
+
+    # ── Post-DD turns: pile already built, just draw + cast Oracle ──
+    if dd_already_resolved:
+        _cycle_draw_cards()
+        if not gs.game_over:
+            _try_cast_oracle(mana)
+        return
+
+    # ── Pre-DD: rituals for mana acceleration ──
+    rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
     extra = 0
     for r in rits:
         player.remove_from_hand(r); player.add_to_grave(r); extra += 2
     if extra: log_fn(f"Dark Ritual ×{len(rits)} → +{extra} mana")
-    # Cantrips — cycling cards (Street Wraith, Edge of Autumn) are activated abilities.
-    # FoW/Daze CANNOT counter cycling (CR 702.29). Opp pays cycling cost and draws.
-    can = next((c for c in player.hand if c.is_cantrip), None)
-    if can:
+    mana += extra
+
+    # ── Cantrips (pre-DD: dig for combo pieces) ──
+    # If we have DD + enough mana, skip mana cantrips to preserve mana for DD.
+    # Free cycling (Wraith, Edge) is always fine. Only skip paid cantrips if DD ready.
+    dd = player.find_tag('dd')
+    dd_ready = dd and mana >= 5
+
+    # Cast free cantrips (cycling) to dig — these don't cost mana
+    for _ in range(4):
+        # Prefer non-Wraith cantrips pre-DD: save Wraiths for post-DD pile cycling.
+        can = None
+        if not dd_ready:
+            can = next((c for c in player.hand if c.is_cantrip and c.tag not in ('wraith', 'edge')
+                        and mana >= 1), None)
+        if not can:
+            can = next((c for c in player.hand if c.is_cantrip and c.tag == 'edge'
+                        and player.lands), None)
+        if not can and not dd_ready:
+            can = next((c for c in player.hand if c.is_cantrip and c.tag == 'wraith'
+                        and player.life > 2), None)
+        if not can:
+            break
         player.remove_from_hand(can); player.add_to_grave(can)
         if can.tag == 'wraith':
-            player.life -= 2  # cycling costs 2 life
+            player.life -= 2
             log_fn(f"Street Wraith cycles (−2 life → {player.life}) — draws 1")
             player.draw(1)
         elif can.tag == 'edge':
@@ -3458,26 +3479,77 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
             log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
             player.draw(draws)
+            mana -= 1
         if gs.bowmasters_on_board:
             ctr = []; bowmasters_triggers(1, gs, ctr)
             for m in ctr: log_entries.append(m)
+        # Re-check DD readiness after each cantrip (may have drawn DD or ritual)
+        dd = player.find_tag('dd')
+        # Also check for new rituals drawn by cantrips
+        new_rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
+        for r in new_rits:
+            player.remove_from_hand(r); player.add_to_grave(r); mana += 2
+            log_fn(f"Dark Ritual → +2 mana")
+        dd_ready = dd and mana >= 5
+
+    # ── Cast Doomsday if we have 5+ mana ──
     dd = player.find_tag('dd')
-    if dd and (total_mana + extra) >= 5:
+    if dd and mana >= 5:
+        dd_resolved = False
         vos = player.find_tag('vos')
         if vos:
-            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True  # protect all spells this turn; log_fn("Veil of Summer")
+            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
+            log_fn("Veil of Summer — blue interaction blanked")
             player.remove_from_hand(dd); player.add_to_grave(dd)
-            log_fn("★ Doomsday through Veil", True)
-            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-            gs.win_reason = "Doomsday + Veil of Summer"
+            log_fn("★ Doomsday resolves through Veil", True)
+            dd_resolved = True
         else:
             player.remove_from_hand(dd)
             if not _try_counter_any(player, opponent, gs, dd, log_entries):
                 player.add_to_grave(dd)
                 log_fn("★ Doomsday resolves", True)
-                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-                gs.win_reason = "Doomsday resolves uncountered"
-            else: player.add_to_grave(dd)
+                dd_resolved = True
+            else:
+                player.add_to_grave(dd)
+
+        if dd_resolved:
+            # Doomsday: pay half your life (rounded up)
+            half_life = (player.life + 1) // 2
+            player.life -= half_life
+            log_fn(f"  Doomsday life payment: −{half_life} → {player.life}")
+            if player.life <= 0:
+                gs.game_over = True
+                gs.winner = 'p2' if player is gs.p1 else 'p1'
+                gs.win_reason = f"Doomsday self-kill (life={player.life})"
+                return
+
+            # Build a 5-card pile optimized for Oracle win.
+            # Pile is filled with Street Wraiths so cycling chains through it,
+            # thinning the library to 0-1 cards for Oracle's ETB.
+            # Oracle in hand  → [Wraith, Wraith, Wraith, Wraith, X]
+            # Oracle NOT in hand → [Oracle, Wraith, Wraith, Wraith, Wraith]
+            oracle_in_hand = player.find_tag('oracle')
+            from cards import sorcery
+            padding = sorcery('Pile Card', 0, {}, set(), tag='pile_padding')
+            def _make_wraith():
+                return creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'},
+                                3, 4, tag='wraith', is_cantrip=True)
+            if oracle_in_hand:
+                player.library = [_make_wraith() for _ in range(4)] + [padding]
+            else:
+                oracle_card = creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3,
+                                       tag='oracle', win_condition=True)
+                player.library = [oracle_card] + [_make_wraith() for _ in range(4)]
+            gs._doomsday_pile_built = True
+            log_fn(f"  Pile built: {len(player.library)} cards in library")
+
+            mana -= 5  # spent on Doomsday
+
+            # Same-turn win attempt: cycle Wraiths from hand to thin pile + draw Oracle
+            _cycle_draw_cards()
+
+            if not gs.game_over:
+                _try_cast_oracle(mana)
 
 
 
@@ -3624,7 +3696,7 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
     # or if Mardu is so far behind it must race.
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
+    mardu_desperate  = player.life < CT.DESPERATE_LIFE   # racing, need every point
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick: continue
@@ -3751,7 +3823,7 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     # Only attack with Bowmasters if opponent has no blockers (unblocked damage)
     # or if Mardu is so far behind it must race.
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8   # racing, need every point
+    mardu_desperate  = player.life < CT.DESPERATE_LIFE   # racing, need every point
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick: continue
@@ -3942,7 +4014,7 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         break
 
     # ── 1. Check if combo is already assembled ──
-    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
+    painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
     grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
 
     if painter_in_play and grind_in_play and total_mana >= 3:
@@ -4106,10 +4178,11 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
         storm_desperate = True
     # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
     opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
-    opp_blue_pitch = sum(1 for c in opponent.hand if 'U' in getattr(c, 'colors', set())) >= 2
+    opp_blue_pitch = any(c for c in opponent.hand
+                         if 'U' in getattr(c, 'colors', set()) and c.tag not in ('fow', 'fon'))
     opp_has_free_counter = opp_fow and opp_blue_pitch
     # Need enough mana sources to support a ritual chain (land mana, not just LED)
-    has_mana_base = total_mana >= 2 or len(rituals) >= 2
+    has_mana_base = total_mana >= 1 or len(rituals) >= 1
     safe_to_combo = (veil_protecting or storm_desperate or
                      (has_mana_base and not opp_has_free_counter))
     itutor   = player.find_tag('itutor')
@@ -4129,9 +4202,13 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     win_available = ((tendrils and not tendrils_blocked) or (itutor and not itutor_blocked))
 
     # Estimate storm count from castable spells before Tendrils resolves.
+    # Count ALL spells that would be cast: rituals, LED, tutor, cantrips, Veil, PiF.
     # Tendrils = 2 damage per copy (1 original + N storm copies).
     # Lethal needs storm >= ceil(opponent.life / 2) - 1, typically 9 for 20 life.
-    est_storm = len(rituals) + (1 if led else 0) + (1 if itutor_proxy else 0)
+    cantrips_in_hand = sum(1 for c in player.hand if c.is_cantrip)
+    vos_in_hand = player.find_tag('vos')
+    est_storm = (len(rituals) + (1 if led else 0) + (1 if itutor_proxy else 0)
+                 + cantrips_in_hand + (1 if vos_in_hand else 0) + (1 if pif else 0))
     lethal_storm = max(1, (opponent.life + 1) // 2 - 1)  # storm copies needed for lethal
     # Ad Nauseam / Past in Flames self-generate storm during resolution (draw 15+ / replay GY)
     self_assembles = False
@@ -4399,11 +4476,6 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
     gs.state_based_actions()
 
 
-def _opp_reanimator(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_reanimator(player, opponent, gs, om, _logfn, le)
-
 def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
     """UR Delver/Aggro: Delver of Secrets, Ragavan, Dragon's Rage Channeler, Murktide.
     Strategy: deploy cheap threats T1-2, protect with Daze/FoW, Bolt face to close."""
@@ -4483,11 +4555,6 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
         log_fn(f"★ Ragavan exiles {stolen.name} from library + creates Treasure", True)
         update_goyf(gs)
 
-
-def _opp_ur_aggro(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_ur_aggro(player, opponent, gs, om, _logfn, le)
 
 def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     """Mardu Initiative/Grief: Grief+Ephemerate T1 strip engine, Ragavan, Bowmasters, Fury."""
@@ -4592,7 +4659,7 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     stp = player.find_tag('stp')
     if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
         target = max(opponent.creatures, key=lambda c: c.power)
-        if target.power >= 3:  # only exile big threats, not cheap 1-2 power creatures
+        if target.power >= 1:  # exile any creature — Mardu is aggressive with removal
             player.remove_from_hand(stp); player.add_to_grave(stp)
             total_mana -= 1
             opponent.remove_creature(target)
@@ -4623,7 +4690,7 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Combat — Bowmasters holds back
     opp_has_blockers = len(opponent.creatures) > 0
-    mardu_desperate  = player.life < 8
+    mardu_desperate  = player.life < CT.DESPERATE_LIFE
     attackers = []
     for c in player.creatures:
         if c.summoning_sick: continue
@@ -4638,13 +4705,11 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     # Ragavan trigger — oracle: "deals combat damage to a player"
     if 'ragavan' in getattr(gs, '_combat_unblocked_tags', set()) and opponent.library:
         stolen = opponent.library.pop(0)
-        if player is gs.p1:
-            gs.p1_treasure = getattr(gs, 'p1_treasure', 0) + 1
-            treasure = gs.p1_treasure
-        else:
-            gs.p2_treasure = getattr(gs, 'p2_treasure', 0) + 1
-            treasure = gs.p2_treasure
-        log_fn(f"★ Ragavan exiles {stolen.name} from library + creates Treasure", True)
+        # Track treasure for the active player (whoever controls Ragavan)
+        tkey = 'p1_treasure' if player is gs.p1 else 'p2_treasure'
+        treasure = getattr(gs, tkey, 0) + 1
+        setattr(gs, tkey, treasure)
+        log_fn(f"★ Ragavan exiles {stolen.name} + creates Treasure ({treasure} total)", True)
         update_goyf(gs)
         if not stolen.is_land() and stolen.cmc <= treasure and stolen.cmc > 0:
             if player is gs.p1:
@@ -4659,315 +4724,3 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"  Ragavan casts exiled {stolen.name} (spell)")
 
 
-def _opp_mardu(gs, om, log, le, turn):
-    player, opponent = gs.p2, gs.p1
-    def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_mardu(player, opponent, gs, om, _logfn, le)
-
-
-
-# ═══════════════════════════════════════════════════════════════
-# GENERIC TEMPO AI — reusable for any cantrip+threat+interaction deck
-# ═══════════════════════════════════════════════════════════════
-
-def is_tempo_deck(hand, deck_tag=None):
-    """Check if a hand/deck plays like a tempo deck (cantrips + threats + interaction)."""
-    cantrips = sum(1 for c in hand if c.is_cantrip)
-    creatures = sum(1 for c in hand if c.is_creature())
-    counters = sum(1 for c in hand if c.tag in ('fow','daze','fon','fluster','pierce'))
-    return (cantrips >= 1 and creatures >= 1) or (cantrips >= 2)
-
-
-def generic_tempo_strategy(player, opponent, gs, total_mana, log_fn, log_entries):
-    """
-    Enhanced generic tempo strategy — mirrors _strategy_bug's decision quality.
-    Works for any deck with cantrips + creatures + removal/counters.
-    Handles: UR Delver, UR Tempo, Dimir variants, Mono Black, Mardu, etc.
-
-    Key improvements over simple strategies:
-    - Casts MULTIPLE spells per turn (not just one cantrip + one creature)
-    - Smart Brainstorm put-back (lands/duplicates back, action forward)
-    - Bolt-to-face when racing
-    - Game state awareness (racing/ahead/behind)
-    - Wasteland + discard when available
-    """
-    from rules import MTGRules
-    from config import MatchupCategory as MC
-    import random
-
-    b = player   # protagonist
-    o = opponent  # antagonist
-    rem = total_mana  # mana remaining this turn
-    spent_tags = set()  # track what we've cast to avoid double-fire
-
-    # ── Matchup awareness ──
-    # vs combo: conservative mode — 1 cantrip + 1 threat, hold mana for counters
-    # vs fair/aggro: aggressive mode — cast everything, deploy clock ASAP
-    _gs_check = type('_gs', (), {'matchup': gs.matchup})()
-    vs_combo = MC.is_combo(_gs_check)
-    max_cantrips = 1 if vs_combo else 99
-    max_threats = 1 if vs_combo else 99
-    cantrips_cast = 0
-    threats_cast = 0
-
-    def can_pay(card):
-        if card.cmc > rem: return False
-        return True
-
-    def spend(card):
-        nonlocal rem
-        rem = max(0, rem - card.cmc)
-
-    # ── Game state assessment ──
-    bug_power = sum(c.power for c in b.creatures if not c.summoning_sick)
-    opp_power = sum(c.power for c in o.creatures)
-    turns_to_kill = (o.life / bug_power) if bug_power > 0 else 999
-    turns_to_die = (b.life / opp_power) if opp_power > 0 else 999
-    racing = turns_to_kill <= 4 and turns_to_die <= 4
-    behind = opp_power > bug_power + 2 or len(o.creatures) > len(b.creatures) + 1
-
-    # ── Wasteland ──
-    wl = next((l for l in b.lands if l.card.tag == 'wl' and not l.tapped), None)
-    if wl:
-        eligible = [l for l in o.lands if MTGRules.wasteland_can_target(l) and not l.card.is_basic]
-        if eligible:
-            target = max(eligible, key=lambda l: 1 if l.card.tag == 'dual' else 0)
-            b.lands.remove(wl); b.add_to_grave(wl.card)
-            b.revolt_this_turn = True
-            o.lands.remove(target); o.add_to_grave(target.card)
-            log_fn(f"Wasteland [ACTIVATED-uncounterable] → destroys {target.name}")
-            update_goyf(gs)
-
-    # ── Thoughtseize / discard ──
-    ts = b.find_tag('ts')
-    if ts and can_pay(ts) and gs.turn <= 3:
-        nonlands = [c for c in o.hand if not c.is_land()]
-        if nonlands:
-            # Priority: combo pieces > counters > threats
-            target = (next((c for c in nonlands if c.is_combo_piece or c.win_condition), None) or
-                      next((c for c in nonlands if c.tag in ('fow','daze','vos')), None) or
-                      max(nonlands, key=lambda c: c.cmc, default=None))
-            if target:
-                spend(ts); b.remove_from_hand(ts); b.add_to_grave(ts)
-                b.life -= 2
-                o.remove_from_hand(target)
-                log_fn(f"Thoughtseize (−2 life, {b.life}) → strips {target.name}")
-
-    # ── Mishra's Bauble ──
-    for bauble in list(b.hand):
-        if bauble.tag == 'bauble':
-            b.remove_from_hand(bauble); b.add_to_grave(bauble)
-            gs.pending_bauble_draws += 1
-            update_goyf(gs)
-            log_fn(f"Mishra's Bauble (sac, artifact in GY, +1 draw next upkeep)")
-
-    # ── Removal FIRST if facing aggro with creatures ──
-    if o.creatures and behind:
-        # Bolt removal
-        for bolt_tag in ('bolt', 'heat', 'dismember'):
-            bolt = b.find_tag(bolt_tag)
-            if bolt and can_pay(bolt) and bolt_tag not in spent_tags:
-                target = max(o.creatures, key=lambda c: c.power, default=None)
-                if target and target.power >= 2:
-                    spend(bolt); b.remove_from_hand(bolt); b.add_to_grave(bolt)
-                    ctr = []
-                    if not _try_counter_any(b, o, gs, bolt, ctr):
-                        dmg = 3 if bolt_tag == 'bolt' else (6 if bolt_tag == 'heat' else 4)
-                        if target.toughness <= dmg:
-                            o.remove_creature(target)
-                            log_fn(f"{bolt.name} → kills {target.name}")
-                        else:
-                            target.damage_marked += dmg
-                            log_fn(f"{bolt.name} → {dmg} damage to {target.name}")
-                    else:
-                        for m in ctr: log_entries.append(m)
-                    spent_tags.add(bolt_tag)
-                    update_goyf(gs)
-
-        # Push removal
-        push = b.find_tag('push')
-        if push and can_pay(push) and 'push' not in spent_tags:
-            push_targets = [c for c in o.creatures
-                            if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
-            target = max(push_targets, key=lambda c: c.power, default=None)
-            if target:
-                spend(push); b.remove_from_hand(push); b.add_to_grave(push)
-                ctr = []
-                if not _try_counter_any(b, o, gs, push, ctr):
-                    o.remove_creature(target)
-                    log_fn(f"Fatal Push → kills {target.name}")
-                else:
-                    for m in ctr: log_entries.append(m)
-                spent_tags.add('push')
-                update_goyf(gs)
-
-    # ── Brainstorm (with shuffle value) ──
-    bs = b.find_tag('bs')
-    has_fetch = any(l.is_fetch and not l.tapped for l in b.lands) or any(c.is_land() and getattr(c, 'is_fetch', False) for c in b.hand)
-    if bs and can_pay(bs) and cantrips_cast < max_cantrips:
-        spend(bs); b.remove_from_hand(bs); b.add_to_grave(bs)
-        n = MTGRules.brainstorm_draws()
-        drawn = b.draw(n)
-        log_fn(f"Brainstorm ({n} draws) → [{', '.join(c.name for c in drawn)}]")
-        if gs.bowmasters_on_board:
-            bowmasters_triggers(n, gs, log_entries, controller='o' if any(c.card.tag == 'bowm' for c in o.creatures) else 'b')
-        # Smart put-back: lands and excess cantrips go back, action stays
-        def putback_score(c):
-            if c.is_land(): return 100  # always put back lands
-            if c.is_cantrip and sum(1 for x in b.hand if x.is_cantrip) > 2: return 50  # excess cantrips
-            if c.is_creature() and sum(1 for x in b.hand if x.is_creature()) > 3: return 30  # excess threats
-            return 0
-        put_back = sorted(b.hand, key=putback_score, reverse=True)[:MTGRules.brainstorm_puts_back()]
-        for c in put_back:
-            b.hand.remove(c); b.library.insert(0, c)
-        log_fn(f"  Puts back: {[c.name for c in put_back]}")
-        update_goyf(gs)
-        cantrips_cast += 1
-        # Recalculate mana after potential land draw
-        rem = max(rem, 0)
-
-    # ── Ponder / Preordain ──
-    for pon_tag in ('ponder', 'pre'):
-        if cantrips_cast >= max_cantrips: break
-        pon = b.find_tag(pon_tag)
-        if pon and can_pay(pon) and pon_tag not in spent_tags:
-            spend(pon); b.remove_from_hand(pon); b.add_to_grave(pon)
-            # Simplified: draw best of top 3
-            top = b.library[:3]; b.library = b.library[3:]
-            keep = (next((c for c in top if c.is_creature()), None) or
-                    next((c for c in top if c.tag in ('fow','daze','bolt','push')), None) or
-                    (top[0] if top else None))
-            if keep:
-                b.hand.append(keep); top.remove(keep)
-            b.library = random.sample(top, len(top)) + b.library
-            log_fn(f"{pon.name} (1 draw) → keeps {keep.name if keep else '—'}")
-            spent_tags.add(pon_tag)
-            cantrips_cast += 1
-
-    # ── Expressive Iteration ──
-    ei = b.find_tag('ei')
-    if ei and can_pay(ei) and 'ei' not in spent_tags and cantrips_cast < max_cantrips:
-        spend(ei); b.remove_from_hand(ei); b.add_to_grave(ei)
-        # Look at top 3, put one in hand, one on top, exile one
-        top = b.library[:3]; b.library = b.library[3:]
-        best = (next((c for c in top if c.is_creature()), None) or
-                next((c for c in top if not c.is_land()), None) or
-                (top[0] if top else None))
-        if best:
-            b.hand.append(best); top.remove(best)
-        if top:
-            b.library.insert(0, top[0])  # put one on top
-        log_fn(f"Expressive Iteration → {best.name if best else '—'}")
-        spent_tags.add('ei')
-        cantrips_cast += 1
-
-    # ── Removal (if not already fired above) ──
-    if o.creatures:
-        for rtag in ('bolt', 'heat', 'push', 'snuffout', 'dismember'):
-            if rtag in spent_tags: continue
-            card = b.find_tag(rtag)
-            if not card: continue
-            if rtag == 'snuffout':
-                has_swamp = any('Swamp' in l.card.subtypes or (l.card.is_basic and 'B' in l.effective_produces()) for l in b.lands)
-                if not has_swamp or b.life <= 6: continue
-                target = next((c for c in sorted(o.creatures, key=lambda x: -x.power) if 'B' not in c.card.colors), None)
-                if target:
-                    b.cast_spell(card, log_fn=log_fn)
-                    o.remove_creature(target)
-                    log_fn(f"Snuff Out (free, −4 life → {b.life}) → kills {target.name}")
-                    spent_tags.add(rtag); update_goyf(gs)
-            elif rtag == 'push':
-                targets = [c for c in o.creatures if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
-                target = max(targets, key=lambda c: c.power, default=None)
-                if target and can_pay(card):
-                    spend(card); b.remove_from_hand(card); b.add_to_grave(card)
-                    ctr = []
-                    if not _try_counter_any(b, o, gs, card, ctr):
-                        o.remove_creature(target)
-                        log_fn(f"Fatal Push → kills {target.name}")
-                    else:
-                        for m in ctr: log_entries.append(m)
-                    spent_tags.add(rtag); update_goyf(gs)
-            else:
-                target = max(o.creatures, key=lambda c: c.power, default=None)
-                if target and can_pay(card):
-                    spend(card); b.remove_from_hand(card); b.add_to_grave(card)
-                    ctr = []
-                    if not _try_counter_any(b, o, gs, card, ctr):
-                        dmg = 3 if rtag == 'bolt' else (6 if rtag == 'heat' else 4)
-                        if target.toughness <= dmg:
-                            o.remove_creature(target)
-                            log_fn(f"{card.name} → kills {target.name}")
-                        else:
-                            target.damage_marked += dmg
-                            log_fn(f"{card.name} → {dmg} to {target.name}")
-                    else:
-                        for m in ctr: log_entries.append(m)
-                    spent_tags.add(rtag); update_goyf(gs)
-
-    # ── Bolt-to-face when racing ──
-    if racing or o.life <= 6:
-        for bolt_tag in ('bolt',):
-            bolt = b.find_tag(bolt_tag)
-            if bolt and can_pay(bolt) and bolt_tag not in spent_tags:
-                spend(bolt); b.remove_from_hand(bolt); b.add_to_grave(bolt)
-                ctr = []
-                if not _try_counter_any(b, o, gs, bolt, ctr):
-                    o.life -= 3
-                    log_fn(f"{bolt.name} face — opponent at {o.life}")
-                    gs.check_life_totals()
-                else:
-                    for m in ctr: log_entries.append(m)
-                spent_tags.add(bolt_tag)
-                if gs.game_over: return
-
-    # ── Threat deployment (all affordable, cheapest first) ──
-    # Sort creatures by priority: 1-drops first (Delver, DRC, Tamiyo), then 2-drops, then delve
-    deployable = sorted(
-        [c for c in b.hand if c.is_creature() and c.tag not in ('bowm',)],
-        key=lambda c: (0 if c.cmc <= 1 else 1 if c.cmc <= 2 else 2 if c.tag == 'murk' else 3)
-    )
-    for thr in deployable:
-        if gs.game_over: break
-        if threats_cast >= max_threats: break
-        # Delve cost reduction for Murktide
-        effective_cost = thr.cmc
-        if getattr(thr, 'delve', False) or thr.tag == 'murk':
-            gy_count = len(b.graveyard) if hasattr(b, 'graveyard') else len(getattr(b, 'exile', []))
-            effective_cost = max(2, thr.cmc - gy_count)  # at least UU
-        if effective_cost > rem: continue
-        rem -= effective_cost
-        b.remove_from_hand(thr)
-        ctr = []
-        if not _try_counter_any(b, o, gs, thr, ctr):
-            perm = b.put_creature_in_play(thr)
-            log_fn(f"Cast {thr.name} ({perm.power}/{perm.toughness})")
-        else:
-            b.add_to_grave(thr)
-            for m in ctr: log_entries.append(m)
-        threats_cast += 1
-        update_goyf(gs)
-
-    # ── Bowmasters (flash, deploy after other spells) ──
-    bowm = b.find_tag('bowm')
-    if bowm and can_pay(bowm) and not gs.bowmasters_on_board:
-        spend(bowm); b.remove_from_hand(bowm)
-        ctr = []
-        if not _try_counter_any(b, o, gs, bowm, ctr):
-            b.put_creature_in_play(bowm)
-            gs.bowmasters_on_board = True
-            log_fn(f"Flash Bowmasters (1 trigger per card opp draws)")
-        else:
-            b.add_to_grave(bowm)
-            for m in ctr: log_entries.append(m)
-
-    # ── Combat ──
-    attackers = []
-    for c in b.creatures:
-        if c.summoning_sick: continue
-        if c.card.tag == 'bowm' and o.creatures and not racing: continue  # hold bowm back
-        if c.card.tag == 'tamiyo' and c.power == 0: continue  # 0/3 doesn't attack
-        attackers.append(c)
-    combat_declare(b, o, gs, log_entries, attackers)
-
-    update_goyf(gs)

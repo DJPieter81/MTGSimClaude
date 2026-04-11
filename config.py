@@ -306,8 +306,75 @@ class SBRoles:
     MIRROR    = frozenset({'pyro', 'vos', 'deluge'})
 
 
+# ═══════════════════════════════════════════════════════════════════
+# GAME RULES  (immutable constants from MTG Comprehensive Rules)
+# ═══════════════════════════════════════════════════════════════════
+
+class GameRules:
+    """Game-wide constants from the MTG Comprehensive Rules."""
+    MAX_TURNS = 15             # simulation turn limit
+    STARTING_LIFE = 20         # CR 103.4
+    MAX_MULLIGANS = 3          # London mulligan: 0-3 mulligans
+    FORCED_KEEP_SIZE = 4       # auto-keep at 4 cards remaining
+    BO3_WINS_NEEDED = 2        # best-of-3 match
+    BO3_MAX_GAMES = 3
+
+
+# ═══════════════════════════════════════════════════════════════════
+# COMBAT & LIFE THRESHOLDS  (tunable)
+# ═══════════════════════════════════════════════════════════════════
+
+class CombatThresholds:
+    """Life-based decision thresholds for combat and removal."""
+    DESPERATE_LIFE = 8                                    # attack with everything below this
+    HOLD_ATTACK_TAGS = frozenset({'bowm', 'tamiyo'})      # creatures held back from default attacks
+    STP_THRESHOLD_AGGRO = 1                               # exile any creature vs aggro
+    STP_THRESHOLD_FAIR = 2                                # exile power >= 2 vs fair
+    SNUFF_LIFE_BUFFER = 8                                 # need > 8 life to cast Snuff Out
+    SNUFF_LIFE_FLOOR_AGGRO = 6                            # need > 6 life to Snuff vs aggro
+    BURN_COUNTER_LIFE = 7                                 # always counter burn spells at <= 7 life
+
+
+# ═══════════════════════════════════════════════════════════════════
+# COUNTER LOGIC  (tunable decision parameters)
+# ═══════════════════════════════════════════════════════════════════
+
+class CounterLogic:
+    """Parameters for try_reactive_counter spell evaluation."""
+    COUNTER_TAGS = frozenset({'fow', 'fon', 'daze', 'consign', 'counter',
+                               'fluster', 'pyro', 'reb'})
+    NEVER_COUNTER_TAGS = frozenset({'bs', 'ponder', 'bauble'})  # cantrips — not worth a counter
+    MINOR_THREAT_TAGS = frozenset({'tamiyo', 'borrow'})          # low CMC, expendable
+    TEMPO_THREAT_TAGS = frozenset({'drc', 'cutter', 'ragavan', 'delver'})
+    INFECT_PUMP_TAGS = frozenset({'invigorate', 'mutagenic', 'berserk', 'vines', 'defense'})
+    BURN_TAGS = frozenset({'bolt', 'pop', 'chain', 'spike', 'fireblast', 'rift',
+                            'blaze', 'skullcrack', 'heat', 'lball', 'price'})
+    DAZE_PAY_PROB_COMBO = 0.55   # probability combo opponent pays for Daze
+    DAZE_PAY_PROB_FAIR = 0.30    # probability fair opponent pays for Daze
+    BURN_DAMAGE_DEFAULT = 3      # default damage for a burn spell
+
+
+# ═══════════════════════════════════════════════════════════════════
+# MULLIGAN SCORING  (tunable card evaluation weights)
+# ═══════════════════════════════════════════════════════════════════
+
+class MulliganScoring:
+    """Card-keep priority weights for London mulligan best-N selection."""
+    SCORE_FOW_FON = 5        # Force of Will / Force of Negation
+    SCORE_CREATURE = 4       # any creature
+    SCORE_CANTRIP = 3        # Brainstorm, Ponder
+    SCORE_REMOVAL = 3        # Thoughtseize, Push, Abrupt Decay
+    SCORE_SOFT_COUNTER = 2   # Daze, Flusterstorm
+    SCORE_LAND = 3           # any land
+    SCORE_OTHER = 1          # everything else
+
+
 # Convenience: export everything at module level
 CR = CardRoles
 IP = InteractionParams
 TC = ThreatConfig
 SB = SBRoles
+GR = GameRules
+CT = CombatThresholds
+CL = CounterLogic
+MS = MulliganScoring
