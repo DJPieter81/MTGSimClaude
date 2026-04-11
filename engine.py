@@ -1917,7 +1917,6 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     _adjustments = apply_lock_effects(gs, o, log)
 
     # ── Matchup dispatch (all decks via registry) ──
-    spells_before = o.spells_cast_this_turn
     from deck_registry import get_strategy
     strategy_fn = get_strategy(matchup)
     if strategy_fn:
@@ -1930,8 +1929,7 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
         except Exception as e:
             log(f"⚠ Strategy error ({matchup}): {e} — forfeiting turn")
 
-    # ── Post-strategy: Eidolon damage + restore lock adjustments ──
-    apply_eidolon_damage(gs, o, spells_before, log)
+    # ── Post-strategy: restore lock adjustments ──
     restore_lock_effects(o, _adjustments)
 
     # ── Tamiyo flip check (P2's Tamiyo can flip if drew 3+ this turn) ──
@@ -3780,7 +3778,7 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── 0a. Thoughtseize — proactive disruption (early turns) ──
     from config import MatchupCategory as MC
-    from interaction_model import best_proactive_target
+    from interaction import best_proactive_target
     ts = player.find_tag('ts')
     ts_turn_cap = 3 if MC.is_combo(gs) else 2  # aligned with config (was 6/3 — too oppressive vs combo)
     if ts and gs.turn <= ts_turn_cap and rem >= 1:
