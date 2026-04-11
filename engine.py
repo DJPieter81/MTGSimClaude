@@ -60,6 +60,94 @@ def _deduct(budget: list, cmc: int, card) -> bool:
     return True
 
 
+class ManaManager:
+    """Unified mana budget tracker for strategies.
+
+    Replaces the three divergent patterns:
+      - Pattern A: budget = [total_mana] + _deduct(budget, cost, card)
+      - Pattern B: rem = total_mana + rem -= cost
+      - Pattern C: mana_ref = [total_mana] + custom spend functions
+
+    Usage in a strategy:
+        mm = ManaManager(total_mana, gs, log_fn)
+        if mm.can_pay(card.cmc):
+            mm.spend(card)
+            ...
+        remaining = mm.available
+    """
+
+    def __init__(self, total_mana: int, gs: 'GameState', log_fn=None):
+        self.mana = total_mana
+        self.gs = gs
+        self.log_fn = log_fn
+
+    @property
+    def available(self) -> int:
+        return self.mana
+
+    def can_pay(self, cost: int) -> bool:
+        return self.mana >= cost
+
+    def spend(self, card) -> None:
+        """Deduct effective cost (respects Trinisphere/Thalia) and fire Eidolon."""
+        cost = self.effective_cmc(card)
+        self.mana = max(0, self.mana - cost)
+        _eidolon_trigger(self.gs, card, self.log_fn)
+
+    def spend_amount(self, amount: int) -> None:
+        """Deduct a raw mana amount (for activated abilities, generic costs)."""
+        self.mana = max(0, self.mana - amount)
+
+    def effective_cmc(self, card) -> int:
+        """Card's effective cost accounting for Trinisphere and Thalia."""
+        base = max(card.cmc, 3 if self.gs.trinisphere_active else 0)
+        if not card.is_creature() and self.gs.thalia_on_board:
+            base += 1
+        return base
+
+    def refresh(self, player) -> None:
+        """Refresh mana from current board state (e.g. after land drop)."""
+        self.mana = player.available_mana_count()
+
+
+def assess_board(player, opponent):
+    """Shared board state assessment for tempo/midrange strategies.
+
+    Returns (state, metrics) where state is one of:
+      'racing'  — both players threaten lethal in ≤3 turns
+      'ahead'   — player has board advantage
+      'behind'  — opponent has board advantage
+      'parity'  — roughly even
+
+    Metrics dict contains: board_power, opp_power, threat_count, opp_threats,
+    turns_to_kill, turns_to_die, has_threats_in_hand.
+    """
+    board_power  = sum(c.power for c in player.creatures)
+    opp_power    = sum(c.power for c in opponent.creatures)
+    threat_count = len(player.creatures)
+    opp_threats  = len(opponent.creatures)
+    ttk = (opponent.life / board_power) if board_power > 0 else 999
+    ttd = (player.life / opp_power)    if opp_power > 0 else 999
+    has_threats  = any(c.is_creature() for c in player.hand)
+
+    if ttk <= 3 and ttd <= 3:
+        state = 'racing'
+    elif board_power > opp_power + 2 or threat_count > opp_threats + 1:
+        state = 'ahead'
+    elif opp_power > board_power + 2 or opp_threats > threat_count + 1:
+        state = 'behind'
+    else:
+        state = 'parity'
+
+    metrics = {
+        'board_power': board_power, 'opp_power': opp_power,
+        'threat_count': threat_count, 'opp_threats': opp_threats,
+        'turns_to_kill': ttk, 'turns_to_die': ttd,
+        'has_threats': has_threats,
+    }
+    return state, metrics
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Shared lock/tax enforcement — used by protagonist_turn & opp_turn
 # ─────────────────────────────────────────────────────────────────────
@@ -877,22 +965,13 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     # ═══════════════════════════════════════════════════════════
     # GAME STATE ASSESSMENT — informs all decisions this turn
     # ═══════════════════════════════════════════════════════════
-    bug_board_power  = sum(c.power for c in player.creatures)
-    opp_board_power  = sum(c.power for c in opponent.creatures)
-    bug_threat_count = len(player.creatures)
-    opp_threat_count = len(opponent.creatures)
-    bug_has_threats  = any(c.is_creature() for c in player.hand)
-    turns_to_kill_opp = (opponent.life / bug_board_power) if bug_board_power > 0 else 999
-    turns_to_die      = (player.life  / opp_board_power) if opp_board_power > 0 else 999
-    opp_has_cantrips  = any(c.is_cantrip for c in opponent.hand)
-    if turns_to_kill_opp <= 3 and turns_to_die <= 3:
-        game_state = 'racing'
-    elif bug_board_power > opp_board_power + 2 or bug_threat_count > opp_threat_count + 1:
-        game_state = 'ahead'
-    elif opp_board_power > bug_board_power + 2 or opp_threat_count > bug_threat_count + 1:
-        game_state = 'behind'
-    else:
-        game_state = 'parity'
+    game_state, _m = assess_board(player, opponent)
+    bug_board_power  = _m['board_power']
+    opp_board_power  = _m['opp_power']
+    bug_threat_count = _m['threat_count']
+    opp_threat_count = _m['opp_threats']
+    bug_has_threats  = _m['has_threats']
+    opp_has_cantrips = any(c.is_cantrip for c in opponent.hand)
 
     # ── Wasteland (activated ability — uncounterable, no mana cost) ──
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
@@ -1615,6 +1694,7 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     o.untap_all()
     o.revolt_this_turn = False
     o.clear_summoning_sickness()
+    gs.combat_this_turn = False
     if gs.trace:
         log(f"── Untap ── ({len(o.lands)} lands)")
 
@@ -1717,6 +1797,18 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
     apply_eidolon_damage(gs, o, spells_before, log)
     restore_lock_effects(o, _adjustments)
 
+    # ── P1 instant-speed responses during P2's turn ──
+    if not gs.game_over:
+        _p1_respond_on_opp_turn(gs, log, log_entries)
+
+    # ── Fallback combat: attack with eligible creatures if strategy didn't ──
+    if not gs.combat_this_turn and not gs.game_over and o.creatures:
+        attackers = _select_attackers(o, b)
+        if attackers:
+            if gs.trace:
+                log(f"── Combat ── ({len(attackers)} attackers)")
+            combat_declare(o, b, gs, log_entries, attackers)
+
     gs.state_based_actions()
 
     if gs.trace:
@@ -1778,6 +1870,101 @@ def _p1_force_of_vigor(gs, target_tags, log_list):
     log_list.append(f"★ BUG Force of Vigor (free on opp's turn, exiles {green_pitch.name})"
                     f" → destroys {' + '.join(names)}")
     return True
+
+
+def _p1_respond_on_opp_turn(gs, log_fn, log_entries):
+    """
+    P1 instant-speed responses during P2's turn (after P2 strategy, before P2 combat).
+    Handles: STP on P2 threats, flash Bowmasters, Force of Vigor, Wasteland.
+    """
+    b, o = gs.p1, gs.p2
+
+    # ── STP: exile P2's biggest creature if power >= 3 (major threat) ──
+    stp = b.find_tag('stp')
+    if stp and o.creatures and b.available_mana_count() >= 1:
+        target = max(o.creatures, key=lambda c: c.power)
+        # STP high-power threats: Marit Lage, Emrakul, Murktide, etc.
+        if target.power >= 3:
+            b.remove_from_hand(stp)
+            b.add_to_grave(stp)
+            life_gain = target.power  # STP: exile + opp gains life = target's power
+            o.creatures.remove(target)
+            o.life += life_gain
+            log_fn(f"★ P1 STP (instant, P2's turn) → exiles {target.card.name} "
+                   f"(P2 +{life_gain} life → {o.life})", True)
+            update_goyf(gs)
+            gs.check_life_totals()
+
+    # ── Flash Bowmasters: deploy during P2's end step if P2 drew cards ──
+    bowm = b.find_tag('bowm')
+    bowm_on_board = any(c.card.tag == 'bowm' for c in b.creatures)
+    if bowm and not bowm_on_board and b.available_mana_count() >= 2:
+        # Deploy on P2's turn if P2 has cantrip-heavy deck (Dimir, UWx, etc.)
+        p2_drew_extra = o.draws_this_turn > 1
+        if p2_drew_extra or len(o.hand) >= 5:
+            from game import can_afford
+            if can_afford(b, bowm.mana_cost):
+                b.remove_from_hand(bowm)
+                if not _try_counter_any(b, o, gs, bowm, log_entries):
+                    b.put_creature_in_play(bowm)
+                    log_fn("★ P1 Flash Bowmasters (P2's turn — punishes next draw)", True)
+                else:
+                    b.add_to_grave(bowm)
+
+    # ── Force of Vigor: free on opponent's turn, destroy lock pieces ──
+    lock_targets = [p.card.tag for p in o.artifacts + o.enchantments if p.card.lock_piece]
+    if lock_targets:
+        _p1_force_of_vigor(gs, lock_targets, log_entries)
+
+    # ── Wasteland: destroy P2's key nonbasic land ──
+    wl = next((l for l in b.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl:
+        eligible = [l for l in o.lands if not l.card.is_basic
+                    and MTGRules.wasteland_can_target(l)]
+        if eligible:
+            target = max(eligible, key=lambda l: 1 if l.card.mana_ritual else 0)
+            b.lands.remove(wl)
+            b.add_to_grave(wl.card)
+            o.lands.remove(target)
+            o.add_to_grave(target.card)
+            log_fn(f"★ P1 Wasteland (P2's turn) → destroys {target.card.name}", True)
+            update_goyf(gs)
+
+
+def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
+    """
+    P2 instant-speed responses during P1's turn (after P1 combat).
+    Handles: STP on P1 threats, Lightning Bolt on creatures.
+    """
+    b, o = gs.p1, gs.p2
+
+    # ── STP: exile P1's biggest creature if power >= 4 (only major threats) ──
+    stp = o.find_tag('stp')
+    if stp and b.creatures and o.available_mana_count() >= 1:
+        target = max(b.creatures, key=lambda c: c.power)
+        if target.power >= 4:  # Only exile big threats (Murktide, Marit Lage)
+            o.remove_from_hand(stp)
+            o.add_to_grave(stp)
+            life_gain = target.power
+            b.creatures.remove(target)
+            b.life += life_gain
+            log_fn(f"★ P2 STP (instant, P1's turn) → exiles {target.card.name} "
+                   f"(P1 +{life_gain} life → {b.life})", True)
+            update_goyf(gs)
+
+    # ── Lightning Bolt on P1 creature (P2 has bolt in hand) ──
+    bolt = o.find_tag('bolt') or o.find_tag('heat')
+    if bolt and b.creatures and o.available_mana_count() >= 1:
+        # Target key creatures with toughness <= 3
+        targets = [c for c in b.creatures if c.toughness <= 3 and c.power >= 2]
+        if targets:
+            target = max(targets, key=lambda c: c.power)
+            o.remove_from_hand(bolt)
+            o.add_to_grave(bolt)
+            target.damage_marked += 3
+            log_fn(f"★ P2 Bolt (instant, P1's turn) → {target.card.name} takes 3 damage", True)
+            gs.state_based_actions()
+            update_goyf(gs)
 
 
 def _opp_vial_tick_and_deploy(gs, log, le, creature_tags_in_priority, max_counters=3):
@@ -2023,12 +2210,9 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
                     log_fn(f"GSZ → {tgt.name}")
 
     # ── Combat ──
-    attackers = [c for c in player.creatures if not c.summoning_sick]
+    attackers = [c for c in player.creatures if not c.summoning_sick and c.power > 0]
     if attackers:
-        orig = player.creatures
-        player.creatures = attackers + [c for c in orig if c not in attackers]
-        resolve_combat(gs, player, opponent, log_entries)
-        player.creatures = orig
+        combat_declare(player, opponent, gs, log_entries, attackers)
 
     gs.state_based_actions()
 
@@ -2052,6 +2236,8 @@ def combat_declare(player, opponent, gs, log_entries, attackers):
     """
     if not attackers:
         return
+
+    gs.combat_this_turn = True
 
     # Ensnaring Bridge: creatures with power > controller's hand size can't attack (CR 702.9)
     if gs.bridge_on_board:
@@ -3695,10 +3881,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             attackers.append(c)
     if attackers:
-        orig = player.creatures
-        player.creatures = attackers + [c for c in orig if c not in attackers]
-        resolve_combat(gs, player, opponent, log_entries)
-        player.creatures = orig
+        combat_declare(player, opponent, gs, log_entries, attackers)
 
 
 def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
