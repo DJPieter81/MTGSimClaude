@@ -8,8 +8,10 @@ import sys, random
 sys.path.insert(0, '.')
 
 from cards import DECKS
-from game import PlayerState, GameState, london_mulligan, bug_keep, opp_keep
-from engine import bug_turn, opp_turn
+from game import PlayerState, GameState, london_mulligan, opp_keep
+from engine import opp_turn
+from sim import protagonist_turn
+from deck_registry import get_keep_fn
 
 
 ABBREV = {
@@ -168,29 +170,33 @@ def reason(line):
     return ""
 
 
-def run_table_game(matchup, seed=None):
+def run_table_game(matchup, seed=None, protagonist='bug'):
     if seed is not None:
         random.seed(seed)
 
-    bug_hand, bug_lib, bug_mulls = london_mulligan(DECKS['bug'], bug_keep)
+    pro_keep = get_keep_fn(protagonist) or opp_keep
+    pro_hand, pro_lib, pro_mulls = london_mulligan(DECKS[protagonist], pro_keep, protagonist)
     opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
-    bug_goes_first = random.random() < 0.5
+    pro_goes_first = random.random() < 0.5
 
+    pro_label = protagonist.upper().replace('_', ' ')
     gs = GameState(
-        p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
+        p1=PlayerState(name='b', hand=list(pro_hand), library=list(pro_lib)),
         p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-        p1_goes_first=bug_goes_first)
+        p1_goes_first=pro_goes_first)
     gs.matchup = matchup
+    gs.p1_deck = protagonist
+    gs.p2_deck = matchup
 
     meta_name = matchup.replace('_', ' ').title()
 
     # ── Header ──
     print()
     print(f"  ╔══════════════════════════════════════════════════════════════════╗")
-    print(f"  ║  BUG Tempo  vs  {meta_name:<46} ║")
-    print(f"  ║  BUG is {'ON THE PLAY' if bug_goes_first else 'ON THE DRAW':<54} ║")
+    print(f"  ║  {pro_label}  vs  {meta_name:<46} ║")
+    print(f"  ║  {pro_label} is {'ON THE PLAY' if pro_goes_first else 'ON THE DRAW':<54} ║")
     print(f"  ╠══════════════════════════════════════════════════════════════════╣")
-    print(f"  ║  BUG hand (mull {bug_mulls}): {fmt_hand(gs.p1):<42} ║")
+    print(f"  ║  {pro_label} hand (mull {pro_mulls}): {fmt_hand(gs.p1):<42} ║")
     print(f"  ║  OPP hand (mull {opp_mulls}): {fmt_hand(gs.p2):<42} ║")
     print(f"  ╚══════════════════════════════════════════════════════════════════╝")
     print()
@@ -206,16 +212,16 @@ def run_table_game(matchup, seed=None):
             nonlocal display_turn
             display_turn += 1
 
-            player = gs.p1 if label == 'BUG' else gs.p2
-            opponent = gs.p2 if label == 'BUG' else gs.p1
+            player = gs.p1 if label == 'PRO' else gs.p2
+            opponent = gs.p2 if label == 'PRO' else gs.p1
             life_before = player.life
 
             # Snapshot hand before turn
             hand_before = fmt_hand(player)
 
             # Execute turn
-            if label == 'BUG':
-                raw_lines = bug_turn(gs, rnd)
+            if label == 'PRO':
+                raw_lines = protagonist_turn(gs, rnd, protagonist)
             else:
                 raw_lines = opp_turn(gs, rnd, matchup)
 
@@ -257,22 +263,22 @@ def run_table_game(matchup, seed=None):
 
             return gs.game_over
 
-        if bug_goes_first:
-            if do_one('BUG'): break
+        if pro_goes_first:
+            if do_one('PRO'): break
             if do_one('OPP'): break
         else:
             if do_one('OPP'): break
-            if do_one('BUG'): break
+            if do_one('PRO'): break
 
     # ── Timeout heuristic ──
     if not gs.game_over:
-        bug_power = sum(c.power for c in gs.p1.creatures)
+        pro_power = sum(c.power for c in gs.p1.creatures)
         opp_power = sum(c.power for c in gs.p2.creatures)
-        bug_score = (bug_power * 2 + len(gs.p1.creatures) * 3
+        pro_score = (pro_power * 2 + len(gs.p1.creatures) * 3
                      + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life))
         opp_score = (opp_power * 2 + len(gs.p2.creatures) * 3
                      + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life))
-        if bug_score >= opp_score:
+        if pro_score >= opp_score:
             gs.winner = 'p1'
             gs.win_reason = f"Board/life advantage after T{display_turn}"
         else:
@@ -280,33 +286,36 @@ def run_table_game(matchup, seed=None):
             gs.win_reason = f"Opp board/life advantage after T{display_turn}"
 
     # ── Result ──
-    winner = 'BUG' if gs.winner == 'p1' else 'OPP'
+    winner = pro_label if gs.winner == 'p1' else 'OPP'
     print(f"  ══════════════════════════════════════════════════════════════════")
     print(f"  ★ {winner} WINS  │  {gs.win_reason}")
-    print(f"    Life: BUG {gs.p1.life}  OPP {gs.p2.life}  │  Game length: T{display_turn}")
-    print(f"    BUG board: {fmt_creatures(gs.p1)}")
+    print(f"    Life: {pro_label} {gs.p1.life}  OPP {gs.p2.life}  │  Game length: T{display_turn}")
+    print(f"    {pro_label} board: {fmt_creatures(gs.p1)}")
     print(f"    OPP board: {fmt_creatures(gs.p2)}")
     print(f"  ══════════════════════════════════════════════════════════════════")
     print()
 
 
-def run_game_data(matchup, seed=None):
+def run_game_data(matchup, seed=None, protagonist='bug'):
     """Run a game and return structured data for markdown/html rendering."""
     if seed is not None:
         random.seed(seed)
 
-    bug_hand, bug_lib, bug_mulls = london_mulligan(DECKS['bug'], bug_keep)
+    pro_keep = get_keep_fn(protagonist) or opp_keep
+    pro_hand, pro_lib, pro_mulls = london_mulligan(DECKS[protagonist], pro_keep, protagonist)
     opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
-    bug_goes_first = random.random() < 0.5
+    pro_goes_first = random.random() < 0.5
 
     gs = GameState(
-        p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
+        p1=PlayerState(name='b', hand=list(pro_hand), library=list(pro_lib)),
         p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-        p1_goes_first=bug_goes_first)
+        p1_goes_first=pro_goes_first)
     gs.matchup = matchup
+    gs.p1_deck = protagonist
+    gs.p2_deck = matchup
 
     meta_name = matchup.replace('_', ' ').title()
-    bug_open = fmt_hand(gs.p1)
+    pro_open = fmt_hand(gs.p1)
     opp_open = fmt_hand(gs.p2)
 
     turns = []
@@ -320,13 +329,13 @@ def run_game_data(matchup, seed=None):
         def do_one(label):
             nonlocal display_turn
             display_turn += 1
-            player = gs.p1 if label == 'BUG' else gs.p2
-            opponent = gs.p2 if label == 'BUG' else gs.p1
+            player = gs.p1 if label == 'PRO' else gs.p2
+            opponent = gs.p2 if label == 'PRO' else gs.p1
             hand_before = fmt_hand(player)
             life_before = player.life
 
-            if label == 'BUG':
-                raw_lines = bug_turn(gs, rnd)
+            if label == 'PRO':
+                raw_lines = protagonist_turn(gs, rnd, protagonist)
             else:
                 raw_lines = opp_turn(gs, rnd, matchup)
 
@@ -349,38 +358,40 @@ def run_game_data(matchup, seed=None):
             })
             return gs.game_over
 
-        if bug_goes_first:
-            if do_one('BUG'): break
+        if pro_goes_first:
+            if do_one('PRO'): break
             if do_one('OPP'): break
         else:
             if do_one('OPP'): break
-            if do_one('BUG'): break
+            if do_one('PRO'): break
 
     # Timeout heuristic — if game didn't end, score board position
     if not gs.game_over:
-        bug_power = sum(c.power for c in gs.p1.creatures)
+        pro_power = sum(c.power for c in gs.p1.creatures)
         opp_power = sum(c.power for c in gs.p2.creatures)
-        bug_score = (bug_power * 2 + len(gs.p1.creatures) * 3
+        pro_score = (pro_power * 2 + len(gs.p1.creatures) * 3
                      + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life))
         opp_score = (opp_power * 2 + len(gs.p2.creatures) * 3
                      + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life))
-        if bug_score >= opp_score:
+        if pro_score >= opp_score:
             gs.winner = 'p1'
             gs.win_reason = f"Board/life advantage after T{display_turn}"
         else:
             gs.winner = 'p2'
             gs.win_reason = f"Opp board/life advantage after T{display_turn}"
 
-    winner = 'BUG' if gs.winner == 'p1' else 'OPP'
+    pro_label = protagonist.upper().replace('_', ' ')
+    winner = pro_label if gs.winner == 'p1' else 'OPP'
     return {
         'matchup': matchup, 'meta_name': meta_name, 'seed': seed,
-        'bug_goes_first': bug_goes_first,
-        'bug_mulls': bug_mulls, 'opp_mulls': opp_mulls,
-        'bug_open': bug_open, 'opp_open': opp_open,
+        'protagonist': protagonist, 'pro_label': pro_label,
+        'pro_goes_first': pro_goes_first,
+        'pro_mulls': pro_mulls, 'opp_mulls': opp_mulls,
+        'pro_open': pro_open, 'opp_open': opp_open,
         'turns': turns, 'display_turn': display_turn,
         'winner': winner, 'win_reason': gs.win_reason or '',
-        'bug_life': gs.p1.life, 'opp_life': gs.p2.life,
-        'bug_board': fmt_creatures(gs.p1),
+        'pro_life': gs.p1.life, 'opp_life': gs.p2.life,
+        'pro_board': fmt_creatures(gs.p1),
         'opp_board': fmt_creatures(gs.p2),
     }
 
@@ -396,14 +407,15 @@ def markdown_game(game, game_num=None, series_score=None):
         header += f" — {series_score}"
     lines.append(header)
     lines.append("")
-    play_draw = "BUG on the play" if g['bug_goes_first'] else "BUG on the draw"
+    pro_label = g.get('pro_label', 'PRO')
+    play_draw = f"{pro_label} on the play" if g['pro_goes_first'] else f"{pro_label} on the draw"
     lines.append(f"*{play_draw}, seed {g['seed']}*")
     lines.append("")
 
     # Opening hands
-    lines.append(f"| | BUG | OPP ({g['meta_name']}) |")
+    lines.append(f"| | {pro_label} | OPP ({g['meta_name']}) |")
     lines.append(f"|---|---|---|")
-    lines.append(f"| **Opening Hand** | {g['bug_open']} | {g['opp_open']} |")
+    lines.append(f"| **Opening Hand** | {g['pro_open']} | {g['opp_open']} |")
     lines.append("")
 
     # Turn table
@@ -451,8 +463,8 @@ def markdown_game(game, game_num=None, series_score=None):
     lines.append("")
 
     # Board + result
-    lines.append(f"**Board:** BUG: {g['bug_board']} | OPP: {g['opp_board']}")
-    wcls = "**" if g['winner'] == 'BUG' else "**"
+    lines.append(f"**Board:** {pro_label}: {g['pro_board']} | OPP: {g['opp_board']}")
+    wcls = "**"
     lines.append(f"**Result:** {g['winner']} wins T{g['display_turn']} — {g['win_reason']}")
     lines.append("")
 
@@ -468,12 +480,13 @@ def markdown_bo3(matchup, seeds):
     """
     games = [run_game_data(matchup, s) for s in seeds]
     meta_name = games[0]['meta_name']
+    pro_label = games[0].get('pro_label', 'PRO')
 
-    bug_score = 0
+    pro_score = 0
     opp_score = 0
     lines = []
 
-    lines.append(f"## Best of 3: BUG Tempo vs {meta_name}")
+    lines.append(f"## Best of 3: {pro_label} vs {meta_name}")
     lines.append("")
     lines.append("---")
     lines.append("")
@@ -482,7 +495,7 @@ def markdown_bo3(matchup, seeds):
         if i == 0:
             score_str = "0-0"
         else:
-            score_str = f"BUG {bug_score} - {opp_score} OPP"
+            score_str = f"{pro_label} {pro_score} - {opp_score} OPP"
 
         gnum = i + 1
         game_md = markdown_game(g, game_num=gnum, series_score=score_str)
@@ -490,13 +503,13 @@ def markdown_bo3(matchup, seeds):
         lines.append("---")
         lines.append("")
 
-        if g['winner'] == 'BUG':
-            bug_score += 1
+        if g['winner'] != 'OPP':
+            pro_score += 1
         else:
             opp_score += 1
 
     # Series summary
-    series_winner = 'BUG' if bug_score > opp_score else 'OPP'
+    series_winner = pro_label if pro_score > opp_score else 'OPP'
     lines.append(f"## Series Summary")
     lines.append("")
     lines.append(f"| Game | Winner | How | Key Moment |")
@@ -514,14 +527,14 @@ def markdown_bo3(matchup, seeds):
         lines.append(f"| {i+1} | **{g['winner']}** | T{g['display_turn']} {g['win_reason'][:30]} | {key[:50]} |")
 
     lines.append("")
-    lines.append(f"**{series_winner} wins the series {bug_score}-{opp_score}**")
+    lines.append(f"**{series_winner} wins the series {pro_score}-{opp_score}**")
     lines.append("")
 
     return '\n'.join(lines)
 
 
-def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False):
-    """Find 3 seeds for a good Bo3: mix of BUG/OPP wins, variety in game length.
+def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False, protagonist='bug'):
+    """Find 3 seeds for a good Bo3: mix of PRO/OPP wins, variety in game length.
 
     Picks games to form a dramatic 2-1 series. Prefers longer, interactive
     games over quick blowouts.
@@ -530,17 +543,20 @@ def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False):
         matchup: deck key (e.g. 'sneak_a')
         start/end: seed range to search
         require_no_mull: if True, only pick games where nobody mulligans
+        protagonist: deck key for P1 (default: 'bug')
 
     Usage:
         from verbose_table import find_bo3_seeds
         seeds = find_bo3_seeds('sneak_a')  # e.g. [51, 56, 55]
     """
-    bug_wins = []
+    from engine import play_turn
+    pro_keep = get_keep_fn(protagonist) or opp_keep
+    pro_wins = []
     opp_wins = []
 
     for seed in range(start, end):
         random.seed(seed)
-        bh, bl, bm = london_mulligan(DECKS['bug'], bug_keep)
+        bh, bl, bm = london_mulligan(DECKS[protagonist], pro_keep, protagonist)
         oh, ol, om = london_mulligan(DECKS[matchup], opp_keep, matchup)
 
         if require_no_mull and (bm != 0 or om != 0):
@@ -553,35 +569,32 @@ def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False):
             p2=PlayerState(name='o', hand=list(oh), library=list(ol)),
             p1_goes_first=bf)
         gs.matchup = matchup
+        gs.p1_deck = protagonist
+        gs.p2_deck = matchup
         try:
             for t in range(1, 16):
                 if gs.game_over:
                     break
                 gs.turn = t
-                if bf:
-                    bug_turn(gs, t)
+                first, second = ('p1', 'p2') if bf else ('p2', 'p1')
+                for who in (first, second):
+                    play_turn(gs, t, who)
                     if gs.game_over:
                         break
-                    opp_turn(gs, t, matchup)
-                else:
-                    opp_turn(gs, t, matchup)
-                    if gs.game_over:
-                        break
-                    bug_turn(gs, t)
         except Exception:
             continue
 
-        w = 'BUG' if gs.winner == 'p1' else 'OPP'
+        w = 'PRO' if gs.winner == 'p1' else 'OPP'
         game_len = gs.turn
         entry = (seed, game_len, bm, om, gs.win_reason or '')
 
-        if w == 'BUG':
-            bug_wins.append(entry)
+        if w == 'PRO':
+            pro_wins.append(entry)
         else:
             opp_wins.append(entry)
 
         # Once we have enough of each, build a 2-1 series
-        if len(bug_wins) >= 3 and len(opp_wins) >= 3:
+        if len(pro_wins) >= 3 and len(opp_wins) >= 3:
             break
 
     def pick_best(wins, count=2):
@@ -591,22 +604,22 @@ def find_bo3_seeds(matchup, start=1, end=1000, require_no_mull=False):
         return ranked[:count]
 
     # Build a 2-1 series — loser wins game 1 for drama
-    if len(opp_wins) >= 2 and len(bug_wins) >= 1:
+    if len(opp_wins) >= 2 and len(pro_wins) >= 1:
         opp_picks = pick_best(opp_wins, 2)
-        bug_picks = pick_best(bug_wins, 1)
-        return [opp_picks[0][0], bug_picks[0][0], opp_picks[1][0]]
-    elif len(bug_wins) >= 2 and len(opp_wins) >= 1:
-        bug_picks = pick_best(bug_wins, 2)
+        pro_picks = pick_best(pro_wins, 1)
+        return [opp_picks[0][0], pro_picks[0][0], opp_picks[1][0]]
+    elif len(pro_wins) >= 2 and len(opp_wins) >= 1:
+        pro_picks = pick_best(pro_wins, 2)
         opp_picks = pick_best(opp_wins, 1)
-        return [bug_picks[0][0], opp_picks[0][0], bug_picks[1][0]]
-    elif len(bug_wins) >= 2:
-        picks = pick_best(bug_wins, 3)
+        return [pro_picks[0][0], opp_picks[0][0], pro_picks[1][0]]
+    elif len(pro_wins) >= 2:
+        picks = pick_best(pro_wins, 3)
         return [p[0] for p in picks[:3]]
     elif len(opp_wins) >= 2:
         picks = pick_best(opp_wins, 3)
         return [p[0] for p in picks[:3]]
     else:
-        all_seeds = [s for s, *_ in bug_wins + opp_wins]
+        all_seeds = [s for s, *_ in pro_wins + opp_wins]
         while len(all_seeds) < 3:
             all_seeds.append(all_seeds[-1] + 1)
         return all_seeds[:3]

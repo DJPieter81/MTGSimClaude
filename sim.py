@@ -13,8 +13,8 @@ from typing import List, Optional
 from rules import MTGRules, StackType, Card
 from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
                    instant, sorcery, artifact, creature)
-from game import GameState, PlayerState, london_mulligan, bug_keep, opp_keep
-from engine import bug_turn, opp_turn, play_turn, update_goyf
+from game import GameState, PlayerState, london_mulligan, opp_keep
+from engine import opp_turn, play_turn, update_goyf
 
 
 @dataclass
@@ -112,8 +112,8 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
 
     # Mulligan: each deck uses its own keep logic (via registry or fallback)
     from deck_registry import get_keep_fn
-    p1_keep = get_keep_fn(deck1) or (bug_keep if deck1 == 'bug' else opp_keep)
-    p2_keep = get_keep_fn(deck2) or (bug_keep if deck2 == 'bug' else opp_keep)
+    p1_keep = get_keep_fn(deck1) or opp_keep
+    p2_keep = get_keep_fn(deck2) or opp_keep
 
     p1_mull_trace = p2_mull_trace = None
     if trace:
@@ -285,8 +285,6 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
                 key=lambda x: (-x[1], x[0])
             )
             decks = sorted(k for k, _ in ranked[:top_tier])
-            if 'bug' not in decks and any(k == 'bug' for k, _ in ranked):
-                decks = sorted(decks + ['bug'])
             print(f"Top-{top_tier} by meta share: {', '.join(decks)}")
         else:
             decks = sorted(DECKS.keys())
@@ -341,13 +339,13 @@ STRATEGIES = {
     'ur_aggro':    _strategy_ur_aggro,
     'mardu':       _strategy_mardu,
     'elves':       _strategy_elves,
-    # bug uses bug_turn (special — not yet in STRATEGIES)
+    # BUG strategy is registered via deck_registry (decks/bug.py)
 }
 
 
 def protagonist_turn(gs, turn, matchup):
     """
-    P1's generic turn function (all decks except BUG, which uses bug_turn).
+    P1's turn function — used by ALL decks (including BUG).
     Full turn structure: cleanup → untap → upkeep → draw → land → mana →
     lock enforcement → strategy dispatch → Eidolon damage → combat → EOT.
     gs.p1 = active player, gs.p2 = opposing player.
@@ -399,13 +397,13 @@ def protagonist_turn(gs, turn, matchup):
             bowmasters_triggers(1, gs, log_entries, controller='o')
 
     # ── Pending Bauble draws from previous turn ──
-    pending = getattr(gs, 'pending_bauble_draws_p1', 0)
+    pending = gs.pending_bauble_draws
     if pending > 0:
         drawn = b.draw(pending)
         for d in drawn:
             log(f"Bauble (upkeep draw) → {d.name}")
         bowmasters_triggers(pending, gs, log_entries, controller='o')
-        gs.pending_bauble_draws_p1 = 0
+        gs.pending_bauble_draws = 0
 
     # ── Land drop ──
     # Prioritise mana-producing lands (duals, basics) over utility lands (Wasteland)
@@ -614,11 +612,9 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
     """
     Run a Bo3 match: protagonist deck vs antagonist deck.
     protagonist and antagonist are matchup keys (e.g. 'dimir', 'storm', 'elves').
-    'bug' as protagonist uses bug_turn (the full BUG AI).
     Returns (protagonist_wins, antagonist_wins, games_played, results).
     """
     import random
-    from engine import bug_turn
 
     protagonist_wins = antagonist_wins = games_played = 0
     results = []
@@ -631,19 +627,15 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         use_sideboard = (game_num > 1)
 
         if use_sideboard:
-            if protagonist == 'bug':
-                from cards import make_postboard_bug_deck
-                pro_deck_fn = lambda: make_postboard_bug_deck(antagonist)
-            else:
-                pro_deck_fn = lambda: make_postboard_any_deck(protagonist, antagonist)
+            pro_deck_fn = lambda: make_postboard_any_deck(protagonist, antagonist)
             try:
                 from cards import make_postboard_opp_vs_protagonist
                 ant_deck_fn = lambda: make_postboard_opp_vs_protagonist(protagonist, antagonist)
             except Exception:
                 ant_deck_fn = lambda: make_postboard_opp_deck(antagonist)
         else:
-            pro_deck_fn  = DECKS.get(protagonist, DECKS['bug'])
-            ant_deck_fn  = DECKS.get(antagonist,  DECKS['bug'])
+            pro_deck_fn  = DECKS[protagonist]
+            ant_deck_fn  = DECKS[antagonist]
 
         pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck_fn, opp_keep, protagonist)
         ant_hand, ant_lib, ant_mulls = london_mulligan(ant_deck_fn, opp_keep, antagonist)
@@ -1546,9 +1538,9 @@ def run_rules_tests():
     # ── Audit: BUG deck is exactly 60 cards ────────────────────────────────
     test("BUG main deck is exactly 60 cards", len(bug_deck_), 60)
 
-    # ── Audit: All 18 opponent decks are exactly 60 cards ──────────────────
+    # ── Audit: All registered decks are exactly 60 cards ──────────────────
     for deck_name, deck_fn in ALL_DECKS.items():
-        if deck_name == 'bug': continue
+        if deck_name == 'bug': continue  # already tested above
         try:
             d = deck_fn()
             test(f"Deck '{deck_name}' is 60 cards", len(d), 60)
