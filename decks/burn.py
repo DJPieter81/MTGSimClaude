@@ -25,7 +25,7 @@ def make_burn_deck():
     # Goblin Guide: 2/2 haste for R — the gold standard T1 play
     for _ in range(4):
         d.append(creature('Goblin Guide', 1, {'R': 1}, {'R'},
-                          power=2, toughness=1, tag='guide', haste=True))
+                          power=2, toughness=2, tag='guide', haste=True))
 
     # Monastery Swiftspear: 1/2 haste, prowess (not modelled)
     for _ in range(4):
@@ -129,7 +129,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
       3. Cast burn spells at face, saving Fireblast as finisher
       4. Set eidolon_active when Eidolon is on the battlefield
     """
-    from engine import _try_counter_any, combat_declare
+    from engine import _try_counter_any, combat_declare, cast_spell
 
     mana = total_mana
 
@@ -143,28 +143,18 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     for tag in deploy_order:
         while True:
             card = player.find_tag(tag)
-            if not card:
+            if not card or card.cmc > mana:
                 break
-            cost = card.cmc
-            if cost > mana:
-                break
-            # Try to cast; opponent may counter
-            if not _try_counter_any(player, opponent, gs, card, log_entries):
-                player.remove_from_hand(card)
-                perm = player.put_creature_in_play(card)
-                mana -= cost
-                player.spells_cast_this_turn += 1
+            budget = [mana]
+            if cast_spell(player, opponent, gs, card, budget, log_fn, log_entries,
+                          on_resolve=lambda c: player.put_creature_in_play(c)):
                 log_fn(f"{card.name} enters the battlefield", True)
-
-                # Eidolon: flag it active so BUG takes 2 per CMC ≤3 spell
                 if tag == 'eidolon':
                     gs.eidolon_active = True
                     log_fn("★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell", True)
             else:
-                player.add_to_grave(card)
-                player.spells_cast_this_turn += 1
                 log_fn(f"{card.name} countered")
-
+            mana = budget[0]
             if gs.game_over:
                 return
 
@@ -198,16 +188,12 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
         pre_combat_spell = (player.find_tag('chain') or player.find_tag('spike')
                             or player.find_tag('bolt') or player.find_tag('rift'))
         if pre_combat_spell and _worth_casting(3):
-            if not _try_counter_any(player, opponent, gs, pre_combat_spell, log_entries):
-                player.remove_from_hand(pre_combat_spell)
-                player.add_to_grave(pre_combat_spell)
-                mana -= 1
-                player.spells_cast_this_turn += 1
-                deal_face_damage(3, f"{pre_combat_spell.name} (pre-combat)")
-            else:
-                player.add_to_grave(pre_combat_spell)
-                player.spells_cast_this_turn += 1
-                mana -= 1
+            budget = [mana]
+            if cast_spell(player, opponent, gs, pre_combat_spell, budget, log_fn, log_entries,
+                          on_resolve=lambda c: (player.add_to_grave(c),
+                                                deal_face_damage(3, f"{c.name} (pre-combat)"))):
+                pass  # resolved — on_resolve handled damage + graveyard
+            mana = budget[0]
 
     # ── Prowess: Swiftspear gets +1/+0 per noncreature spell this turn ──
     prowess_count = player.spells_cast_this_turn
@@ -264,17 +250,15 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             break  # don't waste it if opp has no nonbasics
         if not _worth_casting(pop_damage):
             break
-        if not _try_counter_any(player, opponent, gs, pop, log_entries):
-            player.remove_from_hand(pop)
-            player.add_to_grave(pop)
-            mana -= 2
-            player.spells_cast_this_turn += 1
-            deal_face_damage(pop_damage, f"Price of Progress ({nonbasics} nonbasics)")
+        budget = [mana]
+        if cast_spell(player, opponent, gs, pop, budget, log_fn, log_entries,
+                      on_resolve=lambda c, dmg=pop_damage, nb=nonbasics: (
+                          player.add_to_grave(c),
+                          deal_face_damage(dmg, f"Price of Progress ({nb} nonbasics)"))):
+            pass
         else:
-            player.add_to_grave(pop)
-            player.spells_cast_this_turn += 1
-            mana -= 2
             log_fn("Price of Progress countered")
+        mana = budget[0]
         if gs.game_over:
             return
 
@@ -288,18 +272,15 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             if not _worth_casting(3):
                 break
             # Rift Bolt: suspend costs effectively 1 mana (simplified)
-            cast_cost = 1  # all effectively cost 1 in this model
-            if not _try_counter_any(player, opponent, gs, card, log_entries):
-                player.remove_from_hand(card)
-                player.add_to_grave(card)
-                mana -= cast_cost
-                player.spells_cast_this_turn += 1
-                deal_face_damage(3, card.name)
+            budget = [mana]
+            if cast_spell(player, opponent, gs, card, budget, log_fn, log_entries,
+                          cost_override=1,
+                          on_resolve=lambda c: (player.add_to_grave(c),
+                                                deal_face_damage(3, c.name))):
+                pass
             else:
-                player.add_to_grave(card)
-                player.spells_cast_this_turn += 1
-                mana -= cast_cost
                 log_fn(f"{card.name} countered")
+            mana = budget[0]
             if gs.game_over:
                 return
 
@@ -318,32 +299,27 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                                               'orc_army', 'w6')]
         if priority_targets and opponent.life > 4:
             target = priority_targets[0]
-            if not _try_counter_any(player, opponent, gs, bolt, log_entries):
-                player.remove_from_hand(bolt)
-                player.add_to_grave(bolt)
-                mana -= 1
-                player.spells_cast_this_turn += 1
-                target.damage_marked += 3
-                log_fn(f"★ Lightning Bolt → {target.card.name} (3 damage)", True)
-                gs.state_based_actions()
+            budget = [mana]
+            if cast_spell(player, opponent, gs, bolt, budget, log_fn, log_entries,
+                          on_resolve=lambda c, t=target: (
+                              player.add_to_grave(c),
+                              setattr(t, 'damage_marked', t.damage_marked + 3),
+                              log_fn(f"★ Lightning Bolt → {t.card.name} (3 damage)", True),
+                              gs.state_based_actions())):
+                pass
             else:
-                player.add_to_grave(bolt)
-                player.spells_cast_this_turn += 1
-                mana -= 1
                 log_fn("Lightning Bolt countered")
+            mana = budget[0]
         else:
             # Bolt to face
-            if not _try_counter_any(player, opponent, gs, bolt, log_entries):
-                player.remove_from_hand(bolt)
-                player.add_to_grave(bolt)
-                mana -= 1
-                player.spells_cast_this_turn += 1
-                deal_face_damage(3, 'Lightning Bolt')
+            budget = [mana]
+            if cast_spell(player, opponent, gs, bolt, budget, log_fn, log_entries,
+                          on_resolve=lambda c: (player.add_to_grave(c),
+                                                deal_face_damage(3, 'Lightning Bolt'))):
+                pass
             else:
-                player.add_to_grave(bolt)
-                player.spells_cast_this_turn += 1
-                mana -= 1
                 log_fn("Lightning Bolt countered")
+            mana = budget[0]
         if gs.game_over:
             return
 
@@ -354,17 +330,14 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             break
         if not _worth_casting(3):
             break
-        if not _try_counter_any(player, opponent, gs, crack, log_entries):
-            player.remove_from_hand(crack)
-            player.add_to_grave(crack)
-            mana -= 2
-            player.spells_cast_this_turn += 1
-            deal_face_damage(3, 'Skullcrack')
+        budget = [mana]
+        if cast_spell(player, opponent, gs, crack, budget, log_fn, log_entries,
+                      on_resolve=lambda c: (player.add_to_grave(c),
+                                            deal_face_damage(3, 'Skullcrack'))):
+            pass
         else:
-            player.add_to_grave(crack)
-            player.spells_cast_this_turn += 1
-            mana -= 2
             log_fn("Skullcrack countered")
+        mana = budget[0]
         if gs.game_over:
             return
 
@@ -378,19 +351,17 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             if not targets:
                 break  # needs a creature target
             target = targets[0]
-            if not _try_counter_any(player, opponent, gs, blaze, log_entries):
-                player.remove_from_hand(blaze)
-                player.add_to_grave(blaze)
-                mana -= 2
-                player.spells_cast_this_turn += 1
-                target.damage_marked += 3
-                deal_face_damage(3, f"Searing Blaze ({target.card.name} takes 3)")
-                gs.state_based_actions()
+            budget = [mana]
+            if cast_spell(player, opponent, gs, blaze, budget, log_fn, log_entries,
+                          on_resolve=lambda c, t=target: (
+                              player.add_to_grave(c),
+                              setattr(t, 'damage_marked', t.damage_marked + 3),
+                              deal_face_damage(3, f"Searing Blaze ({t.card.name} takes 3)"),
+                              gs.state_based_actions())):
+                pass
             else:
-                player.add_to_grave(blaze)
-                player.spells_cast_this_turn += 1
-                mana -= 2
                 log_fn("Searing Blaze countered")
+            mana = budget[0]
             if gs.game_over:
                 return
 
@@ -399,24 +370,22 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     fireblast = player.find_tag('fireblast')
     if fireblast and not gs.game_over:
         mtns = [l for l in player.lands
-                if l.card.tag == 'basic' or 'R' in l.card.produces]
+                if l.card.name == 'Mountain']
         can_fireblast = len(mtns) >= 2
         # Fire when: opponent is low enough that 4 finishes or nearly finishes
         # Real Burn saves Fireblast for lethal — sac'ing 2 lands is a huge cost
         should_fireblast = (opponent.life <= 4 or
                             (opponent.life <= 8 and gs.turn >= 4))
         if can_fireblast and should_fireblast:
-            if not _try_counter_any(player, opponent, gs, fireblast, log_entries):
-                player.remove_from_hand(fireblast)
-                player.add_to_grave(fireblast)
-                # Sacrifice 2 mountains (alternate cost)
-                player.lands.remove(mtns[0])
-                player.lands.remove(mtns[1])
-                player.spells_cast_this_turn += 1
-                deal_face_damage(4, "Fireblast (sac 2 Mountains)")
+            # Sacrifice 2 Mountains as alternate cost (paid on cast, before counters)
+            m0, m1 = mtns[0], mtns[1]
+            player.lands.remove(m0)
+            player.lands.remove(m1)
+            if cast_spell(player, opponent, gs, fireblast, None, log_fn, log_entries,
+                          on_resolve=lambda c: (player.add_to_grave(c),
+                                                deal_face_damage(4, "Fireblast (sac 2 Mountains)"))):
+                pass
             else:
-                player.add_to_grave(fireblast)
-                player.spells_cast_this_turn += 1
                 log_fn("Fireblast countered")
             if gs.game_over:
                 return

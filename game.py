@@ -243,6 +243,8 @@ class GameState:
     eidolon_active: bool = False      # Eidolon of the Great Revel — 2 dmg to p1 per CMC≥2 spell cast
     tamiyo_flipped: bool = False
     combat_this_turn: bool = False    # Set by combat_declare, reset at turn start
+    p1_poison: int = 0                # Infect poison counters (10 = lethal)
+    p2_poison: int = 0
     p1_goes_first: bool = True        # S2: set by coin flip in run_game
     vial_counters: int = 0            # Aether Vial counter tracker
     _vial_entered_last_turn: bool = False  # prevents tick on entry turn
