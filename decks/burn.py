@@ -137,11 +137,13 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     landfall = player.land_played_this_turn
 
     # ── Deploy creatures ─────────────────────────────────────────────────
-    # Priority: Swiftspear > Guide > Eidolon
-    # Swiftspear scales with spell-heavy plan and has no downside.
-    # Eidolon: skip T1 (no haste, wastes the critical first turn), and skip
-    # late game when 1-mana burn spells deal more immediate damage.
-    deploy_order = ['swiftspear', 'guide', 'eidolon']
+    # Hand-aware priority: Swiftspear first when burn spells available for prowess,
+    # Guide first when no burn (2/2 haste > 1/2 haste without prowess triggers).
+    # Eidolon: skip T1 (no haste), skip late game, skip spell-heavy hands.
+    has_burn_for_prowess = any(c.tag in ('bolt', 'chain', 'spike', 'rift', 'skullcrack', 'pop')
+                               for c in player.hand)
+    deploy_order = (['swiftspear', 'guide', 'eidolon'] if has_burn_for_prowess
+                    else ['guide', 'swiftspear', 'eidolon'])
     creatures_cast = 0  # track creature spells for prowess (prowess is noncreature only)
 
     for tag in deploy_order:
@@ -161,7 +163,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 # would cost 6+ life vs 0 opponent damage in many matchups)
                 cheap_in_hand = sum(1 for c in player.hand
                                     if c.cmc <= 3 and not c.is_land() and c.tag != 'eidolon')
-                if cheap_in_hand >= 3:
+                if cheap_in_hand >= 4:
                     break
             budget = [mana]
             if cast_spell(player, opponent, gs, card, budget, log_fn, log_entries,
@@ -488,7 +490,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             break
         # Calculate remaining burn damage in hand (excluding this Fireblast)
         burn_tags = {'bolt': 3, 'chain': 3, 'spike': 3, 'rift': 3,
-                     'skullcrack': 3, 'pop': 3}
+                     'skullcrack': 3, 'pop': 3, 'fireblast': 4}
         remaining_burn = sum(burn_tags.get(c.tag, 0) for c in player.hand
                             if c is not fireblast)
         has_second_fireblast = sum(1 for c in player.hand
