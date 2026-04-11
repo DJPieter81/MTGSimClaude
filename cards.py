@@ -213,7 +213,7 @@ def make_dimir_deck() -> List[Card]:
     d = []
     # Creatures (15)
     d += [creature('Tamiyo, Inquisitive Student', 1, {'U':1}, {'U'}, 0, 3,
-                   tag='tamiyo', flying=True)] * 4
+                   tag='tamiyo')] * 4
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1,
                    tag='bowm',    draw_trigger=True, flash=True)] * 4
     d += [creature('Nethergoyf', 2, {'B':1,'generic':1}, {'B'}, 0, 1, tag='nether')] * 3
@@ -250,7 +250,7 @@ def make_dimir_b_deck() -> List[Card]:
     d = []
     # Creatures (14)
     d += [creature('Tamiyo, Inquisitive Student', 1, {'U':1}, {'U'}, 0, 3,
-                        tag='tamiyo', flying=True)] * 4
+                        tag='tamiyo')] * 4
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1,
                    tag='bowm',    draw_trigger=True, flash=True)] * 3
     d += [make_barrowgoyf()] * 2
@@ -677,7 +677,7 @@ def _bug_base(daze=3, ponder=3, kaito=2, bowm=4, bauble=2, snuff=1, extra_snuff=
     """Shared builder for BUG variant decks. All counts relative to baseline."""
     d = []
     d += [creature('Tamiyo, Inquisitive Student', 1, {'U':1}, {'U'}, 0, 3,
-                   tag='tamiyo', flying=True)] * 4
+                   tag='tamiyo')] * 4
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1,
                    tag='bowm', flash=True, draw_trigger=True)] * bowm
     d += [creature('Nethergoyf', 2, {'B':1,'generic':1}, {'B'}, 0, 1, tag='nether')] * 3

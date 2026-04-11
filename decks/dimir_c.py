@@ -135,7 +135,8 @@ def _strategy_dimir_c(player, opponent, gs, total_mana, log_fn, log_entries):
     6. Combat: attack with all non-summoning-sick creatures
     7. Brazen Borrower as flash threat (3 mana)
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
+    from config import CombatThresholds as CT
+from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
 
     mana = total_mana
 
@@ -283,7 +284,7 @@ def _strategy_dimir_c(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Snuff Out — free removal by paying 4 life
     snuff = player.find_tag('snuff')
-    if snuff and player.life > 8:
+    if snuff and player.life > CT.SNUFF_LIFE_BUFFER:
         targets = [c for c in opponent.creatures if c.toughness <= 4]
         if targets:
             target = targets[0]

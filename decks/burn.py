@@ -25,7 +25,7 @@ def make_burn_deck():
     # Goblin Guide: 2/2 haste for R — the gold standard T1 play
     for _ in range(4):
         d.append(creature('Goblin Guide', 1, {'R': 1}, {'R'},
-                          power=2, toughness=1, tag='guide', haste=True))
+                          power=2, toughness=2, tag='guide', haste=True))
 
     # Monastery Swiftspear: 1/2 haste, prowess (not modelled)
     for _ in range(4):

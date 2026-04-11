@@ -10,6 +10,7 @@ v2 fixes:
 
 import random
 from dataclasses import dataclass, field
+from config import GameRules as GR
 from typing import List, Dict, Optional
 from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
                    StackObject, StackType, MTGRules)
@@ -30,7 +31,7 @@ class LogEntry:
 @dataclass
 class PlayerState:
     name: str
-    life: int = 20
+    life: int = GR.STARTING_LIFE
     hand: List[Card] = field(default_factory=list)
     library: List[Card] = field(default_factory=list)
     graveyard: List[Card] = field(default_factory=list)
@@ -628,7 +629,7 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) ->
                 problems.append("doesn't meet deck-specific keep criteria")
             return "    Reason: " + "; ".join(problems) if problems else "    Reason: doesn't meet keep criteria"
 
-    for mulls in range(4):  # 0 mulls = keep opening 7, max 3 mulls
+    for mulls in range(GR.MAX_MULLIGANS + 1):  # 0 mulls = keep opening 7
         deck = list(deck_fn())
         random.shuffle(deck)
         # Always draw 7
@@ -678,7 +679,7 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) ->
     random.shuffle(deck)
     hand7 = deck[:7]
     rest  = deck[7:]
-    hand  = _choose_best_n(hand7, 4)  # choose best 4 (prioritises lands)
+    hand  = _choose_best_n(hand7, GR.FORCED_KEEP_SIZE)
     bottomed = [c for c in hand7 if c not in hand]
     if trace:
         trace_lines.append(f"  Forced keep after 3 mulligans — draw 7:")
