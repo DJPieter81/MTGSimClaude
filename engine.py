@@ -39,6 +39,17 @@ _ORC_ARMY_PROTO = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
                        base_power=0, base_toughness=0, gy_type='creature')
 
 
+def _check_tamiyo_flip(gs, player, log_entries):
+    """Check if Tamiyo should flip — oracle: flip when you draw your 3rd card in a turn."""
+    tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
+    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
+        if player.draws_this_turn >= 3:
+            gs.tamiyo_flipped = True
+            tam_perm.power_mod = 3
+            tam_perm.toughness_mod = 0
+            log_entries.append("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)")
+
+
 def _select_attackers(player, opponent, hold_tags=('bowm', 'tamiyo'), desperate_life=8):
     """Shared attacker selection for aggro/midrange strategies.
     Returns list of creatures to attack with. Holds back value engines and 0-power."""
@@ -3436,18 +3447,110 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
-    rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, total_mana, gs, caster=player)]
+    """Doomsday combo: cast Doomsday (BBB, pay half life, build 5-card pile),
+    then cycle Street Wraith (pay 2 life) to draw into pile, cast Thassa's Oracle
+    (UU) to win when devotion to blue >= cards left in library.
+    Handles both same-turn win and next-turn win after DD resolved previously."""
+
+    dd_already_resolved = getattr(gs, '_doomsday_pile_built', False)
+    mana = total_mana  # track remaining mana
+
+    # ── Helper: cycle cards from hand (activated abilities — uncounterable) ──
+    # Repeatedly cycle: each Wraith/Edge drawn from the pile can itself be cycled,
+    # chaining through the pile to thin the library for Oracle.
+    def _cycle_draw_cards():
+        for _ in range(10):  # generous limit for chain-cycling through pile
+            wraith = player.find_tag('wraith')
+            edge = player.find_tag('edge')
+            if wraith and player.life > 2:
+                player.remove_from_hand(wraith); player.add_to_grave(wraith)
+                player.life -= 2
+                drawn = player.draw(1)
+                drawn_name = drawn[0].name if drawn else 'nothing'
+                log_fn(f"  Street Wraith cycles (−2 life → {player.life}) — draws {drawn_name}")
+            elif edge and player.lands:
+                player.remove_from_hand(edge); player.add_to_grave(edge)
+                sac = player.lands.pop(); player.add_to_grave(sac.card)
+                drawn = player.draw(1)
+                drawn_name = drawn[0].name if drawn else 'nothing'
+                log_fn(f"  Edge of Autumn cycles (sac land) — draws {drawn_name}")
+            else:
+                break
+            if gs.bowmasters_on_board:
+                ctr = []; bowmasters_triggers(1, gs, ctr)
+                for m in ctr: log_entries.append(m)
+
+    # ── Helper: cast Thassa's Oracle and check ETB win ──
+    def _try_cast_oracle(avail_mana):
+        oracle = player.find_tag('oracle')
+        if not oracle or avail_mana < 2:
+            return False
+        # Pre-check: only cast Oracle when devotion will be high enough to win.
+        # Oracle gives 2 blue devotion (UU); count other blue permanents too.
+        expected_devotion = 2  # Oracle's own UU
+        for c in player.creatures:
+            expected_devotion += c.card.mana_cost.get('U', 0)
+        if expected_devotion < len(player.library):
+            return False  # don't waste Oracle if it won't win yet
+
+        player.remove_from_hand(oracle)
+        countered = False
+        if not gs.veil_active:
+            countered = _try_counter_any(player, opponent, gs, oracle, log_entries)
+        if not countered:
+            player.put_creature_in_play(oracle)
+            lib_size = len(player.library)
+            log_fn(f"  ★ Thassa's Oracle ETB — devotion {expected_devotion}, "
+                   f"library {lib_size}", True)
+            gs.game_over = True
+            gs.winner = 'p1' if player is gs.p1 else 'p2'
+            gs.win_reason = (f"Doomsday → Oracle (devotion {expected_devotion} "
+                             f"≥ library {lib_size})")
+            return True
+        else:
+            player.add_to_grave(oracle)
+            log_fn("  Oracle countered — Doomsday pile stranded")
+            return True  # spell was attempted
+
+    # ── Post-DD turns: pile already built, just draw + cast Oracle ──
+    if dd_already_resolved:
+        _cycle_draw_cards()
+        if not gs.game_over:
+            _try_cast_oracle(mana)
+        return
+
+    # ── Pre-DD: rituals for mana acceleration ──
+    rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
     extra = 0
     for r in rits:
         player.remove_from_hand(r); player.add_to_grave(r); extra += 2
     if extra: log_fn(f"Dark Ritual ×{len(rits)} → +{extra} mana")
-    # Cantrips — cycling cards (Street Wraith, Edge of Autumn) are activated abilities.
-    # FoW/Daze CANNOT counter cycling (CR 702.29). Opp pays cycling cost and draws.
-    can = next((c for c in player.hand if c.is_cantrip), None)
-    if can:
+    mana += extra
+
+    # ── Cantrips (pre-DD: dig for combo pieces) ──
+    # If we have DD + enough mana, skip mana cantrips to preserve mana for DD.
+    # Free cycling (Wraith, Edge) is always fine. Only skip paid cantrips if DD ready.
+    dd = player.find_tag('dd')
+    dd_ready = dd and mana >= 5
+
+    # Cast free cantrips (cycling) to dig — these don't cost mana
+    for _ in range(4):
+        # Prefer non-Wraith cantrips pre-DD: save Wraiths for post-DD pile cycling.
+        can = None
+        if not dd_ready:
+            can = next((c for c in player.hand if c.is_cantrip and c.tag not in ('wraith', 'edge')
+                        and mana >= 1), None)
+        if not can:
+            can = next((c for c in player.hand if c.is_cantrip and c.tag == 'edge'
+                        and player.lands), None)
+        if not can and not dd_ready:
+            can = next((c for c in player.hand if c.is_cantrip and c.tag == 'wraith'
+                        and player.life > 2), None)
+        if not can:
+            break
         player.remove_from_hand(can); player.add_to_grave(can)
         if can.tag == 'wraith':
-            player.life -= 2  # cycling costs 2 life
+            player.life -= 2
             log_fn(f"Street Wraith cycles (−2 life → {player.life}) — draws 1")
             player.draw(1)
         elif can.tag == 'edge':
@@ -3458,26 +3561,77 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
             log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
             player.draw(draws)
+            mana -= 1
         if gs.bowmasters_on_board:
             ctr = []; bowmasters_triggers(1, gs, ctr)
             for m in ctr: log_entries.append(m)
+        # Re-check DD readiness after each cantrip (may have drawn DD or ritual)
+        dd = player.find_tag('dd')
+        # Also check for new rituals drawn by cantrips
+        new_rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
+        for r in new_rits:
+            player.remove_from_hand(r); player.add_to_grave(r); mana += 2
+            log_fn(f"Dark Ritual → +2 mana")
+        dd_ready = dd and mana >= 5
+
+    # ── Cast Doomsday if we have 5+ mana ──
     dd = player.find_tag('dd')
-    if dd and (total_mana + extra) >= 5:
+    if dd and mana >= 5:
+        dd_resolved = False
         vos = player.find_tag('vos')
         if vos:
-            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True  # protect all spells this turn; log_fn("Veil of Summer")
+            player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
+            log_fn("Veil of Summer — blue interaction blanked")
             player.remove_from_hand(dd); player.add_to_grave(dd)
-            log_fn("★ Doomsday through Veil", True)
-            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-            gs.win_reason = "Doomsday + Veil of Summer"
+            log_fn("★ Doomsday resolves through Veil", True)
+            dd_resolved = True
         else:
             player.remove_from_hand(dd)
             if not _try_counter_any(player, opponent, gs, dd, log_entries):
                 player.add_to_grave(dd)
                 log_fn("★ Doomsday resolves", True)
-                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-                gs.win_reason = "Doomsday resolves uncountered"
-            else: player.add_to_grave(dd)
+                dd_resolved = True
+            else:
+                player.add_to_grave(dd)
+
+        if dd_resolved:
+            # Doomsday: pay half your life (rounded up)
+            half_life = (player.life + 1) // 2
+            player.life -= half_life
+            log_fn(f"  Doomsday life payment: −{half_life} → {player.life}")
+            if player.life <= 0:
+                gs.game_over = True
+                gs.winner = 'p2' if player is gs.p1 else 'p1'
+                gs.win_reason = f"Doomsday self-kill (life={player.life})"
+                return
+
+            # Build a 5-card pile optimized for Oracle win.
+            # Pile is filled with Street Wraiths so cycling chains through it,
+            # thinning the library to 0-1 cards for Oracle's ETB.
+            # Oracle in hand  → [Wraith, Wraith, Wraith, Wraith, X]
+            # Oracle NOT in hand → [Oracle, Wraith, Wraith, Wraith, Wraith]
+            oracle_in_hand = player.find_tag('oracle')
+            from cards import sorcery
+            padding = sorcery('Pile Card', 0, {}, set(), tag='pile_padding')
+            def _make_wraith():
+                return creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'},
+                                3, 4, tag='wraith', is_cantrip=True)
+            if oracle_in_hand:
+                player.library = [_make_wraith() for _ in range(4)] + [padding]
+            else:
+                oracle_card = creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3,
+                                       tag='oracle', win_condition=True)
+                player.library = [oracle_card] + [_make_wraith() for _ in range(4)]
+            gs._doomsday_pile_built = True
+            log_fn(f"  Pile built: {len(player.library)} cards in library")
+
+            mana -= 5  # spent on Doomsday
+
+            # Same-turn win attempt: cycle Wraiths from hand to thin pile + draw Oracle
+            _cycle_draw_cards()
+
+            if not gs.game_over:
+                _try_cast_oracle(mana)
 
 
 
