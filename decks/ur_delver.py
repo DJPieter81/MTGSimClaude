@@ -30,11 +30,13 @@ def make_ur_delver_deck() -> List[Card]:
     d: List[Card] = []
 
     # ── Creatures (14) ───────────────────────────────────────────────────────
-    # Delver of Secrets: 3/2 flyer (represents flipped Insectile Aberration ~60%)
-    d += [creature('Delver of Secrets', 1, {'U': 1}, {'U'}, 3, 2,
+    # Delver of Secrets: enters as 1/1 (unflipped). Strategy checks for flip
+    # each upkeep (~60% with this deck's instant/sorcery density).
+    d += [creature('Delver of Secrets', 1, {'U': 1}, {'U'}, 1, 1,
                    tag='delver', flying=True)] * 4
-    # Dragon's Rage Channeler: surveil 1, delirium → 3/3
-    d += [creature("Dragon's Rage Channeler", 1, {'R': 1}, {'R'}, 3, 3,
+    # Dragon's Rage Channeler: 1/1 base, delirium → 3/3
+    # Strategy checks delirium (4+ card types in GY) each turn
+    d += [creature("Dragon's Rage Channeler", 1, {'R': 1}, {'R'}, 1, 1,
                    tag='drc')] * 4
     # Murktide Regent: delve flyer, effectively 2 mana with full GY
     d += [creature('Murktide Regent', 7, {'U': 1, 'generic': 6}, {'U'}, 5, 5,
@@ -88,9 +90,10 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
     UR Delver tempo strategy.
 
     Priority:
+    0. Upkeep: Delver flip check (~60% per turn — reveal top card)
     1. Deploy cheap threats (Delver T1, DRC T1, Murktide T2+ with delve)
     2. Cantrip to flip Delver and find action
-    3. Lightning Bolt / Unholy Heat removal or face burn
+    3. Lightning Bolt / Unholy Heat — removal first, face burn only late
     4. Expressive Iteration for card advantage mid-game
     5. Combat — attack with all non-summoning-sick creatures
     6. Daze / FoW held reactively (via _try_counter_any)
@@ -99,10 +102,49 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
     from engine import update_goyf, opp_can_cast
 
     mana = total_mana
+    turn = gs.turn
+
+    # ── 0. Delver flip check (upkeep) ────────────────────────────────────────
+    # In real Legacy, Delver reveals the top card of the library each upkeep.
+    # With ~28 instants/sorceries in 42 non-land cards, flip rate is ~60%.
+    # Unflipped Delver is a 1/1 (base stats); flipped is 3/2 flying.
+    DELVER_FLIP_RATE = 0.60
+    for c in player.creatures:
+        if c.card.tag == 'delver' and c.power == 1:
+            # Unflipped Delver — attempt flip
+            if random.random() < DELVER_FLIP_RATE:
+                c.power_mod += 2   # 1 + 2 = 3 power
+                c.toughness_mod += 1  # 1 + 1 = 2 toughness
+                log_fn("Delver of Secrets flips → Insectile Aberration (3/2 flying)")
+            else:
+                log_fn("Delver upkeep — no flip (stays 1/1)")
+
+    # ── 0b. DRC delirium check ──────────────────────────────────────────────
+    # DRC is 1/1 until delirium (4+ card types in graveyard), then 3/3.
+    # DRC's own surveil trigger (each time you cast a spell) accelerates
+    # delirium. With fetchlands + cantrips, delirium is typical by T3.
+    # Model: count distinct gy_types; DRC surveil effectively adds ~1 type
+    # (representing cards DRC puts into the GY via surveil over the game).
+    gy_types_drc = set()
+    for c in player.graveyard:
+        gt = getattr(c, 'gy_type', '')
+        if gt:
+            gy_types_drc.add(gt)
+    # DRC surveil bonus: each cast spell would have surveiled, contributing
+    # card types. Approximate by counting GY size as a proxy for surveil depth.
+    gy_count = len(player.graveyard)
+    has_delirium = len(gy_types_drc) >= 4 or (len(gy_types_drc) >= 3 and gy_count >= 4)
+    for c in player.creatures:
+        if c.card.tag == 'drc':
+            if has_delirium and c.power == 1:
+                # Gain delirium — becomes 3/3
+                c.power_mod += 2   # 1 + 2 = 3
+                c.toughness_mod += 2  # 1 + 2 = 3
+                log_fn("DRC gains delirium → 3/3")
 
     # ── 1. Deploy threats ────────────────────────────────────────────────────
 
-    # Delver of Secrets — best T1 play (3/2 flyer)
+    # Delver of Secrets — best T1 play (enters as 1/1, flips next upkeep)
     deployed_threat = False
     for tag in ('delver', 'drc'):
         threat = player.find_tag(tag)
@@ -111,7 +153,8 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
             if not _try_counter_any(player, opponent, gs, threat, log_entries):
                 player.put_creature_in_play(threat)
                 mana -= 1
-                log_fn(f"{threat.name}")
+                suffix = " (1/1 — flips next upkeep)" if tag == 'delver' else ""
+                log_fn(f"{threat.name}{suffix}")
             else:
                 player.add_to_grave(threat)
             deployed_threat = True
@@ -180,22 +223,31 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
         bowmasters_triggers(1, gs, log_entries,
                             controller='o' if player is gs.p1 else 'b')
 
-    # ── 4. Lightning Bolt — removal or face burn ────────────────────────────
+    # ── 4. Lightning Bolt — removal-first, face burn only when closing ──────
 
     bolt = player.find_tag('bolt')
     if bolt and mana >= 1:
-        # Priority targets for removal
+        # Priority targets for removal — only worth Bolting meaningful threats
         def bolt_priority(c):
             if c.card.tag == 'tamiyo':  return 0   # must kill before flip
             if c.card.tag == 'bowm':    return 1   # shuts down cantrips
-            if c.toughness <= 3:        return 2   # Bolt range
+            if c.toughness <= 3 and c.power >= 2:  return 2   # real threat in Bolt range
+            if c.toughness <= 3 and c.power >= 1 and len(opponent.creatures) >= 3:
+                return 3  # clear smaller threats only when board is getting wide
             return 99
 
         candidates = [c for c in opponent.creatures if bolt_priority(c) < 99]
         target = min(candidates, key=bolt_priority) if candidates else None
+
+        # Go face only when closing the game:
+        # - Need a clock on board (creatures attacking)
+        # - Opponent must be in burn range (life <= 6), OR
+        # - Opponent is at <= 9 life AND it's turn 5+ (late game, clock is ticking)
+        has_clock = any(not c.summoning_sick for c in player.creatures)
         go_face = (target is None
-                   and opponent.life <= 9
-                   and len(player.creatures) > 0)
+                   and has_clock
+                   and (opponent.life <= 6
+                        or (opponent.life <= 9 and turn >= 5)))
 
         if target or go_face:
             player.remove_from_hand(bolt)
@@ -301,10 +353,12 @@ def test_ur_delver():
     assert spell_count == 28, f"Spell count {spell_count} != 28"
     results.append("OK  Spell count = 28")
 
-    # Test 6: Delver has flying
+    # Test 6: Delver has flying, enters as 1/1 (unflipped)
     delver = next(c for c in deck if c.tag == 'delver')
     assert getattr(delver, 'flying', False), "Delver should have flying"
-    results.append("OK  Delver has flying")
+    assert delver.base_power == 1, f"Delver should be 1/1 unflipped, got {delver.base_power}/{delver.base_toughness}"
+    assert delver.base_toughness == 1, f"Delver should be 1/1 unflipped"
+    results.append("OK  Delver has flying, enters as 1/1")
 
     # Test 7: Murktide has delve + flying
     murk = next(c for c in deck if c.tag == 'murk')
