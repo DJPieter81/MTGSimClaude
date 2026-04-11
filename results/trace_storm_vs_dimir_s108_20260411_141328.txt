@@ -1,0 +1,67 @@
+══════════════════════════════════════════════════════════════════════
+  STORM vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: STORM wins the die roll, goes FIRST
+
+  STORM (P1):
+  Draw 7:
+    1. Swamp (basic)
+    2. Swamp (basic)
+    3. Lion's Eye Diamond (artifact, CMC 0, combo)
+    4. Tendrils of Agony (sorcery, CMC 4, combo, win-con)
+    5. Ad Nauseam (instant, CMC 5, combo)
+    6. Cabal Ritual (instant, CMC 2)
+    7. Tendrils of Agony (sorcery, CMC 4, combo, win-con)
+    [Lands: 2  Combo: 4  Other: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DIMIR (P2):
+  Draw 7:
+    1. Polluted Delta (fetch)
+    2. Daze (instant, CMC 2, free counter)
+    3. Bloodstained Mire (fetch)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Daze (instant, CMC 2, free counter)
+    6. Brazen Borrower (creature 3/1, CMC 3)
+    7. Polluted Delta (fetch)
+    [Lands: 3  Creatures: 2  Counters: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock; 2 counter(s) for protection/disruption
+
+━━ TURN 1 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Swamp (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Swamp, Lion's Eye Diamond, Tendrils of Agony, Ad Nauseam, Cabal Ritual, Tendrils of Agony
+      → Tendrils of Agony goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has counters but cannot use them (conditions not met)
+      → Tendrils of Agony RESOLVES
+  ★ Storm Ad Nauseam — wins (est. storm ~3)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ STORM                            │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 53  GY: 2        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Swamp                   │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Swamp                    │   Hand: Polluted Delta, Daze     │
+  │         Lion's Eye Diamond       │         Bloodstained Mire        │
+  │         Ad Nauseam               │         Orcish Bowmasters        │
+  │         Tendrils of Agony        │         Daze, Brazen Borrower    │
+  │                                  │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: STORM — ANT combo (Ad Nauseam)
+  Final life: storm 20 | dimir 20
+══════════════════════════════════════════════════════════════════════

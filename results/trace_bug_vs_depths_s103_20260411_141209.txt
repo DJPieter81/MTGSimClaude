@@ -1,0 +1,306 @@
+══════════════════════════════════════════════════════════════════════
+  BUG vs DEPTHS
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DEPTHS wins the die roll, goes FIRST
+
+  BUG (P1):
+  Draw 7:
+    1. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Force of Will (instant, CMC 5, free counter)
+    4. Kaito, Bane of Nightmares (creature 3/4, CMC 3)
+    5. Daze (instant, CMC 2, free counter)
+    6. Murktide Regent (creature 3/3, CMC 7)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 0  Creatures: 3  Counters: 2  Cantrips: 1  Other: 1]
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Mulligan #1 — draw 7:
+    1. Orcish Bowmasters (creature 1/1, CMC 2)
+    2. Nethergoyf (creature 0/1, CMC 2)
+    3. Wasteland (land)
+    4. Underground Sea (dual)
+    5. Brainstorm (instant, CMC 1, cantrip)
+    6. Murktide Regent (creature 3/3, CMC 7)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 2  Creatures: 3  Cantrips: 2]
+  Keep best 6: Orcish Bowmasters, Nethergoyf, Murktide Regent, Wasteland, Underground Sea, Brainstorm
+  Bottom 1: 
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 2 lands — good mana base; 3 threat(s) for a clock
+
+  DEPTHS (P2):
+  Draw 7:
+    1. Green Sun's Zenith (sorcery, CMC 1, combo)
+    2. Forest (basic)
+    3. Windswept Heath (fetch)
+    4. Dark Depths (land)
+    5. Endurance (creature 3/4, CMC 3)
+    6. Dark Depths (land)
+    7. Endurance (creature 3/4, CMC 3)
+    [Lands: 4  Creatures: 2  Combo: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 2 threat(s) for a clock
+
+━━ TURN 1 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 20 | depths 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Forest (1 lands)
+  ── Main ──
+    Hand (6): Green Sun's Zenith, Windswept Heath, Dark Depths, Endurance, Dark Depths, Endurance
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 53  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Forest                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Orcish Bowmasters        │   Hand: Green Sun's Zenith       │
+  │         Nethergoyf               │         Windswept Heath          │
+  │         Murktide Regent          │         Dark Depths, Endurance   │
+  │         Wasteland                │         Dark Depths, Endurance   │
+  │         Underground Sea          │                                  │
+  │         Brainstorm               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 20 | depths 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Kaito, Bane of Nightmares
+  Land: Underground Sea (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Orcish Bowmasters, Nethergoyf, Murktide Regent, Wasteland, Brainstorm, Kaito, Bane of Nightmares
+  Brainstorm (3 draws = 3 separate draw events) → [Misty Rainforest, Murktide Regent, Snuff Out]
+    Puts back: ['Wasteland', 'Misty Rainforest']
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 51  GY: 1        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Underground Sea         │   Lands: Forest                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Orcish Bowmasters        │   Hand: Green Sun's Zenith       │
+  │         Nethergoyf               │         Windswept Heath          │
+  │         Murktide Regent, Kaito   │         Dark Depths, Endurance   │
+  │         Bane of Nightmares       │         Dark Depths, Endurance   │
+  │         Murktide Regent          │                                  │
+  │         Snuff Out                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 20 | depths 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Bayou
+  Play+crack Windswept Heath (−1 life, 19) → Plains
+  ── Main ──
+    Hand (6): Green Sun's Zenith, Dark Depths, Endurance, Dark Depths, Endurance, Bayou
+    Mana available: 2
+      → Green Sun's Zenith goes on the STACK
+      → Priority passes to BUG
+      → BUG has no counters — passes priority
+      → Green Sun's Zenith RESOLVES
+  Green Sun's Zenith → Elvish Reclaimer
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 51  GY: 1        │   Hand: 5  Lib: 50  GY: 3        │
+  │   Lands: Underground Sea         │   Lands: Forest, Plains          │
+  │   Creatures: (none)              │   Creatures: Elvish Reclaimer (1/2) │
+  │   Hand: Orcish Bowmasters        │   Hand: Dark Depths, Endurance   │
+  │         Nethergoyf               │         Dark Depths, Endurance   │
+  │         Murktide Regent, Kaito   │         Bayou                    │
+  │         Bane of Nightmares       │                                  │
+  │         Murktide Regent          │                                  │
+  │         Snuff Out                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 20 | depths 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Misty Rainforest
+  Play+crack Misty Rainforest (−1 life, 19) → Underground Sea
+  ── Main ── Mana: 2
+    Hand (6): Orcish Bowmasters, Nethergoyf, Murktide Regent, Kaito, Bane of Nightmares, Murktide Regent, Snuff Out
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Orcish Bowmasters RESOLVES
+  Flash Bowmasters (1 trigger per card opp draws)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: 19                       │   Life: 19                       │
+  │   Hand: 5  Lib: 49  GY: 3        │   Hand: 5  Lib: 50  GY: 3        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Forest, Plains          │
+  │   Creatures: Orcish Bowmasters (1/1) │   Creatures: Elvish Reclaimer (1/2) │
+  │   Hand: Nethergoyf               │   Hand: Dark Depths, Endurance   │
+  │         Murktide Regent, Kaito   │         Dark Depths, Endurance   │
+  │         Bane of Nightmares       │         Bayou                    │
+  │         Murktide Regent          │                                  │
+  │         Snuff Out                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 19 | depths 19
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Bojuka Bog
+  Land: Dark Depths (3 lands)
+  ── Main ──
+    Hand (5): Endurance, Dark Depths, Endurance, Bayou, Bojuka Bog
+    Mana available: 3
+  ★ Reclaimer activates (sac Forest) → find stage
+    -> Thespian's Stage enters the battlefield
+  Attack: Elvish Reclaimer — 1 unblocked → b at 18
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: 18                       │   Life: 19                       │
+  │   Hand: 5  Lib: 49  GY: 3        │   Hand: 5  Lib: 48  GY: 4        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Plains, Dark Depths, Thes... │
+  │   Creatures: Orcish Bowmasters (1/1) │   Creatures: Elvish Reclaimer (1/2) │
+  │   Hand: Nethergoyf               │   Hand: Endurance, Dark Depths   │
+  │         Murktide Regent, Kaito   │         Endurance, Bayou         │
+  │         Bane of Nightmares       │         Bojuka Bog               │
+  │         Murktide Regent          │                                  │
+  │         Snuff Out                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 18 | depths 19
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Wasteland
+  Land: Wasteland (3 lands)
+  ── Main ── Mana: 3
+    Hand (5): Nethergoyf, Murktide Regent, Kaito, Bane of Nightmares, Murktide Regent, Snuff Out
+  Wasteland [ACTIVATED-uncounterable] → Dark Depths
+      → Nethergoyf goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Nethergoyf RESOLVES
+  Cast Nethergoyf (CMC 2, sick, P/T 2/3)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: 18                       │   Life: 19                       │
+  │   Hand: 4  Lib: 48  GY: 3        │   Hand: 5  Lib: 48  GY: 5        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Plains, Thespian's Stage │
+  │   Creatures: Orcish Bowmasters (1/1), ... │   Creatures: Elvish Reclaimer (1/2) │
+  │   Hand: Murktide Regent, Kaito   │   Hand: Endurance, Dark Depths   │
+  │         Bane of Nightmares       │         Endurance, Bayou         │
+  │         Murktide Regent          │         Bojuka Bog               │
+  │         Snuff Out                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 18 | depths 19
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Verdant Catacombs
+  Land: Dark Depths (3 lands)
+  ── Main ──
+    Hand (5): Endurance, Endurance, Bayou, Bojuka Bog, Verdant Catacombs
+    Mana available: 3
+  ★ Stage copies Depths → Marit Lage 20/20!
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: 18                       │   Life: 19                       │
+  │   Hand: 4  Lib: 48  GY: 3        │   Hand: 5  Lib: 47  GY: 7        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Plains                  │
+  │   Creatures: Orcish Bowmasters (1/1), ... │   Creatures: Elvish Reclaimer (1/2), M... │
+  │   Hand: Murktide Regent, Kaito   │   Hand: Endurance, Endurance     │
+  │         Bane of Nightmares       │         Bayou, Bojuka Bog        │
+  │         Murktide Regent          │         Verdant Catacombs        │
+  │         Snuff Out                │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 18 | depths 19
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Force of Negation
+  ── Main ── Mana: 3
+    Hand (5): Murktide Regent, Kaito, Bane of Nightmares, Murktide Regent, Snuff Out, Force of Negation
+      → Kaito, Bane of Nightmares goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Kaito, Bane of Nightmares RESOLVES
+  Cast Kaito, Bane of Nightmares (3/4 hexproof) → Surveil 2, draw 1 [Fatal Push]
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: 18                       │   Life: 19                       │
+  │   Hand: 5  Lib: 46  GY: 3        │   Hand: 5  Lib: 47  GY: 7        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Plains                  │
+  │   Creatures: Orcish Bowmasters (1/1), ... │   Creatures: Elvish Reclaimer (1/2), M... │
+  │   Hand: Murktide Regent          │   Hand: Endurance, Endurance     │
+  │         Murktide Regent          │         Bayou, Bojuka Bog        │
+  │         Snuff Out                │         Verdant Catacombs        │
+  │         Force of Negation        │                                  │
+  │         Fatal Push               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 18 | depths 19
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Crop Rotation
+  Land: Bayou (2 lands)
+  ── Main ──
+    Hand (5): Endurance, Endurance, Bojuka Bog, Verdant Catacombs, Crop Rotation
+    Mana available: 2
+      → Crop Rotation goes on the STACK
+      → Priority passes to BUG
+      → BUG has counters but cannot use them (conditions not met)
+      → Crop Rotation RESOLVES
+  ⚠ Strategy error (depths): name 'random' is not defined — forfeiting turn
+  ★ P1 Wasteland (P2's turn) → destroys Bayou
+  ── Combat ── (2 attackers)
+  Attack: Marit Lage — 20 unblocked → b at -2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ DEPTHS                           │
+  │   Life: -2                       │   Life: 19                       │
+  │   Hand: 5  Lib: 46  GY: 4        │   Hand: 4  Lib: 46  GY: 10       │
+  │   Lands: Underground Sea, Undergro... │   Lands: (none)                  │
+  │   Creatures: Orcish Bowmasters (1/1), ... │   Creatures: Elvish Reclaimer (1/2), M... │
+  │   Hand: Murktide Regent          │   Hand: Endurance, Endurance     │
+  │         Murktide Regent          │         Bojuka Bog               │
+  │         Snuff Out                │         Verdant Catacombs        │
+  │         Force of Negation        │                                  │
+  │         Fatal Push               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DEPTHS — BUG life reaches -2 on turn 5
+  Final life: bug -2 | depths 19
+══════════════════════════════════════════════════════════════════════
