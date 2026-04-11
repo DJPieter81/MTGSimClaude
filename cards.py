@@ -1980,9 +1980,9 @@ def make_dimir_flash_deck() -> List[Card]:
                   tag='fon', free_cast_if_blue=True)] * 2
     d += [instant('Daze', 1, {'U':1}, {'U'}, tag='daze')] * 3
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 1
-    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs')] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder')] * 4
-    d += [instant('Fatal Push', 1, {'B':1}, {'B'}, tag='push')] * 4
+    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
+    d += [instant('Fatal Push', 1, {'B':1}, {'B'}, tag='push', is_removal=True)] * 4
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 3
     d += [fetch_land('Polluted Delta', ['Island', 'Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island', 'Swamp'])] * 2

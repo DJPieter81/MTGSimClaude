@@ -71,7 +71,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     opp_threat = sum(c.power for c in opponent.creatures)
     if len(opponent.creatures) >= 2 and (not mentor_on_board or opp_threat >= player.life):
         term = player.find_tag('terminus')
-        if term and random.random() < 0.80:
+        if term:
             player.remove_from_hand(term); player.add_to_grave(term)
             for c in list(opponent.creatures):
                 opponent.exile.append(c.card); opponent.revolt_this_turn = True

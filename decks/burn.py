@@ -25,7 +25,7 @@ def make_burn_deck():
     # Goblin Guide: 2/2 haste for R — the gold standard T1 play
     for _ in range(4):
         d.append(creature('Goblin Guide', 1, {'R': 1}, {'R'},
-                          power=2, toughness=2, tag='guide', haste=True))
+                          power=2, toughness=1, tag='guide', haste=True))
 
     # Monastery Swiftspear: 1/2 haste, prowess (not modelled)
     for _ in range(4):
@@ -137,54 +137,36 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     landfall = player.land_played_this_turn
 
     # ── Deploy creatures ─────────────────────────────────────────────────
-    # Real Burn plays at most 1 creature per turn.  T1 is always a 1-drop
-    # (Guide/Swiftspear).  Eidolon should only be deployed when we don't
-    # plan to cast burn spells this turn — it damages us too.
-    creatures_deployed = 0
-    CREATURE_CAP = 1  # max creatures to deploy per turn
-
-    # Eidolon timing: only deploy when hand is mostly lands/creatures (few
-    # burn spells remaining), so self-damage doesn't outweigh benefit.
-    # Also consider whether opponent is spell-heavy (makes Eidolon better).
-    burn_spells_in_hand = sum(1 for c in player.hand
-                              if not c.is_land() and not c.is_creature())
-    eidolon_safe = burn_spells_in_hand <= 1
-
+    # Priority: T1 Guide/Swiftspear, T2 Eidolon — deploy as many as mana allows
     deploy_order = ['guide', 'swiftspear', 'eidolon']
 
     for tag in deploy_order:
-        if creatures_deployed >= CREATURE_CAP:
-            break
-        card = player.find_tag(tag)
-        if not card:
-            continue
-        cost = card.cmc
-        if cost > mana:
-            continue
-        # Eidolon timing: skip if we plan to cast burn spells this turn
-        if tag == 'eidolon' and not eidolon_safe:
-            continue
-        # Try to cast; opponent may counter
-        if not _try_counter_any(player, opponent, gs, card, log_entries):
-            player.remove_from_hand(card)
-            perm = player.put_creature_in_play(card)
-            mana -= cost
-            player.spells_cast_this_turn += 1
-            creatures_deployed += 1
-            log_fn(f"{card.name} enters the battlefield", True)
+        while True:
+            card = player.find_tag(tag)
+            if not card:
+                break
+            cost = card.cmc
+            if cost > mana:
+                break
+            # Try to cast; opponent may counter
+            if not _try_counter_any(player, opponent, gs, card, log_entries):
+                player.remove_from_hand(card)
+                perm = player.put_creature_in_play(card)
+                mana -= cost
+                player.spells_cast_this_turn += 1
+                log_fn(f"{card.name} enters the battlefield", True)
 
-            # Eidolon: flag it active so BUG takes 2 per CMC ≤3 spell
-            if tag == 'eidolon':
-                gs.eidolon_active = True
-                log_fn("★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell", True)
-        else:
-            player.add_to_grave(card)
-            player.spells_cast_this_turn += 1
-            creatures_deployed += 1
-            log_fn(f"{card.name} countered")
+                # Eidolon: flag it active so BUG takes 2 per CMC ≤3 spell
+                if tag == 'eidolon':
+                    gs.eidolon_active = True
+                    log_fn("★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell", True)
+            else:
+                player.add_to_grave(card)
+                player.spells_cast_this_turn += 1
+                log_fn(f"{card.name} countered")
 
-        if gs.game_over:
-            return
+            if gs.game_over:
+                return
 
     # ── Keep eidolon_active in sync ──────────────────────────────────────
     gs.eidolon_active = any(c.card.tag == 'eidolon' for c in player.creatures)
@@ -199,31 +181,20 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
         gs.check_life_totals()
 
     def _worth_casting(spell_damage):
+        """Only skip if Eidolon self-damage would kill us AND spell doesn't kill opp."""
         if not own_eidolon:
             return True
         if spell_damage >= opponent.life:
-            return True
+            return True  # lethal — always cast
         if player.life <= eidolon_self_cost:
-            return False
-        return spell_damage > eidolon_self_cost
+            return False  # would kill ourselves
+        return True  # trust the rules engine — Eidolon damage is self-regulating
 
-    # ── Burn spell pacing ──────────────────────────────────────────────
-    # Legacy Burn on 1-2 mana casts 1 spell/turn.  With 3+ lands and no
-    # creature deployed, it can manage 2.  Deploying a creature already
-    # consumed our main-phase mana, so reduce burn budget to 1.
-    if creatures_deployed > 0:
-        BURN_SPELLS_PER_TURN = 1
-    elif len(player.lands) >= 3:
-        BURN_SPELLS_PER_TURN = 2
-    else:
-        BURN_SPELLS_PER_TURN = 1
-    burn_spells_this_turn = 0
-
-    # ── Pre-combat: cast one cheap burn spell for prowess trigger ────────
-    # Real Burn casts a spell Main Phase 1 to pump Swiftspear before combat.
+    # ── Pre-combat: cast cheap burn spells for prowess triggers ──────────
+    # Real Burn casts spells Main Phase 1 to pump Swiftspear before combat.
     swiftspear_in_play = any(c.card.tag == 'swiftspear' for c in player.creatures
                              if not c.summoning_sick)
-    if swiftspear_in_play and mana >= 1 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
+    if swiftspear_in_play and mana >= 1:
         pre_combat_spell = (player.find_tag('chain') or player.find_tag('spike')
                             or player.find_tag('bolt') or player.find_tag('rift'))
         if pre_combat_spell and _worth_casting(3):
@@ -232,12 +203,10 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(pre_combat_spell)
                 mana -= 1
                 player.spells_cast_this_turn += 1
-                burn_spells_this_turn += 1
                 deal_face_damage(3, f"{pre_combat_spell.name} (pre-combat)")
             else:
                 player.add_to_grave(pre_combat_spell)
                 player.spells_cast_this_turn += 1
-                burn_spells_this_turn += 1
                 mana -= 1
 
     # ── Prowess: Swiftspear gets +1/+0 per noncreature spell this turn ──
@@ -281,17 +250,16 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     prowess_boosted = []
 
     # ── Burn spells at face (post-combat) ──────────────────────────────
-    # burn_spells_this_turn and BURN_SPELLS_PER_TURN initialized above pre-combat.
-    # Pre-combat spell counts toward the cap.
+    # No artificial per-turn cap — mana availability and hand size are the
+    # natural constraints, just like real Legacy Burn.
 
     # --- Price of Progress: best when opp has nonbasic lands ---
-    while mana >= 2 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
+    while mana >= 2:
         pop = player.find_tag('pop')
         if not pop:
             break
         nonbasics = sum(1 for l in opponent.lands if not l.card.is_basic)
-        # Cap at 6 damage (3 nonbasics) — realistic Legacy manabase average
-        pop_damage = min(nonbasics * 2, 6)
+        pop_damage = nonbasics * 2
         if pop_damage <= 0:
             break  # don't waste it if opp has no nonbasics
         if not _worth_casting(pop_damage):
@@ -301,12 +269,10 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(pop)
             mana -= 2
             player.spells_cast_this_turn += 1
-            burn_spells_this_turn += 1
             deal_face_damage(pop_damage, f"Price of Progress ({nonbasics} nonbasics)")
         else:
             player.add_to_grave(pop)
             player.spells_cast_this_turn += 1
-            burn_spells_this_turn += 1
             mana -= 2
             log_fn("Price of Progress countered")
         if gs.game_over:
@@ -315,7 +281,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     # --- Cheap 3-damage spells: Chain Lightning, Lava Spike, Rift Bolt ---
     cheap_burn_tags = ['chain', 'spike', 'rift']
     for tag in cheap_burn_tags:
-        while mana >= 1 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
+        while mana >= 1:
             card = player.find_tag(tag)
             if not card:
                 break
@@ -328,19 +294,17 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(card)
                 mana -= cast_cost
                 player.spells_cast_this_turn += 1
-                burn_spells_this_turn += 1
                 deal_face_damage(3, card.name)
             else:
                 player.add_to_grave(card)
                 player.spells_cast_this_turn += 1
-                burn_spells_this_turn += 1
                 mana -= cast_cost
                 log_fn(f"{card.name} countered")
             if gs.game_over:
                 return
 
     # --- Lightning Bolt at face (or at a key creature) ---
-    while mana >= 1 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
+    while mana >= 1:
         bolt = player.find_tag('bolt')
         if not bolt:
             break
@@ -359,14 +323,12 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(bolt)
                 mana -= 1
                 player.spells_cast_this_turn += 1
-                burn_spells_this_turn += 1
                 target.damage_marked += 3
                 log_fn(f"★ Lightning Bolt → {target.card.name} (3 damage)", True)
                 gs.state_based_actions()
             else:
                 player.add_to_grave(bolt)
                 player.spells_cast_this_turn += 1
-                burn_spells_this_turn += 1
                 mana -= 1
                 log_fn("Lightning Bolt countered")
         else:
@@ -376,7 +338,6 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(bolt)
                 mana -= 1
                 player.spells_cast_this_turn += 1
-                burn_spells_this_turn += 1
                 deal_face_damage(3, 'Lightning Bolt')
             else:
                 player.add_to_grave(bolt)
@@ -387,7 +348,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             return
 
     # --- Skullcrack: 3 damage, opponent can't gain life ---
-    while mana >= 2 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
+    while mana >= 2:
         crack = player.find_tag('skullcrack')
         if not crack:
             break
@@ -409,7 +370,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # --- Searing Blaze: 3 to creature + 3 to player (needs landfall) ---
     if landfall:
-        while mana >= 2 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
+        while mana >= 2:
             blaze = player.find_tag('blaze')
             if not blaze:
                 break
