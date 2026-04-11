@@ -835,13 +835,27 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             ctr.append(f"Consign to Memory counters {spell_card.name}")
 
     # ── Daze (return Island; caster may pay {1} to prevent) ──
+    # Daze is strong T1-2 when opponents are mana-tight, but after T3 opponents
+    # can usually pay {1}. Model pay-through rate scaling with turn + caster mana.
     if not ctr and d_daze and is_major_threat:
         blue_land = next((l for l in defender.lands if not l.tapped and 'U' in l.effective_produces()), None)
         if blue_land:
             is_combo = is_in_category(matchup, 'combo') or is_in_category(matchup, 'fast_combo')
-            pay_threshold = 0.55 if is_combo else 0.30
+            # Caster's available mana after casting the spell (can they afford +1?)
+            caster_mana = caster.available_mana_count()
+            caster_spare = max(0, caster_mana - spell_card.cmc)
+            # Pay-through probability increases with turn and spare mana
+            if is_combo:
+                pay_threshold = 0.55  # combo decks often tap out, ~55% pay
+            elif gs.turn <= 2:
+                # T1-2: opponent is mana-tight, rarely pays
+                pay_threshold = 0.15 if caster_spare >= 1 else 0.0
+            elif gs.turn == 3:
+                pay_threshold = 0.50 if caster_spare >= 1 else 0.20
+            else:
+                # T4+: opponent almost always has spare mana to pay {1}
+                pay_threshold = 0.85 if caster_spare >= 1 else 0.45
             can_pay = (spell_card.cmc >= 1 and
-                       (gs.turn >= 3 or is_combo) and
                        random.random() < pay_threshold)
             if can_pay:
                 log_list.append(f"  Daze attempted on {spell_card.name} — caster pays {{1}}, spell resolves")
