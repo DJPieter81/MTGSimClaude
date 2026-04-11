@@ -120,6 +120,7 @@ function wc(w){if(w<=25)return`hsl(0,55%,${18+w*.3}%)`;if(w<=40)return`hsl(${(w-
 function tc(w){return w<15?'#f87171':w>80?'#4ade80':'#e2e8f0'}
 function muc(w){return w>=70?'#4ade80':w>=55?'#60a5fa':w>=45?'#d97706':w>=30?'#f87171':'#ef4444'}
 function closeDet(){document.getElementById('det').classList.remove('show');selCell=null;selDeck=null;render()}
+function pills(cards,color){return'<div style="display:flex;flex-wrap:wrap;gap:3px;margin:2px 0">'+cards.map(([c,n])=>'<span style="display:inline-block;background:'+color+'15;color:'+color+';border:1px solid '+color+'30;border-radius:10px;padding:1px 7px;font-size:10px;font-family:JetBrains Mono,monospace">'+c+' <span style="opacity:.5">×'+n+'</span></span>').join('')+'</div>'}
 
 function sort(){const m=document.getElementById('srt').value;
 if(m==='az')sorted=[...decks].sort();
