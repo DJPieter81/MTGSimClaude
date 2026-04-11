@@ -559,23 +559,23 @@ def make_painter_deck() -> List[Card]:
 def make_doomsday_deck() -> List[Card]:
     d = []
     d += [sorcery('Doomsday', 5, {'B':2,'generic':3}, {'B'}, tag='dd',
-                  is_combo_piece=True, win_condition=True)] * 4
+                  is_combo_piece=True)] * 4  # removed win_condition — only Oracle is the kill
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3, tag='oracle', win_condition=True)] * 4
-    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 3
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 4  # was 3
     d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 3
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 3
-    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 3
-    d += [instant('Edge of Autumn', 2, {'G':1,'generic':1}, {'G'}, tag='edge', is_cantrip=True)] * 2
+    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 4  # was 3
+    d += [instant('Edge of Autumn', 2, {'G':1,'generic':1}, {'G'}, tag='edge', is_cantrip=True)] * 1  # was 2 (trimmed to fit 60)
     # 26 lands
     d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 4
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
     d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 1
-    d += [basic_land('Island', 'U', 'Island')] * 6
+    d += [basic_land('Island', 'U', 'Island')] * 5  # was 6 (trimmed to fit 60)
     d += [basic_land('Swamp', 'B', 'Swamp')] * 4
     d += [basic_land('Forest', 'G', 'Forest')] * 2
     assert len(d) == 60, f"Doomsday deck: {len(d)}"

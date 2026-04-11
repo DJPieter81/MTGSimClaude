@@ -370,8 +370,8 @@ def protagonist_turn(gs, turn, matchup):
         drawn = b.draw(1, is_draw_step=True)
         if drawn:
             log(f"Draw: {drawn[0].name}")
-            # Bowmasters on opponent's board triggers on protagonist's draws
-            bowmasters_triggers(1, gs, log_entries, controller='o')
+            # Per Oracle: Bowmasters does NOT trigger on the first draw-step
+            # draw. Only triggers on extra draws (cantrips, etc.).
 
     # ── Pending Bauble draws from previous turn ──
     pending = gs.pending_bauble_draws
@@ -1761,6 +1761,35 @@ def run_rules_tests():
     state, metrics = assess_board(gs_board.p1, gs_board.p2)
     test("assess_board: p1 has creature, p2 empty → 'ahead'", state, 'ahead')
     test("assess_board: board_power = 4", metrics['board_power'], 4)
+
+    # ── Layer 3: Holistic Controls (matchup balance guards) ──
+    print(f"\n  --- Holistic Controls (30-game sweeps) ---")
+    import random as _ctrl_rng
+
+    def _sweep_wr(d1, d2, n=30):
+        """Quick sweep returning p1 win rate."""
+        seed_base = hash(d1 + d2) % 10000
+        wins = 0
+        for i in range(n):
+            _ctrl_rng.seed(seed_base + i)
+            r = run_game(d1, d2)
+            if r.winner == 'p1':
+                wins += 1
+        return wins / n
+
+    # Control 1: Symmetry — A_vs_B + B_vs_A should sum to ~100%
+    for da, db in [('burn', 'dimir'), ('storm', 'bug'), ('eldrazi', 'goblins')]:
+        wr_ab = _sweep_wr(da, db)
+        wr_ba = _sweep_wr(db, da)
+        sym = wr_ab + wr_ba
+        ok = abs(sym - 1.0) <= 0.25
+        test(f"Symmetry: {da} vs {db} ({wr_ab:.0%}+{wr_ba:.0%}={sym:.0%})", ok, True)
+
+    # Control 2: WR Bounds — no extreme matchups (>88% or <12%)
+    for d1, d2 in [('burn', 'uwx'), ('doomsday', 'dimir'), ('prison', 'dimir'), ('show', 'dimir')]:
+        wr = _sweep_wr(d1, d2)
+        ok = 0.12 <= wr <= 0.88
+        test(f"WR bounds: {d1} vs {d2} ({wr:.0%})", ok, True)
 
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")

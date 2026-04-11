@@ -374,8 +374,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
         can_fireblast = len(mtns) >= 2
         # Fire when: opponent is low enough that 4 finishes or nearly finishes
         # Real Burn saves Fireblast for lethal — sac'ing 2 lands is a huge cost
-        should_fireblast = (opponent.life <= 4 or
-                            (opponent.life <= 8 and gs.turn >= 4))
+        should_fireblast = opponent.life <= 4  # lethal only — sac'ing 2 Mountains is too costly otherwise
         if can_fireblast and should_fireblast:
             # Sacrifice 2 Mountains as alternate cost (paid on cast, before counters)
             m0, m1 = mtns[0], mtns[1]
