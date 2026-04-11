@@ -272,7 +272,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Also go off if we have Ad Nauseam + 5 mana
     # On later turns, be even more aggressive — go off with less
-    if gs.turn >= 2 and (has_tutor or has_tendrils) and proj_mana >= 3:
+    if (has_tutor or has_tendrils) and proj_mana >= 3:
         can_go_off = True
 
     # If we have Veil + tutor/tendrils, always go off (protected combo)

@@ -1022,7 +1022,7 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.lands.remove(target)
             opponent.add_to_grave(target.card)
             stifle = opponent.find_tag('stifle') if getattr(gs, 'opp_has_stifle', False) else None
-            if stifle and can_afford(opponent, stifle.mana_cost) and random.random() < 0.7:
+            if stifle and can_afford(opponent, stifle.mana_cost):
                 opponent.remove_from_hand(stifle); opponent.add_to_grave(stifle)
                 # Stifle counters the activated ability. Costs are already paid (Wasteland sac'd).
                 # Per oracle: ability is countered but costs aren't reversed.
@@ -3909,7 +3909,7 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     # Only Terminus if: opp has 2+ creatures, AND (no Mentor on board OR opp is lethal)
     if len(opponent.creatures) >= 2 and (not mentor_on_board or opp_threat >= player.life):
         term = player.find_tag('terminus')
-        if term and random.random() < 0.80:
+        if term:
             player.remove_from_hand(term); player.add_to_grave(term)
             for c in list(opponent.creatures):
                 opponent.exile.append(c.card); opponent.revolt_this_turn = True
@@ -4663,10 +4663,7 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     # Mardu floods the board: Ragavan T1, Bowmasters T2, second creature T3+
     # Priority: Ragavan (haste, Treasure) > Bowmasters (draw punishment) > Grief (body)
     deploy_tags = ['ragavan', 'bowm', 'grief']
-    creatures_deployed = 0
     for tag in deploy_tags:
-        if creatures_deployed >= 2:
-            break  # max 2 creatures per turn
         card = player.find_tag(tag)
         if not card or not opp_can_cast(card, total_mana, gs, caster=player):
             continue
@@ -4677,7 +4674,6 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
         if not _try_counter_any(player, opponent, gs, card, log_entries):
             player.put_creature_in_play(card)
             total_mana -= card.cmc
-            creatures_deployed += 1
             if tag == 'ragavan':
                 log_fn("Ragavan (haste)")
             elif tag == 'bowm':
