@@ -1,0 +1,342 @@
+══════════════════════════════════════════════════════════════════════
+  DEPTHS vs DIMIR_FLASH
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DEPTHS wins the die roll, goes FIRST
+
+  DEPTHS (P1):
+  Draw 7:
+    1. Sejiri Steppe (land)
+    2. Dryad Arbor (creature 1/1, CMC 0)
+    3. Savannah (dual)
+    4. Endurance (creature 3/4, CMC 3)
+    5. Verdant Catacombs (fetch)
+    6. Crop Rotation (instant, CMC 1, combo)
+    7. Crop Rotation (instant, CMC 1, combo)
+    [Lands: 3  Creatures: 2  Combo: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DIMIR_FLASH (P2):
+  Draw 7:
+    1. Wasteland (land)
+    2. Polluted Delta (fetch)
+    3. Thoughtseize (sorcery, CMC 1)
+    4. Wan Shi Tong, Librarian (creature 1/1, CMC 2)
+    5. Scalding Tarn (fetch)
+    6. Ponder (sorcery, CMC 1, cantrip)
+    7. Force of Will (instant, CMC 5, free counter)
+    [Lands: 3  Creatures: 1  Counters: 1  Cantrips: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir_flash 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Savannah (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Sejiri Steppe, Dryad Arbor, Endurance, Verdant Catacombs, Crop Rotation, Crop Rotation
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH evaluates: MAJOR THREAT — responds!
+    ★ DIMIR_FLASH Force of Will counters Crop Rotation (exiles Ponder)
+    Crop Rotation COUNTERED — goes to graveyard
+  Crop Rotation countered
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 53  GY: 1        │   Hand: 5  Lib: 53  GY: 1        │
+  │   Lands: Savannah                │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Sejiri Steppe            │   Hand: Wasteland                │
+  │         Dryad Arbor, Endurance   │         Polluted Delta           │
+  │         Verdant Catacombs        │         Thoughtseize             │
+  │         Crop Rotation            │         Wan Shi Tong             │
+  │         Crop Rotation            │         Librarian, Scalding Tarn │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir_flash 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Land: Wasteland (1 lands)
+  ── Main ──
+    Hand (5): Polluted Delta, Thoughtseize, Wan Shi Tong, Librarian, Scalding Tarn, Polluted Delta
+    Mana available: 1
+      → Thoughtseize goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Thoughtseize RESOLVES
+  Thoughtseize -> strips Endurance (-2 life, 18)
+  Wasteland [ACTIVATED-uncounterable] -> Savannah
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 5  Lib: 53  GY: 3        │   Hand: 4  Lib: 52  GY: 3        │
+  │   Lands: (none)                  │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Sejiri Steppe            │   Hand: Polluted Delta           │
+  │         Dryad Arbor              │         Wan Shi Tong             │
+  │         Verdant Catacombs        │         Librarian                │
+  │         Crop Rotation            │         Scalding Tarn            │
+  │         Crop Rotation            │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir_flash 18
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Bayou
+  Land: Bayou (1 lands)
+  ── Main ── Mana: 1
+    Hand (5): Sejiri Steppe, Dryad Arbor, Verdant Catacombs, Crop Rotation, Crop Rotation
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has no counters — passes priority
+      → Crop Rotation RESOLVES
+  ★ Crop Rotation (sac Bayou) → find depths
+    -> Dark Depths enters the battlefield
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 51  GY: 5        │   Hand: 4  Lib: 52  GY: 3        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Sejiri Steppe            │   Hand: Polluted Delta           │
+  │         Dryad Arbor              │         Wan Shi Tong             │
+  │         Verdant Catacombs        │         Librarian                │
+  │         Crop Rotation            │         Scalding Tarn            │
+  │                                  │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir_flash 18
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers
+  ── Main ──
+    Hand (4): Wan Shi Tong, Librarian, Scalding Tarn, Polluted Delta, Wasteland
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 4  Lib: 51  GY: 5        │   Hand: 4  Lib: 50  GY: 5        │
+  │   Lands: Dark Depths             │   Lands: Undercity Sewers        │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Sejiri Steppe            │   Hand: Wan Shi Tong             │
+  │         Dryad Arbor              │         Librarian                │
+  │         Verdant Catacombs        │         Scalding Tarn            │
+  │         Crop Rotation            │         Polluted Delta           │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir_flash 17
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mox Diamond
+  Play+crack Verdant Catacombs (−1 life, 19) → Forest
+  ── Main ── Mana: 2
+    Hand (4): Sejiri Steppe, Dryad Arbor, Crop Rotation, Mox Diamond
+  Mox Diamond (discard Sejiri Steppe) → mana=3
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has no counters — passes priority
+      → Crop Rotation RESOLVES
+  ★ Crop Rotation (sac Forest) → find stage
+    -> Thespian's Stage enters the battlefield
+  ★ Stage copies Depths → Marit Lage 20/20!
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 19                       │   Life: 17                       │
+  │   Hand: 1  Lib: 48  GY: 12       │   Hand: 4  Lib: 50  GY: 5        │
+  │   Lands: (none)                  │   Lands: Undercity Sewers        │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Wan Shi Tong             │
+  │   Hand: Dryad Arbor              │         Librarian                │
+  │                                  │         Scalding Tarn            │
+  │                                  │         Polluted Delta           │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | dimir_flash 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Play+crack Scalding Tarn (−1 life, 16) → Underground Sea
+  ── Main ──
+    Hand (4): Wan Shi Tong, Librarian, Polluted Delta, Wasteland, Fatal Push
+    Mana available: 2
+      → Wan Shi Tong, Librarian goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Wan Shi Tong, Librarian RESOLVES
+  Wan Shi Tong, Librarian (X=0) enters as 1/1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 19                       │   Life: 16                       │
+  │   Hand: 1  Lib: 48  GY: 12       │   Hand: 3  Lib: 48  GY: 7        │
+  │   Lands: (none)                  │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Wan Shi Tong, Librarian (... │
+  │   Artifacts: Mox Diamond         │   Hand: Polluted Delta           │
+  │   Hand: Dryad Arbor              │         Wasteland, Fatal Push    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | dimir_flash 16
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Once Upon a Time
+  ── Main ── Mana: 0
+    Hand (2): Dryad Arbor, Once Upon a Time
+  Once Upon a Time (free) → dig
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 19                       │   Life: 16                       │
+  │   Hand: 2  Lib: 46  GY: 13       │   Hand: 3  Lib: 48  GY: 7        │
+  │   Lands: (none)                  │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Wan Shi Tong, Librarian (... │
+  │   Artifacts: Mox Diamond         │   Hand: Polluted Delta           │
+  │   Hand: Dryad Arbor              │         Wasteland, Fatal Push    │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | dimir_flash 16
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  Play+crack Polluted Delta (−1 life, 15) → Underground Sea
+  ── Main ──
+    Hand (3): Wasteland, Fatal Push, Orcish Bowmasters
+    Mana available: 3
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Orcish Bowmasters RESOLVES
+  Orcish Bowmasters (flash)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 19                       │   Life: 15                       │
+  │   Hand: 2  Lib: 46  GY: 13       │   Hand: 2  Lib: 46  GY: 9        │
+  │   Lands: (none)                  │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Wan Shi Tong, Librarian (... │
+  │   Artifacts: Mox Diamond         │   Hand: Wasteland, Fatal Push    │
+  │   Hand: Dryad Arbor              │                                  │
+  │         Crop Rotation            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | dimir_flash 15
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Bojuka Bog
+    Bowmasters T1/1: b -1 life → 18, Orc Army 1/1
+  Land: Bojuka Bog (1 lands)
+  ── Main ── Mana: 1
+    Hand (2): Dryad Arbor, Crop Rotation
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR_FLASH
+      → DIMIR_FLASH has no counters — passes priority
+      → Crop Rotation RESOLVES
+  ★ Crop Rotation (sac Bojuka Bog) → find depths
+    -> Dark Depths enters the battlefield
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage — Wan Shi Tong, Librarian blocks Marit Lage. Marit Lage deals 20, Wan Shi Tong, Librarian deals 1 back. 0 unblocked damage to player (o at 15)
+      Wan Shi Tong, Librarian dies.
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 1  Lib: 44  GY: 15       │   Hand: 2  Lib: 46  GY: 10       │
+  │   Lands: Dark Depths             │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Wasteland, Fatal Push    │
+  │   Hand: Dryad Arbor              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DIMIR_FLASH ━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 18 | dimir_flash 15
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (2): Fatal Push, Fatal Push
+    Mana available: 4
+  Wasteland [ACTIVATED-uncounterable] -> Dark Depths
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 1  Lib: 44  GY: 16       │   Hand: 2  Lib: 45  GY: 11       │
+  │   Lands: (none)                  │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push, Fatal Push   │
+  │   Hand: Dryad Arbor              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 18 | dimir_flash 15
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Green Sun's Zenith
+    Bowmasters T1/1: b -1 life → 17, Orc Army 2/2
+  ── Main ── Mana: 0
+    Hand (2): Dryad Arbor, Green Sun's Zenith
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage — 20 unblocked → o at -5
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR_FLASH                      │
+  │   Life: 17                       │   Life: -5                       │
+  │   Hand: 2  Lib: 43  GY: 16       │   Hand: 2  Lib: 45  GY: 11       │
+  │   Lands: (none)                  │   Lands: Undercity Sewers, Undergr... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Orcish Bowmasters (1/1), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Fatal Push, Fatal Push   │
+  │   Hand: Dryad Arbor              │                                  │
+  │         Green Sun's Zenith       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DEPTHS — Opp life reaches -5 on turn 6
+  Final life: depths 17 | dimir_flash -5
+══════════════════════════════════════════════════════════════════════

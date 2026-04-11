@@ -1,0 +1,262 @@
+══════════════════════════════════════════════════════════════════════
+  DEPTHS vs GOBLINS
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: GOBLINS wins the die roll, goes FIRST
+
+  DEPTHS (P1):
+  Draw 7:
+    1. Mox Diamond (artifact, CMC 0)
+    2. Plains (basic)
+    3. Knight of the Reliquary (creature 4/4, CMC 3)
+    4. Crop Rotation (instant, CMC 1, combo)
+    5. Dark Depths (land)
+    6. Thespian's Stage (land)
+    7. Green Sun's Zenith (sorcery, CMC 1, combo)
+    [Lands: 3  Creatures: 1  Combo: 2  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  GOBLINS (P2):
+  Draw 7:
+    1. Munitions Expert (creature 1/1, CMC 2, removal)
+    2. Auntie's Hovel (land)
+    3. Sling-Gang Lieutenant (creature 1/1, CMC 4)
+    4. Sling-Gang Lieutenant (creature 1/1, CMC 4)
+    5. Goblin Matron (creature 1/1, CMC 3)
+    6. Cavern of Souls (land)
+    7. Goblin Matron (creature 1/1, CMC 3)
+    [Lands: 2  Creatures: 5  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 5 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — GOBLINS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | goblins 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Auntie's Hovel (1 lands)
+  ── Main ──
+    Hand (6): Munitions Expert, Sling-Gang Lieutenant, Sling-Gang Lieutenant, Goblin Matron, Cavern of Souls, Goblin Matron
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ GOBLINS                          │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Auntie's Hovel          │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Mox Diamond, Plains      │   Hand: Munitions Expert         │
+  │         Knight of the Reliquary, │         Sling-Gang Lieutenant    │
+  │         Crop Rotation            │         Sling-Gang Lieutenant    │
+  │         Dark Depths              │         Goblin Matron            │
+  │         Thespian's Stage         │         Cavern of Souls          │
+  │         Green Sun's Zenith       │         Goblin Matron            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | goblins 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Sejiri Steppe
+  Land: Plains (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Mox Diamond, Knight of the Reliquary, Crop Rotation, Dark Depths, Thespian's Stage, Green Sun's Zenith, Sejiri Steppe
+  Mox Diamond (discard Sejiri Steppe) → mana=2
+      → Crop Rotation goes on the STACK
+      → Priority passes to GOBLINS
+      → GOBLINS has no counters — passes priority
+      → Crop Rotation RESOLVES
+  ★ Crop Rotation (sac Plains) → find depths
+    -> Dark Depths enters the battlefield
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ GOBLINS                          │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 51  GY: 3        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: Auntie's Hovel          │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Munitions Expert         │
+  │   Hand: Knight of the Reliquary, │         Sling-Gang Lieutenant    │
+  │         Dark Depths              │         Sling-Gang Lieutenant    │
+  │         Thespian's Stage         │         Goblin Matron            │
+  │         Green Sun's Zenith       │         Cavern of Souls          │
+  │                                  │         Goblin Matron            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — GOBLINS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | goblins 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Badlands
+  Land: Cavern of Souls (2 lands)
+  ── Main ──
+    Hand (6): Munitions Expert, Sling-Gang Lieutenant, Sling-Gang Lieutenant, Goblin Matron, Goblin Matron, Badlands
+    Mana available: 2
+      → Munitions Expert goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Munitions Expert RESOLVES
+  Munitions Expert
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ GOBLINS                          │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 51  GY: 3        │   Hand: 5  Lib: 52  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: Auntie's Hovel, Cavern of... │
+  │   Creatures: (none)              │   Creatures: Munitions Expert (1/1) │
+  │   Artifacts: Mox Diamond         │   Hand: Sling-Gang Lieutenant    │
+  │   Hand: Knight of the Reliquary, │         Sling-Gang Lieutenant    │
+  │         Dark Depths              │         Goblin Matron            │
+  │         Thespian's Stage         │         Goblin Matron, Badlands  │
+  │         Green Sun's Zenith       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | goblins 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Windswept Heath
+  Play+crack Windswept Heath (−1 life, 19) → Forest
+  ── Main ── Mana: 2
+    Hand (4): Knight of the Reliquary, Dark Depths, Thespian's Stage, Green Sun's Zenith
+      → Green Sun's Zenith goes on the STACK
+      → Priority passes to GOBLINS
+      → GOBLINS has no counters — passes priority
+      → Green Sun's Zenith RESOLVES
+  Green Sun's Zenith → Elvish Reclaimer
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ GOBLINS                          │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 3  Lib: 48  GY: 6        │   Hand: 5  Lib: 52  GY: 0        │
+  │   Lands: Dark Depths, Forest     │   Lands: Auntie's Hovel, Cavern of... │
+  │   Creatures: Elvish Reclaimer (1/2) │   Creatures: Munitions Expert (1/1) │
+  │   Artifacts: Mox Diamond         │   Hand: Sling-Gang Lieutenant    │
+  │   Hand: Knight of the Reliquary, │         Sling-Gang Lieutenant    │
+  │         Dark Depths              │         Goblin Matron            │
+  │         Thespian's Stage         │         Goblin Matron, Badlands  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — GOBLINS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | goblins 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Cavern of Souls
+  Land: Badlands (3 lands)
+  ── Main ──
+    Hand (5): Sling-Gang Lieutenant, Sling-Gang Lieutenant, Goblin Matron, Goblin Matron, Cavern of Souls
+    Mana available: 3
+      → Goblin Matron goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Goblin Matron RESOLVES
+  Goblin Matron → tutors Muxus!
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ GOBLINS                          │
+  │   Life: 19                       │   Life: 20                       │
+  │   Hand: 3  Lib: 48  GY: 6        │   Hand: 5  Lib: 50  GY: 0        │
+  │   Lands: Dark Depths, Forest     │   Lands: Auntie's Hovel, Cavern of... │
+  │   Creatures: Elvish Reclaimer (1/2) │   Creatures: Munitions Expert (1/1), G... │
+  │   Artifacts: Mox Diamond         │   Hand: Sling-Gang Lieutenant    │
+  │   Hand: Knight of the Reliquary, │         Sling-Gang Lieutenant    │
+  │         Dark Depths              │         Goblin Matron            │
+  │         Thespian's Stage         │         Cavern of Souls, Muxus   │
+  │                                  │         Goblin Grandee           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | goblins 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Knight of the Reliquary
+  Land: Dark Depths (3 lands)
+  ── Main ── Mana: 3
+    Hand (3): Knight of the Reliquary, Thespian's Stage, Knight of the Reliquary
+  ★ Reclaimer activates (sac Forest) → find stage
+    -> Thespian's Stage enters the battlefield
+  ★ Stage copies Depths → Marit Lage 20/20!
+  Attack: Elvish Reclaimer — 1 unblocked → o at 19
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ GOBLINS                          │
+  │   Life: 19                       │   Life: 19                       │
+  │   Hand: 3  Lib: 46  GY: 9        │   Hand: 5  Lib: 50  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: Auntie's Hovel, Cavern of... │
+  │   Creatures: Elvish Reclaimer (1/2), M... │   Creatures: Munitions Expert (1/1), G... │
+  │   Artifacts: Mox Diamond         │   Hand: Sling-Gang Lieutenant    │
+  │   Hand: Knight of the Reliquary, │         Sling-Gang Lieutenant    │
+  │         Thespian's Stage         │         Goblin Matron            │
+  │         Knight of the Reliquary  │         Cavern of Souls, Muxus   │
+  │                                  │         Goblin Grandee           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — GOBLINS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | goblins 19
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Goblin Ringleader
+  Land: Cavern of Souls (4 lands)
+  ── Main ──
+    Hand (5): Sling-Gang Lieutenant, Sling-Gang Lieutenant, Goblin Matron, Muxus, Goblin Grandee, Goblin Ringleader
+    Mana available: 4
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ GOBLINS                          │
+  │   Life: 19                       │   Life: 19                       │
+  │   Hand: 3  Lib: 46  GY: 9        │   Hand: 5  Lib: 49  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: Auntie's Hovel, Cavern of... │
+  │   Creatures: Elvish Reclaimer (1/2), M... │   Creatures: Munitions Expert (1/1), G... │
+  │   Artifacts: Mox Diamond         │   Hand: Sling-Gang Lieutenant    │
+  │   Hand: Knight of the Reliquary, │         Sling-Gang Lieutenant    │
+  │         Thespian's Stage         │         Goblin Matron, Muxus     │
+  │         Knight of the Reliquary  │         Goblin Grandee           │
+  │                                  │         Goblin Ringleader        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 19 | goblins 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mox Diamond
+  Land: Thespian's Stage (2 lands)
+  ── Main ── Mana: 2
+    Hand (3): Knight of the Reliquary, Knight of the Reliquary, Mox Diamond
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Elvish Reclaimer, Marit Lage — 21 unblocked → o at -2
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ GOBLINS                          │
+  │   Life: 19                       │   Life: -2                       │
+  │   Hand: 3  Lib: 45  GY: 9        │   Hand: 5  Lib: 49  GY: 0        │
+  │   Lands: Dark Depths, Thespian's S... │   Lands: Auntie's Hovel, Cavern of... │
+  │   Creatures: Elvish Reclaimer (1/2), M... │   Creatures: Munitions Expert (1/1), G... │
+  │   Artifacts: Mox Diamond         │   Hand: Sling-Gang Lieutenant    │
+  │   Hand: Knight of the Reliquary, │         Sling-Gang Lieutenant    │
+  │         Knight of the Reliquary, │         Goblin Matron, Muxus     │
+  │         Mox Diamond              │         Goblin Grandee           │
+  │                                  │         Goblin Ringleader        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DEPTHS — Opp life reaches -2 on turn 4
+  Final life: depths 19 | goblins -2
+══════════════════════════════════════════════════════════════════════
