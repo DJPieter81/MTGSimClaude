@@ -479,13 +479,28 @@ def markdown_bo3(matchup, seeds):
         from verbose_table import markdown_bo3
         print(markdown_bo3('sneak_a', [51, 56, 55]))
     """
-    games = [run_game_data(matchup, s) for s in seeds]
+    pro_score = 0
+    opp_score = 0
+    games = []
+    lines = []
+
+    # Play games one at a time, stop when someone reaches 2 wins
+    for s in seeds:
+        if pro_score == 2 or opp_score == 2:
+            break
+        g = run_game_data(matchup, s)
+        games.append(g)
+        if g['winner'] != 'OPP':
+            pro_score += 1
+        else:
+            opp_score += 1
+
     meta_name = games[0]['meta_name']
     pro_label = games[0].get('pro_label', 'PRO')
 
+    # Reset scores for display pass
     pro_score = 0
     opp_score = 0
-    lines = []
 
     lines.append(f"## Best of 3: {pro_label} vs {meta_name}")
     lines.append("")

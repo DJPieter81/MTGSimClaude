@@ -235,13 +235,25 @@ def generate_html(matchup, seeds, protagonist='bug'):
     if isinstance(seeds, (int, type(None))):
         seeds = [seeds]
 
-    games = [run_one_game(matchup, s, protagonist=protagonist) for s in seeds]
+    is_bo3 = len(seeds) > 1
+
+    # Play games one at a time, stop when someone reaches 2 wins (Bo3)
+    games = []
+    pro_wins = 0
+    opp_wins = 0
+    for s in seeds:
+        if is_bo3 and (pro_wins == 2 or opp_wins == 2):
+            break
+        g = run_one_game(matchup, s, protagonist=protagonist)
+        games.append(g)
+        pro_label = g.get('pro_label', 'BUG')
+        if g['winner'] == pro_label:
+            pro_wins += 1
+        else:
+            opp_wins += 1
+
     meta_name = games[0]['meta_name']
     pro_label = games[0].get('pro_label', 'BUG')
-    is_bo3 = len(games) > 1
-
-    pro_wins = sum(1 for g in games if g['winner'] == pro_label)
-    opp_wins = sum(1 for g in games if g['winner'] == 'OPP')
     series_winner = pro_label if pro_wins > opp_wins else 'OPP'
 
     # Build HTML
