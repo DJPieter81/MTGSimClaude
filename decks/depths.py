@@ -16,7 +16,6 @@ Key lines:
 import sys
 sys.path.insert(0, '/home/claude/mtg_sim')
 
-import random
 from cards import creature, instant, sorcery, artifact, enchantment
 
 # ─── Deck construction ────────────────────────────────────────────────────────
