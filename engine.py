@@ -3419,6 +3419,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.winner = 'p1' if player is gs.p1 else 'p2'
             gs.win_reason = (f"Doomsday → Oracle (devotion {expected_devotion} "
                              f"≥ library {lib_size})")
+            gs.kill_turn = gs.turn
             return True
         else:
             player.add_to_grave(oracle)
@@ -3444,7 +3445,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     # If we have DD + enough mana, skip mana cantrips to preserve mana for DD.
     # Free cycling (Wraith, Edge) is always fine. Only skip paid cantrips if DD ready.
     dd = player.find_tag('dd')
-    dd_ready = dd and mana >= 5
+    dd_ready = dd and mana >= 3  # DD costs BBB = 3 mana
 
     # Cast free cantrips (cycling) to dig — these don't cost mana
     for _ in range(4):
@@ -3485,11 +3486,11 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         for r in new_rits:
             player.remove_from_hand(r); player.add_to_grave(r); mana += 2
             log_fn(f"Dark Ritual → +2 mana")
-        dd_ready = dd and mana >= 5
+        dd_ready = dd and mana >= 3  # DD costs BBB = 3 mana
 
     # ── Cast Doomsday if we have 5+ mana ──
     dd = player.find_tag('dd')
-    if dd and mana >= 5:
+    if dd and mana >= 3:  # DD costs BBB = 3 mana
         dd_resolved = False
         vos = player.find_tag('vos')
         if vos:
@@ -3538,7 +3539,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             gs._doomsday_pile_built = True
             log_fn(f"  Pile built: {len(player.library)} cards in library")
 
-            mana -= 5  # spent on Doomsday
+            mana -= 3  # DD costs BBB = 3 mana
 
             # Same-turn win attempt: cycle Wraiths from hand to thin pile + draw Oracle
             _cycle_draw_cards()
