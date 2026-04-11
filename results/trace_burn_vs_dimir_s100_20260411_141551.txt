@@ -1,0 +1,336 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Lightning Bolt (instant, CMC 1, win-con)
+    2. Price of Progress (instant, CMC 2, win-con)
+    3. Barbarian Ring (land)
+    4. Goblin Guide (creature 2/1, CMC 1)
+    5. Barbarian Ring (land)
+    6. Chain Lightning (sorcery, CMC 1, win-con)
+    7. Barbarian Ring (land)
+    [Lands: 3  Creatures: 1  Combo: 3]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 4 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DIMIR (P2):
+  Draw 7:
+    1. Ponder (sorcery, CMC 1, cantrip)
+    2. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    3. Orcish Bowmasters (creature 1/1, CMC 2)
+    4. Fatal Push (instant, CMC 1, removal)
+    5. Thoughtseize (sorcery, CMC 1)
+    6. Underground Sea (dual)
+    7. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    [Lands: 1  Creatures: 3  Cantrips: 1  Removal: 1  Other: 1]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Orcish Bowmasters (creature 1/1, CMC 2)
+    2. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    3. Daze (instant, CMC 2, free counter)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Scalding Tarn (fetch)
+    6. Ponder (sorcery, CMC 1, cantrip)
+    7. Wasteland (land)
+    [Lands: 2  Creatures: 3  Counters: 1  Cantrips: 1]
+  Keep best 6: Orcish Bowmasters, Tamiyo, Inquisitive Student, Orcish Bowmasters, Scalding Tarn, Ponder, Wasteland
+  Bottom 1: Daze
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 2 lands — good mana base; 3 threat(s) for a clock
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Barbarian Ring (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Lightning Bolt, Price of Progress, Goblin Guide, Barbarian Ring, Chain Lightning, Barbarian Ring
+      → Goblin Guide goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+    Goblin Guide trigger → reveals Underground Sea (land) — opponent draws it
+  Attack: Goblin Guide — 2 unblocked → o at 18
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 5  Lib: 53  GY: 0        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Barbarian Ring          │   Lands: (none)                  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Price of Progress        │         Tamiyo                   │
+  │         Barbarian Ring           │         Inquisitive Student      │
+  │         Chain Lightning          │         Orcish Bowmasters        │
+  │         Barbarian Ring           │         Scalding Tarn, Ponder    │
+  │                                  │         Wasteland                │
+  │                                  │         Underground Sea          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 18
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Murktide Regent
+  Play+crack Scalding Tarn (−1 life, 17) → Underground Sea
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Tamiyo, Inquisitive Student, Orcish Bowmasters, Ponder, Wasteland, Underground Sea, Murktide Regent
+    Mana available: 1
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 5  Lib: 53  GY: 0        │   Hand: 6  Lib: 51  GY: 2        │
+  │   Lands: Barbarian Ring          │   Lands: Underground Sea         │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Price of Progress        │         Orcish Bowmasters        │
+  │         Barbarian Ring           │         Ponder, Wasteland        │
+  │         Chain Lightning          │         Underground Sea          │
+  │         Barbarian Ring           │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Eidolon of the Great Revel
+  Land: Barbarian Ring (2 lands)
+  ── Main ── Mana: 2
+    Hand (5): Lightning Bolt, Price of Progress, Chain Lightning, Barbarian Ring, Eidolon of the Great Revel
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+    Goblin Guide trigger → reveals Scalding Tarn (land) — opponent draws it
+  Attack: Goblin Guide — 2 unblocked → o at 15
+  Eidolon trigger — 1 spell(s) cast, 2 damage to P1 (18)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 4  Lib: 52  GY: 0        │   Hand: 7  Lib: 50  GY: 2        │
+  │   Lands: Barbarian Ring, Barbarian... │   Lands: Underground Sea         │
+  │   Creatures: Goblin Guide (2/1), Eidol... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Price of Progress        │         Orcish Bowmasters        │
+  │         Chain Lightning          │         Ponder, Wasteland        │
+  │         Barbarian Ring           │         Underground Sea          │
+  │                                  │         Murktide Regent          │
+  │                                  │         Scalding Tarn            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | dimir 15
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Daze
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Orcish Bowmasters, Ponder, Underground Sea, Murktide Regent, Scalding Tarn, Daze
+    Mana available: 2
+  Ponder (1 draw)
+  Wasteland [ACTIVATED-uncounterable] → Barbarian Ring
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 18                       │   Life: 15                       │
+  │   Hand: 4  Lib: 52  GY: 1        │   Hand: 7  Lib: 48  GY: 4        │
+  │   Lands: Barbarian Ring          │   Lands: Underground Sea         │
+  │   Creatures: Goblin Guide (2/1), Eidol... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Price of Progress        │         Orcish Bowmasters        │
+  │         Chain Lightning          │         Underground Sea          │
+  │         Barbarian Ring           │         Murktide Regent          │
+  │                                  │         Scalding Tarn, Daze      │
+  │                                  │         Ponder                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | dimir 15
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Rift Bolt
+  Land: Barbarian Ring (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Lightning Bolt, Price of Progress, Chain Lightning, Rift Bolt
+  Attack: Goblin Guide, Eidolon of the Great Revel — 4 unblocked → o at 11
+      → Price of Progress goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR evaluates: MAJOR THREAT — responds!
+    ★ DIMIR Daze counters Price of Progress — Underground Sea returned
+    Price of Progress COUNTERED — goes to graveyard
+  Price of Progress countered
+  Eidolon trigger — 1 spell(s) cast, 2 damage to P1 (16)
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 16                       │   Life: 11                       │
+  │   Hand: 4  Lib: 51  GY: 2        │   Hand: 7  Lib: 48  GY: 5        │
+  │   Lands: Barbarian Ring, Barbarian... │   Lands: (none)                  │
+  │   Creatures: Goblin Guide (2/1), Eidol... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Price of Progress        │         Orcish Bowmasters        │
+  │         Chain Lightning          │         Underground Sea          │
+  │         Rift Bolt                │         Murktide Regent          │
+  │                                  │         Scalding Tarn, Ponder    │
+  │                                  │         Underground Sea          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 16 | dimir 11
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (7): Orcish Bowmasters, Orcish Bowmasters, Murktide Regent, Scalding Tarn, Ponder, Underground Sea, Orcish Bowmasters
+    Mana available: 1
+  Ponder (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 16                       │   Life: 11                       │
+  │   Hand: 4  Lib: 51  GY: 2        │   Hand: 7  Lib: 46  GY: 6        │
+  │   Lands: Barbarian Ring, Barbarian... │   Lands: Underground Sea         │
+  │   Creatures: Goblin Guide (2/1), Eidol... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Price of Progress        │         Orcish Bowmasters        │
+  │         Chain Lightning          │         Murktide Regent          │
+  │         Rift Bolt                │         Scalding Tarn            │
+  │                                  │         Underground Sea          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Brainstorm               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 16 | dimir 11
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fireblast
+  ── Main ── Mana: 2
+    Hand (5): Lightning Bolt, Price of Progress, Chain Lightning, Rift Bolt, Fireblast
+    Goblin Guide trigger → reveals Polluted Delta (land) — opponent draws it
+  Attack: Goblin Guide, Eidolon of the Great Revel — 4 unblocked → o at 7
+      → Price of Progress goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 5)
+      → Fireblast goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 1)
+  Eidolon trigger — 2 spell(s) cast, 4 damage to P1 (12)
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 12                       │   Life: 1                        │
+  │   Hand: 3  Lib: 50  GY: 4        │   Hand: 8  Lib: 45  GY: 6        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: Goblin Guide (2/1), Eidol... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Chain Lightning          │         Orcish Bowmasters        │
+  │         Rift Bolt                │         Murktide Regent          │
+  │                                  │         Scalding Tarn            │
+  │                                  │         Underground Sea          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Brainstorm               │
+  │                                  │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 12 | dimir 1
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ──
+    Hand (8): Orcish Bowmasters, Orcish Bowmasters, Murktide Regent, Underground Sea, Orcish Bowmasters, Brainstorm, Polluted Delta, Brainstorm
+    Mana available: 1
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 12                       │   Life: 1                        │
+  │   Hand: 3  Lib: 50  GY: 4        │   Hand: 10  Lib: 41  GY: 7       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Scalding... │
+  │   Creatures: Goblin Guide (2/1), Eidol... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Chain Lightning          │         Orcish Bowmasters        │
+  │         Rift Bolt                │         Murktide Regent          │
+  │                                  │         Underground Sea          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Polluted Delta           │
+  │                                  │         Brainstorm               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 12 | dimir 1
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Searing Blaze
+  ── Main ── Mana: 0
+    Hand (4): Lightning Bolt, Chain Lightning, Rift Bolt, Searing Blaze
+  Attack: Goblin Guide, Eidolon of the Great Revel — 4 unblocked → o at -3
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 12                       │   Life: -3                       │
+  │   Hand: 4  Lib: 49  GY: 4        │   Hand: 10  Lib: 41  GY: 7       │
+  │   Lands: (none)                  │   Lands: Underground Sea, Scalding... │
+  │   Creatures: Goblin Guide (2/1), Eidol... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Lightning Bolt           │   Hand: Orcish Bowmasters        │
+  │         Chain Lightning          │         Orcish Bowmasters        │
+  │         Rift Bolt, Searing Blaze │         Murktide Regent          │
+  │                                  │         Underground Sea          │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Polluted Delta           │
+  │                                  │         Brainstorm               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches -3 on turn 5
+  Final life: burn 12 | dimir -3
+══════════════════════════════════════════════════════════════════════

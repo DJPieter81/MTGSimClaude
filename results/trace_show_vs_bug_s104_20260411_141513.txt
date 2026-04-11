@@ -1,0 +1,267 @@
+══════════════════════════════════════════════════════════════════════
+  SHOW vs BUG
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: SHOW wins the die roll, goes FIRST
+
+  SHOW (P1):
+  Draw 7:
+    1. Lotus Petal (artifact, CMC 0)
+    2. Force of Negation (instant, CMC 3, free counter)
+    3. Show and Tell (sorcery, CMC 3, combo, win-con)
+    4. Flooded Strand (fetch)
+    5. Omniscience (CMC 10, win-con)
+    6. Island (basic)
+    7. Ancient Tomb (land)
+    [Lands: 3  Counters: 1  Combo: 2  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock; 1 counter(s) for protection/disruption; combo pieces present — can threaten early kill
+
+  BUG (P2):
+  Draw 7:
+    1. Thoughtseize (sorcery, CMC 1)
+    2. Undercity Sewers (land)
+    3. Polluted Delta (fetch)
+    4. Underground Sea (dual)
+    5. Scalding Tarn (fetch)
+    6. Force of Negation (instant, CMC 3, free counter)
+    7. Underground Sea (dual)
+    [Lands: 5  Counters: 1  Other: 1]
+  → MULLIGAN
+    Reason: 5 lands — too flooded, not enough spells
+  Mulligan #1 — draw 7:
+    1. Ponder (sorcery, CMC 1, cantrip)
+    2. Polluted Delta (fetch)
+    3. Polluted Delta (fetch)
+    4. Daze (instant, CMC 2, free counter)
+    5. Kaito, Bane of Nightmares (creature 3/4, CMC 3)
+    6. Orcish Bowmasters (creature 1/1, CMC 2)
+    7. Wasteland (land)
+    [Lands: 3  Creatures: 2  Counters: 1  Cantrips: 1]
+  Keep best 6: Kaito, Bane of Nightmares, Orcish Bowmasters, Ponder, Polluted Delta, Polluted Delta, Wasteland
+  Bottom 1: Daze
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+━━ TURN 1 — SHOW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: show 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Island (1 lands)
+  ── Main ── Mana: 2
+    Hand (6): Lotus Petal, Force of Negation, Show and Tell, Flooded Strand, Omniscience, Ancient Tomb
+      → Show and Tell goes on the STACK
+      → Priority passes to BUG
+      → BUG has no counters — passes priority
+      → Show and Tell RESOLVES
+    BUG puts Kaito, Bane of Nightmares in play
+  ★ Show+Tell resolves: Omniscience enters play
+  ★ Omniscience enters play — all spells cost 0 permanently
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ SHOW                             │ BUG                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 3  Lib: 53  GY: 2        │   Hand: 5  Lib: 54  GY: 0        │
+  │   Lands: Island                  │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Kaito, Bane of Nightmares... │
+  │   Hand: Force of Negation        │   Hand: Orcish Bowmasters        │
+  │         Flooded Strand           │         Ponder, Polluted Delta   │
+  │         Ancient Tomb             │         Polluted Delta           │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: show 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Island
+  Play+crack Polluted Delta (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (5): Orcish Bowmasters, Ponder, Polluted Delta, Wasteland, Island
+    Mana available: 1
+  Ponder (1 draw) → keeps Force of Will
+  ── Combat ── (1 attackers)
+  Attack: Kaito, Bane of Nightmares — 3 unblocked → b at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ SHOW                             │ BUG                              │
+  │   Life: 17                       │   Life: 19                       │
+  │   Hand: 3  Lib: 53  GY: 2        │   Hand: 5  Lib: 51  GY: 3        │
+  │   Lands: Island                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: Kaito, Bane of Nightmares... │
+  │   Hand: Force of Negation        │   Hand: Orcish Bowmasters        │
+  │         Flooded Strand           │         Polluted Delta           │
+  │         Ancient Tomb             │         Wasteland, Island        │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — SHOW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: show 17 | bug 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Volcanic Island
+  Land: Volcanic Island (2 lands)
+  ── Main ── Mana: 2
+    Hand (3): Force of Negation, Flooded Strand, Ancient Tomb
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ SHOW                             │ BUG                              │
+  │   Life: 17                       │   Life: 19                       │
+  │   Hand: 3  Lib: 52  GY: 2        │   Hand: 5  Lib: 51  GY: 3        │
+  │   Lands: Island, Volcanic Island │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: Kaito, Bane of Nightmares... │
+  │   Hand: Force of Negation        │   Hand: Orcish Bowmasters        │
+  │         Flooded Strand           │         Polluted Delta           │
+  │         Ancient Tomb             │         Wasteland, Island        │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: show 17 | bug 19
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  Play+crack Polluted Delta (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (5): Orcish Bowmasters, Wasteland, Island, Force of Will, Brainstorm
+    Mana available: 2
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to SHOW
+      → SHOW has [Force of Negation] but PASSES (low-priority target)
+      → Orcish Bowmasters RESOLVES
+  Flash Bowmasters (1 trigger per card opp draws)
+  ── Combat ── (1 attackers)
+  Attack: Kaito, Bane of Nightmares — 3 unblocked → b at 14
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ SHOW                             │ BUG                              │
+  │   Life: 14                       │   Life: 18                       │
+  │   Hand: 3  Lib: 52  GY: 2        │   Hand: 4  Lib: 49  GY: 5        │
+  │   Lands: Island, Volcanic Island │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Kaito, Bane of Nightmares... │
+  │   Hand: Force of Negation        │   Hand: Wasteland, Island        │
+  │         Flooded Strand           │         Force of Will            │
+  │         Ancient Tomb             │         Brainstorm               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — SHOW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: show 14 | bug 18
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+    Bowmasters T1/1: b -1 life → 13, Orc Army 1/1
+  Play+crack Flooded Strand (−1 life, 12) → Volcanic Island
+  ── Main ── Mana: 3
+    Hand (3): Force of Negation, Ancient Tomb, Brainstorm
+  Brainstorm (3 draws)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ SHOW                             │ BUG                              │
+  │   Life: 12                       │   Life: 18                       │
+  │   Hand: 5  Lib: 47  GY: 5        │   Hand: 4  Lib: 49  GY: 5        │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Kaito, Bane of Nightmares... │
+  │   Hand: Force of Negation        │   Hand: Wasteland, Island        │
+  │         Ancient Tomb             │         Force of Will            │
+  │         Ancient Tomb, Daze       │         Brainstorm               │
+  │         Veil of Summer           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: show 12 | bug 18
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  Land: Wasteland (3 lands)
+  ── Main ──
+    Hand (4): Island, Force of Will, Brainstorm, Brainstorm
+    Mana available: 3
+  Wasteland [ACTIVATED-uncounterable] → destroys Volcanic Island
+  Brainstorm (3 draws = 3 separate draw events) → [Brainstorm, Flooded Strand, Snuff Out]
+    Puts back: ['Island', 'Flooded Strand']
+  ── Combat ── (3 attackers)
+  Attack: Kaito, Bane of Nightmares, Orcish Bowmasters, Orc Army — 5 unblocked → b at 7
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ SHOW                             │ BUG                              │
+  │   Life: 7                        │   Life: 18                       │
+  │   Hand: 5  Lib: 47  GY: 6        │   Hand: 4  Lib: 47  GY: 7        │
+  │   Lands: Island, Volcanic Island │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Kaito, Bane of Nightmares... │
+  │   Hand: Force of Negation        │   Hand: Force of Will            │
+  │         Ancient Tomb             │         Brainstorm, Brainstorm   │
+  │         Ancient Tomb, Daze       │         Snuff Out                │
+  │         Veil of Summer           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — SHOW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: show 7 | bug 18
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lotus Petal
+    Bowmasters T1/1: b -1 life → 6, Orc Army 2/2
+  Land: Ancient Tomb (3 lands)
+  ── Main ── Mana: 5
+    Hand (5): Force of Negation, Ancient Tomb, Daze, Veil of Summer, Lotus Petal
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ SHOW                             │ BUG                              │
+  │   Life: 2                        │   Life: 18                       │
+  │   Hand: 5  Lib: 46  GY: 6        │   Hand: 4  Lib: 47  GY: 7        │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Kaito, Bane of Nightmares... │
+  │   Hand: Force of Negation        │   Hand: Force of Will            │
+  │         Ancient Tomb, Daze       │         Brainstorm, Brainstorm   │
+  │         Veil of Summer           │         Snuff Out                │
+  │         Lotus Petal              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: show 2 | bug 18
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Flooded Strand
+  Play+crack Flooded Strand (−1 life, 17) → Undercity Sewers
+  ── Main ──
+    Hand (4): Force of Will, Brainstorm, Brainstorm, Snuff Out
+    Mana available: 3
+  Brainstorm (3 draws = 3 separate draw events) → [Island, Force of Will, Fatal Push]
+    Puts back: ['Island', 'Brainstorm']
+  ── Combat ── (3 attackers)
+  Attack: Kaito, Bane of Nightmares, Orcish Bowmasters, Orc Army — 6 unblocked → b at -4
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ SHOW                             │ BUG                              │
+  │   Life: -4                       │   Life: 17                       │
+  │   Hand: 5  Lib: 46  GY: 6        │   Hand: 4  Lib: 44  GY: 10       │
+  │   Lands: Island, Volcanic Island, ... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Kaito, Bane of Nightmares... │
+  │   Hand: Force of Negation        │   Hand: Force of Will            │
+  │         Ancient Tomb, Daze       │         Snuff Out                │
+  │         Veil of Summer           │         Force of Will            │
+  │         Lotus Petal              │         Fatal Push               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BUG — BUG life reaches -4 on turn 4
+  Final life: show -4 | bug 17
+══════════════════════════════════════════════════════════════════════
