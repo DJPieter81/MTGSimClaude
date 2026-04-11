@@ -1614,13 +1614,6 @@ def _trace_board_state(player, opponent, log):
 # OPPONENT turn
 # ─────────────────────────────────────────────
 
-def _opp_dimir(gs, om, log, le):
-    player, opponent = gs.p2, gs.p1
-    def _logfn(msg, key=False): gs.log_event('o','main',msg,key); le.append(msg)
-    _strategy_dimir(player, opponent, gs, om, _logfn, le)
-
-
-
 def opp_turn(gs: GameState, turn: int, matchup: str):
     """P2's turn — symmetric counterpart to protagonist_turn (P1)."""
     player = gs.p2             # active player this turn (P2)
@@ -1735,20 +1728,17 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
 
     # ── Matchup dispatch (all decks via registry) ──
     spells_before = o.spells_cast_this_turn
-    if matchup in ('bug', 'bug_sb'):
-        _opp_dimir(gs, om, log, log_entries)  # BUG mirror uses Dimir strategy
-    else:
-        from deck_registry import get_strategy
-        strategy_fn = get_strategy(matchup)
-        if strategy_fn:
-            player, opponent = gs.p2, gs.p1
-            def _plugin_log(msg, key=False):
-                gs.log_event('o', 'main', msg, key)
-                log_entries.append(msg)
-            try:
-                strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
-            except Exception as e:
-                log(f"⚠ Strategy error ({matchup}): {e} — forfeiting turn")
+    from deck_registry import get_strategy
+    strategy_fn = get_strategy(matchup)
+    if strategy_fn:
+        player, opponent = gs.p2, gs.p1
+        def _plugin_log(msg, key=False):
+            gs.log_event('o', 'main', msg, key)
+            log_entries.append(msg)
+        try:
+            strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
+        except Exception as e:
+            log(f"⚠ Strategy error ({matchup}): {e} — forfeiting turn")
 
     # ── Post-strategy: Eidolon damage + restore lock adjustments ──
     apply_eidolon_damage(gs, o, spells_before, log)
