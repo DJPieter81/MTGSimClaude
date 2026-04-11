@@ -309,38 +309,8 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
 # ── Old BUG-centric functions removed (run_matchup, run_all_matchups,
 #    ELVES_MATCHUPS, run_elves_match, run_elves_bo3) — use symmetric API instead.
 
-# ── Strategy registry — all decks as protagonists ───────────────────────────
-from engine import (
-    _strategy_dimir, _strategy_dnt, _strategy_mono_black, _strategy_boros,
-    _strategy_prison, _strategy_eldrazi, _strategy_show, _strategy_lands,
-    _strategy_oops, _strategy_doomsday, _strategy_uwx, _strategy_painter,
-    _strategy_storm, _strategy_reanimator, _strategy_ur_aggro, _strategy_mardu,
-    _strategy_dimir_flash, _strategy_elves, _elves_strategy,
-)
-
-STRATEGIES = {
-    'dimir':       _strategy_dimir,
-    'dimir_b':     _strategy_dimir,       # same strategy, different deck
-    'dimir_flash': _strategy_dimir_flash,
-    'show':        _strategy_show,
-    'lands':       _strategy_lands,
-    'storm':       _strategy_storm,
-    'oops':        _strategy_oops,
-    'prison':      _strategy_prison,
-    'uwx':         _strategy_uwx,
-    'uwx_real':    _strategy_uwx,         # proxy — use uwx strategy
-    'eldrazi':     _strategy_eldrazi,
-    'painter':     _strategy_painter,
-    'doomsday':    _strategy_doomsday,
-    'reanimator':  _strategy_reanimator,
-    'dnt':         _strategy_dnt,
-    'mono_black':  _strategy_mono_black,
-    'boros':       _strategy_boros,
-    'ur_aggro':    _strategy_ur_aggro,
-    'mardu':       _strategy_mardu,
-    'elves':       _strategy_elves,
-    # BUG strategy is registered via deck_registry (decks/bug.py)
-}
+# All strategies are registered via deck_registry (decks/*.py modules).
+# No manual STRATEGIES dict needed — get_strategy(matchup) handles dispatch.
 
 
 def protagonist_turn(gs, turn, matchup):
@@ -579,7 +549,7 @@ def protagonist_turn(gs, turn, matchup):
     # ── Strategy dispatch ──
     from deck_registry import get_strategy
     spells_before = b.spells_cast_this_turn
-    strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
+    strategy_fn = get_strategy(matchup)
     if strategy_fn:
         strategy_fn(b, o, gs, total_mana, log, log_entries)
     else:
