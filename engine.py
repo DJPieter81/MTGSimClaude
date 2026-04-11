@@ -1934,15 +1934,15 @@ def _p1_respond_on_opp_turn(gs, log_fn, log_entries):
 def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
     """
     P2 instant-speed responses during P1's turn (after P1 combat).
-    Handles: STP on P1 threats, Lightning Bolt on creatures.
+    Handles: STP, Fatal Push, Snuff Out, Lightning Bolt on P1 creatures.
     """
     b, o = gs.p1, gs.p2
 
-    # ── STP: exile P1's biggest creature if power >= 4 (only major threats) ──
+    # ── STP: exile P1's biggest creature if power >= 3 ──
     stp = o.find_tag('stp')
     if stp and b.creatures and o.available_mana_count() >= 1:
         target = max(b.creatures, key=lambda c: c.power)
-        if target.power >= 4:  # Only exile big threats (Murktide, Marit Lage)
+        if target.power >= 3:
             o.remove_from_hand(stp)
             o.add_to_grave(stp)
             life_gain = target.power
@@ -1952,10 +1952,43 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
                    f"(P1 +{life_gain} life → {b.life})", True)
             update_goyf(gs)
 
-    # ── Lightning Bolt on P1 creature (P2 has bolt in hand) ──
+    # ── Fatal Push on P1 creature (CMC ≤ 2, or ≤ 4 with revolt) ──
+    push = o.find_tag('push')
+    if push and b.creatures and o.available_mana_count() >= 1:
+        revolt = o.revolt_this_turn
+        targets = [c for c in b.creatures
+                   if MTGRules.fatal_push_valid_target(c, revolt)]
+        if targets:
+            target = max(targets, key=lambda c: c.power)
+            if target.power >= 1:  # worth pushing any real threat
+                o.remove_from_hand(push)
+                o.add_to_grave(push)
+                b.creatures.remove(target)
+                b.add_to_grave(target.card)
+                rev = " [revolt]" if revolt else ""
+                log_fn(f"★ P2 Push{rev} (instant, P1's turn) → kills {target.card.name}", True)
+                update_goyf(gs)
+
+    # ── Snuff Out (free if controlling Swamp) ──
+    snuff = o.find_tag('snuffout')
+    if snuff and b.creatures and o.life > 6:
+        has_swamp = any('B' in l.effective_produces() for l in o.lands)
+        if has_swamp:
+            targets = [c for c in b.creatures if 'B' not in getattr(c.card, 'colors', set())]
+            if targets:
+                target = max(targets, key=lambda c: c.power)
+                if target.power >= 2:
+                    o.remove_from_hand(snuff)
+                    o.add_to_grave(snuff)
+                    o.life -= 4
+                    b.creatures.remove(target)
+                    b.add_to_grave(target.card)
+                    log_fn(f"★ P2 Snuff Out (free, −4 life → {o.life}, P1's turn) → kills {target.card.name}", True)
+                    update_goyf(gs)
+
+    # ── Lightning Bolt on P1 creature ──
     bolt = o.find_tag('bolt') or o.find_tag('heat')
     if bolt and b.creatures and o.available_mana_count() >= 1:
-        # Target key creatures with toughness <= 3
         targets = [c for c in b.creatures if c.toughness <= 3 and c.power >= 2]
         if targets:
             target = max(targets, key=lambda c: c.power)

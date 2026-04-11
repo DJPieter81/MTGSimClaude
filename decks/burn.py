@@ -188,11 +188,16 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             return False
         return spell_damage > eidolon_self_cost
 
+    # ── Burn spell pacing — realistic Legacy Burn casts 1-2 burn spells/turn ──
+    # Pre-combat spell (prowess) counts toward the cap.
+    BURN_SPELLS_PER_TURN = 2
+    burn_spells_this_turn = 0
+
     # ── Pre-combat: cast one cheap burn spell for prowess trigger ────────
     # Real Burn casts a spell Main Phase 1 to pump Swiftspear before combat.
     swiftspear_in_play = any(c.card.tag == 'swiftspear' for c in player.creatures
                              if not c.summoning_sick)
-    if swiftspear_in_play and mana >= 1:
+    if swiftspear_in_play and mana >= 1 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:
         pre_combat_spell = (player.find_tag('chain') or player.find_tag('spike')
                             or player.find_tag('bolt') or player.find_tag('rift'))
         if pre_combat_spell and _worth_casting(3):
@@ -201,7 +206,13 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(pre_combat_spell)
                 mana -= 1
                 player.spells_cast_this_turn += 1
+                burn_spells_this_turn += 1
                 deal_face_damage(3, f"{pre_combat_spell.name} (pre-combat)")
+            else:
+                player.add_to_grave(pre_combat_spell)
+                player.spells_cast_this_turn += 1
+                burn_spells_this_turn += 1
+                mana -= 1
 
     # ── Prowess: Swiftspear gets +1/+0 per noncreature spell this turn ──
     prowess_count = player.spells_cast_this_turn
@@ -243,12 +254,9 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
         c.power_mod -= prowess_count
     prowess_boosted = []
 
-    # ── Burn spells at face ──────────────────────────────────────────────
-    # Realistic pacing: Burn casts ~2-3 burn spells per turn post-combat
-    # (limited by hand size, not just mana). Cap at 3 to prevent unrealistic
-    # spell density that pushes WR far above real Legacy Burn's ~50%.
-    burn_spells_this_turn = 0
-    BURN_SPELLS_PER_TURN = 2
+    # ── Burn spells at face (post-combat) ──────────────────────────────
+    # burn_spells_this_turn and BURN_SPELLS_PER_TURN initialized above pre-combat.
+    # Pre-combat spell counts toward the cap.
 
     # --- Price of Progress: best when opp has nonbasic lands ---
     while mana >= 2 and burn_spells_this_turn < BURN_SPELLS_PER_TURN:

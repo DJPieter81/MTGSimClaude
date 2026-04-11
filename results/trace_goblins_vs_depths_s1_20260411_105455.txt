@@ -1,0 +1,306 @@
+══════════════════════════════════════════════════════════════════════
+  GOBLINS vs DEPTHS
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DEPTHS wins the die roll, goes FIRST
+
+  GOBLINS (P1):
+  Draw 7:
+    1. Pashalik Mons (creature 2/2, CMC 3)
+    2. Swamp (basic)
+    3. Goblin Cratermaker (creature 2/2, CMC 2, removal)
+    4. Muxus, Goblin Grandee (creature 4/4, CMC 6, combo)
+    5. Goblin Lackey (creature 1/1, CMC 1, combo)
+    6. Goblin Matron (creature 1/1, CMC 3)
+    7. Munitions Expert (creature 1/1, CMC 2, removal)
+    [Lands: 1  Creatures: 6  Removal: 2  Combo: 2]
+  → KEEP (opening 7)
+    Reason: 6 threat(s) for a clock; combo pieces present — can threaten early kill; removal for opponent's threats
+
+  DEPTHS (P2):
+  Draw 7:
+    1. Sylvan Scrying (sorcery, CMC 2)
+    2. Verdant Catacombs (fetch)
+    3. Green Sun's Zenith (sorcery, CMC 1, combo)
+    4. Green Sun's Zenith (sorcery, CMC 1, combo)
+    5. Thespian's Stage (land)
+    6. Sejiri Steppe (land)
+    7. Thespian's Stage (land)
+    [Lands: 4  Combo: 2  Other: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; combo pieces present — can threaten early kill
+
+━━ TURN 1 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Verdant Catacombs (−1 life, 19) → Bayou
+  ── Main ──
+    Hand (6): Sylvan Scrying, Green Sun's Zenith, Green Sun's Zenith, Thespian's Stage, Sejiri Steppe, Thespian's Stage
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 52  GY: 2        │
+  │   Lands: (none)                  │   Lands: Bayou                   │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Pashalik Mons, Swamp     │   Hand: Sylvan Scrying           │
+  │         Goblin Cratermaker       │         Green Sun's Zenith       │
+  │         Muxus, Goblin Grandee    │         Green Sun's Zenith       │
+  │         Goblin Lackey            │         Thespian's Stage         │
+  │         Goblin Matron            │         Sejiri Steppe            │
+  │         Munitions Expert         │         Thespian's Stage         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — GOBLINS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 19
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Cavern of Souls
+  Land: Swamp (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Pashalik Mons, Goblin Cratermaker, Muxus, Goblin Grandee, Goblin Lackey, Goblin Matron, Munitions Expert, Cavern of Souls
+      → Goblin Lackey goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Goblin Lackey RESOLVES
+  Goblin Lackey (attacks next turn)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 52  GY: 2        │
+  │   Lands: Swamp                   │   Lands: Bayou                   │
+  │   Creatures: Goblin Lackey (1/1) │   Creatures: (none)              │
+  │   Hand: Pashalik Mons            │   Hand: Sylvan Scrying           │
+  │         Goblin Cratermaker       │         Green Sun's Zenith       │
+  │         Muxus, Goblin Grandee    │         Green Sun's Zenith       │
+  │         Goblin Matron            │         Thespian's Stage         │
+  │         Munitions Expert         │         Sejiri Steppe            │
+  │         Cavern of Souls          │         Thespian's Stage         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 19
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Windswept Heath
+  Land: Thespian's Stage (2 lands)
+  ── Main ──
+    Hand (6): Sylvan Scrying, Green Sun's Zenith, Green Sun's Zenith, Sejiri Steppe, Thespian's Stage, Windswept Heath
+    Mana available: 2
+      → Sylvan Scrying goes on the STACK
+      → Priority passes to GOBLINS
+      → GOBLINS has no counters — passes priority
+      → Sylvan Scrying RESOLVES
+  Sylvan Scrying → find depths
+    -> Dark Depths to hand
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 50  GY: 3        │
+  │   Lands: Swamp                   │   Lands: Bayou, Thespian's Stage │
+  │   Creatures: Goblin Lackey (1/1) │   Creatures: (none)              │
+  │   Hand: Pashalik Mons            │   Hand: Green Sun's Zenith       │
+  │         Goblin Cratermaker       │         Green Sun's Zenith       │
+  │         Muxus, Goblin Grandee    │         Sejiri Steppe            │
+  │         Goblin Matron            │         Thespian's Stage         │
+  │         Munitions Expert         │         Windswept Heath          │
+  │         Cavern of Souls          │         Dark Depths              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — GOBLINS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Badlands
+  Land: Badlands (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Pashalik Mons, Goblin Cratermaker, Muxus, Goblin Grandee, Goblin Matron, Munitions Expert, Cavern of Souls
+      → Goblin Cratermaker goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Goblin Cratermaker RESOLVES
+  Goblin Cratermaker
+  ★ Lackey trigger → free Muxus, Goblin Grandee!
+  ★ Muxus from Lackey → 4 more Goblins!
+  Attack: Goblin Lackey — 1 unblocked → o at 18
+  ── Combat ── (6 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 47  GY: 0        │   Hand: 6  Lib: 50  GY: 3        │
+  │   Lands: Swamp, Badlands         │   Lands: Bayou, Thespian's Stage │
+  │   Creatures: Goblin Lackey (1/1), Gobl... │   Creatures: (none)              │
+  │   Hand: Pashalik Mons            │   Hand: Green Sun's Zenith       │
+  │         Goblin Matron            │         Green Sun's Zenith       │
+  │         Munitions Expert         │         Sejiri Steppe            │
+  │         Cavern of Souls          │         Thespian's Stage         │
+  │                                  │         Windswept Heath          │
+  │                                  │         Dark Depths              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 18
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Land: Sejiri Steppe (3 lands)
+  ── Main ──
+    Hand (6): Green Sun's Zenith, Green Sun's Zenith, Thespian's Stage, Windswept Heath, Dark Depths, Wasteland
+    Mana available: 3
+      → Green Sun's Zenith goes on the STACK
+      → Priority passes to GOBLINS
+      → GOBLINS has no counters — passes priority
+      → Green Sun's Zenith RESOLVES
+  Green Sun's Zenith → Elvish Reclaimer
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 47  GY: 0        │   Hand: 5  Lib: 48  GY: 4        │
+  │   Lands: Swamp, Badlands         │   Lands: Bayou, Thespian's Stage, ... │
+  │   Creatures: Goblin Lackey (1/1), Gobl... │   Creatures: Elvish Reclaimer (1/2) │
+  │   Hand: Pashalik Mons            │   Hand: Green Sun's Zenith       │
+  │         Goblin Matron            │         Thespian's Stage         │
+  │         Munitions Expert         │         Windswept Heath          │
+  │         Cavern of Souls          │         Dark Depths, Wasteland   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — GOBLINS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 18
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (3 lands)
+  ── Main ── Mana: 3
+    Hand (4): Pashalik Mons, Goblin Matron, Munitions Expert, Cavern of Souls
+      → Goblin Matron goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Goblin Matron RESOLVES
+  Goblin Matron → tutors Muxus!
+  ★ Lackey trigger → free Muxus, Goblin Grandee!
+  ★ Muxus from Lackey → 3 more Goblins!
+  Attack: Goblin Cratermaker, Muxus, Goblin Grandee, Goblin Cratermaker, Goblin Cratermaker — 10 unblocked → o at 8
+  ── Combat ── (11 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 20                       │   Life: 8                        │
+  │   Hand: 3  Lib: 42  GY: 0        │   Hand: 5  Lib: 48  GY: 4        │
+  │   Lands: Swamp, Badlands, Mountain │   Lands: Bayou, Thespian's Stage, ... │
+  │   Creatures: Goblin Lackey (1/1), Gobl... │   Creatures: Elvish Reclaimer (1/2) │
+  │   Hand: Pashalik Mons            │   Hand: Green Sun's Zenith       │
+  │         Munitions Expert         │         Thespian's Stage         │
+  │         Cavern of Souls          │         Windswept Heath          │
+  │                                  │         Dark Depths, Wasteland   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 8
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Crop Rotation
+  Land: Thespian's Stage (4 lands)
+  ── Main ──
+    Hand (5): Green Sun's Zenith, Windswept Heath, Dark Depths, Wasteland, Crop Rotation
+    Mana available: 4
+      → Crop Rotation goes on the STACK
+      → Priority passes to GOBLINS
+      → GOBLINS has no counters — passes priority
+      → Crop Rotation RESOLVES
+  ★ Crop Rotation (sac Bayou) → find depths
+    -> Dark Depths enters the battlefield
+  ★ Stage copies Depths → Marit Lage 20/20!
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 20                       │   Life: 8                        │
+  │   Hand: 3  Lib: 42  GY: 0        │   Hand: 4  Lib: 46  GY: 8        │
+  │   Lands: Swamp, Badlands, Mountain │   Lands: Sejiri Steppe, Thespian's... │
+  │   Creatures: Goblin Lackey (1/1), Gobl... │   Creatures: Elvish Reclaimer (1/2), M... │
+  │   Hand: Pashalik Mons            │   Hand: Green Sun's Zenith       │
+  │         Munitions Expert         │         Windswept Heath          │
+  │         Cavern of Souls          │         Dark Depths, Wasteland   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — GOBLINS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 8
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Chrome Mox
+  Land: Cavern of Souls (4 lands)
+  ── Main ── Mana: 4
+    Hand (3): Pashalik Mons, Munitions Expert, Chrome Mox
+  Chrome Mox (exile Pashalik Mons) → +1 mana
+      → Munitions Expert goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Munitions Expert RESOLVES
+  Munitions Expert
+  ── Combat ── (12 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 20                       │   Life: 8                        │
+  │   Hand: 0  Lib: 41  GY: 0        │   Hand: 4  Lib: 46  GY: 8        │
+  │   Lands: Swamp, Badlands, Mountain... │   Lands: Sejiri Steppe, Thespian's... │
+  │   Creatures: Goblin Lackey (1/1), Gobl... │   Creatures: Elvish Reclaimer (1/2), M... │
+  │   Artifacts: Chrome Mox          │   Hand: Green Sun's Zenith       │
+  │   Hand: (empty)                  │         Windswept Heath          │
+  │                                  │         Dark Depths, Wasteland   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | depths 8
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Elvish Reclaimer
+  Play+crack Windswept Heath (−1 life, 7) → Forest
+  ── Main ──
+    Hand (4): Green Sun's Zenith, Dark Depths, Wasteland, Elvish Reclaimer
+    Mana available: 3
+      → Green Sun's Zenith goes on the STACK
+      → Priority passes to GOBLINS
+      → GOBLINS has no counters — passes priority
+      → Green Sun's Zenith RESOLVES
+  Green Sun's Zenith → Elvish Reclaimer
+  ★ Reclaimer activates (sac Forest) → find depths
+    -> Dark Depths enters the battlefield
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage — 20 unblocked → b at 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ GOBLINS                          │ DEPTHS                           │
+  │   Life: 0                        │   Life: 7                        │
+  │   Hand: 0  Lib: 41  GY: 0        │   Hand: 3  Lib: 42  GY: 12       │
+  │   Lands: Swamp, Badlands, Mountain... │   Lands: Sejiri Steppe, Thespian's... │
+  │   Creatures: Goblin Lackey (1/1), Gobl... │   Creatures: Elvish Reclaimer (1/2), M... │
+  │   Artifacts: Chrome Mox          │   Hand: Dark Depths, Wasteland   │
+  │   Hand: (empty)                  │         Elvish Reclaimer         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DEPTHS — BUG life reaches 0 on turn 5
+  Final life: goblins 0 | depths 7
+══════════════════════════════════════════════════════════════════════
