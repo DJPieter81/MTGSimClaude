@@ -625,68 +625,109 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             # Emry casts the artifact, so its mana cost must be paid.
             # Only consider artifacts we can currently afford (CMC 0 are always free).
             castable = [c for c in gy_artifacts if c.cmc == 0 or mana >= c.cmc]
-            if not castable:
-                castable = None  # nothing affordable — leave Emry untapped for now
 
             if castable:
                 target = min(castable, key=_emry_priority)
                 player.graveyard.remove(target)
                 emry_perm.tapped = True  # Emry taps to activate the ability
 
-            if target.tag == 'petal':
-                # Lotus Petal: enters, immediately sacrifice for mana
-                player.exile.append(target)
-                mana += 1
-                artifacts_cast_this_turn += 1
-                art_count = _artifact_count(player)
-                log_fn(f"Emry recurs {target.name} — sacrifice for mana")
-
-            elif target.tag in ('bauble', 'ubauble'):
-                # Baubles: enter and immediately cantrip into graveyard
-                player.add_to_grave(target)
-                player.draw(1)
-                artifacts_cast_this_turn += 1
-                art_count = _artifact_count(player)
-                log_fn(f"Emry recurs {target.name} — cantrip")
-                bowmasters_triggers(1, gs, log_entries,
-                                    controller='o' if player is gs.p1 else 'b')
-                if gs.game_over:
-                    return
-
-            elif target.tag == 'opal':
-                # Mox Opal: put into play; tap for mana if metalcraft (3+ artifacts)
-                player.put_artifact_in_play(target)
-                artifacts_cast_this_turn += 1
-                art_count = _artifact_count(player)
-                if art_count >= 3:
+                if target.tag == 'petal':
+                    # Lotus Petal (CMC 0): enters, immediately sacrifice for mana
+                    player.exile.append(target)
                     mana += 1
-                    log_fn(f"Emry recurs {target.name} (Metalcraft — +1 mana)")
+                    artifacts_cast_this_turn += 1
+                    art_count = _artifact_count(player)
+                    log_fn(f"Emry recurs {target.name} — sacrifice for mana")
+
+                elif target.tag in ('bauble', 'ubauble'):
+                    # Baubles (CMC 0): enter and immediately cantrip into graveyard
+                    player.add_to_grave(target)
+                    player.draw(1)
+                    artifacts_cast_this_turn += 1
+                    art_count = _artifact_count(player)
+                    log_fn(f"Emry recurs {target.name} — cantrip")
+                    bowmasters_triggers(1, gs, log_entries,
+                                        controller='o' if player is gs.p1 else 'b')
+                    if gs.game_over:
+                        return
+
+                elif target.tag == 'opal':
+                    # Mox Opal (CMC 0): put into play; tap for mana if metalcraft (3+ artifacts)
+                    player.put_artifact_in_play(target)
+                    artifacts_cast_this_turn += 1
+                    art_count = _artifact_count(player)
+                    if art_count >= 3:
+                        mana += 1
+                        log_fn(f"Emry recurs {target.name} (Metalcraft — +1 mana)")
+                    else:
+                        log_fn(f"Emry recurs {target.name}")
+
                 else:
-                    log_fn(f"Emry recurs {target.name}")
+                    # Equipment (CMC 1) or other non-zero-cost artifact: pay the mana cost.
+                    mana -= target.cmc
+                    player.put_artifact_in_play(target)
+                    artifacts_cast_this_turn += 1
+                    art_count = _artifact_count(player)
+                    log_fn(f"Emry recurs {target.name} (cost {target.cmc})")
 
-            else:
-                # Equipment, or any other artifact: put into play
-                player.put_artifact_in_play(target)
-                artifacts_cast_this_turn += 1
+                # Cannoneer trigger for Emry's artifact cast
+                if cannoneer_on_board:
+                    cannoneer_triggers += 1
+
+                # Recount after Emry activation; update Construct token sizes
                 art_count = _artifact_count(player)
-                log_fn(f"Emry recurs {target.name}")
+                for c in player.creatures:
+                    if c.card.tag == 'construct':
+                        c.power_mod = art_count
+                        c.toughness_mod = art_count
 
-            # Cannoneer trigger for Emry's artifact cast
-            if cannoneer_on_board:
-                cannoneer_triggers += 1
+                # Credit Automaton for the artifact cast via Emry
+                for c in player.creatures:
+                    if c.card.tag == 'automaton':
+                        c.power_mod = getattr(c, 'power_mod', 0) + 1
+                        c.toughness_mod = getattr(c, 'toughness_mod', 0) + 1
 
-            # Recount after Emry activation; update Construct token sizes
-            art_count = _artifact_count(player)
-            for c in player.creatures:
-                if c.card.tag == 'construct':
-                    c.power_mod = art_count
-                    c.toughness_mod = art_count
+    # ── 13b. Sink into Stupor — bounce blocker or discard mode ───────────────
+    # Priority 1: bounce a big blocker (power >= 3) before combat
+    # Priority 2: vs combo opponents with a full hand, use discard mode
+    sink = player.find_tag("sink")
+    if sink and mana >= 3 and _has_blue():
+        _sac_petal_if_needed(3)
+        if mana >= 3:
+            # Determine opponent deck key for combo detection
+            from config import MatchupCategory
+            opp_deck = (getattr(gs, "p2_deck", "") if player is gs.p1
+                        else getattr(gs, "p1_deck", ""))
+            opp_is_combo = opp_deck in MatchupCategory.COMBO
 
-            # Credit Automaton for the artifact cast via Emry
-            for c in player.creatures:
-                if c.card.tag == 'automaton':
-                    c.power_mod = getattr(c, 'power_mod', 0) + 1
-                    c.toughness_mod = getattr(c, 'toughness_mod', 0) + 1
+            # Check for a big blocker on opponent side (power >= 3)
+            big_blockers = [c for c in opponent.creatures
+                            if c.power >= 3 and not c.summoning_sick]
+            if big_blockers:
+                # Bounce the highest-power blocker
+                target = max(big_blockers, key=lambda c: c.power)
+                opponent.creatures.remove(target)
+                opponent.hand.append(target.card)
+                player.remove_from_hand(sink)
+                player.add_to_grave(sink)
+                mana -= 3
+                log_fn(f"Sink into Stupor — bounce {target.card.name} ({target.power}/{target.toughness})")
+            elif opp_is_combo and len(opponent.hand) > 0:
+                # Discard mode vs combo: strip a combo piece or key spell
+                # Choose best target: win condition > combo piece > any nonland
+                nonland_hand = [c for c in opponent.hand if not c.is_land()]
+                if nonland_hand:
+                    target_card = (
+                        next((c for c in nonland_hand if c.win_condition), None)
+                        or next((c for c in nonland_hand if c.is_combo_piece), None)
+                        or nonland_hand[0]
+                    )
+                    opponent.hand.remove(target_card)
+                    opponent.graveyard.append(target_card)
+                    player.remove_from_hand(sink)
+                    player.add_to_grave(sink)
+                    mana -= 3
+                    log_fn(f"Sink into Stupor — discard mode, strips {target_card.name} from opponent")
 
     # ── 14a. Apply Kappa Cannoneer triggers ────────────────────────────────
     # Each artifact ETB while Cannoneer was on board = +1/+1 counter + unblockable
