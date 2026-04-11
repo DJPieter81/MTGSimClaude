@@ -206,6 +206,26 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             return True
         return False
 
+    def _has_black():
+        """Return True if the player has at least one black mana source available.
+
+        This deck has NO natural black land sources. Black mana can only come from:
+        - Mox Opal already in play with metalcraft (3+ artifacts on board)
+        - Lotus Petal in hand (produces any colour including B)
+
+        Note: A Lotus Petal already on the battlefield (played this turn as a free
+        artifact) is NOT tapped here — it would need to be sacrificed via
+        _sac_petal_if_needed() first. We only count petals in hand as flexible mana.
+        """
+        # Mox Opal in play provides any color with metalcraft (3+ artifacts)
+        if (any(a.card.tag == 'opal' for a in player.artifacts)
+                and _artifact_count(player) >= 3):
+            return True
+        # Lotus Petal in hand — can produce any color including B
+        if any(c.tag == 'petal' for c in player.hand):
+            return True
+        return False
+
     # total_mana already accounts for Ancient Tomb's +1 bonus mana (engine adds
     # it in protagonist_turn/opp_turn) and already deducts 2 life per Tomb tapped.
     # Do NOT re-add Tomb mana here — the old code was double-counting (3 mana/Tomb).
@@ -386,9 +406,13 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(cannoneer)
 
     # ── 9. Krang, Master Mind ────────────────────────────────────────────────
+    # Krang costs {U}{B}{3} — requires BOTH blue AND black mana.
+    # This deck has no natural black sources; black can only come from
+    # Mox Opal (metalcraft) or Lotus Petal. Both colours must be available.
     krang = player.find_tag('krang')
-    _sac_petal_if_needed(5)
-    if krang and mana >= 5 and _has_blue():
+    if krang:
+        _sac_petal_if_needed(5)
+    if krang and mana >= 5 and _has_blue() and _has_black():
         player.remove_from_hand(krang)
         if not _try_counter_any(player, opponent, gs, krang, log_entries):
             player.put_creature_in_play(krang)
@@ -397,24 +421,30 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(krang)
 
-    # ── 10. Thoughtcast — affinity draw spell ────────────────────────────────
-    cast = player.find_tag('cast')
-    if cast:
+    # ── 10. Thoughtcast — affinity draw spell (cast all copies in hand) ────────
+    while True:
+        cast = player.find_tag('cast')
+        if not cast:
+            break
         eff_cost = _affinity_cost(5, player)
-        if mana >= eff_cost and _has_blue():
-            player.remove_from_hand(cast)
-            player.add_to_grave(cast)
-            mana -= eff_cost
-            drawn = player.draw(2)
-            log_fn(f"Thoughtcast (affinity {eff_cost}) — draws 2")
-            bowmasters_triggers(2, gs, log_entries,
-                                controller='o' if player is gs.p1 else 'b')
-            if gs.game_over:
-                return
+        _sac_petal_if_needed(eff_cost)
+        if mana < eff_cost or not _has_blue():
+            break
+        player.remove_from_hand(cast)
+        player.add_to_grave(cast)
+        mana -= eff_cost
+        drawn = player.draw(2)
+        log_fn(f"Thoughtcast (affinity {eff_cost}) — draws 2")
+        bowmasters_triggers(2, gs, log_entries,
+                            controller='o' if player is gs.p1 else 'b')
+        if gs.game_over:
+            return
 
     # ── 11. Equipment — Lavaspur Boots / Shadowspear ─────────────────────────
     for equip_tag in ('boots', 'spear'):
         equip = player.find_tag(equip_tag)
+        if equip:
+            _sac_petal_if_needed(1)
         if equip and mana >= 1:
             player.remove_from_hand(equip)
             player.put_artifact_in_play(equip)

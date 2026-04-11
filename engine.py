@@ -652,6 +652,9 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
     assignments = {}  # id(attacker) -> blocker
 
     for atk in sorted_atk:
+        # Skip unblockable attackers (e.g. Kappa Cannoneer with ward triggers)
+        if getattr(atk, 'cant_be_blocked', False):
+            continue
         legal = [b for b in available_blockers if can_legally_block(b, atk)]
         if not legal:
             continue  # no legal blocker — attacker gets through
