@@ -121,10 +121,10 @@ def make_tes_deck():
         d.append(sorcery('Infernal Tutor', 2, {'B':1,'generic':1}, {'B'},
                          tag='infernal', is_combo_piece=True))
 
-    # Gitaxian Probe: 2 life, look at opp hand, draw 1
+    # Empty the Warrens: alternate storm win — creates 2 Goblin 1/1 tokens per storm copy
     for _ in range(2):
-        d.append(instant('Gitaxian Probe', 0, {}, set(), tag='probe',
-                         life_cost=2, is_cantrip=True))
+        d.append(sorcery('Empty the Warrens', 4, {'R':1,'generic':3}, {'R'},
+                         tag='empty', win_condition=True))
 
     assert len(d) == 60, f"TES deck: {len(d)} cards (expected 60)"
     return d

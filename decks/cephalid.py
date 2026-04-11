@@ -141,6 +141,66 @@ def make_cephalid_deck():
     return d
 
 
+# ─── Combo resolution helper ─────────────────────────────────────────────────
+
+def _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries):
+    """
+    Mill entire library, put Narcomoebas onto battlefield from graveyard,
+    flashback Dread Return sacrificing 3 creatures to reanimate Thassa's Oracle.
+    Oracle ETB: if devotion to blue >= cards in library → win the game.
+    """
+    from engine import _try_counter_any
+
+    # 1. Mill entire library into graveyard
+    milled = list(player.library)
+    player.graveyard.extend(milled)
+    player.library.clear()
+    log_fn(f"★ Mill entire library ({len(milled)} cards)", True)
+
+    # 2. Narcomoebas enter battlefield from graveyard (triggered ability, uncounterable)
+    narcos = [c for c in player.graveyard if c.tag == 'narco']
+    narco_count = 0
+    for n in narcos:
+        player.graveyard.remove(n)
+        player.put_creature_in_play(n)
+        narco_count += 1
+    log_fn(f"  {narco_count} Narcomoeba(s) enter from graveyard", True)
+
+    # 3. Flashback Dread Return: sacrifice 3 creatures, reanimate Oracle from GY
+    #    Dread Return flashback is an alternate cost (exile from GY), not "cast from hand"
+    oracle_in_gy = next((c for c in player.graveyard if c.tag == 'oracle'), None)
+    dread_in_gy = next((c for c in player.graveyard if c.tag == 'dread'), None)
+    sac_count = len(player.creatures)
+
+    if dread_in_gy and oracle_in_gy and sac_count >= 3:
+        # Sacrifice 3 creatures
+        for _ in range(3):
+            if player.creatures:
+                sac = player.creatures.pop()
+                player.add_to_grave(sac.card)
+        player.graveyard.remove(dread_in_gy)
+        player.exile.append(dread_in_gy)
+        log_fn("  Flashback Dread Return (sac 3 creatures) → Thassa's Oracle", True)
+
+        # Dread Return can be countered
+        if not _try_counter_any(player, opponent, gs, dread_in_gy, log_entries):
+            # Oracle enters — ETB: library is empty, so we win
+            player.graveyard.remove(oracle_in_gy)
+            player.put_creature_in_play(oracle_in_gy)
+            log_fn("  ★ Thassa's Oracle ETB — library empty → WIN", True)
+            gs.game_over = True
+            gs.winner = 'p1' if player is gs.p1 else 'p2'
+            gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
+            gs.kill_turn = gs.turn
+        else:
+            log_fn("  Dread Return countered — combo fizzles")
+    elif oracle_in_gy and sac_count >= 0:
+        # No Dread Return but have Oracle — can't reanimate, combo incomplete
+        log_fn("  No Dread Return in graveyard — combo fizzles")
+    else:
+        log_fn("  Missing combo pieces in graveyard — combo fizzles")
+
+
 # ─── Strategy ────────────────────────────────────────────────────────────────
 
 def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
@@ -174,14 +234,10 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
     if illusionist_in_play and (nomads_in_play or shuko_in_play):
         # Combo goes off — mill entire library, Narcomoeba enters,
         # Dread Return Oracle
-        log_fn("★ Cephalid Illusionist combo — mill entire library!", True)
-        log_fn("  Narcomoebas enter play → Dread Return → Thassa's Oracle wins",
-               True)
-        gs.game_over = True
-        gs.winner = 'p1' if player is gs.p1 else 'p2'
-        gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
-        gs.kill_turn = gs.turn
-        return
+        log_fn("★ Cephalid Illusionist combo activates!", True)
+        _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries)
+        if gs.game_over:
+            return
 
     # ── Orim's Chant — protect combo turn if we have pieces ─────────────────
     chant = player.find_tag('chant')
@@ -243,14 +299,10 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
             nomads_in_play = any(c.card.tag == 'nomads'
                                 for c in player.creatures)
             if nomads_in_play or gs.shuko_in_play:
-                log_fn("★ Combo assembled — mill entire library!", True)
-                log_fn("  Narcomoebas → Dread Return → Thassa's Oracle wins",
-                       True)
-                gs.game_over = True
-                gs.winner = 'p1' if player is gs.p1 else 'p2'
-                gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
-                gs.kill_turn = gs.turn
-                return
+                log_fn("★ Combo assembled!", True)
+                _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries)
+                if gs.game_over:
+                    return
         else:
             player.add_to_grave(illusionist)
             mana -= 2
@@ -269,14 +321,10 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
             illusionist_in_play = any(c.card.tag == 'illusionist'
                                      for c in player.creatures)
             if illusionist_in_play:
-                log_fn("★ Combo assembled — mill entire library!", True)
-                log_fn("  Narcomoebas → Dread Return → Thassa's Oracle wins",
-                       True)
-                gs.game_over = True
-                gs.winner = 'p1' if player is gs.p1 else 'p2'
-                gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
-                gs.kill_turn = gs.turn
-                return
+                log_fn("★ Combo assembled!", True)
+                _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries)
+                if gs.game_over:
+                    return
         else:
             player.add_to_grave(nomads)
             mana -= 1
@@ -296,14 +344,10 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
             illusionist_in_play = any(c.card.tag == 'illusionist'
                                      for c in player.creatures)
             if illusionist_in_play:
-                log_fn("★ Combo assembled — mill entire library!", True)
-                log_fn("  Narcomoebas → Dread Return → Thassa's Oracle wins",
-                       True)
-                gs.game_over = True
-                gs.winner = 'p1' if player is gs.p1 else 'p2'
-                gs.win_reason = "Cephalid Breakfast: Illusionist + Oracle"
-                gs.kill_turn = gs.turn
-                return
+                log_fn("★ Combo assembled!", True)
+                _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries)
+                if gs.game_over:
+                    return
         else:
             player.add_to_grave(shuko)
             mana -= 1

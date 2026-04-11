@@ -1715,6 +1715,17 @@ def bug_turn(gs: GameState, turn: int):
     return log_entries
 
 
+def _check_tamiyo_flip(gs, player, log):
+    """Check if Tamiyo should flip (drew 3+ cards this turn)."""
+    tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
+    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
+        if player.draws_this_turn >= 3:
+            gs.tamiyo_flipped = True
+            tam_perm.power_mod = 3
+            tam_perm.toughness_mod = 0
+            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
+
+
 def _trace_board_state(player, opponent, log):
     """Emit trace-level board state summary at end of turn."""
     creatures = ', '.join(f"{c.card.name} ({c.power}/{c.toughness})" for c in player.creatures) or '(none)'
@@ -3424,10 +3435,43 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             _oops_int = get_or_infer_interaction('oops')
             _fizzle = compute_combo_fizzle_rate(_oops_int, veil_active=gs.veil_active)
             if random.random() >= _fizzle:
-                log_fn(f"★ {combo_card.name} → mill entire deck → Thassa's Oracle wins!", True)
-                gs.game_over = True
-                gs.winner = 'p1' if player is gs.p1 else 'p2'
-                gs.win_reason = f"Oops combo ({combo_card.name} → Oracle)"
+                # Mill entire library (no lands to stop it)
+                milled = list(player.library)
+                player.graveyard.extend(milled)
+                player.library.clear()
+                log_fn(f"★ {combo_card.name} → mill entire deck ({len(milled)} cards)", True)
+
+                # Narcomoebas enter battlefield from graveyard (triggered ability)
+                narcos = [c for c in player.graveyard if c.tag == 'narco']
+                for n in narcos:
+                    player.graveyard.remove(n)
+                    player.put_creature_in_play(n)
+                log_fn(f"  {len(narcos)} Narcomoeba(s) enter from graveyard", True)
+
+                # Flashback Dread Return: sac 3 creatures, reanimate Oracle
+                oracle_in_gy = next((c for c in player.graveyard if c.tag == 'oracle'), None)
+                dread_in_gy = next((c for c in player.graveyard if c.tag == 'dread'), None)
+                if dread_in_gy and oracle_in_gy and len(player.creatures) >= 3:
+                    for _ in range(3):
+                        if player.creatures:
+                            sac = player.creatures.pop()
+                            player.add_to_grave(sac.card)
+                    player.graveyard.remove(dread_in_gy)
+                    player.exile.append(dread_in_gy)
+                    log_fn("  Flashback Dread Return (sac 3) → Thassa's Oracle", True)
+
+                    if not _try_counter_any(player, opponent, gs, dread_in_gy, log_entries):
+                        player.graveyard.remove(oracle_in_gy)
+                        player.put_creature_in_play(oracle_in_gy)
+                        log_fn("  ★ Thassa's Oracle ETB — library empty → WIN", True)
+                        gs.game_over = True
+                        gs.winner = 'p1' if player is gs.p1 else 'p2'
+                        gs.win_reason = f"Oops combo ({combo_card.name} → Oracle)"
+                        gs.kill_turn = gs.turn
+                    else:
+                        log_fn("  Dread Return countered — combo fizzles")
+                else:
+                    log_fn(f"  Missing pieces for Oracle win (oracle={oracle_in_gy is not None}, dread={dread_in_gy is not None}, creatures={len(player.creatures)})")
             else:
                 log_fn(f"{combo_card.name} resolves but opponent had graveyard hate")
         else:
