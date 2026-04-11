@@ -258,6 +258,104 @@ def cast_obj(card: Card, controller: str) -> StackObject:
                        cmc=card.cmc, card_type=card.card_type, colors=card.colors)
 
 
+# ─── Unified Spell Pipeline ─────────────────────────────────────────────────
+
+def cast_spell(player, opponent, gs, card, mana_budget, log_fn, log_entries,
+               on_resolve=None, on_counter=None, cost_override=None) -> bool:
+    """THE mandatory spell pipeline.  Every spell cast should go through here.
+
+    Steps:
+      1. Remove card from hand        (prevents cast-twice bug)
+      2. Increment spells_cast_this_turn (storm count, Eidolon aggregate)
+      3. Fire Eidolon trigger          (CMC ≤ 3, fires for ALL players)
+      4. Counter window                (_try_counter_any)
+      5a. Resolved → deduct mana, call on_resolve(card) if provided
+      5b. Countered → card to graveyard, call on_counter(card) if provided
+
+    Args:
+        player:        caster PlayerState
+        opponent:      defender PlayerState
+        gs:            GameState
+        card:          Card being cast
+        mana_budget:   mutable list[int] — mana_budget[0] is deducted on resolve.
+                       Pass None to skip mana deduction (free spells).
+        log_fn:        logging function
+        log_entries:   list for log messages
+        on_resolve:    callable(card) — what to do when spell resolves
+                       (e.g. put_creature_in_play, add_to_grave, deal damage).
+                       If None, card goes to graveyard by default.
+        on_counter:    callable(card) — optional override for counter handling.
+                       If None, card goes to graveyard.
+        cost_override: int — use instead of card.cmc for mana deduction.
+
+    Returns:
+        True if spell resolved, False if countered.
+    """
+    # Step 1: ALWAYS remove from hand first — prevents cast-twice bug
+    player.remove_from_hand(card)
+
+    # Step 2: Increment spell count (for storm, Eidolon aggregate tracking)
+    player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
+
+    # Step 3: Eidolon trigger (CMC ≤ 3 deals 2 damage to caster)
+    _eidolon_trigger(gs, card, log_fn, caster=player)
+
+    # Step 4: Counter window
+    countered = _try_counter_any(player, opponent, gs, card, log_entries)
+
+    if countered:
+        # Step 5b: Countered — card to graveyard
+        if on_counter:
+            on_counter(card)
+        else:
+            player.add_to_grave(card)
+        return False
+
+    # Step 5a: Resolved — deduct mana and call resolution callback
+    if mana_budget is not None:
+        cost = cost_override if cost_override is not None else card.cmc
+        mana_budget[0] = max(0, mana_budget[0] - cost)
+
+    if on_resolve:
+        on_resolve(card)
+    else:
+        player.add_to_grave(card)  # default: instants/sorceries go to GY
+
+    return True
+
+
+def resolve_cantrip(player, card, gs, log_fn, log_entries):
+    """Dispatch cantrip resolution based on card identity.
+    Brainstorm = draw 3, put 2 back.  Ponder/Preordain = draw 1.
+    Fires bowmasters triggers for each draw."""
+    if card.tag == 'bs':
+        drawn = player.draw(MTGRules.brainstorm_draws())
+        # Put back 2 worst cards (simplified: sort by keep-value)
+        if len(player.hand) >= 2:
+            from rules import CardType
+            def keep_val(c):
+                if c.is_land(): return 10  # put back extra lands
+                if c.is_cantrip: return 8  # put back redundant cantrips
+                return 0  # keep threats, interaction
+            worst = sorted(player.hand, key=keep_val, reverse=True)[:2]
+            for w in worst:
+                player.hand.remove(w)
+                player.library.insert(0, w)
+        draws = len(drawn)
+        log_fn(f"{card.name} ({draws} draw{'s' if draws > 1 else ''})")
+    else:
+        drawn = player.draw(1)
+        log_fn(f"{card.name} (1 draw)")
+        draws = 1
+    # Fire bowmasters triggers for non-draw-step draws
+    bowmasters_triggers(draws, gs, log_entries,
+                        controller='o' if player is gs.p1 else 'b')
+    player.add_to_grave(card)
+    return drawn
+
+
+# ─── Mana & Cost Checking ──────────────────────────────────────────────────
+
 def opp_can_cast(card: Card, om: int, gs: GameState, caster=None) -> bool:
     """Single mana+colour gateway for any player casting a spell.
     caster: the PlayerState casting the spell. Defaults to gs.p2 for backward compat.
