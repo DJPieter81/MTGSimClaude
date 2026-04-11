@@ -216,23 +216,33 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 return
 
     # ── 3. Mox Opal (Metalcraft = 3+ artifacts) ─────────────────────────────
+    # Mox Opal is legendary — only one can be on the battlefield at a time.
+    opal_in_play = any(a.tag == 'opal' for a in player.artifacts)
     for opal in [c for c in player.hand if c.tag == 'opal']:
+        if opal_in_play:
+            break  # legend rule: can't have two Mox Opals in play
         if art_count >= 2:  # will be 3 once Opal itself enters
             player.remove_from_hand(opal)
             player.put_artifact_in_play(opal)
             mana += 1
             art_count += 1
             artifacts_cast_this_turn += 1
+            opal_in_play = True
             log_fn("Mox Opal (Metalcraft)")
 
     # ── 4. Patchwork Automaton — deploy early, grows with artifact casts ────
-    automaton = player.find_tag('automaton')
-    if automaton and mana >= 2:
+    while True:
+        automaton = player.find_tag('automaton')
+        if not automaton:
+            break
+        if mana < 2:
+            break
         player.remove_from_hand(automaton)
         if not _try_counter_any(player, opponent, gs, automaton, log_entries):
             player.put_creature_in_play(automaton)
             mana -= 2
             art_count += 1
+            artifacts_cast_this_turn += 1
             log_fn("Patchwork Automaton (1/1, grows with artifact casts)")
         else:
             player.add_to_grave(automaton)
@@ -259,51 +269,60 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(emry)
 
     # ── 6. Pinnacle Emissary — affinity creature ────────────────────────────
-    emissary = player.find_tag('emissary')
-    if emissary:
+    while True:
+        emissary = player.find_tag('emissary')
+        if not emissary:
+            break
         eff_cost = _affinity_cost(4, player)
-        if mana >= eff_cost:
-            player.remove_from_hand(emissary)
-            if not _try_counter_any(player, opponent, gs, emissary, log_entries):
-                player.put_creature_in_play(emissary)
-                mana -= eff_cost
-                art_count += 1
-                log_fn(f"Pinnacle Emissary (3/3, affinity {eff_cost})")
-            else:
-                player.add_to_grave(emissary)
+        if mana < eff_cost:
+            break
+        player.remove_from_hand(emissary)
+        if not _try_counter_any(player, opponent, gs, emissary, log_entries):
+            player.put_creature_in_play(emissary)
+            mana -= eff_cost
+            art_count += 1
+            log_fn(f"Pinnacle Emissary (3/3, affinity {eff_cost})")
+        else:
+            player.add_to_grave(emissary)
 
     # ── 7. Thought Monitor — affinity, draws 2 ──────────────────────────────
-    monitor = player.find_tag('monitor')
-    if monitor:
+    while True:
+        monitor = player.find_tag('monitor')
+        if not monitor:
+            break
         eff_cost = _affinity_cost(7, player)
-        if mana >= eff_cost:
-            player.remove_from_hand(monitor)
-            if not _try_counter_any(player, opponent, gs, monitor, log_entries):
-                player.put_creature_in_play(monitor)
-                mana -= eff_cost
-                art_count += 1
-                drawn = player.draw(2)
-                log_fn(f"Thought Monitor (2/2 flying, affinity {eff_cost}) — draws 2")
-                bowmasters_triggers(2, gs, log_entries,
-                                    controller='o' if player is gs.p1 else 'b')
-            else:
-                player.add_to_grave(monitor)
-            if gs.game_over:
-                return
+        if mana < eff_cost:
+            break
+        player.remove_from_hand(monitor)
+        if not _try_counter_any(player, opponent, gs, monitor, log_entries):
+            player.put_creature_in_play(monitor)
+            mana -= eff_cost
+            art_count += 1
+            drawn = player.draw(2)
+            log_fn(f"Thought Monitor (2/2 flying, affinity {eff_cost}) — draws 2")
+            bowmasters_triggers(2, gs, log_entries,
+                                controller='o' if player is gs.p1 else 'b')
+        else:
+            player.add_to_grave(monitor)
+        if gs.game_over:
+            return
 
     # ── 8. Kappa Cannoneer — big affinity threat ────────────────────────────
-    cannoneer = player.find_tag('cannoneer')
-    if cannoneer:
+    while True:
+        cannoneer = player.find_tag('cannoneer')
+        if not cannoneer:
+            break
         eff_cost = _affinity_cost(6, player)
-        if mana >= eff_cost:
-            player.remove_from_hand(cannoneer)
-            if not _try_counter_any(player, opponent, gs, cannoneer, log_entries):
-                player.put_creature_in_play(cannoneer)
-                mana -= eff_cost
-                art_count += 1
-                log_fn(f"Kappa Cannoneer (4/4 trample ward, affinity {eff_cost})")
-            else:
-                player.add_to_grave(cannoneer)
+        if mana < eff_cost:
+            break
+        player.remove_from_hand(cannoneer)
+        if not _try_counter_any(player, opponent, gs, cannoneer, log_entries):
+            player.put_creature_in_play(cannoneer)
+            mana -= eff_cost
+            art_count += 1
+            log_fn(f"Kappa Cannoneer (4/4 trample ward, affinity {eff_cost})")
+        else:
+            player.add_to_grave(cannoneer)
 
     # ── 9. Krang, Master Mind ────────────────────────────────────────────────
     krang = player.find_tag('krang')
@@ -368,7 +387,32 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             targets = [c for c in player.library
                        if c.card_type == _CT.ARTIFACT and c.cmc <= 1]
             if targets:
-                target = targets[0]
+                # Smart tutor priority based on board state
+                art_count_now = _artifact_count(player)
+                has_opal_in_play = any(a.card.tag == 'opal' for a in player.artifacts)
+                has_equipment = any(a.card.tag in ('boots', 'spear')
+                                    for a in player.artifacts)
+                has_creatures = bool(player.creatures)
+                # Priority 1: If few artifacts in play and no Mox Opal, tutor Mox Opal
+                opal_targets = [c for c in targets if c.tag == 'opal']
+                # Priority 2: If we have creatures but no equipment, tutor equipment
+                equip_targets = [c for c in targets if c.tag in ('boots', 'spear')]
+                # Priority 3: Lotus Petal for mana
+                petal_targets = [c for c in targets if c.tag == 'petal']
+                # Priority 4: Baubles for card draw
+                bauble_targets = [c for c in targets if c.tag in ('bauble', 'ubauble')]
+
+                if art_count_now < 3 and not has_opal_in_play and opal_targets:
+                    target = opal_targets[0]
+                elif has_creatures and not has_equipment and equip_targets:
+                    target = equip_targets[0]
+                elif petal_targets and mana < 2:
+                    target = petal_targets[0]
+                elif bauble_targets:
+                    target = bauble_targets[0]
+                else:
+                    target = targets[0]
+
                 player.library.remove(target)
                 player.hand.append(target)
                 log_fn(f"Urza's Saga Ch.3 — tutors {target.name}", True)
@@ -389,6 +433,52 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         if c.card.tag == 'automaton':
             c.power_mod = getattr(c, 'power_mod', 0) + artifacts_cast_this_turn
             c.toughness_mod = getattr(c, 'toughness_mod', 0) + artifacts_cast_this_turn
+
+    # ── 12b. Equip Lavaspur Boots — give haste to summoning-sick creature ────
+    # Boots are most valuable on a freshly played creature so it can attack
+    # immediately.  Prefer the highest-power summoning-sick creature; fall back
+    # to the highest-power ready creature so boots are always attached to the
+    # biggest threat.
+    boots_in_play = next((a for a in player.artifacts if a.tag == 'boots'), None)
+    if boots_in_play:
+        sick_creatures  = [c for c in player.creatures if c.summoning_sick and c.power > 0]
+        ready_creatures = [c for c in player.creatures if not c.summoning_sick and c.power > 0]
+        boot_target = (max(sick_creatures, key=lambda c: c.power, default=None)
+                       or max(ready_creatures, key=lambda c: c.power, default=None))
+        if boot_target and not getattr(boot_target, '_boots_equipped', False):
+            # Un-equip from previous bearer when boots move to a new creature
+            for c in player.creatures:
+                if getattr(c, '_boots_equipped', False) and c is not boot_target:
+                    c._boots_equipped = False
+            boot_target._boots_equipped = True
+            if boot_target.summoning_sick:
+                boot_target.summoning_sick = False
+                log_fn(f"Lavaspur Boots equipped to {boot_target.card.name} (haste)")
+
+    # ── 12c. Equip Shadowspear — +1/+1, trample, lifelink ───────────────────
+    # Attach to the highest-power attacker to maximise damage and life gain.
+    # Set trample/lifelink on both the Permanent's Card so the combat engine
+    # (which reads atk.card.trample / atk.card.lifelink) sees the keywords.
+    spear_in_play = next((a for a in player.artifacts if a.tag == 'spear'), None)
+    if spear_in_play:
+        eligible = [c for c in player.creatures if c.power > 0]
+        if eligible:
+            spear_target = max(eligible, key=lambda c: c.power)
+            # Un-equip from previous bearer if the spear moves to a new creature
+            for c in player.creatures:
+                if getattr(c, '_spear_equipped', False) and c is not spear_target:
+                    c._spear_equipped = False
+                    c.power_mod     = max(0, c.power_mod - 1)
+                    c.toughness_mod = max(0, c.toughness_mod - 1)
+                    c.card.trample  = False
+                    c.card.lifelink = False
+            if not getattr(spear_target, '_spear_equipped', False):
+                spear_target._spear_equipped = True
+                spear_target.power_mod     += 1
+                spear_target.toughness_mod += 1
+                spear_target.card.trample  = True
+                spear_target.card.lifelink = True
+                log_fn(f"Shadowspear equipped to {spear_target.card.name} (+1/+1, trample, lifelink)")
 
     # ── 13. Combat ───────────────────────────────────────────────────────────
     attackers = [c for c in player.creatures if not c.summoning_sick]
