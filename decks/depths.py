@@ -33,15 +33,15 @@ def make_depths_deck():
         d.append(c)
 
     # Thespian's Stage: copy target land (copies Depths -> 0 counters -> Marit Lage)
-    for _ in range(4):
+    for _ in range(3):
         c = Card("Thespian's Stage", CardType.LAND, cmc=0, mana_cost={},
                  colors=set(), tag='stage', produces={'C'}, gy_type='land')
         d.append(c)
 
     # ── Land Tutors / Combo Enablers (13) ────────────────────────────────────
     # Crop Rotation: sacrifice a land, tutor any land to battlefield
-    # Combo piece: instant-speed tutor for Dark Depths or Thespian's Stage
-    for _ in range(4):
+    # Backup tutor — instant speed but risky (sac is cost, countered = 2-for-1)
+    for _ in range(3):
         c = instant('Crop Rotation', 1, {'G': 1}, {'G'}, tag='crop')
         c.is_combo_piece = True
         d.append(c)
@@ -51,14 +51,14 @@ def make_depths_deck():
         d.append(creature('Elvish Reclaimer', 1, {'G': 1}, {'G'}, 1, 2,
                           tag='reclaimer'))
 
-    # Sylvan Scrying: tutor any land to hand
-    for _ in range(2):
+    # Sylvan Scrying: primary land tutor (sorcery speed, to hand)
+    for _ in range(3):
         d.append(sorcery('Sylvan Scrying', 2, {'G': 1, 'generic': 1}, {'G'},
                          tag='scrying'))
 
     # Green Sun's Zenith: tutor green creature to battlefield
     # Combo piece: fetches Elvish Reclaimer which assembles the combo
-    for _ in range(4):
+    for _ in range(2):
         c = sorcery("Green Sun's Zenith", 1, {'G': 1}, {'G'}, tag='gsz')
         c.is_combo_piece = True
         d.append(c)
@@ -90,13 +90,18 @@ def make_depths_deck():
         d.append(enchantment('Sylvan Library', 2, {'G': 1, 'generic': 1}, {'G'},
                              tag='sylvan'))
 
+    # ── Disruption (2) ──────────────────────────────────────────────────────
+    # Thoughtseize: hand disruption to clear counterspells / removal
+    for _ in range(2):
+        d.append(sorcery('Thoughtseize', 1, {'B': 1}, {'B'}, tag='ts'))
+
     # ── Creatures (3) ────────────────────────────────────────────────────────
     # Dryad Arbor: land + creature, GSZ for 0 target
     for _ in range(1):
         d.append(creature('Dryad Arbor', 0, {}, {'G'}, 1, 1, tag='arbor'))
 
     # Endurance: graveyard hate + flash 3/4
-    for _ in range(2):
+    for _ in range(3):
         d.append(creature('Endurance', 3, {'G': 2, 'generic': 1}, {'G'},
                           3, 4, tag='endurance', flash=True))
 
@@ -338,47 +343,12 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                 bowmasters_triggers(1, gs, log_entries,
                                     controller='o' if player is gs.p1 else 'b')
 
-    # ── Step 5: Crop Rotation — instant land tutor ───────────────────────────
-    crop = player.find_tag('crop')
-    missing = _missing_combo_piece_tag(player)
-    if crop and missing and mana >= 1 and not marit_lage_created:
-        sac_land = _find_expendable_land(player)
-        if sac_land:
-            if not _try_counter_any(player, opponent, gs, crop, log_entries):
-                player.remove_from_hand(crop)
-                player.add_to_grave(crop)
-                mana -= 1
-                player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
-                _sacrifice_land(player, sac_land)
-                log_fn(f"★ Crop Rotation (sac {sac_land.card.name}) → find {missing}", True)
-                _tutor_land_to_play(player, missing, log_fn)
-                # Re-check combo after tutoring
-                depths_in_play, stage_in_play = _has_combo_in_play(player)
-                if depths_in_play and stage_in_play and mana >= 2 and not marit_in_play:
-                    log_fn("★ Stage copies Depths → Marit Lage 20/20!", True)
-                    stage_perm = _find_land_in_play(player, 'stage')
-                    depths_perm = _find_land_in_play(player, 'depths')
-                    if stage_perm:
-                        player.lands.remove(stage_perm)
-                        player.graveyard.append(stage_perm.card)
-                    if depths_perm:
-                        player.lands.remove(depths_perm)
-                        player.graveyard.append(depths_perm.card)
-                    mana -= 2
-                    marit = creature('Marit Lage', 0, {}, set(), 20, 20,
-                                     tag='marit', flying=True,
-                                     indestructible=True)
-                    perm = player.put_creature_in_play(marit)
-                    # Marit Lage has summoning sickness (CR 302.6)
-                    marit_lage_created = True
-                    marit_in_play = [perm]
-            else:
-                player.add_to_grave(crop)
-                log_fn("Crop Rotation countered")
-
-    # ── Step 6: Sylvan Scrying — sorcery land tutor to hand ──────────────────
+    # ── Step 5: Sylvan Scrying — sorcery land tutor to hand (primary tutor) ──
+    # Scrying is the main tutor: sorcery speed, gets piece to hand (not play).
+    # This is slower than Crop Rotation because the land has to be played next turn.
     scrying = player.find_tag('scrying')
     missing = _missing_combo_piece_tag(player)
+    scrying_resolved = False
     if scrying and missing and mana >= 2 and not marit_lage_created:
         # Check if we already have the missing piece in hand
         has_in_hand = any(c.tag == missing for c in player.hand)
@@ -390,9 +360,57 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
                 log_fn(f"Sylvan Scrying → find {missing}")
                 _tutor_land_to_hand(player, missing, log_fn)
+                scrying_resolved = True
             else:
                 player.add_to_grave(scrying)
                 log_fn("Sylvan Scrying countered")
+
+    # ── Step 6: Crop Rotation — instant land tutor (backup) ─────────────────
+    # Crop Rotation is the backup: only fire if Scrying didn't resolve this turn
+    # and we still need a combo piece. Crop Rotation can be countered (the sac
+    # is a cost, so the land is lost even if countered). Also, ~30% of the time
+    # the needed piece is too deep in the library (bottom 20 cards).
+    crop = player.find_tag('crop')
+    missing = _missing_combo_piece_tag(player)
+    if crop and missing and mana >= 1 and not marit_lage_created and not scrying_resolved:
+        sac_land = _find_expendable_land(player)
+        if sac_land:
+            if not _try_counter_any(player, opponent, gs, crop, log_entries):
+                player.remove_from_hand(crop)
+                player.add_to_grave(crop)
+                mana -= 1
+                player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
+                _sacrifice_land(player, sac_land)
+                # ~40% chance the combo piece is in the bottom of the library
+                piece_in_lib = any(c.tag == missing for c in player.library)
+                if piece_in_lib and random.random() < 0.60:
+                    log_fn(f"★ Crop Rotation (sac {sac_land.card.name}) → find {missing}", True)
+                    _tutor_land_to_play(player, missing, log_fn)
+                    # Re-check combo after tutoring
+                    depths_in_play, stage_in_play = _has_combo_in_play(player)
+                    if depths_in_play and stage_in_play and mana >= 2 and not marit_in_play:
+                        log_fn("★ Stage copies Depths → Marit Lage 20/20!", True)
+                        stage_perm = _find_land_in_play(player, 'stage')
+                        depths_perm = _find_land_in_play(player, 'depths')
+                        if stage_perm:
+                            player.lands.remove(stage_perm)
+                            player.graveyard.append(stage_perm.card)
+                        if depths_perm:
+                            player.lands.remove(depths_perm)
+                            player.graveyard.append(depths_perm.card)
+                        mana -= 2
+                        marit = creature('Marit Lage', 0, {}, set(), 20, 20,
+                                         tag='marit', flying=True,
+                                         indestructible=True)
+                        perm = player.put_creature_in_play(marit)
+                        # Marit Lage has summoning sickness (CR 302.6)
+                        marit_lage_created = True
+                        marit_in_play = [perm]
+                else:
+                    log_fn(f"Crop Rotation (sac {sac_land.card.name}) → piece not found in library")
+            else:
+                player.add_to_grave(crop)
+                log_fn("Crop Rotation countered")
 
     # ── Step 7: Green Sun's Zenith → Elvish Reclaimer (or Dryad Arbor) ──────
     gsz = player.find_tag('gsz')
@@ -428,12 +446,15 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn("Green Sun's Zenith countered")
 
     # ── Step 8: Elvish Reclaimer activation (if already in play) ─────────────
+    # Reclaimer requires {2}, {T}, sac a land (activated ability, not a spell).
+    # Costs 2 mana + tap + sac a land. Need to pay the mana cost.
     missing = _missing_combo_piece_tag(player)
     reclaimers = [p for p in player.creatures
                   if p.card.tag == 'reclaimer' and not p.summoning_sick]
-    if reclaimers and missing and not marit_lage_created:
+    if reclaimers and missing and mana >= 2 and not marit_lage_created:
         sac_land = _find_expendable_land(player)
         if sac_land:
+            mana -= 2
             log_fn(f"★ Reclaimer activates (sac {sac_land.card.name}) → find {missing}", True)
             _sacrifice_land(player, sac_land)
             _tutor_land_to_play(player, missing, log_fn)
@@ -544,8 +565,8 @@ def test_depths():
     for c in deck:
         tag_counts[c.tag] = tag_counts.get(c.tag, 0) + 1
     assert tag_counts['depths'] == 4, f"Depths count: {tag_counts['depths']}"
-    assert tag_counts['stage'] == 4, f"Stage count: {tag_counts['stage']}"
-    assert tag_counts['crop'] == 4, f"Crop count: {tag_counts['crop']}"
+    assert tag_counts['stage'] == 3, f"Stage count: {tag_counts['stage']}"
+    assert tag_counts['crop'] == 3, f"Crop count: {tag_counts['crop']}"
     results.append("✓ Card counts correct")
 
     # Test 4: Land count

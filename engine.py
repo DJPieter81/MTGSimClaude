@@ -993,6 +993,8 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
         def _wl_priority(land):
             score = 0
             produces = land.effective_produces()
+            # Combo lands (Dark Depths / Thespian's Stage) are highest priority
+            if land.card.tag in ('depths', 'stage'): score += 50
             if produces & opp_spell_colours: score += 10  # cuts a colour opp needs NOW
             if land.card.mana_ritual: score += 5  # cuts mana-ritual lands (Tomb, City)
             if land.is_fetch:               score += 2   # denies future fixing
@@ -1864,7 +1866,12 @@ def _p1_respond_on_opp_turn(gs, log_fn, log_entries):
         eligible = [l for l in o.lands if not l.card.is_basic
                     and MTGRules.wasteland_can_target(l)]
         if eligible:
-            target = max(eligible, key=lambda l: 1 if l.card.mana_ritual else 0)
+            # Prioritise combo lands (Dark Depths / Thespian's Stage) above all else
+            def _wl_p1_prio(land):
+                if land.card.tag in ('depths', 'stage'): return 50
+                if land.card.mana_ritual: return 5
+                return 1
+            target = max(eligible, key=_wl_p1_prio)
             b.lands.remove(wl)
             b.add_to_grave(wl.card)
             o.lands.remove(target)
