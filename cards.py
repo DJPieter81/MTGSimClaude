@@ -597,14 +597,14 @@ def make_dnt_deck() -> List[Card]:
     d += [creature('Solitude', 5, {'W':2,'generic':3}, {'W'}, 3, 2, tag='solitude', is_removal=True, flash=True, flying=True, lifelink=True)] * 2
     d += [creature('Phelia, Exuberant Shepherd', 2, {'W':1,'generic':1}, {'W'}, 2, 2, tag='phelia')] * 3
     d += [creature('Flickerwisp', 3, {'W':1,'generic':2}, {'W'}, 3, 1, tag='flickerwisp', flying=True)] * 2
-    d += [creature('White Orchid Phantom', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='orchid')] * 1
     # Spells (8)
     d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'}, tag='stp',     is_removal=True)] * 4
     d += [artifact('Aether Vial', 1, {'generic':1}, tag='vial',    engine=True)] * 4
-    # Equipment (3)
+    # Equipment (2)
     d += [artifact('Kaldra Compleat', 7, {'generic':7}, tag='kaldra')] * 1
-    d += [artifact('Pre-War Formalwear', 4, {'generic':4}, tag='equipment')] * 1
     d += [artifact('Batterskull', 5, {'generic':5}, tag='equipment')] * 1
+    # Lock pieces (2)
+    d += [creature('Sanctum Prelate', 3, {'W':1,'generic':2}, {'W'}, 2, 2, tag='prelate', lock_piece=True)] * 2
     # Lands (27 — DnT runs lots of utility lands)
     d += [utility_land('Rishadan Port', ['C'], 'port')] * 4
     d += [utility_land('Wasteland',     ['C'], 'wl')]   * 4
@@ -1855,14 +1855,14 @@ def make_reanimator_deck() -> List[Card]:
     d += [instant('Entomb', 1, {'B':1}, {'B'}, tag='entomb', is_combo_piece=True)] * 4
     d += [sorcery('Reanimate', 1, {'B':1}, {'B'}, tag='reanimate', is_combo_piece=True)] * 4
     d += [sorcery('Exhume', 2, {'B':1,'generic':1}, {'B'}, tag='exhume', is_combo_piece=True)] * 4
-    d += [enchantment('Animate Dead', 2, {'B':1,'generic':1}, {'B'}, tag='animatedead', is_combo_piece=True)] * 4
+    d += [enchantment('Animate Dead', 2, {'B':1,'generic':1}, {'B'}, tag='animatedead', is_combo_piece=True)] * 2
+    # Fast mana
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit', mana_ritual=True)] * 4
     # Win conditions
     d += [creature('Griselbrand', 8, {'B':4,'generic':4}, {'B'}, 7, 7,
                    tag='gris', flying=True, win_condition=True)] * 4
     d += [creature('Archon of Cruelty', 8, {'B':2,'generic':6}, {'B'}, 6, 6,
                    tag='archon', flying=True, win_condition=True)] * 2
-    d += [creature('Atraxa, Grand Unifier', 7, {'W':1,'U':1,'B':1,'G':1,'generic':3},
-                   {'W','U','B','G'}, 7, 7, tag='atraxa', flying=True, win_condition=True)] * 2
     # Protection / disruption
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 4
@@ -1924,6 +1924,8 @@ def make_mardu_deck() -> List[Card]:
 def make_ur_aggro_deck() -> List[Card]:
     d = []
     # Threats
+    d += [creature('Delver of Secrets', 1, {'U':1}, {'U'}, 1, 1,
+                   tag='delver')] * 4
     d += [creature('Ragavan, Nimble Pilferer', 1, {'R':1}, {'R'}, 2, 1,
                    tag='ragavan', haste=True)] * 4
     d += [creature('Dragon\'s Rage Channeler', 1, {'R':1}, {'R'}, 3, 3,
@@ -1939,7 +1941,6 @@ def make_ur_aggro_deck() -> List[Card]:
     # Cantrips / filtering
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs')] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder')] * 4
-    d += [sorcery('Expressive Iteration', 2, {'U':1,'R':1}, {'U','R'}, tag='ei')] * 4
     # Counterspells
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 2

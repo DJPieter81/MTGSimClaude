@@ -81,12 +81,6 @@ def make_eight_cast_deck():
                  colors={'C'}, tag='factory', produces={'C'}, gy_type='land')
         d.append(c)
 
-    # Inventors' Fair: gain 1 life per artifact, tutor artifact
-    for _ in range(2):
-        c = _Card("Inventors' Fair", _CT.LAND, cmc=0, mana_cost={},
-                 colors={'C'}, tag='fair', produces={'C'}, gy_type='land')
-        d.append(c)
-
     # ── Artifact Mana (8) ─────────────────────────────────────────────────────
     # Lotus Petal: 0 cost, exile: add 1 any
     for _ in range(4):
@@ -132,6 +126,14 @@ def make_eight_cast_deck():
         c = artifact('Karn, The Great Creator', 4, {'generic':4}, tag='karn',
                      win_condition=True)
         c.planeswalker = True
+        d.append(c)
+
+    # Kappa Cannoneer: affinity for artifacts, 4/4, ward 4 — primary win condition
+    for _ in range(2):
+        c = creature('Kappa Cannoneer', 6, {'U':1,'generic':5}, {'U'},
+                     4, 4, tag='kappa', win_condition=True)
+        c.affinity_artifacts = True
+        c.ward = 4
         d.append(c)
 
     # Shadowspear: 1 mana equipment, +1/+1, lifelink, trample; removes indestructible/hexproof
@@ -182,7 +184,7 @@ def make_eight_cast_sideboard():
 
 # ─── Utility helpers (self-contained) ────────────────────────────────────────
 
-ARTIFACT_CREATURE_TAGS = {'monitor','emry','sai','karnstruct'}
+ARTIFACT_CREATURE_TAGS = {'monitor','emry','sai','karnstruct','kappa'}
 ARTIFACT_SPELL_TAGS    = {'karn','shadowspear','hole','needle','petal','opal','chalice','lantern','crypt','thorn'}
 ARTIFACT_LAND_TAGS     = {'seat','vault'}
 
