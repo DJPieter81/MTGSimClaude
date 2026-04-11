@@ -372,6 +372,7 @@ def protagonist_turn(gs, turn, matchup):
     b.untap_all()
     b.revolt_this_turn = False
     b.clear_summoning_sickness()
+    gs.combat_this_turn = False
     gs.p2_spells_cast_this_turn = 0
     gs.veil_active = False
     b.spells_cast_this_turn = 0
@@ -589,14 +590,18 @@ def protagonist_turn(gs, turn, matchup):
     _check_tamiyo_flip(gs, b, log)
 
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
-    combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
     if gs.trace:
         atk = [c for c in b.creatures if not c.summoning_sick]
         log(f"── Combat ── ({len(atk)} eligible attackers)")
-    if not combat_happened and not gs.game_over and b.creatures:
+    if not gs.combat_this_turn and not gs.game_over and b.creatures:
         attackers = _select_attackers(b, o)
         if attackers:
             combat_declare(b, o, gs, log_entries, attackers)
+
+    # ── P2 instant-speed responses during P1's turn (after combat) ──
+    if not gs.game_over:
+        from engine import _p2_respond_on_pro_turn
+        _p2_respond_on_pro_turn(gs, log, log_entries)
 
     update_goyf(gs)
     b.land_played_this_turn = False
