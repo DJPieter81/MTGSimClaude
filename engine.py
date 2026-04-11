@@ -846,13 +846,26 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             ctr.append(f"Consign to Memory counters {spell_card.name}")
 
     # ── Daze (return Island; caster may pay {1} to prevent) ──
+    # Daze is strong T1-2 when opponents are mana-tight, but after T3 opponents
+    # can usually pay {1}. Model pay-through rate scaling with turn + caster mana.
     if not ctr and d_daze and is_major_threat:
         blue_land = next((l for l in defender.lands if not l.tapped and 'U' in l.effective_produces()), None)
         if blue_land:
             is_combo = is_in_category(matchup, 'combo') or is_in_category(matchup, 'fast_combo')
-            pay_threshold = CL.DAZE_PAY_PROB_COMBO if is_combo else CL.DAZE_PAY_PROB_FAIR
+            # Caster's available mana after casting the spell (can they afford +1?)
+            caster_mana = caster.available_mana_count()
+            caster_spare = max(0, caster_mana - spell_card.cmc)
+            # Pay-through probability increases with turn and spare mana
+            if is_combo:
+                pay_threshold = CL.DAZE_PAY_PROB_COMBO  # combo decks often tap out
+            elif gs.turn <= 2:
+                pay_threshold = 0.15 if caster_spare >= 1 else 0.0
+            elif gs.turn == 3:
+                pay_threshold = 0.50 if caster_spare >= 1 else 0.20
+            else:
+                # T4+: opponent almost always has spare mana to pay {1}
+                pay_threshold = 0.85 if caster_spare >= 1 else 0.45
             can_pay = (spell_card.cmc >= 1 and
-                       (gs.turn >= 3 or is_combo) and
                        random.random() < pay_threshold)
             if can_pay:
                 log_list.append(f"  Daze attempted on {spell_card.name} — caster pays {{1}}, spell resolves")
@@ -993,6 +1006,8 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
         def _wl_priority(land):
             score = 0
             produces = land.effective_produces()
+            # Combo lands (Dark Depths / Thespian's Stage) are highest priority
+            if land.card.tag in ('depths', 'stage'): score += 50
             if produces & opp_spell_colours: score += 10  # cuts a colour opp needs NOW
             if land.card.mana_ritual: score += 5  # cuts mana-ritual lands (Tomb, City)
             if land.is_fetch:               score += 2   # denies future fixing
@@ -1112,7 +1127,7 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             if snuff_early and has_swamp and not gs.spell_blocked_by_chalice(snuff_early.cmc):
                 target_early = next((c for c in sorted(opponent.creatures, key=lambda x: -x.power)
                                      if 'B' not in c.card.colors), None)
-                if target_early and player.life > 6:  # don't Snuff below 6 vs aggro
+                if target_early and player.life > CT.SNUFF_LIFE_FLOOR_AGGRO:
                     player.cast_spell(snuff_early, log_fn=log_fn)
                     opponent.remove_creature(target_early)
                     log_fn(f"Snuff Out (free, −4 life → {player.life}) → kills {target_early.name}", key=True)
@@ -1829,7 +1844,7 @@ def _p1_respond_on_opp_turn(gs, log_fn, log_entries):
         if target.power >= 3:
             b.remove_from_hand(stp)
             b.add_to_grave(stp)
-            life_gain = target.power  # STP: exile + opp gains life = target's power
+            life_gain = MTGRules.stp_life_gain(target)
             o.creatures.remove(target)
             o.life += life_gain
             log_fn(f"★ P1 STP (instant, P2's turn) → exiles {target.card.name} "
@@ -1864,7 +1879,12 @@ def _p1_respond_on_opp_turn(gs, log_fn, log_entries):
         eligible = [l for l in o.lands if not l.card.is_basic
                     and MTGRules.wasteland_can_target(l)]
         if eligible:
-            target = max(eligible, key=lambda l: 1 if l.card.mana_ritual else 0)
+            # Prioritise combo lands (Dark Depths / Thespian's Stage) above all else
+            def _wl_p1_prio(land):
+                if land.card.tag in ('depths', 'stage'): return 50
+                if land.card.mana_ritual: return 5
+                return 1
+            target = max(eligible, key=_wl_p1_prio)
             b.lands.remove(wl)
             b.add_to_grave(wl.card)
             o.lands.remove(target)
@@ -1895,7 +1915,7 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
             if target.power >= 3:
                 o.remove_from_hand(stp)
                 o.add_to_grave(stp)
-                life_gain = target.power
+                life_gain = MTGRules.stp_life_gain(target)
                 b.creatures.remove(target)
                 b.life += life_gain
                 log_fn(f"★ P2 STP (instant, P1's turn) → exiles {target.card.name} "
@@ -1921,7 +1941,7 @@ def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
 
     # ── Snuff Out (free if controlling Swamp) ──
     snuff = o.find_tag('snuffout')
-    if snuff and b.creatures and o.life > 6:
+    if snuff and b.creatures and o.life > CT.SNUFF_LIFE_FLOOR_AGGRO:
         has_swamp = any('B' in l.effective_produces() for l in o.lands)
         if has_swamp:
             targets = [c for c in b.creatures
@@ -2749,6 +2769,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         if total_mana >= 3:
             log_fn("★ Painter + Grindstone — mills entire library!", True)
             gs.game_over = True
+            gs.kill_turn = gs.turn
             gs.winner = 'p1' if player is gs.p1 else 'p2'
             gs.win_reason = "Painter + Grindstone combo"
             return
@@ -2781,6 +2802,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     if painter_in_play and grind_in_play and total_mana >= 3:
         log_fn("★ Painter + Grindstone — mills entire library!", True)
         gs.game_over = True
+        gs.kill_turn = gs.turn
         gs.winner = 'p1' if player is gs.p1 else 'p2'
         gs.win_reason = "Painter + Grindstone combo"
         return
@@ -3014,6 +3036,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
             if win_card.is_creature():
                 player.put_creature_in_play(win_card)
             gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
+            gs.kill_turn = gs.turn
             gs.win_reason = f"Show+Veil: {win_card.name}"
         else:
             player.remove_from_hand(sat)
@@ -3038,6 +3061,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
                         # Win if lethal, or if Emrakul (annihilator 6 strips 30+ points of permanents)
                         if opponent.life <= 0 or win_card.tag == 'emrakul':
                             gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
+                            gs.kill_turn = gs.turn
                             gs.win_reason = f"Show+Tell: {win_card.name} (annihilator+attack)"
                     else:
                         # No haste — mark for next turn
@@ -3060,6 +3084,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
                             log_fn(f"★ {chain_target.name} attacks for {chain_target.base_power}", True)
                             if opponent.life <= 0 or chain_target.tag == 'emrakul':
                                 gs.game_over = True
+                                gs.kill_turn = gs.turn
                                 gs.winner = 'p1' if player is gs.p1 else 'p2'
                                 gs.win_reason = f"Omniscience+{chain_target.name}"
                         else:
@@ -3075,6 +3100,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
             player.remove_from_hand(emy)
             log_fn(f"★ Sneak Attack → {emy.name} attacks for lethal — game over", True)
             gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
+            gs.kill_turn = gs.turn
             gs.win_reason = f"Sneak Attack: {emy.name}"
 
     # ── Put Sneak Attack into play if SaT already resolved ──
@@ -3378,6 +3404,8 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             if wraith and player.life > 2:
                 player.remove_from_hand(wraith); player.add_to_grave(wraith)
                 player.life -= 2
+                gs.check_life_totals()
+                if gs.game_over: break
                 drawn = player.draw(1)
                 drawn_name = drawn[0].name if drawn else 'nothing'
                 log_fn(f"  Street Wraith cycles (−2 life → {player.life}) — draws {drawn_name}")
@@ -3416,6 +3444,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"  ★ Thassa's Oracle ETB — devotion {expected_devotion}, "
                    f"library {lib_size}", True)
             gs.game_over = True
+            gs.kill_turn = gs.turn
             gs.winner = 'p1' if player is gs.p1 else 'p2'
             gs.win_reason = (f"Doomsday → Oracle (devotion {expected_devotion} "
                              f"≥ library {lib_size})")
@@ -3465,6 +3494,8 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(can); player.add_to_grave(can)
         if can.tag == 'wraith':
             player.life -= 2
+            gs.check_life_totals()
+            if gs.game_over: break
             log_fn(f"Street Wraith cycles (−2 life → {player.life}) — draws 1")
             player.draw(1)
         elif can.tag == 'edge':
@@ -3515,6 +3546,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"  Doomsday life payment: −{half_life} → {player.life}")
             if player.life <= 0:
                 gs.game_over = True
+                gs.kill_turn = gs.turn
                 gs.winner = 'p2' if player is gs.p1 else 'p1'
                 gs.win_reason = f"Doomsday self-kill (life={player.life})"
                 return
@@ -4016,6 +4048,7 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
     if painter_in_play and grind_in_play and total_mana >= 3:
         log_fn("★ Painter + Grindstone — mills entire library!", True)
         gs.game_over = True
+        gs.kill_turn = gs.turn
         gs.winner = 'p1' if player is gs.p1 else 'p2'
         gs.win_reason = "Painter + Grindstone combo"
         return
@@ -4047,6 +4080,7 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
     if painter_in_play and grind_in_play and total_mana >= 3:
         log_fn("★ Painter + Grindstone — mills entire library!", True)
         gs.game_over = True
+        gs.kill_turn = gs.turn
         gs.winner = 'p1' if player is gs.p1 else 'p2'
         gs.win_reason = "Painter + Grindstone combo"
         return
@@ -4101,6 +4135,7 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
     if painter_in_play and grind_in_play and total_mana >= 3:
         log_fn("★ Painter + Grindstone — mills entire library!", True)
         gs.game_over = True
+        gs.kill_turn = gs.turn
         gs.winner = 'p1' if player is gs.p1 else 'p2'
         gs.win_reason = "Painter + Grindstone combo"
         return
@@ -4273,6 +4308,7 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                 if _rr2.random() >= _fizzle:  # fizzle_rate = P(fail), so succeed if >= fizzle
                     log_fn(f"★ Storm {kill_type} — wins (est. storm ~{est_storm + len(rituals)})", True)
                     gs.game_over = True
+                    gs.kill_turn = gs.turn
                     gs.winner = 'p1' if player is gs.p1 else 'p2'
                     gs.win_reason = f"ANT combo ({kill_type})"
                 else:

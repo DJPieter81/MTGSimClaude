@@ -41,9 +41,9 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     # Against aggro/burn, STP any creature (even power 1 like Swiftspear/Guide).
     # Against other matchups, STP power >= 2.
     p2_deck = getattr(gs, 'p2_deck', '') or getattr(gs, 'matchup', '')
-    from config import MatchupCategory as _MC
+    from config import MatchupCategory as _MC, CombatThresholds as CT
     opp_is_aggro = p2_deck in _MC.AGGRO or p2_deck == 'burn'
-    stp_threshold = 1 if opp_is_aggro else 2
+    stp_threshold = CT.STP_THRESHOLD_AGGRO if opp_is_aggro else CT.STP_THRESHOLD_FAIR
     _mom_protected = getattr(gs, '_mom_protected_tag', None)
 
     # Fire STP on multiple creatures if available (vs aggro, clear the board)

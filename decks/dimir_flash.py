@@ -16,7 +16,8 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     Priority: removal → threats (WST, Murktide, Bowmasters, Tamiyo) → cantrips → combat.
     Murktide uses delve: effective cost = max(2, 7 - graveyard_count).
     """
-    from engine import (opp_can_cast, _try_counter_any, bowmasters_triggers,
+    from config import CombatThresholds as CT
+from engine import (opp_can_cast, _try_counter_any, bowmasters_triggers,
                         update_goyf, combat_declare)
     from rules import MTGRules
 
@@ -179,7 +180,7 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
 
     # ── Combat: attack with non-summoning-sick creatures ──
     opp_has_blockers = len(opponent.creatures) > 0
-    desperate = player.life < 8
+    desperate = player.life < CT.DESPERATE_LIFE
     attackers_this_turn = []
     for c in player.creatures:
         if c.summoning_sick:

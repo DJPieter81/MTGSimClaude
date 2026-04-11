@@ -25,7 +25,7 @@ def make_burn_deck():
     # Goblin Guide: 2/2 haste for R — the gold standard T1 play
     for _ in range(4):
         d.append(creature('Goblin Guide', 1, {'R': 1}, {'R'},
-                          power=2, toughness=1, tag='guide', haste=True))
+                          power=2, toughness=2, tag='guide', haste=True))
 
     # Monastery Swiftspear: 1/2 haste, prowess (not modelled)
     for _ in range(4):
@@ -137,15 +137,32 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     landfall = player.land_played_this_turn
 
     # ── Deploy creatures ─────────────────────────────────────────────────
-    # Priority: T1 Guide/Swiftspear, T2 Eidolon, later turns fill in
+    # Real Burn plays at most 1 creature per turn.  T1 is always a 1-drop
+    # (Guide/Swiftspear).  Eidolon should only be deployed when we don't
+    # plan to cast burn spells this turn — it damages us too.
+    creatures_deployed = 0
+    CREATURE_CAP = 1  # max creatures to deploy per turn
+
+    # Eidolon timing: only deploy when hand is mostly lands/creatures (few
+    # burn spells remaining), so self-damage doesn't outweigh benefit.
+    # Also consider whether opponent is spell-heavy (makes Eidolon better).
+    burn_spells_in_hand = sum(1 for c in player.hand
+                              if not c.is_land() and not c.is_creature())
+    eidolon_safe = burn_spells_in_hand <= 1
+
     deploy_order = ['guide', 'swiftspear', 'eidolon']
 
     for tag in deploy_order:
+        if creatures_deployed >= CREATURE_CAP:
+            break
         card = player.find_tag(tag)
         if not card:
             continue
         cost = card.cmc
         if cost > mana:
+            continue
+        # Eidolon timing: skip if we plan to cast burn spells this turn
+        if tag == 'eidolon' and not eidolon_safe:
             continue
         # Try to cast; opponent may counter
         if not _try_counter_any(player, opponent, gs, card, log_entries):
@@ -153,6 +170,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             perm = player.put_creature_in_play(card)
             mana -= cost
             player.spells_cast_this_turn += 1
+            creatures_deployed += 1
             log_fn(f"{card.name} enters the battlefield", True)
 
             # Eidolon: flag it active so BUG takes 2 per CMC ≤3 spell
@@ -162,6 +180,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(card)
             player.spells_cast_this_turn += 1
+            creatures_deployed += 1
             log_fn(f"{card.name} countered")
 
         if gs.game_over:
@@ -188,9 +207,16 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             return False
         return spell_damage > eidolon_self_cost
 
-    # ── Burn spell pacing — realistic Legacy Burn casts 1-2 burn spells/turn ──
-    # Pre-combat spell (prowess) counts toward the cap.
-    BURN_SPELLS_PER_TURN = 2
+    # ── Burn spell pacing ──────────────────────────────────────────────
+    # Legacy Burn on 1-2 mana casts 1 spell/turn.  With 3+ lands and no
+    # creature deployed, it can manage 2.  Deploying a creature already
+    # consumed our main-phase mana, so reduce burn budget to 1.
+    if creatures_deployed > 0:
+        BURN_SPELLS_PER_TURN = 1
+    elif len(player.lands) >= 3:
+        BURN_SPELLS_PER_TURN = 2
+    else:
+        BURN_SPELLS_PER_TURN = 1
     burn_spells_this_turn = 0
 
     # ── Pre-combat: cast one cheap burn spell for prowess trigger ────────
@@ -264,7 +290,8 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
         if not pop:
             break
         nonbasics = sum(1 for l in opponent.lands if not l.card.is_basic)
-        pop_damage = nonbasics * 2
+        # Cap at 6 damage (3 nonbasics) — realistic Legacy manabase average
+        pop_damage = min(nonbasics * 2, 6)
         if pop_damage <= 0:
             break  # don't waste it if opp has no nonbasics
         if not _worth_casting(pop_damage):

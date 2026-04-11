@@ -454,8 +454,14 @@ def protagonist_turn(gs, turn, matchup):
     # ── Wasteland: destroy opponent's best nonbasic land ──
     wl_land = next((l for l in b.lands if l.card.tag in ('wl', 'wasteland') and not l.tapped), None)
     if wl_land and o.lands:
-        target = next((l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl'), None)
-        if target:
+        eligible = [l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl']
+        if eligible:
+            # Prioritise combo lands (Dark Depths / Thespian's Stage) above all else
+            def _wl_prio(land):
+                if land.card.tag in ('depths', 'stage'): return 50
+                if getattr(land.card, 'mana_ritual', False): return 5
+                return 1
+            target = max(eligible, key=_wl_prio)
             wl_land.tapped = True
             o.lands.remove(target)
             o.add_to_grave(target.card)
