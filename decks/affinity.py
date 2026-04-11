@@ -186,20 +186,68 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
     from rules import Card as _Card, CardType as _CT, Permanent
 
-    # Account for Ancient Tomb producing 2 mana
-    mana = total_mana + sum(1 for l in player.lands
-                            if not l.tapped and l.card.tag == 'tomb'
-                            and l.effective_produces())
+    def _has_blue():
+        """Return True if the player has at least one blue mana source available.
+
+        Blue sources checked (in order):
+        - Any untapped land that produces 'U' (Seat of the Synod, Island, Otawara)
+        - Mox Opal already in play with metalcraft (3+ artifacts on board)
+        - Lotus Petal in hand (produces any colour including U)
+        """
+        for land in player.lands:
+            if not land.tapped and 'U' in land.effective_produces():
+                return True
+        # Mox Opal in play provides any color with metalcraft (3+ artifacts)
+        if (any(a.card.tag == 'opal' for a in player.artifacts)
+                and _artifact_count(player) >= 3):
+            return True
+        # Lotus Petal in hand — can produce any color including U
+        if any(c.tag == 'petal' for c in player.hand):
+            return True
+        return False
+
+    # total_mana already accounts for Ancient Tomb's +1 bonus mana (engine adds
+    # it in protagonist_turn/opp_turn) and already deducts 2 life per Tomb tapped.
+    # Do NOT re-add Tomb mana here — the old code was double-counting (3 mana/Tomb).
+    mana = total_mana
     art_count = _artifact_count(player)
     artifacts_cast_this_turn = 0
 
-    # ── 1. Free mana: Lotus Petal ────────────────────────────────────────────
+    # cannoneer_on_board: Kappa Cannoneer gives +1/+1 to itself for each
+    # artifact that enters the battlefield while it's on the battlefield.
+    # Artifacts that enter this turn do NOT retroactively trigger it if it
+    # enters later in the same turn — so track separately.
+    cannoneer_on_board = any(c.card.tag == 'cannoneer' for c in player.creatures)
+    cannoneer_triggers = 0
+
+    def _sac_petal_if_needed(needed_mana):
+        """Sacrifice a Lotus Petal in play for 1 mana if we're short.
+        Petal goes to graveyard (not exile) when sacrificed.
+        Returns the mana gained (0 or 1)."""
+        nonlocal mana
+        if mana >= needed_mana:
+            return 0
+        petal_perm = next((a for a in player.artifacts if a.card.tag == 'petal'), None)
+        if petal_perm is None:
+            return 0
+        player.artifacts.remove(petal_perm)
+        player.graveyard.append(petal_perm.card)
+        mana += 1
+        log_fn("Lotus Petal — sacrifice for {C}")
+        return 1
+
+    # ── 1. Free artifacts: Lotus Petal ────────────────────────────────────────────
+    # Deploy Petals as 0-cost artifacts to maximise affinity cost reductions.
+    # They stay on the battlefield for the rest of this turn; only sacrifice
+    # via _sac_petal_if_needed() when we are short mana for a specific spell.
     for petal in [c for c in player.hand if c.tag == 'petal']:
         player.remove_from_hand(petal)
-        player.exile.append(petal) if hasattr(player, 'exile') else player.add_to_grave(petal)
-        mana += 1
+        player.put_artifact_in_play(petal)
         art_count += 1
         artifacts_cast_this_turn += 1
+        if cannoneer_on_board:
+            cannoneer_triggers += 1
+        log_fn("Lotus Petal (artifact in play)")
 
     # ── 2. Free artifacts: Baubles ───────────────────────────────────────────
     for bauble_tag in ('bauble', 'ubauble'):
@@ -209,6 +257,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             drawn = player.draw(1)
             art_count += 1
             artifacts_cast_this_turn += 1
+            if cannoneer_on_board:
+                cannoneer_triggers += 1
             log_fn(f"{bauble.name} — cantrip")
             bowmasters_triggers(1, gs, log_entries,
                                 controller='o' if player is gs.p1 else 'b')
@@ -217,7 +267,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── 3. Mox Opal (Metalcraft = 3+ artifacts) ─────────────────────────────
     # Mox Opal is legendary — only one can be on the battlefield at a time.
-    opal_in_play = any(a.tag == 'opal' for a in player.artifacts)
+    opal_in_play = any(a.card.tag == 'opal' for a in player.artifacts)
     for opal in [c for c in player.hand if c.tag == 'opal']:
         if opal_in_play:
             break  # legend rule: can't have two Mox Opals in play
@@ -227,6 +277,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             mana += 1
             art_count += 1
             artifacts_cast_this_turn += 1
+            if cannoneer_on_board:
+                cannoneer_triggers += 1
             opal_in_play = True
             log_fn("Mox Opal (Metalcraft)")
 
@@ -235,6 +287,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         automaton = player.find_tag('automaton')
         if not automaton:
             break
+        _sac_petal_if_needed(2)
         if mana < 2:
             break
         player.remove_from_hand(automaton)
@@ -243,6 +296,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             mana -= 2
             art_count += 1
             artifacts_cast_this_turn += 1
+            if cannoneer_on_board:
+                cannoneer_triggers += 1
             log_fn("Patchwork Automaton (1/1, grows with artifact casts)")
         else:
             player.add_to_grave(automaton)
@@ -252,7 +307,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     emry_on_board = any(c.card.tag == 'emry' for c in player.creatures)
     if emry and not emry_on_board:
         eff_cost = _affinity_cost(3, player)
-        if mana >= eff_cost:
+        _sac_petal_if_needed(eff_cost)
+        if mana >= eff_cost and _has_blue():
             player.remove_from_hand(emry)
             if not _try_counter_any(player, opponent, gs, emry, log_entries):
                 player.put_creature_in_play(emry)
@@ -274,6 +330,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         if not emissary:
             break
         eff_cost = _affinity_cost(4, player)
+        _sac_petal_if_needed(eff_cost)
         if mana < eff_cost:
             break
         player.remove_from_hand(emissary)
@@ -291,7 +348,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         if not monitor:
             break
         eff_cost = _affinity_cost(7, player)
-        if mana < eff_cost:
+        _sac_petal_if_needed(eff_cost)
+        if mana < eff_cost or not _has_blue():
             break
         player.remove_from_hand(monitor)
         if not _try_counter_any(player, opponent, gs, monitor, log_entries):
@@ -313,20 +371,24 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         if not cannoneer:
             break
         eff_cost = _affinity_cost(6, player)
-        if mana < eff_cost:
+        _sac_petal_if_needed(eff_cost)
+        if mana < eff_cost or not _has_blue():
             break
         player.remove_from_hand(cannoneer)
         if not _try_counter_any(player, opponent, gs, cannoneer, log_entries):
             player.put_creature_in_play(cannoneer)
             mana -= eff_cost
             art_count += 1
+            # Cannoneer is now on the board — subsequent artifact ETBs trigger it.
+            cannoneer_on_board = True
             log_fn(f"Kappa Cannoneer (4/4 trample ward, affinity {eff_cost})")
         else:
             player.add_to_grave(cannoneer)
 
     # ── 9. Krang, Master Mind ────────────────────────────────────────────────
     krang = player.find_tag('krang')
-    if krang and mana >= 5:
+    _sac_petal_if_needed(5)
+    if krang and mana >= 5 and _has_blue():
         player.remove_from_hand(krang)
         if not _try_counter_any(player, opponent, gs, krang, log_entries):
             player.put_creature_in_play(krang)
@@ -339,7 +401,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     cast = player.find_tag('cast')
     if cast:
         eff_cost = _affinity_cost(5, player)
-        if mana >= eff_cost:
+        if mana >= eff_cost and _has_blue():
             player.remove_from_hand(cast)
             player.add_to_grave(cast)
             mana -= eff_cost
@@ -359,6 +421,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             mana -= 1
             art_count += 1
             artifacts_cast_this_turn += 1
+            if cannoneer_on_board:
+                cannoneer_triggers += 1
             log_fn(f"{equip.name}")
 
     # ── 12. Urza's Saga — tick chapters, generate constructs ─────────────────
@@ -439,7 +503,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     # immediately.  Prefer the highest-power summoning-sick creature; fall back
     # to the highest-power ready creature so boots are always attached to the
     # biggest threat.
-    boots_in_play = next((a for a in player.artifacts if a.tag == 'boots'), None)
+    boots_in_play = next((a for a in player.artifacts if a.card.tag == 'boots'), None)
     if boots_in_play:
         sick_creatures  = [c for c in player.creatures if c.summoning_sick and c.power > 0]
         ready_creatures = [c for c in player.creatures if not c.summoning_sick and c.power > 0]
@@ -459,7 +523,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     # Attach to the highest-power attacker to maximise damage and life gain.
     # Set trample/lifelink on both the Permanent's Card so the combat engine
     # (which reads atk.card.trample / atk.card.lifelink) sees the keywords.
-    spear_in_play = next((a for a in player.artifacts if a.tag == 'spear'), None)
+    spear_in_play = next((a for a in player.artifacts if a.card.tag == 'spear'), None)
     if spear_in_play:
         eligible = [c for c in player.creatures if c.power > 0]
         if eligible:
@@ -480,8 +544,108 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 spear_target.card.lifelink = True
                 log_fn(f"Shadowspear equipped to {spear_target.card.name} (+1/+1, trample, lifelink)")
 
-    # ── 13. Combat ───────────────────────────────────────────────────────────
-    attackers = [c for c in player.creatures if not c.summoning_sick]
+    # ── 13. Emry — tap to cast artifact from graveyard ───────────────────────
+    # Emry's tap ability: {T} — cast an artifact card from your graveyard.
+    # Find an untapped, non-summoning-sick Emry on the battlefield.
+    emry_perm = next(
+        (c for c in player.creatures
+         if c.card.tag == 'emry' and not c.summoning_sick and not c.tapped),
+        None
+    )
+    if emry_perm:
+        # Artifact cards sitting in graveyard (Card objects, not Permanents)
+        gy_artifacts = [c for c in player.graveyard
+                        if c.card_type == _CT.ARTIFACT
+                        or c.tag in ARTIFACT_CREATURE_TAGS]
+
+        if gy_artifacts:
+            # Priority: Mox Opal (metalcraft) > baubles > Lotus Petal > equipment > others
+            opal_in_play_now = any(a.card.tag == 'opal' for a in player.artifacts)
+            art_count_now = _artifact_count(player)
+
+            def _emry_priority(c):
+                if c.tag == 'opal' and not opal_in_play_now and art_count_now >= 2:
+                    return 0   # Mox Opal — metalcraft mana engine (skip if already in play)
+                if c.tag in ('bauble', 'ubauble'):
+                    return 1   # Baubles — free cantrip, builds artifact count
+                if c.tag == 'petal':
+                    return 2   # Lotus Petal — burst mana
+                if c.tag in ('boots', 'spear'):
+                    return 3   # Equipment
+                return 4       # Generic artifacts
+
+            target = min(gy_artifacts, key=_emry_priority)
+            player.graveyard.remove(target)
+            emry_perm.tapped = True  # Emry taps to activate the ability
+
+            if target.tag == 'petal':
+                # Lotus Petal: enters, immediately sacrifice for mana
+                player.exile.append(target)
+                mana += 1
+                artifacts_cast_this_turn += 1
+                art_count = _artifact_count(player)
+                log_fn(f"Emry recurs {target.name} — sacrifice for mana")
+
+            elif target.tag in ('bauble', 'ubauble'):
+                # Baubles: enter and immediately cantrip into graveyard
+                player.add_to_grave(target)
+                player.draw(1)
+                artifacts_cast_this_turn += 1
+                art_count = _artifact_count(player)
+                log_fn(f"Emry recurs {target.name} — cantrip")
+                bowmasters_triggers(1, gs, log_entries,
+                                    controller='o' if player is gs.p1 else 'b')
+                if gs.game_over:
+                    return
+
+            elif target.tag == 'opal':
+                # Mox Opal: put into play; tap for mana if metalcraft (3+ artifacts)
+                player.put_artifact_in_play(target)
+                artifacts_cast_this_turn += 1
+                art_count = _artifact_count(player)
+                if art_count >= 3:
+                    mana += 1
+                    log_fn(f"Emry recurs {target.name} (Metalcraft — +1 mana)")
+                else:
+                    log_fn(f"Emry recurs {target.name}")
+
+            else:
+                # Equipment, or any other artifact: put into play
+                player.put_artifact_in_play(target)
+                artifacts_cast_this_turn += 1
+                art_count = _artifact_count(player)
+                log_fn(f"Emry recurs {target.name}")
+
+            # Cannoneer trigger for Emry's artifact cast
+            if cannoneer_on_board:
+                cannoneer_triggers += 1
+
+            # Recount after Emry activation; update Construct token sizes
+            art_count = _artifact_count(player)
+            for c in player.creatures:
+                if c.card.tag == 'construct':
+                    c.power_mod = art_count
+                    c.toughness_mod = art_count
+
+            # Credit Automaton for the artifact cast via Emry
+            for c in player.creatures:
+                if c.card.tag == 'automaton':
+                    c.power_mod = getattr(c, 'power_mod', 0) + 1
+                    c.toughness_mod = getattr(c, 'toughness_mod', 0) + 1
+
+    # ── 14a. Apply Kappa Cannoneer triggers ────────────────────────────────
+    # Each artifact ETB while Cannoneer was on board = +1/+1 counter + unblockable
+    if cannoneer_triggers > 0:
+        for c in player.creatures:
+            if c.card.tag == 'cannoneer':
+                c.power_mod += cannoneer_triggers
+                c.toughness_mod += cannoneer_triggers
+                c.cant_be_blocked = True
+                log_fn(f"Kappa Cannoneer +{cannoneer_triggers} counters, can't be blocked")
+
+    # ── 14b. Combat ──────────────────────────────────────────────────────────
+    # Exclude tapped creatures (e.g. Emry after activating her ability this turn)
+    attackers = [c for c in player.creatures if not c.summoning_sick and not c.tapped]
     if attackers:
         combat_declare(player, opponent, gs, log_entries, attackers)
 
