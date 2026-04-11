@@ -475,6 +475,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"{equip.name}")
 
     # ── 12. Urza's Saga — tick chapters, generate constructs ─────────────────
+    # Snapshot the list so we can safely modify player.lands during iteration.
+    sagas_to_sacrifice = []
     for land in [l for l in player.lands if l.card.tag == 'saga']:
         chapter = getattr(land, 'saga_chapter', 0) + 1
         land.saga_chapter = chapter
@@ -510,13 +512,9 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 has_equipment = any(a.card.tag in ('boots', 'spear')
                                     for a in player.artifacts)
                 has_creatures = bool(player.creatures)
-                # Priority 1: If few artifacts in play and no Mox Opal, tutor Mox Opal
                 opal_targets = [c for c in targets if c.tag == 'opal']
-                # Priority 2: If we have creatures but no equipment, tutor equipment
                 equip_targets = [c for c in targets if c.tag in ('boots', 'spear')]
-                # Priority 3: Lotus Petal for mana
                 petal_targets = [c for c in targets if c.tag == 'petal']
-                # Priority 4: Baubles for card draw
                 bauble_targets = [c for c in targets if c.tag in ('bauble', 'ubauble')]
 
                 # Priority 0: If life is low, Shadowspear is critical for lifelink
@@ -538,10 +536,13 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.library.remove(target)
                 player.hand.append(target)
                 log_fn(f"Urza's Saga Ch.3 — tutors {target.name}", True)
-            player.lands.remove(land)
-            player.graveyard.append(land.card)
-            log_fn("Urza's Saga sacrificed (Ch.3 complete)")
-            break
+            sagas_to_sacrifice.append(land)
+
+    # Sacrifice Ch.3 sagas after the loop (safe to modify player.lands now)
+    for land in sagas_to_sacrifice:
+        player.lands.remove(land)
+        player.graveyard.append(land.card)
+        log_fn("Urza's Saga sacrificed (Ch.3 complete)")
 
     # ── Update Construct sizes ───────────────────────────────────────────────
     art_count = _artifact_count(player)

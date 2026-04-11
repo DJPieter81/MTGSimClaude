@@ -3839,7 +3839,7 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── 0a. Thoughtseize — proactive disruption (early turns) ──
     from config import MatchupCategory as MC
-    from interaction_model import best_proactive_target
+    from interaction import best_proactive_target
     ts = player.find_tag('ts')
     ts_turn_cap = 3 if MC.is_combo(gs) else 2  # aligned with config (was 6/3 — too oppressive vs combo)
     if ts and gs.turn <= ts_turn_cap and rem >= 1:
