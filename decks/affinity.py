@@ -115,6 +115,7 @@ def make_affinity_deck() -> List[Card]:
         c = creature('Kappa Cannoneer', 6, {'U': 1, 'generic': 5}, {'U'},
                      4, 4, tag='cannoneer', trample=True)
         c.affinity_artifacts = True
+        c.ward = 4
         d.append(c)
 
     # Krang, Master Mind
@@ -623,18 +624,20 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             # Base CMCs for artifact creatures (used to compute affinity costs)
             _CREATURE_BASE_CMC = {
                 'cannoneer': 6, 'monitor': 7, 'emissary': 4,
-                'automaton': 2, 'emry': 3,
+                'automaton': 2, 'emry': 3, 'krang': 5,
             }
             art_count_now = _artifact_count(player)
             opal_in_play_now = any(a.card.tag == 'opal' for a in player.artifacts)
 
             def _emry_can_afford(c):
-                """True if we have enough mana (and blue if needed) to recast c."""
+                """True if we have enough mana (and blue/black if needed) to recast c."""
                 base = _CREATURE_BASE_CMC.get(c.tag)
                 if base is None:
                     return True  # Non-creature artifacts have 0 effective cast cost
                 eff = _affinity_cost(base, player)
                 if c.tag in ('cannoneer', 'monitor', 'emry') and not _has_blue():
+                    return False
+                if c.tag == 'krang' and (not _has_blue() or not _has_black()):
                     return False
                 return mana >= eff
 
@@ -651,6 +654,9 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                     return 2 if _emry_can_afford(c) else 10
                 if c.tag == 'automaton':
                     # Grows with artifacts; modest base stats
+                    return 3 if _emry_can_afford(c) else 10
+                if c.tag == 'krang':
+                    # 4/5 with relevant ETB — solid threat requiring UB
                     return 3 if _emry_can_afford(c) else 10
                 if c.tag == 'emry':
                     # Legend rule: recasting a second Emry would sacrifice one;
@@ -683,8 +689,11 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                 # Recasting an artifact creature from GY: pay affinity-reduced cost
                 base_cmc = _CREATURE_BASE_CMC.get(target.tag, target.cmc)
                 eff_cost = _affinity_cost(base_cmc, player)
-                needs_blue = target.tag in ('cannoneer', 'monitor', 'emry')
-                if mana >= eff_cost and (not needs_blue or _has_blue()):
+                needs_blue = target.tag in ('cannoneer', 'monitor', 'emry', 'krang')
+                needs_black = target.tag == 'krang'
+                if (mana >= eff_cost
+                        and (not needs_blue or _has_blue())
+                        and (not needs_black or _has_black())):
                     if not _try_counter_any(player, opponent, gs, target, log_entries):
                         player.put_creature_in_play(target)
                         mana -= eff_cost
