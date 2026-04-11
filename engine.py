@@ -354,6 +354,58 @@ def resolve_cantrip(player, card, gs, log_fn, log_entries):
     return drawn
 
 
+# ─── Centralized Damage Router ──────────────────────────────────────────────
+
+def deal_damage(gs, source_tag, target_player, amount, damage_type='normal',
+                log_fn=None, source_card=None, attacker_player=None):
+    """Centralized damage router.  ALL damage to players goes through here.
+
+    damage_type:
+      'normal'  — burn spells, Eidolon, etc.  Reduces life.
+      'combat'  — combat damage.  Checks source for infect, routes accordingly.
+      'infect'  — infect damage.  Routes to poison counters, not life.
+      'loss'    — life loss (Thoughtseize, fetch).  Direct life change, no triggers.
+
+    For 'combat': auto-detects infect on source_card and routes to poison.
+    Returns actual damage dealt.
+    """
+    if amount <= 0:
+        return 0
+
+    # Infect routing: combat damage from infect creature → poison
+    if damage_type == 'combat' and source_card and getattr(source_card, 'infect', False):
+        damage_type = 'infect'
+
+    if damage_type == 'infect':
+        # Route to poison counters
+        if target_player is gs.p1:
+            gs.p1_poison = getattr(gs, 'p1_poison', 0) + amount
+            poison = gs.p1_poison
+        else:
+            gs.p2_poison = getattr(gs, 'p2_poison', 0) + amount
+            poison = gs.p2_poison
+        if log_fn:
+            log_fn(f"★ {source_tag} deals {amount} poison ({poison}/10)")
+        if poison >= 10:
+            gs.game_over = True
+            gs.kill_turn = gs.turn
+            gs.winner = 'p2' if target_player is gs.p1 else 'p1'
+            gs.win_reason = f"Infect: {poison} poison counters"
+            if log_fn:
+                log_fn(f"★★★ LETHAL — {poison} poison counters on turn {gs.turn}!", True)
+        return amount
+
+    if damage_type == 'loss':
+        # Direct life loss (not damage — can't be prevented)
+        target_player.life -= amount
+        return amount
+
+    # Normal / combat damage — reduce life
+    target_player.life -= amount
+    gs.check_life_totals()
+    return amount
+
+
 # ─── Mana & Cost Checking ──────────────────────────────────────────────────
 
 def opp_can_cast(card: Card, om: int, gs: GameState, caster=None) -> bool:

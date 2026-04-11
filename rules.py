@@ -137,6 +137,7 @@ class Card:
     reach: bool = False
     trample: bool = False
     indestructible: bool = False
+    infect: bool = False                 # CR 702.89: damage dealt as poison counters to players
     deathtouch: bool = False             # CR 702.2: any damage dealt is lethal damage
     lifelink: bool = False               # CR 702.15: damage dealt also causes life gain
     vigilance: bool = False              # CR 702.20: attacking doesn't cause creature to tap
