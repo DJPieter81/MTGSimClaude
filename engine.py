@@ -358,6 +358,7 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
     L4: blocker deals damage back to the blocked attacker (CR 510.1).
     Defender chooses best blocker; all other attackers hit the player.
     """
+    gs._combat_unblocked_tags = set()
     attackers = gs.get_attackers(attacker_player)
     if not attackers:
         return
@@ -569,6 +570,7 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
         else:
             # Unblocked — deals damage to player
             total_unblocked_dmg += atk.power
+            gs._combat_unblocked_tags.add(atk.card.tag)
             if atk.card.lifelink:
                 attacker_player.life += atk.power
 
@@ -4543,10 +4545,13 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
     attackers = [c for c in player.creatures if not c.summoning_sick]
     combat_declare(player, opponent, gs, log_entries, attackers)
 
-    # Ragavan combat damage trigger
-    rag_perm = next((c for c in player.creatures if c.card.tag == 'ragavan' and c.tapped), None)
-    if rag_perm and opponent.library:
+    # Ragavan combat damage trigger — oracle: "deals combat damage to a player"
+    if 'ragavan' in getattr(gs, '_combat_unblocked_tags', set()) and opponent.library:
         stolen = opponent.library.pop(0)
+        if player is gs.p1:
+            gs.p1_treasure = getattr(gs, 'p1_treasure', 0) + 1
+        else:
+            gs.p2_treasure = getattr(gs, 'p2_treasure', 0) + 1
         log_fn(f"★ Ragavan exiles {stolen.name} from library + creates Treasure", True)
         update_goyf(gs)
 
@@ -4697,9 +4702,8 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             attackers.append(c)
     combat_declare(player, opponent, gs, log_entries, attackers)
 
-    # Ragavan trigger — creates Treasure token on combat damage
-    rag_perm = next((c for c in player.creatures if c.card.tag == 'ragavan' and c.tapped), None)
-    if rag_perm and opponent.library:
+    # Ragavan trigger — oracle: "deals combat damage to a player"
+    if 'ragavan' in getattr(gs, '_combat_unblocked_tags', set()) and opponent.library:
         stolen = opponent.library.pop(0)
         # Track treasure for the active player (whoever controls Ragavan)
         tkey = 'p1_treasure' if player is gs.p1 else 'p2_treasure'
@@ -4708,7 +4712,10 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
         log_fn(f"★ Ragavan exiles {stolen.name} + creates Treasure ({treasure} total)", True)
         update_goyf(gs)
         if not stolen.is_land() and stolen.cmc <= treasure and stolen.cmc > 0:
-            treasure -= stolen.cmc
+            if player is gs.p1:
+                gs.p1_treasure -= stolen.cmc
+            else:
+                gs.p2_treasure -= stolen.cmc
             if stolen.is_creature():
                 player.put_creature_in_play(stolen)
                 log_fn(f"  Ragavan casts exiled {stolen.name}")
