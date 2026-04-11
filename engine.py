@@ -1734,7 +1734,10 @@ def opp_turn(gs: GameState, turn: int, matchup: str):
             def _plugin_log(msg, key=False):
                 gs.log_event('o', 'main', msg, key)
                 log_entries.append(msg)
-            strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
+            try:
+                strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
+            except Exception as e:
+                log(f"⚠ Strategy error ({matchup}): {e} — forfeiting turn")
 
     # ── Post-strategy: Eidolon damage + restore lock adjustments ──
     apply_eidolon_damage(gs, o, spells_before, log)

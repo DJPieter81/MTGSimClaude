@@ -552,7 +552,10 @@ def protagonist_turn(gs, turn, matchup):
     spells_before = b.spells_cast_this_turn
     strategy_fn = get_strategy(matchup)
     if strategy_fn:
-        strategy_fn(b, o, gs, total_mana, log, log_entries)
+        try:
+            strategy_fn(b, o, gs, total_mana, log, log_entries)
+        except Exception as e:
+            log(f"⚠ Strategy error ({matchup}): {e} — forfeiting turn")
     else:
         log(f"No strategy for {matchup} — passing")
 
