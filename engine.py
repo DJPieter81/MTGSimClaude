@@ -125,6 +125,18 @@ def apply_eidolon_damage(gs, player, spells_before, log):
             gs.check_life_totals()
 
 
+def _check_tamiyo_flip(gs: GameState, player, log_fn) -> None:
+    """Oracle: Tamiyo flips when controller draws 3+ cards in a turn.
+    Centralised so it works for ALL decks with Tamiyo, not just BUG."""
+    tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
+    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
+        if player.draws_this_turn >= 3:
+            gs.tamiyo_flipped = True
+            tam_perm.power_mod = 3   # flips to Tamiyo, Seasoned Scholar (3/3)
+            tam_perm.toughness_mod = 0
+            log_fn("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
+
+
 def _eidolon_trigger(gs: GameState, card, log_fn, caster=None) -> None:
     """CR 702.2: Eidolon of the Great Revel — whenever ANY player casts a spell with CMC≤3,
     Eidolon deals 2 damage to that spell's caster."""
@@ -767,8 +779,8 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
 def play_turn(gs: GameState, turn: int, who: str = 'p1'):
     """
     Unified turn entry point — dispatches to the appropriate turn function.
-    who='p1': P1's turn (bug_turn for BUG deck, protagonist_turn for others)
-    who='p2': P2's turn (opp_turn — handles all decks via registry)
+    who='p1': P1's turn (protagonist_turn — all decks via strategy dispatch)
+    who='p2': P2's turn (opp_turn — all decks via registry)
 
     Both players get equal AI quality. The p1/p2 slots are neutral —
     the deck key determines which strategy runs, not the slot.
@@ -790,133 +802,44 @@ def play_turn(gs: GameState, turn: int, who: str = 'p1'):
     )
 
     if who == 'p1':
-        p1_deck = getattr(gs, 'p1_deck', 'bug')
-        if p1_deck == 'bug' or p1_deck == '':
-            return bug_turn(gs, turn)
-        else:
-            # ── Wasteland sacrifice fix (CR 701.16) ──
-            # protagonist_turn taps Wasteland but doesn't sacrifice it.
-            # Real Wasteland: "{T}, Sacrifice ~: Destroy target nonbasic land."
-            # Track which Wastelands were untapped before the turn. After the turn,
-            # any that became tapped were activated and must be sacrificed.
-            # Note: untap_all() runs inside protagonist_turn, so all Wastelands
-            # start untapped. We detect newly-tapped ones after the turn.
-            wl_ids_before = set(id(l) for l in player.lands
-                                if l.card.tag in ('wl', 'wasteland'))
-            opp_land_count_before = len(opponent.lands)
-            from sim import protagonist_turn
-            result = protagonist_turn(gs, turn, p1_deck)
-            # If opponent lost a nonbasic land and a Wasteland was tapped,
-            # it was an activation — sacrifice it
-            opp_land_count_after = len(opponent.lands)
-            if opp_land_count_after < opp_land_count_before:
-                tapped_wl = [l for l in player.lands
-                             if l.card.tag in ('wl', 'wasteland')
-                             and l.tapped and id(l) in wl_ids_before]
-                for wl in tapped_wl[:1]:  # at most 1 Wasteland activation per turn
-                    player.lands.remove(wl)
-                    player.add_to_grave(wl.card)
-            return result
+        p1_deck = getattr(gs, 'p1_deck', '')
+        # ── Wasteland sacrifice fix (CR 701.16) ──
+        # protagonist_turn taps Wasteland but doesn't sacrifice it.
+        # Real Wasteland: "{T}, Sacrifice ~: Destroy target nonbasic land."
+        # Track which Wastelands were untapped before the turn. After the turn,
+        # any that became tapped were activated and must be sacrificed.
+        # Note: untap_all() runs inside protagonist_turn, so all Wastelands
+        # start untapped. We detect newly-tapped ones after the turn.
+        wl_ids_before = set(id(l) for l in player.lands
+                            if l.card.tag in ('wl', 'wasteland'))
+        opp_land_count_before = len(opponent.lands)
+        from sim import protagonist_turn
+        result = protagonist_turn(gs, turn, p1_deck)
+        # If opponent lost a nonbasic land and a Wasteland was tapped,
+        # it was an activation — sacrifice it
+        opp_land_count_after = len(opponent.lands)
+        if opp_land_count_after < opp_land_count_before:
+            tapped_wl = [l for l in player.lands
+                         if l.card.tag in ('wl', 'wasteland')
+                         and l.tapped and id(l) in wl_ids_before]
+            for wl in tapped_wl[:1]:  # at most 1 Wasteland activation per turn
+                player.lands.remove(wl)
+                player.add_to_grave(wl.card)
+        return result
     else:
         matchup = getattr(gs, 'p2_deck', '') or getattr(gs, 'matchup', '')
         return opp_turn(gs, turn, matchup)
 
 
-def bug_turn(gs: GameState, turn: int):
-    b = gs.p1
-    o = gs.p2
-    log_entries = []
 
-    def log(msg, key=False):
-        gs.log_event('b', 'main', msg, key)
-        log_entries.append(msg)
+def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
+    """BUG Tempo strategy — extracted from bug_turn for symmetric dispatch.
+    Handles: Bauble sac, Wasteland, discard, cantrips, removal, threats, sideboard cards."""
+    budget = [total_mana]
+    turn = gs.turn
 
-    # ── Cleanup from previous turn — CR 510.2 ──
-    # Damage is removed from all permanents at the end of each turn.
-    for player in [b, o]:
-        for c in player.creatures:
-            c.damage_marked = 0
-
-    # ── Untap (S3/S4 applied via LandPermanent) ──
-    b.untap_all()
-    b.revolt_this_turn = False
-    if gs.trace:
-        log(f"── Untap ── ({len(b.lands)} lands)")
-
-    # ── Upkeep ──
-    b.clear_summoning_sickness()
-    update_goyf(gs)
-    if gs.trace:
-        log("── Upkeep ──")
-
-    # Mishra's Bauble: pending draws cash out at controller's upkeep (not draw step)
-    # CR 603.3: triggers fire at start of upkeep, before drawing.
-    # Bowmasters: any draw except first in your draw step — upkeep draws count.
-    if gs.pending_bauble_draws > 0:
-        for _ in range(gs.pending_bauble_draws):
-            drawn = b.draw(1)  # not the draw step — Bowmasters CAN trigger on this
-            if drawn:
-                log(f"Mishra's Bauble (upkeep draw) → {drawn[0].name}")
-                # Opp's Bowmasters triggers when BUG draws (upkeep draw is not BUG's draw step)
-                opp_bowm = next((c for c in o.creatures if c.card.tag == 'bowm'), None)
-                if opp_bowm:
-                    b.life -= 1
-                    opp_army = next((c for c in o.creatures if c.card.tag == 'orc_army'), None)
-                    if opp_army:
-                        opp_army.power_mod += 1; opp_army.toughness_mod += 1
-                    else:
-                        ac = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
-                                  mana_cost={}, colors=set(), base_power=0, base_toughness=0,
-                                  tag='orc_army', gy_type='creature')
-                        ap = Permanent(card=ac, controller='o', summoning_sick=False)
-                        ap.power_mod = 1; ap.toughness_mod = 1
-                        o.creatures.append(ap)
-                    log(f"  OPP Bowmasters (Bauble upkeep draw) → BUG at {b.life}")
-                    gs.check_life_totals()
-        gs.pending_bauble_draws = 0
-
-    # Narset, Parter of Veils — if opp controls Narset, BUG can only draw their first card
-    # each turn (replacement effect). Set flag on BUG's player state for draw() to check.
-    b._narset_lock = any(p.card.tag == 'narset' for p in o.planeswalkers)
-
-    # ── Draw (first player skips T1 draw — CR 103.8a) ──
-    if gs.trace:
-        if turn == 1 and gs.p1_goes_first:
-            log("── Draw ── (skipped — on the play, T1)")
-        else:
-            log("── Draw ──")
-    if not (turn == 1 and gs.p1_goes_first):
-        drawn = b.draw(1, is_draw_step=True)  # draw step
-        if drawn:
-            log(f"Draw: {drawn[0].name}")
-            # Bowmasters oracle: "whenever an opponent draws a card" — fires when BUG draws
-            # if OPP controls Bowmasters. Deals 1 damage to BUG, grows OPP's Orc Army.
-            opp_bowm = next((c for c in o.creatures if c.card.tag == 'bowm'), None)
-            if opp_bowm:
-                b.life -= 1
-                # Grow OPP's Orc Army token
-                opp_army = next((c for c in o.creatures if c.card.tag == 'orc_army'), None)
-                if opp_army:
-                    opp_army.power_mod += 1; opp_army.toughness_mod += 1
-                else:
-                    ac = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
-                              mana_cost={}, colors=set(), base_power=0, base_toughness=0,
-                              tag='orc_army', gy_type='creature')
-                    ap = Permanent(card=ac, controller='o', summoning_sick=False)
-                    ap.power_mod = 1; ap.toughness_mod = 1
-                    o.creatures.append(ap)
-                log(f"OPP Bowmasters trigger (BUG draws) — BUG at {b.life}", True)
-                gs.check_life_totals()
-
-    # C1: mana budget = number of available producing lands
-    b_budget = [b.available_mana_count()]  # mutable int via list
-    if gs.trace:
-        log(f"── Main ── Mana: {b_budget[0]}")
-        log(f"  Hand ({len(b.hand)}): {', '.join(c.name for c in b.hand)}")
     # Trinisphere CR 601.2f: all spells cost at least {3}
-    # effective_cmc raises any spell's cost to minimum 3 when Trinisphere is active
     trini_min = 3 if gs.trinisphere_active else 0
-    # Thalia, Guardian of Thraben: noncreature spells cost +1 (CR 613) — computed property
     thalia_tax = 1 if gs.thalia_on_board else 0
     def effective_cmc(card):
         base = max(card.cmc, trini_min)
@@ -925,77 +848,41 @@ def bug_turn(gs: GameState, turn: int):
         return base
 
     def spend(card):
-        """Deduct mana and fire Eidolon trigger for any CMC≥2 BUG spell cast."""
-        _deduct(b_budget, effective_cmc(card), card)
-        _eidolon_trigger(gs, card, log)
+        """Deduct mana and fire Eidolon trigger."""
+        _deduct(budget, effective_cmc(card), card)
+        _eidolon_trigger(gs, card, log_fn)
 
-    # ── Land drop ──
-    land_to_play = (b.find_any(lambda c: c.is_land() and c.is_fetch) or
-                    b.find_any(lambda c: c.is_land() and bool(c.produces)) or
-                    b.find_any(lambda c: c.is_land()))
-    if land_to_play:
-        perm = b.play_land(land_to_play)
-        if perm:
-            # CR 613: apply all active continuous effects to newly entered land
-            gs.apply_continuous_effects(perm)
-            if perm.is_fetch:
-                fetched = b.use_fetch(perm)
-                if fetched:
-                    gs.apply_continuous_effects(fetched)  # fetched land also enters under effects
-                    log(f"Play+crack {land_to_play.name} (−1 life, {b.life}) → {fetched.name} [untapped]")
-                    # Stifle vs fetch crack: UWx can counter the fetch's search ability
-                    # This denies BUG the land drop AND costs BUG 1 life for nothing.
-                    stifle_card = o.find_tag('stifle') if getattr(gs, 'opp_has_stifle', False) else None
-                    if stifle_card and can_afford(o, stifle_card.mana_cost):
-                        # Use Stifle aggressively on T1-4 when BUG is mana-developing
-                        stifle_threshold = 6  # Stifle effective through midgame
-                        if turn <= stifle_threshold and random.random() < 0.70:
-                            o.remove_from_hand(stifle_card); o.add_to_grave(stifle_card)
-                            # Fetch ability countered: BUG gets no land.
-                            b.lands.remove(fetched)
-                            # Also reduce current-turn budget (it was refreshed to include fetched land)
-                            b_budget[0] = max(0, b_budget[0] - 1)
-                            log(f"  ★ OPP Stifle → fetch ability countered! No land for BUG", True)
-                            update_goyf(gs)
-                            gs.opp_has_stifle = any(c.tag == 'stifle' for c in o.hand)
-                    # WST oracle: "Whenever an opponent searches their library..."
-                    wst_perm = next((p for p in o.creatures if p.card.tag == 'wst'), None)
-                    if wst_perm:
-                        wst_perm.power_mod += 1
-                        wst_perm.toughness_mod += 1
-                        drawn = o.draw(1)
-                        if drawn:
-                            log(f"  WST trigger: BUG searched → Wan Shi Tong grows ({wst_perm.power}/{wst_perm.toughness}), opp draws {drawn[0].name}", True)
-                        else:
-                            log(f"  WST trigger: Wan Shi Tong grows ({wst_perm.power}/{wst_perm.toughness})")
-            else:
-                log(f"Play {land_to_play.name} ({len(b.lands)} lands)")
-
-    # Refresh mana budget after land drop — fetch crack gives new untapped land
-    b_budget[0] = b.available_mana_count()
+    def _threat_castable(c):
+        """True if we can cast this creature given current budget and GY state (handles delve)."""
+        ecmc = effective_cmc(c)
+        if budget[0] < ecmc: return False
+        if ecmc < c.cmc:  # delve reduced cost — only check colored pips
+            colored = {k:v for k,v in c.mana_cost.items() if k != 'generic'}
+            return can_afford(player, colored)
+        return can_afford(player, c.mana_cost)
 
     # ── Mishra's Bauble (BUG's own) — sac immediately, draws on next upkeep ──
     # CMC 0: tap and sacrifice; look at top of opp library; draw a card on next upkeep.
     # No mana cost. Always sac immediately — delayed draw + artifact in GY (Nethergoyf).
-    for bauble in list(b.hand):
+    for bauble in list(player.hand):
         if bauble.tag == 'bauble':
-            b.remove_from_hand(bauble)
-            b.add_to_grave(bauble)  # artifact type in BUG GY → helps own Nethergoyf
+            player.remove_from_hand(bauble)
+            player.add_to_grave(bauble)  # artifact type in BUG GY → helps own Nethergoyf
             gs.pending_bauble_draws = gs.pending_bauble_draws + 1
-            log(f"Mishra's Bauble (sac → draw on next upkeep, artifact in GY)")
+            log_fn(f"Mishra's Bauble (sac → draw on next upkeep, artifact in GY)")
             update_goyf(gs)
 
     # ═══════════════════════════════════════════════════════════
     # GAME STATE ASSESSMENT — informs all decisions this turn
     # ═══════════════════════════════════════════════════════════
-    bug_board_power  = sum(c.power for c in b.creatures)
-    opp_board_power  = sum(c.power for c in o.creatures)
-    bug_threat_count = len(b.creatures)
-    opp_threat_count = len(o.creatures)
-    bug_has_threats  = any(c.is_creature() for c in b.hand)
-    turns_to_kill_opp = (o.life / bug_board_power) if bug_board_power > 0 else 999
-    turns_to_die      = (b.life  / opp_board_power) if opp_board_power > 0 else 999
-    opp_has_cantrips  = any(c.is_cantrip for c in o.hand)
+    bug_board_power  = sum(c.power for c in player.creatures)
+    opp_board_power  = sum(c.power for c in opponent.creatures)
+    bug_threat_count = len(player.creatures)
+    opp_threat_count = len(opponent.creatures)
+    bug_has_threats  = any(c.is_creature() for c in player.hand)
+    turns_to_kill_opp = (opponent.life / bug_board_power) if bug_board_power > 0 else 999
+    turns_to_die      = (player.life  / opp_board_power) if opp_board_power > 0 else 999
+    opp_has_cantrips  = any(c.is_cantrip for c in opponent.hand)
     if turns_to_kill_opp <= 3 and turns_to_die <= 3:
         game_state = 'racing'
     elif bug_board_power > opp_board_power + 2 or bug_threat_count > opp_threat_count + 1:
@@ -1006,10 +893,10 @@ def bug_turn(gs: GameState, turn: int):
         game_state = 'parity'
 
     # ── Wasteland (activated ability — uncounterable, no mana cost) ──
-    wl = next((l for l in b.lands if l.card.tag == 'wl' and not l.tapped), None)
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
     if wl:
         # Priority: cut the colour opp needs most for their spells this turn
-        opp_spell_colours = set(col for card in o.hand if not card.is_land()
+        opp_spell_colours = set(col for card in opponent.hand if not card.is_land()
                                 for col in card.colors)
         def _wl_priority(land):
             score = 0
@@ -1018,47 +905,47 @@ def bug_turn(gs: GameState, turn: int):
             if land.card.mana_ritual: score += 5  # cuts mana-ritual lands (Tomb, City)
             if land.is_fetch:               score += 2   # denies future fixing
             return score
-        eligible = [l for l in o.lands if MTGRules.wasteland_can_target(l)
+        eligible = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)
                     and (not l.card.is_basic and l.card.is_land())]
         target = max(eligible, key=_wl_priority, default=None)
         if target:
-            b.lands.remove(wl)
-            b.add_to_grave(wl.card)
-            b.revolt_this_turn = True
-            o.lands.remove(target)
-            o.add_to_grave(target.card)
-            stifle = o.find_tag('stifle') if getattr(gs, 'opp_has_stifle', False) else None
-            if stifle and can_afford(o, stifle.mana_cost) and random.random() < 0.7:
-                o.remove_from_hand(stifle); o.add_to_grave(stifle)
+            player.lands.remove(wl)
+            player.add_to_grave(wl.card)
+            player.revolt_this_turn = True
+            opponent.lands.remove(target)
+            opponent.add_to_grave(target.card)
+            stifle = opponent.find_tag('stifle') if getattr(gs, 'opp_has_stifle', False) else None
+            if stifle and can_afford(opponent, stifle.mana_cost) and random.random() < 0.7:
+                opponent.remove_from_hand(stifle); opponent.add_to_grave(stifle)
                 # Stifle counters the activated ability. Costs are already paid (Wasteland sac'd).
                 # Per oracle: ability is countered but costs aren't reversed.
                 # Practical effect: Wasteland is gone, but target land survives.
                 try:
-                    o.graveyard.remove(target.card)
+                    opponent.graveyard.remove(target.card)
                 except ValueError:
                     pass
-                o.lands.append(target)
-                b.revolt_this_turn = False
-                log(f"  ★ OPP Stifle → counters Wasteland ability! {target.name} survives", True)
+                opponent.lands.append(target)
+                player.revolt_this_turn = False
+                log_fn(f"  ★ OPP Stifle → counters Wasteland ability! {target.name} survives", True)
                 update_goyf(gs)
             else:
-                log(f"Wasteland [ACTIVATED-uncounterable] → destroys {target.name}", key=True)
-            b_budget[0] = b.available_mana_count()
+                log_fn(f"Wasteland [ACTIVATED-uncounterable] → destroys {target.name}", key=True)
+            budget[0] = player.available_mana_count()
             update_goyf(gs)
 
     # ── Thoughtseize — C1: needs 1B mana ──
-    ts = b.find_tag('ts')
+    ts = player.find_tag('ts')
     ts_turn_cap = IP.TS_TURN_CAP_COMBO if MC.is_combo(gs) else IP.TS_TURN_CAP_FAIR
     if ts and turn <= ts_turn_cap and not gs.spell_blocked_by_chalice(ts.cmc):
-        if b_budget[0] >= effective_cmc(ts) and can_afford(b, ts.mana_cost):
+        if budget[0] >= effective_cmc(ts) and can_afford(player, ts.mana_cost):
             # SEQ-09: only cast TS if opp has a non-land worth stripping.
             # Casting TS into an all-land hand wastes a card and 2 life for nothing.
             target = best_proactive_target(gs)
             if target:
                 spend(ts)
-                b.cast_spell(ts, log_fn=log)
-                o.remove_from_hand(target)
-                log(f"Thoughtseize -> strips {target.name}", key=True)
+                player.cast_spell(ts, log_fn=log_fn)
+                opponent.remove_from_hand(target)
+                log_fn(f"Thoughtseize -> strips {target.name}", key=True)
 
     # ── Flash Bowmasters — PRIORITY: before cantrips to tax opp's next draw ──
     # Bowmasters deploy timing.
@@ -1067,33 +954,25 @@ def bug_turn(gs: GameState, turn: int):
     #   — 3 Brainstorm draws = 3 pings, and APNAP means our triggers resolve before
     #     their Tamiyo flip. Main-phase deployment telegraphs it and they won't cantrip.
     # Kirdie: "Bowmasters are often better later in Bowmasters mirrors."
-    bowm = b.find_tag('bowm')
+    bowm = player.find_tag('bowm')
     if bowm and not gs.bowmasters_on_board and not gs.spell_blocked_by_chalice(bowm.cmc):
-        if b_budget[0] >= effective_cmc(bowm) and can_afford(b, bowm.mana_cost):
+        if budget[0] >= effective_cmc(bowm) and can_afford(player, bowm.mana_cost):
             is_tempo_mirror = gs.matchup in MC.TEMPO_MIRROR
-            opp_likely_has_cantrip = any(c.is_cantrip for c in o.hand)
+            opp_likely_has_cantrip = any(c.is_cantrip for c in opponent.hand)
             hold_for_mirror_eot = is_tempo_mirror and opp_likely_has_cantrip and game_state != 'behind'
             hold_for_interaction = (game_state == 'behind' and bug_has_threats and
-                                    any(c.is_removal for c in b.hand))
+                                    any(c.is_removal for c in player.hand))
 
             if not hold_for_mirror_eot and not hold_for_interaction:
-                _deduct(b_budget, effective_cmc(bowm), bowm)
-                b.remove_from_hand(bowm)
-                if try_reactive_counter(gs, b, o, bowm, log_entries):
-                    b.add_to_grave(bowm)
+                _deduct(budget, effective_cmc(bowm), bowm)
+                player.remove_from_hand(bowm)
+                if try_reactive_counter(gs, player, opponent, bowm, log_entries):
+                    player.add_to_grave(bowm)
                 else:
-                    perm = b.put_creature_in_play(bowm)
+                    perm = player.put_creature_in_play(bowm)
                     gs.bowmasters_on_board = True
-                    log("Flash Bowmasters (1 trigger per card opp draws)", key=True)
+                    log_fn("Flash Bowmasters (1 trigger per card opp draws)", key=True)
 
-    def _threat_castable(c):
-        """True if BUG can cast this creature given current budget and GY state (handles delve)."""
-        ecmc = effective_cmc(c)
-        if b_budget[0] < ecmc: return False
-        if ecmc < c.cmc:  # delve reduced cost — only check colored pips
-            colored = {k:v for k,v in c.mana_cost.items() if k != 'generic'}
-            return can_afford(b, colored)
-        return can_afford(b, c.mana_cost)
 
     # ── AGGRO REMOVAL PRIORITY ──────────────────────────────────────────────
     # Against creature aggro (Burn, Eldrazi, UR Delver, etc), removal MUST fire
@@ -1101,66 +980,66 @@ def bug_turn(gs: GameState, turn: int):
     # a T1 Brainstorm just digs for cards we might not need if we're already dead.
     _did_early_push = False
     _did_early_snuff = False
-    if MC.is_aggro(gs) and o.creatures:
+    if MC.is_aggro(gs) and opponent.creatures:
         # Early Push
-        push_early = b.find_tag('push')
+        push_early = player.find_tag('push')
         if push_early and not gs.spell_blocked_by_chalice(push_early.cmc):
-            push_targets_early = [c for c in o.creatures
-                                  if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
+            push_targets_early = [c for c in opponent.creatures
+                                  if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)]
             target_early = (
                 next((c for c in push_targets_early if c.card.haste or c.card.draw_trigger), None) or
                 next((c for c in push_targets_early if c.card.deathtouch or c.card.lifelink), None) or
                 max(push_targets_early, key=lambda c: c.power, default=None)
             )
-            if target_early and b_budget[0] >= effective_cmc(push_early) and can_afford(b, push_early.mana_cost):
+            if target_early and budget[0] >= effective_cmc(push_early) and can_afford(player, push_early.mana_cost):
                 spend(push_early)
-                b.remove_from_hand(push_early)
-                b.add_to_grave(push_early)
+                player.remove_from_hand(push_early)
+                player.add_to_grave(push_early)
                 push_spell = cast_obj(push_early, 'b')
                 ctr = []
                 fow_worthwhile = target_early.card.cmc >= 3 or target_early.card.engine
-                if fow_worthwhile and MTGRules.force_of_will_use(push_spell, o.hand, ctr):
+                if fow_worthwhile and MTGRules.force_of_will_use(push_spell, opponent.hand, ctr):
                     pass
-                elif o.available_mana_count() <= 1:
-                    MTGRules.daze_use(push_spell, o.hand, o.lands, ctr)
+                elif opponent.available_mana_count() <= 1:
+                    MTGRules.daze_use(push_spell, opponent.hand, opponent.lands, ctr)
                 if not ctr:
-                    o.remove_creature(target_early)
-                    rev = " [revolt CMC≤4]" if b.revolt_this_turn else " [CMC≤2]"
-                    log(f"Fatal Push{rev} → kills {target_early.name} (CMC {target_early.cmc})")
+                    opponent.remove_creature(target_early)
+                    rev = " [revolt CMC≤4]" if player.revolt_this_turn else " [CMC≤2]"
+                    log_fn(f"Fatal Push{rev} → kills {target_early.name} (CMC {target_early.cmc})")
                     _did_early_push = True
                 else:
-                    for m in ctr: log(f"  {m}")
+                    for m in ctr: log_fn(f"  {m}")
                 update_goyf(gs)
 
         # Early Snuff Out (free removal — always correct against aggro creatures)
-        if not _did_early_push and o.creatures:
-            snuff_early = b.find_tag('snuffout')
+        if not _did_early_push and opponent.creatures:
+            snuff_early = player.find_tag('snuffout')
             has_swamp = any('Swamp' in l.card.subtypes or
                             (l.card.is_basic and 'B' in l.effective_produces())
-                            for l in b.lands)
+                            for l in player.lands)
             if snuff_early and has_swamp and not gs.spell_blocked_by_chalice(snuff_early.cmc):
-                target_early = next((c for c in sorted(o.creatures, key=lambda x: -x.power)
+                target_early = next((c for c in sorted(opponent.creatures, key=lambda x: -x.power)
                                      if 'B' not in c.card.colors), None)
-                if target_early and b.life > 6:  # don't Snuff below 6 vs aggro
-                    b.cast_spell(snuff_early, log_fn=log)
-                    o.remove_creature(target_early)
-                    log(f"Snuff Out (free, −4 life → {b.life}) → kills {target_early.name}", key=True)
+                if target_early and player.life > 6:  # don't Snuff below 6 vs aggro
+                    player.cast_spell(snuff_early, log_fn=log_fn)
+                    opponent.remove_creature(target_early)
+                    log_fn(f"Snuff Out (free, −4 life → {player.life}) → kills {target_early.name}", key=True)
                     _did_early_snuff = True
                     update_goyf(gs)
 
     # ── Brainstorm — C1: needs 1U ──
-    bs = b.find_tag('bs')
+    bs = player.find_tag('bs')
     if bs and not gs.spell_blocked_by_chalice(bs.cmc):
-        threat_count = sum(1 for c in b.hand if c.is_creature())
-        on_board = len(b.creatures)
+        threat_count = sum(1 for c in player.hand if c.is_creature())
+        on_board = len(player.creatures)
         # Cast BS when: no threats deployed yet (need to find action regardless of hand),
         # OR fewer than 2 threats in hand. Prevents holding BS when threats are queued
         # but there's nothing on board applying pressure.
         # Cast Brainstorm with shuffle for full value (best).
         # Without shuffle, hold ONLY if we already have 2+ threats in hand
         # AND the game isn't urgent. Otherwise cast freely — BUG needs action.
-        has_shuffle = (any(c.is_land() and c.is_fetch for c in b.hand) or
-                       any(l.is_fetch and not l.tapped for l in b.lands))
+        has_shuffle = (any(c.is_land() and c.is_fetch for c in player.hand) or
+                       any(l.is_fetch and not l.tapped for l in player.lands))
         hand_is_rich = threat_count >= 2  # 2+ threats means we can afford to wait
         # Hold a "blind" BS only when: rich hand AND safe game state AND no urgency
         hold_blind_bs = (not has_shuffle and hand_is_rich and
@@ -1168,84 +1047,84 @@ def bug_turn(gs: GameState, turn: int):
         bs_worth_now = not hold_blind_bs
         # SEQ-05: when opp is fully tapped out, deploy an affordable threat first.
         # Cantripping into a tapped-out opp wastes the free window — cast Murktide/Nethergoyf now.
-        opp_tapped_out = o.available_mana_count() == 0
-        has_affordable_threat = any(c.is_creature() and _threat_castable(c) for c in b.hand)
+        opp_tapped_out = opponent.available_mana_count() == 0
+        has_affordable_threat = any(c.is_creature() and _threat_castable(c) for c in player.hand)
         # Only yield cantrip to threat in FAIR matchups when opp is tapped out.
         # vs combo (Storm, Oops, Show, DD, Reanimator): always cantrip to find answers.
         is_fair_matchup = not MC.is_combo(gs)
         # Don't yield in mirrors -- Brainstorm before threats is correct in fair mirrors
         yield_to_threat = opp_tapped_out and has_affordable_threat and is_fair_matchup and not MC.is_mirror(gs)
-        if bs_worth_now and not yield_to_threat and (on_board == 0 or threat_count < 2) and b_budget[0] >= effective_cmc(bs) and can_afford(b, bs.mana_cost):
-            _deduct(b_budget, effective_cmc(bs), bs)
-            b.remove_from_hand(bs)
-            b.add_to_grave(bs)
+        if bs_worth_now and not yield_to_threat and (on_board == 0 or threat_count < 2) and budget[0] >= effective_cmc(bs) and can_afford(player, bs.mana_cost):
+            _deduct(budget, effective_cmc(bs), bs)
+            player.remove_from_hand(bs)
+            player.add_to_grave(bs)
             n = MTGRules.brainstorm_draws()
-            drawn = b.draw(n)
-            log(f"Brainstorm ({n} draws = {n} separate draw events) → "
+            drawn = player.draw(n)
+            log_fn(f"Brainstorm ({n} draws = {n} separate draw events) → "
                 f"[{', '.join(c.name for c in drawn)}]")
-            put_back = sorted(b.hand, key=lambda c: (
+            put_back = sorted(player.hand, key=lambda c: (
                 2 if c.is_land() else 1 if (c.is_cantrip) else 0
             ), reverse=True)[:MTGRules.brainstorm_puts_back()]
             for c in put_back:
-                b.hand.remove(c)
-                b.library.insert(0, c)
-            log(f"  Puts back: {[c.name for c in put_back]}")
+                player.hand.remove(c)
+                player.library.insert(0, c)
+            log_fn(f"  Puts back: {[c.name for c in put_back]}")
             update_goyf(gs)
 
     # ── Ponder — C1: needs 1U ──
-    pon = b.find_tag('ponder')
-    if pon and not gs.spell_blocked_by_chalice(pon.cmc) and not b.find_tag('bs'):
-        on_board_pon = len(b.creatures)
-        threat_count_pon = sum(1 for c in b.hand if c.is_creature())
-        opp_tapped_out_pon = o.available_mana_count() == 0
-        has_affordable_threat_pon = any(c.is_creature() and _threat_castable(c) for c in b.hand)
+    pon = player.find_tag('ponder')
+    if pon and not gs.spell_blocked_by_chalice(pon.cmc) and not player.find_tag('bs'):
+        on_board_pon = len(player.creatures)
+        threat_count_pon = sum(1 for c in player.hand if c.is_creature())
+        opp_tapped_out_pon = opponent.available_mana_count() == 0
+        has_affordable_threat_pon = any(c.is_creature() and _threat_castable(c) for c in player.hand)
         yield_to_threat_pon = opp_tapped_out_pon and has_affordable_threat_pon and not MC.is_combo(gs) and not MC.is_mirror(gs)
-        if (on_board_pon == 0 or threat_count_pon < 2) and not yield_to_threat_pon and b_budget[0] >= effective_cmc(pon) and can_afford(b, pon.mana_cost):
-            _deduct(b_budget, effective_cmc(pon), pon)
-            b.remove_from_hand(pon)
-            b.add_to_grave(pon)
-            top3 = b.library[:3]
-            b.library = b.library[3:]
+        if (on_board_pon == 0 or threat_count_pon < 2) and not yield_to_threat_pon and budget[0] >= effective_cmc(pon) and can_afford(player, pon.mana_cost):
+            _deduct(budget, effective_cmc(pon), pon)
+            player.remove_from_hand(pon)
+            player.add_to_grave(pon)
+            top3 = player.library[:3]
+            player.library = player.library[3:]
             keep = (next((c for c in top3 if c.is_creature()), None) or
                     next((c for c in top3 if c.free_cast_if_blue), None) or
                     (top3[0] if top3 else None))
             if keep:
-                b.hand.append(keep)
+                player.hand.append(keep)
                 top3.remove(keep)
-            b.library = random.sample(top3, len(top3)) + b.library
-            log(f"Ponder ({MTGRules.ponder_draws()} draw) → keeps {keep.name if keep else '—'}")
+            player.library = random.sample(top3, len(top3)) + player.library
+            log_fn(f"Ponder ({MTGRules.ponder_draws()} draw) → keeps {keep.name if keep else '—'}")
 
 
 
     # ── Abrupt Decay — C1: needs BG. Uncounterable. ──
-    ad = b.find_tag('ad')
-    if ad and b_budget[0] >= effective_cmc(ad) and can_afford(b, ad.mana_cost):
+    ad = player.find_tag('ad')
+    if ad and budget[0] >= effective_cmc(ad) and can_afford(player, ad.mana_cost):
         # Priority: lock pieces > planeswalkers (Narset) > combo enablers > deathtouch creatures
         ad_target = (
-            next((p for p in o.artifacts + o.enchantments
+            next((p for p in opponent.artifacts + opponent.enchantments
                   if MTGRules.abrupt_decay_valid_target(p)
                   and p.card.lock_piece), None) or
-            next((p for p in o.planeswalkers                                        # Narset CMC3
+            next((p for p in opponent.planeswalkers                                        # Narset CMC3
                   if MTGRules.abrupt_decay_valid_target(p)), None) or
-            next((p for p in o.artifacts + o.enchantments
+            next((p for p in opponent.artifacts + opponent.enchantments
                   if MTGRules.abrupt_decay_valid_target(p)
                   and (p.card.is_combo_piece or p.card.engine)), None) or
-            next((p for p in o.creatures
+            next((p for p in opponent.creatures
                   if MTGRules.abrupt_decay_valid_target(p)
                   and p.card.deathtouch), None) or
-            next((p for p in o.creatures
+            next((p for p in opponent.creatures
                   if MTGRules.abrupt_decay_valid_target(p) and p.card.is_combo_piece), None)
         )
         if ad_target:
             spend(ad)
-            b.remove_from_hand(ad)
-            b.add_to_grave(ad)
-            target_list = (o.artifacts if ad_target in o.artifacts else
-                           o.enchantments if ad_target in o.enchantments else
-                           o.planeswalkers if ad_target in o.planeswalkers else o.creatures)
+            player.remove_from_hand(ad)
+            player.add_to_grave(ad)
+            target_list = (opponent.artifacts if ad_target in opponent.artifacts else
+                           opponent.enchantments if ad_target in opponent.enchantments else
+                           opponent.planeswalkers if ad_target in opponent.planeswalkers else opponent.creatures)
             target_list.remove(ad_target)
-            o.add_to_grave(ad_target.card)
-            log(f"Abrupt Decay [uncounterable] → {ad_target.name} (CMC {ad_target.cmc}≤3)",
+            opponent.add_to_grave(ad_target.card)
+            log_fn(f"Abrupt Decay [uncounterable] → {ad_target.name} (CMC {ad_target.cmc}≤3)",
                 key=True)
             if ad_target.card.tag == 'chalice': gs.chalice_x = None
             elif ad_target.card.tag == 'bridge': gs.bridge_on_board = False
@@ -1254,73 +1133,73 @@ def bug_turn(gs: GameState, turn: int):
             update_goyf(gs)
 
     # ── Fatal Push — C1: needs 1B ──
-    push = b.find_tag('push')
-    if push and not _did_early_push and not gs.spell_blocked_by_chalice(push.cmc) and o.creatures:
-        push_targets = [c for c in o.creatures
-                        if MTGRules.fatal_push_valid_target(c, b.revolt_this_turn)]
+    push = player.find_tag('push')
+    if push and not _did_early_push and not gs.spell_blocked_by_chalice(push.cmc) and opponent.creatures:
+        push_targets = [c for c in opponent.creatures
+                        if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)]
         target = (
             next((c for c in push_targets if (c.card.haste or c.card.draw_trigger)), None) or
             next((c for c in push_targets if c.card.deathtouch or c.card.lifelink), None) or
             next((c for c in push_targets if c.card.haste), None) or
             max(push_targets, key=lambda c: c.power, default=None)
         )
-        if target and b_budget[0] >= effective_cmc(push) and can_afford(b, push.mana_cost):
+        if target and budget[0] >= effective_cmc(push) and can_afford(player, push.mana_cost):
             spend(push)
-            b.remove_from_hand(push)
-            b.add_to_grave(push)
+            player.remove_from_hand(push)
+            player.add_to_grave(push)
             push_spell = cast_obj(push, 'b')
             ctr = []
             # Opp counters BUG's Push only if worth it:
             # FoW: only protecting a high-value creature
             # Daze: only if opp is tapped out after casting nothing (Push costs BUG 1B)
             # Since opp hasn't spent mana (it's BUG's Push), check opp has ≤1 untapped land
-            opp_untapped = o.available_mana_count()
+            opp_untapped = opponent.available_mana_count()
             fow_worthwhile_push = target.card.cmc >= 3 or (target.card.engine or target.card.cmc >= 3)
-            if fow_worthwhile_push and MTGRules.force_of_will_use(push_spell, o.hand, ctr):
+            if fow_worthwhile_push and MTGRules.force_of_will_use(push_spell, opponent.hand, ctr):
                 pass
             elif opp_untapped <= 1:  # opp nearly tapped out → Daze correct
-                MTGRules.daze_use(push_spell, o.hand, o.lands, ctr)
+                MTGRules.daze_use(push_spell, opponent.hand, opponent.lands, ctr)
             if not ctr:
-                o.remove_creature(target)  # destroy → opp GY
-                rev = " [revolt CMC≤4]" if b.revolt_this_turn else " [CMC≤2]"
-                log(f"Fatal Push{rev} → kills {target.name} (CMC {target.cmc})")
+                opponent.remove_creature(target)  # destroy → opp GY
+                rev = " [revolt CMC≤4]" if player.revolt_this_turn else " [CMC≤2]"
+                log_fn(f"Fatal Push{rev} → kills {target.name} (CMC {target.cmc})")
             else:
-                for m in ctr: log(f"  {m}")
+                for m in ctr: log_fn(f"  {m}")
             update_goyf(gs)
 
 
     # ── Snuff Out — free (pay 4 life) if controlling a Swamp ──
     # Targets nonblack creatures only — covers Murktide, big Eldrazi, CMC3+ that Push misses.
     # Free to cast as long as BUG controls a Swamp or Underground Sea (Island+Swamp subtype).
-    snuffout = b.find_tag('snuffout')
-    if snuffout and not _did_early_snuff and not gs.spell_blocked_by_chalice(snuffout.cmc) and o.creatures:
-        has_swamp = any('B' in l.effective_produces() for l in b.lands)
-        snuff_targets = [c for c in o.creatures if c.card.tag not in ('bowm',) and
+    snuffout = player.find_tag('snuffout')
+    if snuffout and not _did_early_snuff and not gs.spell_blocked_by_chalice(snuffout.cmc) and opponent.creatures:
+        has_swamp = any('B' in l.effective_produces() for l in player.lands)
+        snuff_targets = [c for c in opponent.creatures if c.card.tag not in ('bowm',) and
                          'B' not in getattr(c.card, 'colors', set())]  # nonblack only
-        if has_swamp and snuff_targets and b.life > 4 + 4:  # keep 4 life buffer
+        if has_swamp and snuff_targets and player.life > 4 + 4:  # keep 4 life buffer
             # Priority: highest CMC (targets Push can't reach) or biggest blocker
             target = max(snuff_targets, key=lambda c: (c.cmc, c.power))
             if target.cmc >= 3 or target.power >= 4 or target.toughness > 3:
-                b.remove_from_hand(snuffout)
-                b.add_to_grave(snuffout)
-                b.life -= 4
-                o.remove_creature(target)
-                b.revolt_this_turn = True
-                log(f"Snuff Out (free, −4 life → {b.life}) → kills {target.name} (CMC {target.cmc})")
+                player.remove_from_hand(snuffout)
+                player.add_to_grave(snuffout)
+                player.life -= 4
+                opponent.remove_creature(target)
+                player.revolt_this_turn = True
+                log_fn(f"Snuff Out (free, −4 life → {player.life}) → kills {target.name} (CMC {target.cmc})")
                 update_goyf(gs)
 
     # ── Dismember — C1: needs 1 mana, L2/L3 ──
-    dis = b.find_tag('dismember')
-    if dis and not gs.spell_blocked_by_chalice(dis.cmc) and o.creatures:
-        big = next((c for c in o.creatures if c.power >= 4 and not b.creatures), None)
-        if big and b_budget[0] >= 1 and b.available_mana_count() >= 1:
+    dis = player.find_tag('dismember')
+    if dis and not gs.spell_blocked_by_chalice(dis.cmc) and opponent.creatures:
+        big = next((c for c in opponent.creatures if c.power >= 4 and not player.creatures), None)
+        if big and budget[0] >= 1 and player.available_mana_count() >= 1:
             if MTGRules.dismember_kills(big):  # L3: only cast if it will kill
-                _deduct(b_budget, 1, None)   # L2: pay the 1 generic
-                b.remove_from_hand(dis)
-                b.add_to_grave(dis)
-                b.life -= 4
-                o.remove_creature(big)
-                log(f"Dismember (1 mana + 4 life → {b.life}) kills {big.name} "
+                _deduct(budget, 1, None)   # L2: pay the 1 generic
+                player.remove_from_hand(dis)
+                player.add_to_grave(dis)
+                player.life -= 4
+                opponent.remove_creature(big)
+                log_fn(f"Dismember (1 mana + 4 life → {player.life}) kills {big.name} "
                     f"({big.toughness}-5={big.toughness-5}≤0)")
                 update_goyf(gs)
                 gs.state_based_actions()
@@ -1329,143 +1208,143 @@ def bug_turn(gs: GameState, turn: int):
     # ── Sideboard cards ──────────────────────────────────────────
 
     # Endurance (flash, ETB: exile all GYs) — vs Reanimator/Doomsday/Oops
-    endurance_card = b.find_tag('endurance')
+    endurance_card = player.find_tag('endurance')
     if endurance_card and not gs.spell_blocked_by_chalice(endurance_card.cmc):
-        opp_gy_size = len(gs.p2.graveyard)
-        can_evoke = any('G' in c.colors for c in b.hand if c.tag != 'endurance')
+        opp_gy_size = len(opponent.graveyard)
+        can_evoke = any('G' in c.colors for c in player.hand if c.tag != 'endurance')
         # Evoke (free): exile a green card from hand — ETB triggers, then creature sacrificed
         # Full cast (1GG): enters as a 3/4 reach creature
         if opp_gy_size >= 2:
             if can_evoke:
                 # Evoke path — free, instant speed, creature sacrificed after ETB
-                green_pitch = next(c for c in b.hand if 'G' in c.colors and c.tag != 'endurance')
-                b.remove_from_hand(endurance_card)
-                b.remove_from_hand(green_pitch)
-                b.exile.append(green_pitch)
+                green_pitch = next(c for c in player.hand if 'G' in c.colors and c.tag != 'endurance')
+                player.remove_from_hand(endurance_card)
+                player.remove_from_hand(green_pitch)
+                player.exile.append(green_pitch)
                 # ETB: target OPP graveyard — put all cards on BOTTOM of their library (random order)
                 # Oracle: "up to one target player puts all cards from their graveyard on
                 # the bottom of their library in a random order"
-                gy_count = len(gs.p2.graveyard)
-                shuffled = list(gs.p2.graveyard)
+                gy_count = len(opponent.graveyard)
+                shuffled = list(opponent.graveyard)
                 random.shuffle(shuffled)
-                gs.p2.graveyard = []
-                gs.p2.library.extend(shuffled)   # bottom of library
+                opponent.graveyard = []
+                opponent.library.extend(shuffled)   # bottom of library
                 # Endurance is sacrificed immediately (evoke) — does NOT enter creatures list
-                log(f"★ Endurance (EVOKE, exiles {green_pitch.name}) — {gy_count} opp GY cards"
+                log_fn(f"★ Endurance (EVOKE, exiles {green_pitch.name}) — {gy_count} opp GY cards"
                     f" put on bottom of library in random order", key=True)
                 update_goyf(gs)
-            elif b_budget[0] >= effective_cmc(endurance_card) and can_afford(b, endurance_card.mana_cost):
-                _deduct(b_budget, effective_cmc(endurance_card), endurance_card)
-                b.remove_from_hand(endurance_card)
-                perm = b.put_creature_in_play(endurance_card)
+            elif budget[0] >= effective_cmc(endurance_card) and can_afford(player, endurance_card.mana_cost):
+                _deduct(budget, effective_cmc(endurance_card), endurance_card)
+                player.remove_from_hand(endurance_card)
+                perm = player.put_creature_in_play(endurance_card)
                 # Reach keyword — can block flyers
                 perm.card.flying = False   # endurance doesn't fly, but has reach
-                gy_count = len(gs.p2.graveyard)
-                shuffled = list(gs.p2.graveyard)
+                gy_count = len(opponent.graveyard)
+                shuffled = list(opponent.graveyard)
                 random.shuffle(shuffled)
-                gs.p2.graveyard = []
-                gs.p2.library.extend(shuffled)
-                log(f"★ Endurance 3/4 Reach (full cast) — {gy_count} opp GY cards"
+                opponent.graveyard = []
+                opponent.library.extend(shuffled)
+                log_fn(f"★ Endurance 3/4 Reach (full cast) — {gy_count} opp GY cards"
                     f" put on bottom of library in random order", key=True)
                 update_goyf(gs)
 
     # Force of Vigor — FREE only on opponent's turn (oracle: "if it's not your turn")
     # On BUG's OWN turn, FoV costs {1}{G}{G} = 3 mana. Worth paying if a lock piece is active.
-    fov_paid = b.find_tag('fov')
-    if fov_paid and b_budget[0] >= 3 and (gs.trinisphere_active or gs.chalice_x is not None or gs.bridge_on_board):
-        has_green_src = any('G' in l.effective_produces() for l in b.lands if not l.tapped)
+    fov_paid = player.find_tag('fov')
+    if fov_paid and budget[0] >= 3 and (gs.trinisphere_active or gs.chalice_x is not None or gs.bridge_on_board):
+        has_green_src = any('G' in l.effective_produces() for l in player.lands if not l.tapped)
         if has_green_src:
-            targets = [p for p in gs.p2.artifacts + gs.p2.enchantments
+            targets = [p for p in opponent.artifacts + opponent.enchantments
                        if p.card.lock_piece][:2]
             if targets:
-                _deduct(b_budget, 3, fov_paid)
-                b.remove_from_hand(fov_paid)
-                b.add_to_grave(fov_paid)
+                _deduct(budget, 3, fov_paid)
+                player.remove_from_hand(fov_paid)
+                player.add_to_grave(fov_paid)
                 names = []
                 for t in targets:
-                    tlist = gs.p2.artifacts if t in gs.p2.artifacts else gs.p2.enchantments
+                    tlist = opponent.artifacts if t in opponent.artifacts else opponent.enchantments
                     if t in tlist:
                         tlist.remove(t)
-                        gs.p2.add_to_grave(t.card)
+                        opponent.add_to_grave(t.card)
                         names.append(t.name)
                         if t.card.tag == 'chalice': gs.chalice_x = None
                         elif t.card.tag == 'bridge': gs.bridge_on_board = False
                         elif t.card.tag == 'trini':  gs.trinisphere_active = False
                 update_goyf(gs)
-                log(f"★ Force of Vigor (paid {'{1}{G}{G}'}) → destroys {' + '.join(names)}", key=True)
+                log_fn(f"★ Force of Vigor (paid {'{1}{G}{G}'}) → destroys {' + '.join(names)}", key=True)
 
     # Pyroblast / Hydroblast
     # pyro = Pyroblast: destroys target blue permanent (correct vs Dimir mirrors)
     # hydro = Hydroblast: destroys target red permanent (correct vs UR Aggro, Painter)
-    pyro_card = b.find_tag('pyro') or b.find_tag('hydro')
-    if pyro_card and b_budget[0] >= 1 and can_afford(b, pyro_card.mana_cost):
+    pyro_card = player.find_tag('pyro') or player.find_tag('hydro')
+    if pyro_card and budget[0] >= 1 and can_afford(player, pyro_card.mana_cost):
         target_color = 'R' if pyro_card.tag == 'hydro' else 'U'
         color_name = 'red' if pyro_card.tag == 'hydro' else 'blue'
-        target_perm = next((c for c in gs.p2.creatures if target_color in c.card.colors), None)
+        target_perm = next((c for c in opponent.creatures if target_color in c.card.colors), None)
         if target_perm:
-            _deduct(b_budget, 1, pyro_card)
-            b.remove_from_hand(pyro_card)
-            b.add_to_grave(pyro_card)
-            gs.p2.remove_creature(target_perm)
-            gs.p2.revolt_this_turn = True
-            log(f"{pyro_card.name} → destroys {target_perm.name} ({color_name} permanent)")
+            _deduct(budget, 1, pyro_card)
+            player.remove_from_hand(pyro_card)
+            player.add_to_grave(pyro_card)
+            opponent.remove_creature(target_perm)
+            opponent.revolt_this_turn = True
+            log_fn(f"{pyro_card.name} → destroys {target_perm.name} ({color_name} permanent)")
             update_goyf(gs)
 
     # Toxic Deluge — vs wide aggro boards
-    deluge_card = b.find_tag('deluge')
-    if deluge_card and len(gs.p2.creatures) >= 2:
-        if b_budget[0] >= effective_cmc(deluge_card) and can_afford(b, deluge_card.mana_cost):
+    deluge_card = player.find_tag('deluge')
+    if deluge_card and len(opponent.creatures) >= 2:
+        if budget[0] >= effective_cmc(deluge_card) and can_afford(player, deluge_card.mana_cost):
             # Oracle: ALL creatures get -X/-X until EOT (including BUG's own)
             # Choose X = smallest value that wipes opp board without wiping BUG board
             # If BUG has no creatures, use max opp toughness
             # If BUG has creatures, use min X that kills opp board but not BUG's key creatures
-            opp_max_t = max((c.toughness for c in gs.p2.creatures), default=1)
-            bug_min_t = min((c.toughness for c in b.creatures), default=99) if b.creatures else 99
+            opp_max_t = max((c.toughness for c in opponent.creatures), default=1)
+            bug_min_t = min((c.toughness for c in player.creatures), default=99) if player.creatures else 99
             x = opp_max_t
             # Check if Deluge would kill BUG's own board too
-            bug_loses = [c for c in b.creatures if c.toughness <= x]
+            bug_loses = [c for c in player.creatures if c.toughness <= x]
             life_cost = x
-            if b.life - life_cost > 4:  # don't suicide
+            if player.life - life_cost > 4:  # don't suicide
                 spend(deluge_card)
-                b.remove_from_hand(deluge_card)
-                b.add_to_grave(deluge_card)
-                b.life -= life_cost
+                player.remove_from_hand(deluge_card)
+                player.add_to_grave(deluge_card)
+                player.life -= life_cost
                 # Kill opp creatures
-                killed_opp = [c for c in gs.p2.creatures if c.toughness <= x]
+                killed_opp = [c for c in opponent.creatures if c.toughness <= x]
                 for c in killed_opp:
-                    gs.p2.remove_creature(c)
-                    gs.p2.revolt_this_turn = True
+                    opponent.remove_creature(c)
+                    opponent.revolt_this_turn = True
                 # Kill BUG's own creatures too (oracle: ALL creatures)
-                killed_bug = [c for c in b.creatures if c.toughness <= x]
+                killed_bug = [c for c in player.creatures if c.toughness <= x]
                 for c in killed_bug:
-                    b.remove_creature(c)
-                log(f"★ Toxic Deluge X={x} (−{life_cost} life → {b.life})"
+                    player.remove_creature(c)
+                log_fn(f"★ Toxic Deluge X={x} (−{life_cost} life → {player.life})"
                     f" — opp kills: {[c.name for c in killed_opp]}"
                     f", BUG kills: {[c.name for c in killed_bug]}", key=True)
                 update_goyf(gs)
 
     # Surgical Extraction — exile target card + all copies from GYs
-    surgical_card = b.find_tag('surgical')
+    surgical_card = player.find_tag('surgical')
     if surgical_card:
         # Oracle: target must already be IN a graveyard (not proactive)
-        target_card = next((c for c in gs.p2.graveyard
+        target_card = next((c for c in opponent.graveyard
                             if c.is_combo_piece), None)
         if target_card:
-            b.cast_spell(surgical_card, log_fn=log)  # pays life_cost=2, logs
+            player.cast_spell(surgical_card, log_fn=log_fn)  # pays life_cost=2, logs
             target_name = target_card.name
             removed = 0
             # Exile from OPP GY (the target itself and same-name copies)
-            for c in [c for c in gs.p2.graveyard if c.name == target_name]:
-                gs.p2.graveyard.remove(c); gs.p1.exile.append(c); removed += 1
+            for c in [c for c in opponent.graveyard if c.name == target_name]:
+                opponent.graveyard.remove(c); player.exile.append(c); removed += 1
             # Exile from OPP hand
-            for c in [c for c in gs.p2.hand if c.name == target_name]:
-                gs.p2.hand.remove(c); gs.p1.exile.append(c); removed += 1
+            for c in [c for c in opponent.hand if c.name == target_name]:
+                opponent.hand.remove(c); player.exile.append(c); removed += 1
             # Exile from OPP library
-            for c in [c for c in gs.p2.library if c.name == target_name]:
-                gs.p2.library.remove(c); gs.p1.exile.append(c); removed += 1
+            for c in [c for c in opponent.library if c.name == target_name]:
+                opponent.library.remove(c); player.exile.append(c); removed += 1
             # Oracle: ONLY the target card's owner shuffles their library
-            random.shuffle(gs.p2.library)
-            log(f"★ Surgical Extraction → exiles {removed} copies of {target_name}"
+            random.shuffle(opponent.library)
+            log_fn(f"★ Surgical Extraction → exiles {removed} copies of {target_name}"
                 f" (opp shuffles library)", key=True)
             update_goyf(gs)
 
@@ -1478,8 +1357,8 @@ def bug_turn(gs: GameState, turn: int):
     # ── Threat deployment — flood-risk gate + hold-mana logic ──
     # If opp has 3+ open mana and likely FoW, stop at 1 threat per turn.
     # At board-zero or racing, always deploy regardless.
-    opp_open_mana = o.available_mana_count()
-    opp_likely_fow = any(c.free_cast_if_blue for c in o.hand)
+    opp_open_mana = opponent.available_mana_count()
+    opp_likely_fow = any(c.free_cast_if_blue for c in opponent.hand)
     flood_risk = (opp_open_mana >= IP.FLOOD_RISK_MANA and opp_likely_fow and
                   bug_threat_count >= IP.BOWM_HOLD_MIRROR and game_state != 'racing')
     threats_this_turn = [0]
@@ -1492,9 +1371,9 @@ def bug_turn(gs: GameState, turn: int):
     #   (b) BUG has Push or Bowmasters in hand, AND
     #   (c) game_state is 'behind' or 'parity' (ahead: deploy freely), AND
     #   (d) BUG already has a threat on board (so not desperate for a body)
-    push_in_hand = b.find_tag('push') is not None
-    bowm_in_hand = b.find_tag('bowm') is not None and not gs.bowmasters_on_board
-    opp_has_killable = any(MTGRules.fatal_push_valid_target(c, True) for c in o.creatures)
+    push_in_hand = player.find_tag('push') is not None
+    bowm_in_hand = player.find_tag('bowm') is not None and not gs.bowmasters_on_board
+    opp_has_killable = any(MTGRules.fatal_push_valid_target(c, True) for c in opponent.creatures)
     hold_for_push = (push_in_hand and opp_has_killable and
                      game_state in ('behind', 'parity') and bug_threat_count >= 1)
     hold_for_bowm = (bowm_in_hand and opp_has_cantrips and
@@ -1504,215 +1383,115 @@ def bug_turn(gs: GameState, turn: int):
     hold_mana = hold_for_push or hold_for_bowm
 
     # ── Tamiyo — C1: needs 1U ──
-    tam = b.find_tag('tamiyo')
+    tam = player.find_tag('tamiyo')
     if tam and not gs.tamiyo_flipped and not gs.spell_blocked_by_chalice(tam.cmc) and ok_to_deploy():
-        if not any(c.card.tag == 'tamiyo' for c in b.creatures):
-            if b_budget[0] >= effective_cmc(tam) and can_afford(b, tam.mana_cost):
+        if not any(c.card.tag == 'tamiyo' for c in player.creatures):
+            if budget[0] >= effective_cmc(tam) and can_afford(player, tam.mana_cost):
                 spend(tam)
-                b.remove_from_hand(tam)
-                if try_reactive_counter(gs, b, o, tam, log_entries):
-                    b.add_to_grave(tam)
+                player.remove_from_hand(tam)
+                if try_reactive_counter(gs, player, opponent, tam, log_entries):
+                    player.add_to_grave(tam)
                 else:
-                    perm = b.put_creature_in_play(tam)
+                    perm = player.put_creature_in_play(tam)
                     threats_this_turn[0] += 1
-                    log(f"Cast Tamiyo (CMC 1, summoning sick)")
+                    log_fn(f"Cast Tamiyo (CMC 1, summoning sick)")
 
     # ── Tarmogoyf / Nethergoyf — C1 ──
     # Nethergoyf: P/T = types in YOUR GY (own graveyard only).
     # Tarmogoyf: P/T = types in ALL graveyards (both). update_goyf handles ongoing sizing.
-    goyf = b.find_tag('goyf') or b.find_tag('nether')
+    goyf = player.find_tag('goyf') or player.find_tag('nether')
     if goyf and not gs.spell_blocked_by_chalice(goyf.cmc) and ok_to_deploy() and not (hold_mana and threats_this_turn[0] >= 1):
-        if b_budget[0] >= effective_cmc(goyf) and can_afford(b, goyf.mana_cost):
+        if budget[0] >= effective_cmc(goyf) and can_afford(player, goyf.mana_cost):
             spend(goyf)
-            b.remove_from_hand(goyf)
-            if try_reactive_counter(gs, b, o, goyf, log_entries):
-                b.add_to_grave(goyf)
+            player.remove_from_hand(goyf)
+            if try_reactive_counter(gs, player, opponent, goyf, log_entries):
+                player.add_to_grave(goyf)
             else:
-                perm = b.put_creature_in_play(goyf)
+                perm = player.put_creature_in_play(goyf)
                 if goyf.tag == 'nether':
-                    pw, pt = MTGRules.tarmogoyf_pt(gs.p1.graveyard, [])
+                    pw, pt = MTGRules.tarmogoyf_pt(player.graveyard, [])
                 else:
-                    pw, pt = MTGRules.tarmogoyf_pt(gs.p1.graveyard, gs.p2.graveyard)
+                    pw, pt = MTGRules.tarmogoyf_pt(player.graveyard, opponent.graveyard)
                 perm.power_mod = pw - goyf.base_power
                 perm.toughness_mod = pt - goyf.base_toughness
                 threats_this_turn[0] += 1
-                log(f"Cast {goyf.name} (CMC 2, sick, P/T {perm.power}/{perm.toughness})")
+                log_fn(f"Cast {goyf.name} (CMC 2, sick, P/T {perm.power}/{perm.toughness})")
 
     # ── Brazen Borrower — C1: 3/1 flying flash; deploy as threat if board needs it ──
-    borrow_threat = b.find_tag('borrow')
+    borrow_threat = player.find_tag('borrow')
     if borrow_threat and not gs.spell_blocked_by_chalice(borrow_threat.cmc):
         # Only deploy if we have no other threat on board (Borrower is a backup threat)
-        no_threats_on_board = not any(c.card.tag not in ('borrow',) for c in b.creatures)
-        if no_threats_on_board and b_budget[0] >= effective_cmc(borrow_threat) and can_afford(b, borrow_threat.mana_cost):
+        no_threats_on_board = not any(c.card.tag not in ('borrow',) for c in player.creatures)
+        if no_threats_on_board and budget[0] >= effective_cmc(borrow_threat) and can_afford(player, borrow_threat.mana_cost):
             spend(borrow_threat)
-            b.remove_from_hand(borrow_threat)
-            if try_reactive_counter(gs, b, o, borrow_threat, log_entries):
-                b.add_to_grave(borrow_threat)
+            player.remove_from_hand(borrow_threat)
+            if try_reactive_counter(gs, player, opponent, borrow_threat, log_entries):
+                player.add_to_grave(borrow_threat)
             else:
-                b.put_creature_in_play(borrow_threat)
-                log(f"Cast Brazen Borrower (CMC 3, flash, 3/1 flying)")
+                player.put_creature_in_play(borrow_threat)
+                log_fn(f"Cast Brazen Borrower (CMC 3, flash, 3/1 flying)")
 
     # ── Murktide via delve — C1: needs 1U + delve ──
-    murk = b.find_tag('murk')
-    spell_count = b.spell_count_in_graveyard()
+    murk = player.find_tag('murk')
+    spell_count = player.spell_count_in_graveyard()
     if murk and spell_count >= IP.MURKTIDE_DELVE_MIN and not gs.spell_blocked_by_chalice(0) and ok_to_deploy() and not (hold_mana and threats_this_turn[0] >= 1):
         delve_cost = {'U': 1, 'generic': max(0, 6 - spell_count)}
-        if b_budget[0] >= effective_cmc(murk) and can_afford(b, murk.mana_cost):
+        if budget[0] >= effective_cmc(murk) and can_afford(player, murk.mana_cost):
             spend(murk)
-            b.remove_from_hand(murk)
-            if try_reactive_counter(gs, b, o, murk, log_entries):
-                b.add_to_grave(murk)
+            player.remove_from_hand(murk)
+            if try_reactive_counter(gs, player, opponent, murk, log_entries):
+                player.add_to_grave(murk)
             else:
                 exiled = min(spell_count, 6)
-                ex_cards = [c for c in b.graveyard
+                ex_cards = [c for c in player.graveyard
                         if c.card_type in (CardType.INSTANT, CardType.SORCERY)][:exiled]
                 for c in ex_cards:
-                    b.graveyard.remove(c)
-                    b.exile.append(c)
-                perm = b.put_creature_in_play(murk)
+                    player.graveyard.remove(c)
+                    player.exile.append(c)
+                perm = player.put_creature_in_play(murk)
                 perm.power_mod = exiled - murk.base_power
                 perm.toughness_mod = exiled - murk.base_toughness
-                log(f"Murktide via delve ({exiled} exiled) → {perm.power}/{perm.toughness}",
+                log_fn(f"Murktide via delve ({exiled} exiled) → {perm.power}/{perm.toughness}",
                     key=True)
 
     # ── Kaito, Bane of Nightmares — Ninjutsu {1UB}: 3/4 hexproof, draw on damage ──
     # Deploy either: (a) cast at sorcery speed for {1UB}=3, or
     # (b) Ninjutsu via unblocked attacker (handled in resolve_combat if Kaito in hand).
     # Here: cast if we have 3 mana and a threat in play to set up Ninjutsu next turn.
-    kaito = b.find_tag('kaito')
-    kaito_in_play = any(c.card.tag == 'kaito' for c in b.creatures + b.planeswalkers)
+    kaito = player.find_tag('kaito')
+    kaito_in_play = any(c.card.tag == 'kaito' for c in player.creatures + player.planeswalkers)
     if kaito and not kaito_in_play and not gs.spell_blocked_by_chalice(kaito.cmc):
         # Prefer Ninjutsu window — don't hard-cast if a cheaper attacker is already active
-        has_attacker = any(not c.summoning_sick and not c.tapped for c in b.creatures)
-        can_ninjutsu = has_attacker and b_budget[0] >= 3  # {1UB}
-        can_cast = b_budget[0] >= effective_cmc(kaito) and can_afford(b, kaito.mana_cost)
+        has_attacker = any(not c.summoning_sick and not c.tapped for c in player.creatures)
+        can_ninjutsu = has_attacker and budget[0] >= 3  # {1UB}
+        can_cast = budget[0] >= effective_cmc(kaito) and can_afford(player, kaito.mana_cost)
         if can_cast and ok_to_deploy() and not (hold_mana and threats_this_turn[0] >= 1):
             spend(kaito)
-            b.remove_from_hand(kaito)
-            if try_reactive_counter(gs, b, o, kaito, log_entries):
-                b.add_to_grave(kaito)
+            player.remove_from_hand(kaito)
+            if try_reactive_counter(gs, player, opponent, kaito, log_entries):
+                player.add_to_grave(kaito)
             else:
-                perm = b.put_creature_in_play(kaito)
+                perm = player.put_creature_in_play(kaito)
                 threats_this_turn[0] += 1
-                drawn = b.draw(1)
-                log(f"Cast Kaito, Bane of Nightmares (3/4 hexproof) → Surveil 2, draw 1 [{drawn[0].name if drawn else 'empty'}]", key=True)
+                drawn = player.draw(1)
+                log_fn(f"Cast Kaito, Bane of Nightmares (3/4 hexproof) → Surveil 2, draw 1 [{drawn[0].name if drawn else 'empty'}]", key=True)
                 update_goyf(gs)
 
-    # ── Combat — C2: attackers tap ──
-    if gs.trace:
-        atk = [c for c in b.creatures if not c.summoning_sick]
-        log(f"── Combat ── ({len(atk)} eligible attackers)")
-    resolve_combat(gs, b, o, log_entries)
-    if gs.game_over:
-        return log_entries
 
     # ── EOT Bowmasters flash (mirror matchups) ──
     # If we held Bowmasters in main phase waiting for their cantrip, deploy it now
     # at instant speed on our end step. Opp will cantrip on THEIR turn and we fire then.
-    bowm_eot = b.find_tag('bowm')
+    bowm_eot = player.find_tag('bowm')
     if (bowm_eot and not gs.bowmasters_on_board and
             MC.is_mirror(gs) and
             not gs.spell_blocked_by_chalice(bowm_eot.cmc) and
-            can_afford(b, bowm_eot.mana_cost) and
-            b.available_mana_count() >= effective_cmc(bowm_eot)):
-        _deduct(b_budget, effective_cmc(bowm_eot), bowm_eot)
-        b.remove_from_hand(bowm_eot)
-        b.put_creature_in_play(bowm_eot)
+            can_afford(player, bowm_eot.mana_cost) and
+            player.available_mana_count() >= effective_cmc(bowm_eot)):
+        _deduct(budget, effective_cmc(bowm_eot), bowm_eot)
+        player.remove_from_hand(bowm_eot)
+        player.put_creature_in_play(bowm_eot)
         gs.bowmasters_on_board = True
-        log("★ Bowmasters EOT flash (mirror — fires on their upkeep/cantrip)", True)
-
-    # ── End-of-turn Vial activation (instant speed, BUG's end step) ──
-    # Real DnT/Boros: activate Vial on BUG's EOT — creature's sickness clears in OPP's
-    # upkeep so it attacks that same turn. Smart counter management:
-    #   - Deploy immediately if matching CMC creature in hand
-    #   - If hand is empty at current level but has CMC+1 creatures, tick up next upkeep
-    #   - Cap DnT at 3, Boros at 2 (their creature distribution)
-    if MC.is_vial(gs):
-        vial_perm = next((p for p in o.artifacts if p.card.tag == 'vial'), None)
-        if vial_perm and gs.vial_counters > 0:
-            vial_cap = 3 if gs.matchup == 'dnt' else 2
-            eot_tags = ('thalia','phelia','skyclave','recruiter','flickerwisp',
-                        'solitude','sfm','mom','orchid','dungeoneer','adventurer','minsc',
-                        'eidolon','bowm')
-            deployed = False
-            for tag in eot_tags:
-                crea = o.find_tag(tag)
-                if crea and crea.cmc == gs.vial_counters:
-                    o.remove_from_hand(crea)
-                    perm = o.put_creature_in_play(crea)
-                    deployed = True
-                    log(f"★ Vial EOT [{gs.vial_counters}] → {crea.name} (attacks next turn)", True)
-                    # ETB effects
-                    if crea.tag == 'skyclave' and b.creatures:
-                        tgt = next((c for c in b.creatures if c.card.cmc <= 4), None)
-                        if tgt:
-                            b.remove_creature(tgt)
-                            log(f"  Skyclave Apparition exiles {tgt.card.name}")
-                    if crea.tag == 'solitude' and b.creatures:
-                        tgt = b.creatures[-1]
-                        b.remove_creature(tgt)
-                        log(f"  Solitude exiles {tgt.card.name}")
-                    if crea.tag == 'flickerwisp':
-                        # Oracle: exile target permanent until end of turn, then it returns.
-                        # Net effect: BUG permanent misses this combat, re-enters summoning sick.
-                        # Model: remove creature, re-enter immediately as sick (skip one attack).
-                        tgt = max(b.creatures, key=lambda c: c.power, default=None)
-                        if tgt:
-                            b.remove_creature(tgt)  # triggers revolt
-                            new_perm = b.put_creature_in_play(tgt.card)
-                            new_perm.summoning_sick = True  # misses combat this turn
-                            log(f"  Flickerwisp blinks {tgt.card.name} — re-enters sick (misses combat)")
-                            update_goyf(gs)
-                        elif b.lands:
-                            tgt_land = b.lands[-1]
-                            b.lands.remove(tgt_land)
-                            b.revolt_this_turn = True
-                            # Land re-enters tapped (missed a mana this turn)
-                            from rules import LandPermanent
-                            new_land = LandPermanent(card=tgt_land.card, controller='b', tapped=True)
-                            b.lands.append(new_land)
-                            log(f"  Flickerwisp blinks {tgt_land.card.name} — re-enters tapped")
-                    if crea.tag == 'recruiter':
-                        # Recruiter tutors any CMC≤2 creature — covers both DnT and Boros pools
-                        for ft in ('phelia','thalia','flickerwisp','skyclave','sfm','orchid',
-                                   'eidolon','dungeoneer','bowm','minsc','recruiter'):
-                            found = next((c for c in o.library if c.tag == ft), None)
-                            if found:
-                                o.library.remove(found); o.hand.append(found)
-                                log(f"  Recruiter tutors {found.name} (CMC {found.cmc})")
-                                break
-                    if crea.tag == 'sfm':
-                        equip = next((c for c in o.library if c.tag in CR.EQUIPMENT_SET), None)
-                        if equip:
-                            o.library.remove(equip); o.hand.append(equip)
-                            log(f"  Stoneforge Mystic tutors {equip.name}")
-                    update_goyf(gs)
-                    break
-
-            # Smart counter management: if nothing to deploy at current level,
-            # check if there's something at next level and tick up next upkeep
-            if not deployed and gs.vial_counters < vial_cap:
-                next_lvl = gs.vial_counters + 1
-                has_next = any(o.find_tag(t) and o.find_tag(t).cmc == next_lvl for t in eot_tags)
-                if has_next:
-                    # Will tick in next upkeep — counters stay for now, just log intent
-                    pass  # tick happens in _opp_dnt/_opp_boros upkeep section
-
-    # ── Tamiyo flip check — oracle: flip when you draw your 3rd card in a turn ──
-    tam_perm = next((c for c in b.creatures if c.card.tag == 'tamiyo'), None)
-    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
-        if b.draws_this_turn >= 3:
-            gs.tamiyo_flipped = True
-            tam_perm.power_mod = 3   # flips to Tamiyo, Seasoned Scholar (3/3 PW back face)
-            tam_perm.toughness_mod = 0
-            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
-
-    gs.state_based_actions()
-
-    if gs.trace:
-        log("── End ──")
-
-    return log_entries
+        log_fn("★ Bowmasters EOT flash (mirror — fires on their upkeep/cantrip)", True)
 
 
 def _trace_board_state(player, opponent, log):
@@ -1965,7 +1744,7 @@ def _opp_cast(card, o, gs):
 
 
 
-def _bug_force_of_vigor(gs, target_tags, log_list):
+def _p1_force_of_vigor(gs, target_tags, log_list):
     """
     Force of Vigor — free on opponent's turn: exile a green card, destroy up to 2 artifacts/enchantments.
     Oracle: "If it's not your turn, you may exile a green card from your hand rather than pay."
@@ -2840,7 +2619,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # FoV reactive: destroy Trinisphere + Chalice + Bridge
     if gs.chalice_x is not None or gs.bridge_on_board or gs.trinisphere_active:
-        _bug_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
+        _p1_force_of_vigor(gs, ['trini', 'chalice', 'bridge'], log_entries)
 
     # ── 3. Painter's Servant + Grindstone combo — instant mill kill ──
     painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts)
@@ -2990,7 +2769,7 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # FoV reactive: destroy opp's Chalice if BUG has Force of Vigor
     if gs.chalice_x is not None:
-        _bug_force_of_vigor(gs, ['chalice'], log_entries)
+        _p1_force_of_vigor(gs, ['chalice'], log_entries)
 
     # ── Chalice of the Void ──
     # Oracle: costs {X}{X} = generic/colorless mana only
@@ -4546,19 +4325,9 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ Fury {label} (4 divided) — kills: {[c.name for c in killed]}", True)
         update_goyf(gs); gs.state_based_actions()
 
-    # Ragavan
-    rag = player.find_tag('ragavan')
-    if rag and not any(c.card.haste and c.card.cmc == 1 for c in player.creatures):
-        player.remove_from_hand(rag)
-        if not _try_counter_any(player, opponent, gs, rag, log_entries):
-            player.put_creature_in_play(rag)
-            log_fn("Ragavan (haste)")
-        else:
-            player.add_to_grave(rag)
-
-    # Thoughtseize
+    # Thoughtseize — cast early (T1-T3) unless Grief+Ephemerate already stripped
     ts = player.find_tag('ts')
-    if ts and opp_can_cast(ts, total_mana, gs, caster=player) and not (grief and ephemerate):
+    if ts and opp_can_cast(ts, total_mana, gs, caster=player) and not (grief and ephemerate) and gs.turn <= 3:
         veil_b = opponent.find_tag('vos')
         if veil_b and can_afford(opponent, veil_b.mana_cost):
             opponent.remove_from_hand(veil_b); opponent.add_to_grave(veil_b)
@@ -4570,15 +4339,33 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
                  opponent.find_any(lambda c: c.is_creature()))
             if t: opponent.hand.remove(t); log_fn(f"Thoughtseize — strips {t.name}")
 
-    # Bowmasters — hold back in combat (value from draw pings)
-    bowm = player.find_tag('bowm')
-    if bowm and not any(c.card.draw_trigger for c in player.creatures) and opp_can_cast(bowm, total_mana, gs, caster=player):
-        player.remove_from_hand(bowm)
-        if not _try_counter_any(player, opponent, gs, bowm, log_entries):
-            player.put_creature_in_play(bowm)
-            log_fn("Orcish Bowmasters (flash)")
+    # ── Creature deployment loop — deploy aggressively on curve ──
+    # Mardu floods the board: Ragavan T1, Bowmasters T2, second creature T3+
+    # Priority: Ragavan (haste, Treasure) > Bowmasters (draw punishment) > Grief (body)
+    deploy_tags = ['ragavan', 'bowm', 'grief']
+    creatures_deployed = 0
+    for tag in deploy_tags:
+        if creatures_deployed >= 2:
+            break  # max 2 creatures per turn
+        card = player.find_tag(tag)
+        if not card or not opp_can_cast(card, total_mana, gs, caster=player):
+            continue
+        # Grief: only deploy as body if Evoke already happened (it's a 3/2 menace)
+        if tag == 'grief' and gs.turn <= 2:
+            continue  # T1-T2 Grief is handled by Evoke above
+        player.remove_from_hand(card)
+        if not _try_counter_any(player, opponent, gs, card, log_entries):
+            player.put_creature_in_play(card)
+            total_mana -= card.cmc
+            creatures_deployed += 1
+            if tag == 'ragavan':
+                log_fn("Ragavan (haste)")
+            elif tag == 'bowm':
+                log_fn("Orcish Bowmasters (flash)")
+            else:
+                log_fn(f"{card.name} ({card.base_power}/{card.base_toughness})")
         else:
-            player.add_to_grave(bowm)
+            player.add_to_grave(card)
 
     # STP — exile big BUG threats only (Murktide, Kaito — hard to re-deploy)
     stp = player.find_tag('stp')
@@ -4665,7 +4452,7 @@ def is_tempo_deck(hand, deck_tag=None):
 
 def generic_tempo_strategy(player, opponent, gs, total_mana, log_fn, log_entries):
     """
-    Enhanced generic tempo strategy — mirrors bug_turn's decision quality.
+    Enhanced generic tempo strategy — mirrors _strategy_bug's decision quality.
     Works for any deck with cantrips + creatures + removal/counters.
     Handles: UR Delver, UR Tempo, Dimir variants, Mono Black, Mardu, etc.
 
@@ -4742,7 +4529,7 @@ def generic_tempo_strategy(player, opponent, gs, total_mana, log_fn, log_entries
     for bauble in list(b.hand):
         if bauble.tag == 'bauble':
             b.remove_from_hand(bauble); b.add_to_grave(bauble)
-            gs.pending_bauble_draws_bug = getattr(gs, 'pending_bauble_draws_bug', 0) + 1
+            gs.pending_bauble_draws += 1
             update_goyf(gs)
             log_fn(f"Mishra's Bauble (sac, artifact in GY, +1 draw next upkeep)")
 

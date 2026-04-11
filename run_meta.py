@@ -261,8 +261,6 @@ def cmd_matrix(decks, n_games, top_tier, seed=None, decks_arg=None):
                 ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
                 key=lambda x: (-x[1], x[0]))
             decks = sorted(k for k, _ in ranked[:top_tier])
-            if 'bug' not in decks and any(k == 'bug' for k, _ in ranked):
-                decks = sorted(decks + ['bug'])
             print(f"Top-{top_tier} by meta share: {', '.join(decks)}")
         else:
             decks = sorted(DECKS.keys())

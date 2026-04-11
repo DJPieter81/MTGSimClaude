@@ -71,8 +71,7 @@ def compute_bug_save_rate(interaction):
         return 0.0  # no save — strategy handles the matchup
 
     # DISABLED: save rates were overcorrecting (Burn 79%, Depths 68%).
-    # The engine should handle interaction natively via bug_turn.
-    # TODO: fix bug_turn's anti-aggro removal priority instead.
+    # The strategy handles interaction natively via _strategy_bug.
     return 0.0
 
 

@@ -9,8 +9,8 @@ import sys, random, html, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cards import DECKS
-from game import PlayerState, GameState, london_mulligan, bug_keep, opp_keep
-from engine import bug_turn, opp_turn
+from game import PlayerState, GameState, london_mulligan, opp_keep
+from engine import opp_turn
 
 ABBREV = {
     'Tamiyo, Inquisitive Student': 'Tamiyo', 'Orcish Bowmasters': 'Bowmasters',
@@ -124,15 +124,16 @@ def classify_play(line):
 
 def run_one_game(matchup, seed=None, protagonist='bug'):
     """Run a single game and return structured data.
-    protagonist: deck key for the protagonist ('bug' uses bug_turn AI, others use protagonist_turn).
+    protagonist: deck key for the protagonist (all decks use protagonist_turn).
     """
     if seed is not None: random.seed(seed)
 
     from sim import protagonist_turn
+    from deck_registry import get_keep_fn
 
-    pro_keep = bug_keep if protagonist == 'bug' else opp_keep
-    pro_deck = DECKS.get(protagonist, DECKS['bug'])
-    pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck, pro_keep, protagonist if protagonist != 'bug' else None)
+    pro_keep = get_keep_fn(protagonist) or opp_keep
+    pro_deck = DECKS[protagonist]
+    pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck, pro_keep, protagonist)
     opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
     pro_goes_first = random.random() < 0.5
 
@@ -141,6 +142,8 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
         p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
         p1_goes_first=pro_goes_first)
     gs.matchup = matchup
+    gs.p1_deck = protagonist
+    gs.p2_deck = matchup
 
     pro_label = protagonist.upper().replace('_', ' ')
     meta_name = matchup.replace('_', ' ').title()
@@ -166,10 +169,7 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
             life_before = player.life
 
             if is_pro:
-                if protagonist == 'bug':
-                    raw = bug_turn(gs, rnd)
-                else:
-                    raw = protagonist_turn(gs, rnd, protagonist)
+                raw = protagonist_turn(gs, rnd, protagonist)
             else:
                 raw = opp_turn(gs, rnd, matchup)
 
@@ -187,7 +187,7 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
             display_label = pro_label if is_pro else 'OPP'
             td = {
                 'num': display_turn, 'label': display_label,
-                'label_cls': 'bug' if is_pro else 'opp',
+                'label_cls': 'pro' if is_pro else 'opp',
                 'life': player.life, 'life_before': life_before,
                 'opp_life': opponent.life,
                 'hand_before': hand_before,
@@ -219,13 +219,13 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
     return {
         'matchup': matchup, 'meta_name': meta_name, 'seed': seed,
         'protagonist': protagonist, 'pro_label': pro_label,
-        'bug_goes_first': pro_goes_first,
-        'bug_mulls': pro_mulls, 'opp_mulls': opp_mulls,
-        'bug_open': pro_open, 'opp_open': opp_open,
-        'turns_data': turns_data, 'life_bug': life_pro, 'life_opp': life_opp,
+        'pro_goes_first': pro_goes_first,
+        'pro_mulls': pro_mulls, 'opp_mulls': opp_mulls,
+        'pro_open': pro_open, 'opp_open': opp_open,
+        'turns_data': turns_data, 'life_pro': life_pro, 'life_opp': life_opp,
         'display_turn': display_turn, 'winner': winner, 'win_reason': gs.win_reason or '',
-        'bug_life': gs.p1.life, 'opp_life': gs.p2.life,
-        'bug_board': fmt_creatures(gs.p1), 'opp_board': fmt_creatures(gs.p2),
+        'pro_life': gs.p1.life, 'opp_life': gs.p2.life,
+        'pro_board': fmt_creatures(gs.p1), 'opp_board': fmt_creatures(gs.p2),
     }
 
 
@@ -255,22 +255,22 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .header{{background:linear-gradient(135deg,#161b22,#1c2333);border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:20px}}
 .header h1{{font-size:1.6em;margin-bottom:8px;color:#f0f6fc}}
 .header h1 .vs{{color:#666}}
-.header .bug-name{{color:#58a6ff}}
+.header .pro-name{{color:#58a6ff}}
 .header .opp-name{{color:#f85149}}
 .header .meta{{color:#8b949e;font-size:0.9em;margin-top:4px}}
 .series-score{{font-size:1.3em;margin-top:8px;font-weight:700}}
-.series-score .bug-s{{color:#58a6ff}}.series-score .opp-s{{color:#f85149}}
+.series-score .pro-s{{color:#58a6ff}}.series-score .opp-s{{color:#f85149}}
 .game-tabs{{display:flex;gap:4px;margin-bottom:16px}}
 .game-tab{{background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;font-weight:600;font-size:0.95em}}
 .game-tab:hover{{background:#30363d}}
 .game-tab.active{{background:#161b22;color:#f0f6fc;border-bottom-color:#161b22}}
 .game-tab .winner-dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px}}
-.game-tab .winner-dot.bug{{background:#58a6ff}}.game-tab .winner-dot.opp{{background:#f85149}}
+.game-tab .winner-dot.pro{{background:#58a6ff}}.game-tab .winner-dot.opp{{background:#f85149}}
 .game-panel{{display:none}}.game-panel.active{{display:block}}
 .hands{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}}
 .hand-box{{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}}
 .hand-box h3{{font-size:0.85em;color:#8b949e;margin-bottom:8px}}
-.hand-box.bug{{border-left:3px solid #58a6ff}}.hand-box.opp{{border-left:3px solid #f85149}}
+.hand-box.pro{{border-left:3px solid #58a6ff}}.hand-box.opp{{border-left:3px solid #f85149}}
 .pill{{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#e3b341}}
 .controls{{display:flex;gap:8px;margin-bottom:16px}}
 .controls button{{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}}
@@ -279,15 +279,15 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .life-chart h3{{font-size:0.85em;color:#8b949e;margin-bottom:12px}}
 .life-chart svg{{width:100%;height:80px}}
 .turn{{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}}
-.turn.bug{{border-left:3px solid #58a6ff}}.turn.opp{{border-left:3px solid #f85149}}
+.turn.pro{{border-left:3px solid #58a6ff}}.turn.opp{{border-left:3px solid #f85149}}
 .turn.active{{border-color:#e3b341}}
 .turn-header{{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}}
 .turn-header:hover{{background:#1c2333}}
 .turn-header .left{{display:flex;align-items:center;gap:12px}}
 .turn-header .tnum{{font-weight:700;font-size:1.1em;min-width:36px}}
-.turn-header .tnum.bug{{color:#58a6ff}}.turn-header .tnum.opp{{color:#f85149}}
+.turn-header .tnum.pro{{color:#58a6ff}}.turn-header .tnum.opp{{color:#f85149}}
 .turn-header .player{{font-weight:600;font-size:0.9em;padding:2px 8px;border-radius:4px}}
-.turn-header .player.bug{{background:#0d2847;color:#58a6ff}}.turn-header .player.opp{{background:#3d1418;color:#f85149}}
+.turn-header .player.pro{{background:#0d2847;color:#58a6ff}}.turn-header .player.opp{{background:#3d1418;color:#f85149}}
 .turn-header .life{{font-size:0.9em;color:#8b949e}}
 .turn-header .life b{{color:#f0f6fc}}
 .turn-header .arrow{{color:#484f58;transition:transform 0.2s;font-size:0.8em}}
@@ -309,7 +309,7 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .board-grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}}
 .board-side{{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px 10px}}
 .board-side h4{{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}}
-.board-side.bug h4{{color:#58a6ff}}.board-side.opp h4{{color:#f85149}}
+.board-side.pro h4{{color:#58a6ff}}.board-side.opp h4{{color:#f85149}}
 .combat-detail{{background:#1a0a0a;border:1px solid #3d1418;border-radius:6px;padding:8px 12px;margin:4px 0;font-family:'Fira Code','Consolas',monospace;font-size:0.82em}}
 .combat-detail .atk-line{{color:#e3b341;margin-bottom:2px}}.combat-detail .blk-line{{color:#d2a8ff;margin-bottom:2px}}
 .combat-detail .dmg-line{{color:#f85149;font-weight:600}}.combat-detail .death-line{{color:#f85149;opacity:0.8;font-style:italic}}
@@ -320,7 +320,7 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .land-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}}
 .result{{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}}
 .result h2{{font-size:1.8em;margin-bottom:8px}}
-.result h2.bug-win{{color:#58a6ff}}.result h2.opp-win{{color:#f85149}}
+.result h2.pro-win{{color:#58a6ff}}.result h2.opp-win{{color:#f85149}}
 .result .reason{{color:#8b949e;font-size:1em;margin-bottom:12px}}
 .result .stats{{color:#6e7681;font-size:0.9em}}
 .kbd{{font-size:0.75em;color:#6e7681;margin-left:auto}}
@@ -329,10 +329,10 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 
     # Header
     h.append(f'<div class="header">')
-    h.append(f'<h1><span class="bug-name">{html.escape(pro_label)}</span> <span class="vs">vs</span> <span class="opp-name">{html.escape(meta_name)}</span></h1>')
+    h.append(f'<h1><span class="pro-name">{html.escape(pro_label)}</span> <span class="vs">vs</span> <span class="opp-name">{html.escape(meta_name)}</span></h1>')
     if is_bo3:
-        h.append(f'<div class="series-score"><span class="bug-s">{html.escape(pro_label)} {pro_wins}</span> — <span class="opp-s">{opp_wins} OPP</span></div>')
-        sw_cls = 'bug-name' if series_winner != 'OPP' else 'opp-name'
+        h.append(f'<div class="series-score"><span class="pro-s">{html.escape(pro_label)} {pro_wins}</span> — <span class="opp-s">{opp_wins} OPP</span></div>')
+        sw_cls = 'pro-name' if series_winner != 'OPP' else 'opp-name'
         h.append(f'<div class="meta"><span class="{sw_cls}">{series_winner} wins the series</span></div>')
     h.append(f'</div>')
 
@@ -341,7 +341,7 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
         h.append(f'<div class="game-tabs">')
         for gi, g in enumerate(games):
             act = ' active' if gi == 0 else ''
-            dot_cls = 'bug' if g['winner'] != 'OPP' else 'opp'
+            dot_cls = 'pro' if g['winner'] != 'OPP' else 'opp'
             h.append(f'<div class="game-tab{act}" onclick="showGame({gi})">Game {gi+1}<span class="winner-dot {dot_cls}"></span></div>')
         h.append(f'</div>')
 
@@ -351,17 +351,17 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
         h.append(f'<div class="game-panel{act}" id="game-{gi}">')
 
         # Opening hands
-        play_str = 'ON THE PLAY' if g['bug_goes_first'] else 'ON THE DRAW'
+        play_str = 'ON THE PLAY' if g['pro_goes_first'] else 'ON THE DRAW'
         h.append(f'<div class="meta" style="margin-bottom:12px;color:#8b949e">{html.escape(pro_label)} is {play_str} &nbsp;|&nbsp; Seed: {g["seed"]}</div>')
         h.append(f'<div class="hands">')
-        h.append(f'<div class="hand-box bug"><h3>{html.escape(pro_label)} opening (mull {g["bug_mulls"]})</h3>')
-        for c in g['bug_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
+        h.append(f'<div class="hand-box pro"><h3>{html.escape(pro_label)} opening (mull {g["pro_mulls"]})</h3>')
+        for c in g['pro_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
         h.append(f'</div><div class="hand-box opp"><h3>OPP opening (mull {g["opp_mulls"]})</h3>')
         for c in g['opp_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
         h.append(f'</div></div>')
 
         # Life chart
-        lb, lo = g['life_bug'], g['life_opp']
+        lb, lo = g['life_pro'], g['life_opp']
         mt = len(lb)
         h.append(f'<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 {mt*40} 80">')
         for i in range(1, len(lb)):
@@ -468,9 +468,9 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             h.append(f'<div class="board-grid">')
             # Player side
             side_label = td['label']
-            side_cls = td.get('label_cls', 'bug')
-            opp_cls = 'opp' if side_cls == 'bug' else 'bug'
-            opp_label = 'OPP' if side_cls == 'bug' else pro_label
+            side_cls = td.get('label_cls', 'pro')
+            opp_cls = 'opp' if side_cls == 'pro' else 'pro'
+            opp_label = 'OPP' if side_cls == 'pro' else pro_label
             h.append(f'<div class="board-side {side_cls}">')
             h.append(f'<h4>{side_label} — {len(td["lands"])} lands</h4>')
             h.append(f'<div class="board">')
@@ -498,12 +498,12 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             h.append(f'</div></div>')
 
         # Game result
-        wcls = 'bug-win' if g['winner'] != 'OPP' else 'opp-win'
+        wcls = 'pro-win' if g['winner'] != 'OPP' else 'opp-win'
         h.append(f'<div class="result">')
         h.append(f'<h2 class="{wcls}">{g["winner"]} WINS</h2>')
         h.append(f'<div class="reason">{html.escape(g["win_reason"])}</div>')
-        h.append(f'<div class="stats">Final life: {pro_label} {g["bug_life"]} | OPP {g["opp_life"]} &nbsp;|&nbsp; Length: T{g["display_turn"]}</div>')
-        for side, board in [(pro_label, g['bug_board']), ('OPP', g['opp_board'])]:
+        h.append(f'<div class="stats">Final life: {pro_label} {g["pro_life"]} | OPP {g["opp_life"]} &nbsp;|&nbsp; Length: T{g["display_turn"]}</div>')
+        for side, board in [(pro_label, g['pro_board']), ('OPP', g['opp_board'])]:
             if board:
                 h.append(f'<div class="stats" style="margin-top:6px">{side}: ')
                 for c in board:
