@@ -1670,6 +1670,92 @@ def run_rules_tests():
     test("FoW: NOT worthwhile for CMC1 non-hasty creature (Tamiyo)", tamiyo_fow, False)
     test("FoW: worthwhile for CMC1 hasty creature (Ragavan)",         ragavan_fow, True)
 
+    # ── Trinisphere: all spells cost at least {3} ─────────────────────────
+    from engine import ManaManager
+    gs_trini = GameState(
+        p1=PS_(name='b', hand=[], library=[]),
+        p2=PS_(name='o', hand=[], library=[]))
+    gs_trini.trinisphere_active = True
+    gs_trini.thalia_on_board = False
+    mm_trini = ManaManager(10, gs_trini)
+    bolt_card = Card(name='Lightning Bolt', card_type=CardType.INSTANT, cmc=1,
+                     mana_cost={'R': 1}, colors={'R'}, tag='bolt')
+    test("Trinisphere: CMC 1 spell costs 3", mm_trini.effective_cmc(bolt_card), 3)
+    zero_card = Card(name='Mox Diamond', card_type=CardType.ARTIFACT, cmc=0,
+                     mana_cost={}, colors=set(), tag='diamond')
+    test("Trinisphere: CMC 0 artifact costs 3", mm_trini.effective_cmc(zero_card), 3)
+    big_card = Card(name='Force of Will', card_type=CardType.INSTANT, cmc=5,
+                    mana_cost={'U': 1, 'generic': 4}, colors={'U'}, tag='fow')
+    test("Trinisphere: CMC 5 spell stays at 5", mm_trini.effective_cmc(big_card), 5)
+
+    # ── Thalia: noncreature spells cost +1 ────────────────────────────────
+    gs_thalia = GameState(
+        p1=PS_(name='b', hand=[], library=[]),
+        p2=PS_(name='o', hand=[], library=[]))
+    gs_thalia.trinisphere_active = False
+    # Must place an actual Thalia creature on board (computed property)
+    thalia_card = Card(name='Thalia', card_type=CardType.CREATURE, cmc=2,
+                       mana_cost={'W':1,'generic':1}, colors={'W'}, tag='thalia',
+                       base_power=2, base_toughness=1)
+    gs_thalia.p2.creatures.append(Permanent(card=thalia_card, controller='o'))
+    mm_thalia = ManaManager(10, gs_thalia)
+    test("Thalia: instant CMC 1 costs 2", mm_thalia.effective_cmc(bolt_card), 2)
+    creature_card = Card(name='Goblin Guide', card_type=CardType.CREATURE, cmc=1,
+                         mana_cost={'R': 1}, colors={'R'}, tag='guide',
+                         base_power=2, base_toughness=2)
+    test("Thalia: creature CMC 1 stays at 1 (not taxed)", mm_thalia.effective_cmc(creature_card), 1)
+
+    # ── Chalice at X=0: blocks CMC 0 spells ──────────────────────────────
+    gs_ch0 = GameState(
+        p1=PS_(name='b', hand=[], library=[]),
+        p2=PS_(name='o', hand=[], library=[]))
+    gs_ch0.chalice_x = 0
+    test("Chalice X=0 blocks CMC 0", gs_ch0.spell_blocked_by_chalice(0), True)
+    test("Chalice X=0 passes CMC 1", gs_ch0.spell_blocked_by_chalice(1), False)
+
+    # ── Eidolon: 2 damage per CMC ≤ 3 spell ──────────────────────────────
+    from engine import _eidolon_trigger
+    gs_eidolon = GameState(
+        p1=PS_(name='b', hand=[], library=[], life=20),
+        p2=PS_(name='o', hand=[], library=[], life=20))
+    gs_eidolon.eidolon_active = True
+    _eidolon_trigger(gs_eidolon, bolt_card, lambda *a, **kw: None, caster=gs_eidolon.p1)
+    test("Eidolon: CMC 1 spell deals 2 to caster", gs_eidolon.p1.life, 18)
+    # CMC 5 should NOT trigger
+    gs_eidolon.p1.life = 20
+    _eidolon_trigger(gs_eidolon, big_card, lambda *a, **kw: None, caster=gs_eidolon.p1)
+    test("Eidolon: CMC 5 spell does NOT trigger (CMC < 2 check)", gs_eidolon.p1.life, 20)
+
+    # ── ManaManager: spend deducts and tracks ─────────────────────────────
+    gs_mm = GameState(
+        p1=PS_(name='b', hand=[], library=[]),
+        p2=PS_(name='o', hand=[], library=[]))
+    gs_mm.trinisphere_active = False
+    gs_mm.thalia_on_board = False
+    gs_mm.eidolon_active = False
+    mm = ManaManager(5, gs_mm)
+    test("ManaManager: initial mana = 5", mm.available, 5)
+    mm.spend_amount(2)
+    test("ManaManager: after spend_amount(2) = 3", mm.available, 3)
+    mm.spend_amount(5)
+    test("ManaManager: can't go below 0", mm.available, 0)
+
+    # ── assess_board: returns correct game state ──────────────────────────
+    from engine import assess_board
+    gs_board = GameState(
+        p1=PS_(name='b', hand=[], library=[], life=20),
+        p2=PS_(name='o', hand=[], library=[], life=20))
+    # Add some creatures to p1
+    c1 = Card(name='Goyf', card_type=CardType.CREATURE, cmc=2,
+              mana_cost={'G':1,'generic':1}, colors={'G'}, tag='goyf',
+              base_power=4, base_toughness=5)
+    p1_c = Permanent(card=c1, controller='b')
+    gs_board.p1.creatures = [p1_c]
+    gs_board.p2.creatures = []
+    state, metrics = assess_board(gs_board.p1, gs_board.p2)
+    test("assess_board: p1 has creature, p2 empty → 'ahead'", state, 'ahead')
+    test("assess_board: board_power = 4", metrics['board_power'], 4)
+
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")
     if failed == 0:

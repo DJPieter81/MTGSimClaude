@@ -242,8 +242,8 @@ def _eidolon_trigger(gs: GameState, card, log_fn, caster=None) -> None:
     Eidolon deals 2 damage to that spell's caster."""
     if not gs.eidolon_active:
         return
-    if card is None or card.cmc < 2:
-        return
+    if card is None or card.cmc > 3:
+        return  # Eidolon only triggers on CMC ≤ 3
     # Damage goes to the caster, not always p1
     target = caster if caster is not None else gs.p1
     target.life -= 2
