@@ -1596,7 +1596,11 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     if pyro_card and budget[0] >= 1 and can_afford(player, pyro_card.mana_cost):
         target_color = 'R' if pyro_card.tag == 'hydro' else 'U'
         color_name = 'red' if pyro_card.tag == 'hydro' else 'blue'
-        target_perm = next((c for c in opponent.creatures if target_color in c.card.colors), None)
+        # Pyro/Hydro costs 1; mana after paying = budget - 1 (for ward check)
+        _pyro_mana_after = budget[0] - 1
+        target_perm = next((c for c in opponent.creatures
+                            if target_color in c.card.colors
+                            and _can_target(c, _pyro_mana_after)), None)
         if target_perm:
             _deduct(budget, 1, pyro_card)
             player.remove_from_hand(pyro_card)
@@ -3400,9 +3404,9 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
     # Snuff Out: 'if you control a Swamp' = any land with Swamp subtype (incl. duals)
     has_swamp = any('Swamp' in l.card.subtypes or (l.card.is_basic and 'B' in l.effective_produces()) for l in player.lands)
     if snuff and has_swamp and opponent.creatures:
-        # Target: biggest nonblack creature BUG controls
+        # Snuff Out is free (pay life); all total_mana available for ward
         target = next((c for c in sorted(opponent.creatures, key=lambda x: -x.power)
-                       if 'B' not in c.card.colors), None)
+                       if 'B' not in c.card.colors and _can_target(c, total_mana)), None)
         if target:
             player.cast_spell(snuff)  # pays life_cost=4
             opponent.remove_creature(target)
@@ -3944,8 +3948,11 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(bowm)
     push = player.find_tag('push')
     if push and opponent.creatures:
+        # Fatal Push costs 1B; mana after paying = rem - 1 (for ward check)
+        _push_mana_after = rem - 1
         target = next((c for c in opponent.creatures
-                       if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)), None)
+                       if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)
+                       and _can_target(c, _push_mana_after)), None)
         if target:
             player.remove_from_hand(push); player.add_to_grave(push)
             opponent.remove_creature(target)
@@ -3957,9 +3964,9 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     # Snuff Out: 'if you control a Swamp' = any land with Swamp subtype (incl. duals)
     has_swamp = any('Swamp' in l.card.subtypes or (l.card.is_basic and 'B' in l.effective_produces()) for l in player.lands)
     if snuff and has_swamp and opponent.creatures:
-        # Target: biggest nonblack creature BUG controls
+        # Snuff Out is free (pay life); all rem mana available for ward
         target = next((c for c in sorted(opponent.creatures, key=lambda x: -x.power)
-                       if 'B' not in c.card.colors), None)
+                       if 'B' not in c.card.colors and _can_target(c, rem)), None)
         if target:
             player.cast_spell(snuff)  # pays life_cost=4
             opponent.remove_creature(target)
@@ -4089,8 +4096,11 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     # ── Removal ──
     push = player.find_tag('push')
     if push and opponent.creatures:
+        # Fatal Push costs 1B; mana after paying = total_mana - 1 (for ward check)
+        _push_mana_after = total_mana - 1
         target = next((c for c in opponent.creatures
-                       if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)), None)
+                       if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)
+                       and _can_target(c, _push_mana_after)), None)
         if target:
             player.remove_from_hand(push); player.add_to_grave(push)
             opponent.remove_creature(target)
@@ -4824,7 +4834,10 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
             if c.toughness <= 2:        return 3
             if c.toughness == 3:        return 4
             return 99
-        candidates = [c for c in opponent.creatures if bolt_priority(c) < 99]
+        # Bolt costs 1R; mana after paying = total_mana - 1 (for ward check)
+        _bolt_mana_after = total_mana - 1
+        candidates = [c for c in opponent.creatures
+                      if bolt_priority(c) < 99 and _can_target(c, _bolt_mana_after)]
         target = min(candidates, key=bolt_priority) if candidates else None
         go_face = (target is None and opponent.life <= 15 and len(player.creatures) > 0)
         if target or go_face:
@@ -4953,8 +4966,11 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     # STP — exile big BUG threats only (Murktide, Kaito — hard to re-deploy)
     stp = player.find_tag('stp')
     if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
-        target = max(opponent.creatures, key=lambda c: c.power)
-        if target.power >= 1:  # exile any creature — Mardu is aggressive with removal
+        # STP costs 1W; mana after casting = total_mana - 1 (for ward check)
+        mana_after_stp = total_mana - 1
+        valid_stp = [c for c in opponent.creatures if _can_target(c, mana_after_stp)]
+        target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
+        if target and target.power >= 1:  # exile any creature — Mardu is aggressive with removal
             player.remove_from_hand(stp); player.add_to_grave(stp)
             total_mana -= 1
             opponent.remove_creature(target)
@@ -4970,7 +4986,10 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             if c.toughness <= 2:       return 2
             if c.toughness == 3:       return 3
             return 99
-        candidates = [c for c in opponent.creatures if bolt_priority(c) < 99]
+        # Bolt costs 1R; mana after paying = total_mana - 1 (for ward check)
+        _bolt_mana_after = total_mana - 1
+        candidates = [c for c in opponent.creatures
+                      if bolt_priority(c) < 99 and _can_target(c, _bolt_mana_after)]
         target = min(candidates, key=bolt_priority) if candidates else None
         go_face = (target is None and opponent.life <= 9)
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
