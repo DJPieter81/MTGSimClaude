@@ -131,6 +131,15 @@ All P0 accuracy blockers are addressed. Next session priorities are P1/P2.
 
 ## Architecture Reminders
 
+### 🚫 No hardcoded numbers
+
+Every numeric threshold, probability cutoff, score weight, or ranking boundary
+must be derived from a `Card`/`Permanent` property, a `config.py` named
+constant (`InteractionParams`, `MatchupCategory`), a game-state computation
+(`board_clock()`, `_prob_at_least_one()`), or a JSON gameplan. Magic constants
+like `if opp.life <= 12` or `score = 50` are bugs. See CLAUDE.md §"Key Design
+Principles" #4 for the full rule + examples.
+
 ### Data Pipeline
 ```
 python3 refresh_all.py              # full rebuild from latest matrix (~62s)

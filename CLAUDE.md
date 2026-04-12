@@ -203,6 +203,17 @@ r.p2_deck
 
 3. **Adding a new deck** requires only creating a file in `decks/` with a `DECK_META` dict. No edits to engine.py, sim.py, or cards.py needed.
 
+4. **No hardcoded numbers, arbitrary scores, or magic constants.** Every numeric threshold, probability cutoff, score weight, and ranking boundary must be:
+   - Derived from a property on the `Card`/`Permanent` object (e.g. `card.cmc`, `c.power`, `opponent.life`), OR
+   - Pulled from `config.py` (`InteractionParams`, `MatchupCategory`, etc.) as a named constant, OR
+   - Computed from observable game state (e.g. `board_clock(...)`, `_prob_at_least_one(copies, drawn)`), OR
+   - Documented in a JSON gameplan (`gameplans/*.json`) and read via `GoalEngine`.
+
+   **Bad:** `if opponent.life <= 12: go_face`, `lethal_storm = 9`, `p_counter > 0.4`, `score += 50 if c.is_creature else 10`.
+   **Good:** `go_face = (board_clock(...) > bolts_in_hand)`, `lethal_storm = max(1, (opponent.life + 1) // 2 - 1)`, `p_counter > IP.BHI_FREE_COUNTER_THRESHOLD`, `score += threat_level_to_clock_delta(classify_threat(...))`.
+
+   When a hardcoded constant is unavoidable (e.g. rules-mandated like CR 601.2f's "cost at least 3" for Trinisphere), comment the CR reference and lift to `config.py` if it's reused.
+
 ## Lessons Learned (Strategy & Rules Audit)
 
 ### Trinisphere Enforcement (Critical Pattern)
