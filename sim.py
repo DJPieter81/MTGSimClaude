@@ -555,12 +555,11 @@ def protagonist_turn(gs, turn, matchup):
         gs.p2_goal = None
 
     # ── Lock piece enforcement (shared helpers — single source of truth) ──
-    from engine import apply_lock_effects, restore_lock_effects, apply_eidolon_damage
+    from engine import apply_lock_effects, restore_lock_effects
     _adjustments = apply_lock_effects(gs, b, log)
 
     # ── Strategy dispatch ──
     from deck_registry import get_strategy
-    spells_before = b.spells_cast_this_turn
     strategy_fn = get_strategy(matchup)
     if strategy_fn:
         try:
@@ -570,8 +569,7 @@ def protagonist_turn(gs, turn, matchup):
     else:
         log(f"No strategy for {matchup} — passing")
 
-    # ── Post-strategy: Eidolon damage + restore lock adjustments ──
-    apply_eidolon_damage(gs, b, spells_before, log)
+    # ── Post-strategy: restore lock adjustments ──
     restore_lock_effects(b, _adjustments)
 
     # ── Tamiyo flip check — oracle: flip when you draw your 3rd card in a turn ──
