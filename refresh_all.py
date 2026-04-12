@@ -36,6 +36,8 @@ def main():
                         help="Re-run matrix first at N games/pair")
     parser.add_argument("--seed", type=int, default=2026,
                         help="Random seed for matrix run (default: 2026)")
+    parser.add_argument("--decks", type=int, default=36,
+                        help="Deck count for matrix re-run (default: 36 — full)")
     args = parser.parse_args()
 
     t_start = time.time()
@@ -43,8 +45,8 @@ def main():
 
     # Optional: re-run the matrix
     if args.resim:
-        ok = run(f"run_meta.py --matrix -n {args.resim} -s {args.seed}", 
-                 f"Re-run matrix (n={args.resim}, seed={args.seed})")
+        ok = run(f"run_meta.py --matrix --decks {args.decks} -n {args.resim} -s {args.seed}",
+                 f"Re-run matrix ({args.decks} decks, n={args.resim}, seed={args.seed})")
         if not ok:
             print("\n✗ Matrix run failed — aborting pipeline")
             sys.exit(1)

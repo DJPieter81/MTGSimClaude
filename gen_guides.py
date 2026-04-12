@@ -147,8 +147,24 @@ for dk in sorted(DECKS.keys()):
 
 print(f"\nGenerating HTML guides...", flush=True)
 
+# Hand-crafted guides opt out of regeneration by including the sentinel
+# <!-- HAND-CRAFTED: do not regenerate --> near the top. Burn is always
+# skipped (its full hand-craft lives in templates/reference_deck_guide.html).
+_HANDCRAFT_SENTINEL = '<!-- HAND-CRAFTED: do not regenerate -->'
+
+def _is_handcrafted(guide_path):
+    try:
+        with open(guide_path) as _f:
+            return _HANDCRAFT_SENTINEL in _f.read(2048)
+    except FileNotFoundError:
+        return False
+
 for dk in sorted(DECKS.keys()):
     if dk == 'burn': continue
+    _guide_fn = os.path.join(OUT_DIR, 'guide_'+dk+'.html')
+    if _is_handcrafted(_guide_fn):
+        print(f"  {dk}: SKIP (hand-crafted sentinel present)")
+        continue
     d=dk; flat=A.get(d,50); wtd=W.get(d,50); delta=round(wtd-flat,1)
     rank=sorted(decks,key=lambda x:-W.get(x,0)).index(d)+1 if d in decks else 99
     best=max([(M.get(d+'|'+d2,[50])[0],d2) for d2 in decks if d2!=d],default=(50,'?'))

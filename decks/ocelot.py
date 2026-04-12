@@ -40,79 +40,6 @@ def make_ocelot_deck():
     return d
 
 
-def _strategy_ocelot(player, opponent, gs, total_mana, log_fn, log_entries):
-    """
-    Ocelot Pride Midrange — creature-based aggro with disruption.
-    Plan: T1 Ocelot/Guide → T2 Bowmasters/Ajani/Raptor → attack and disrupt.
-    Thoughtseize strips key cards. Swords removes blockers. Therapy for combo.
-    """
-    from engine import opp_can_cast, _try_counter_any, combat_declare, update_goyf
-
-    # Thoughtseize: strip best card early
-    ts = player.find_tag('ts')
-    if ts and total_mana >= 1:
-        player.remove_from_hand(ts); player.add_to_grave(ts)
-        total_mana -= 1
-        player.life -= 2
-        if opponent.hand:
-            nonlands = [c for c in opponent.hand if not c.is_land()]
-            if nonlands:
-                # Priority: combo > FoW > threats
-                best = next((c for c in nonlands if c.win_condition or c.is_combo_piece),
-                       next((c for c in nonlands if c.tag in ('fow', 'fon')),
-                       next((c for c in nonlands if c.tag in ('bowm', 'murk', 'dd')),
-                            nonlands[0])))
-                opponent.hand.remove(best); opponent.add_to_grave(best)
-                log_fn(f"Thoughtseize — strips {best.name} (life → {player.life})", True)
-
-    # Cabal Therapy
-    therapy = player.find_tag('therapy')
-    if therapy and total_mana >= 1:
-        player.remove_from_hand(therapy); player.add_to_grave(therapy)
-        total_mana -= 1
-        if opponent.hand:
-            nonlands = [c for c in opponent.hand if not c.is_land()]
-            if nonlands:
-                tgt = nonlands[0]
-                # Remove all copies
-                to_remove = [c for c in opponent.hand if c.name == tgt.name]
-                for c in to_remove:
-                    opponent.hand.remove(c); opponent.add_to_grave(c)
-                log_fn(f"Cabal Therapy naming {tgt.name} — hits {len(to_remove)}")
-
-    # Deploy creatures by CMC (cheapest first)
-    deploy_order = ['ocelot', 'guide', 'ajani', 'bowm', 'voice', 'raptor']
-    for tag in deploy_order:
-        card = player.find_tag(tag)
-        if card and total_mana >= card.cmc:
-            player.remove_from_hand(card)
-            if not _try_counter_any(player, opponent, gs, card, log_entries):
-                player.put_creature_in_play(card)
-                total_mana -= card.cmc
-                log_fn(f"{card.name}")
-                if tag == 'bowm':
-                    gs.bowmasters_on_board = True
-            else:
-                player.add_to_grave(card)
-
-    # Swords to Plowshares: remove biggest blocker
-    stp = player.find_tag('stp')
-    if stp and total_mana >= 1 and opponent.creatures:
-        biggest = max(opponent.creatures, key=lambda c: c.power + c.toughness)
-        if biggest.power >= 2:  # worth removing
-            player.remove_from_hand(stp); player.add_to_grave(stp)
-            total_mana -= 1
-            opponent.remove_creature(biggest)
-            opponent.life += biggest.toughness  # STP gains life
-            log_fn(f"Swords to Plowshares → exiles {biggest.name}")
-            update_goyf(gs)
-
-    # Combat: attack with everything not summoning-sick
-    attackers = [c for c in player.creatures if not c.summoning_sick]
-    if attackers:
-        combat_declare(player, opponent, gs, log_entries, attackers)
-
-
 def _keep_ocelot(hand, matchup=''):
     lands = sum(1 for c in hand if c.is_land())
     creatures = sum(1 for c in hand if c.is_creature())
@@ -120,11 +47,21 @@ def _keep_ocelot(hand, matchup=''):
     return 1 <= lands <= 4 and creatures >= 1 and (creatures + disruption) >= 2
 
 
+def _ocelot_strategy_proxy(player, opponent, gs, total_mana, log_fn, log_entries):
+    """Thin wrapper that dispatches to the real strategy in engine.py.
+
+    Kept here so engine.py owns the logic (matches storm/mono_black pattern)
+    while the deck module stays the registry's source of truth.
+    """
+    from engine import _strategy_ocelot
+    return _strategy_ocelot(player, opponent, gs, total_mana, log_fn, log_entries)
+
+
 DECK_META = {
     'key':        'ocelot',
     'name':       'Ocelot Pride Midrange',
     'make_deck':  make_ocelot_deck,
-    'strategy':   _strategy_ocelot,
+    'strategy':   _ocelot_strategy_proxy,
     'keep':       _keep_ocelot,
     'categories': {'aggro'},
     'meta_share': 0.12,

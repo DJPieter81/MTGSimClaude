@@ -2713,6 +2713,157 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 
+def _strategy_ocelot(player, opponent, gs, total_mana, log_fn, log_entries):
+    """Ocelot Pride Midrange — real strategy.
+
+    Plan:
+      T1:  Thoughtseize (strip FoW/removal/key threat) or deploy 1-drop (ocelot/guide).
+      T2:  Best 2-drop: Ajani > Voice > Bowmasters > Raptor.
+      T3+: Keep deploying; STP on opp threats >=2 power; Therapy when opp has >=2
+           cards; Goblin Bombardment as sac-for-reach.
+      Always: Attack with whatever isn't summoning-sick; STP pre-combat on biggest
+              blocker.
+    """
+    # Entry instrumentation
+    creature_tags_in_hand = [c.tag for c in player.hand if c.is_creature()]
+    gs.strat_log.log_decision(
+        gs.turn, 'ocelot',
+        candidates=['ts', 'therapy', 'stp', 'deploy_1', 'deploy_2',
+                    'bombardment', 'combat'],
+        chosen='entry',
+        reason=(f"mana={total_mana}, life={player.life}, hand={len(player.hand)}, "
+                f"creatures_in_hand={creature_tags_in_hand}, "
+                f"opp_creatures={len(opponent.creatures)}, "
+                f"opp_life={opponent.life}"))
+
+    # 1. Thoughtseize - T1-T3 priority; avoid when life low
+    ts = player.find_tag('ts')
+    if ts and opp_can_cast(ts, total_mana, gs, caster=player) \
+            and opponent.hand and player.life > 8 and gs.turn <= 3:
+        nonlands = [c for c in opponent.hand if not c.is_land()]
+        if nonlands:
+            total_mana -= ts.cmc
+            player.remove_from_hand(ts); player.add_to_grave(ts)
+            player.life -= 2
+            target = (next((c for c in nonlands if c.free_cast_if_blue), None)
+                      or next((c for c in nonlands if c.tag in ('daze', 'fow', 'fon')), None)
+                      or next((c for c in nonlands if c.is_removal), None)
+                      or next((c for c in nonlands if c.win_condition or c.is_combo_piece), None)
+                      or next((c for c in nonlands if c.engine), None)
+                      or max(nonlands, key=lambda c: c.cmc))
+            opponent.remove_from_hand(target); opponent.add_to_grave(target)
+            log_fn(f"* Thoughtseize strips {target.name} (life -> {player.life})")
+
+    # 2. Cabal Therapy - T2+, when opp has >=2 cards
+    therapy = player.find_tag('therapy')
+    if therapy and opp_can_cast(therapy, total_mana, gs, caster=player) \
+            and len(opponent.hand) >= 2:
+        total_mana -= therapy.cmc
+        player.remove_from_hand(therapy); player.add_to_grave(therapy)
+        nonlands = [c for c in opponent.hand if not c.is_land()]
+        if nonlands:
+            from collections import Counter
+            name_counts = Counter(c.name for c in nonlands)
+            tgt_name, _ = name_counts.most_common(1)[0]
+            to_remove = [c for c in opponent.hand if c.name == tgt_name]
+            for c in to_remove:
+                opponent.remove_from_hand(c); opponent.add_to_grave(c)
+            log_fn(f"Cabal Therapy naming {tgt_name} - hits {len(to_remove)}")
+
+    # 3. Swords to Plowshares - pre-combat, kill biggest threat
+    stp = player.find_tag('stp')
+    if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
+        biggest = max(opponent.creatures, key=lambda c: (c.power, c.toughness))
+        worth_it = (biggest.power >= 2
+                    or biggest.card.tag in ('bowm', 'murk', 'dd', 'nether',
+                                            'barrow', 'dauthi', 'eidolon'))
+        if worth_it:
+            total_mana -= stp.cmc
+            player.remove_from_hand(stp); player.add_to_grave(stp)
+            if not _try_counter_any(player, opponent, gs, stp, log_entries):
+                opponent.remove_creature(biggest)
+                opponent.life += biggest.toughness
+                log_fn(f"Swords to Plowshares -> exiles {biggest.card.name} "
+                       f"(opp life +{biggest.toughness} -> {opponent.life})")
+                update_goyf(gs)
+
+    # 4. Goblin Bombardment - deploy when we have creatures
+    bombardment = player.find_tag('bombardment')
+    bombardment_on_board = any(
+        getattr(p.card, 'tag', None) == 'bombardment'
+        for p in getattr(player, 'enchantments', []))
+    if bombardment and not bombardment_on_board \
+            and opp_can_cast(bombardment, total_mana, gs, caster=player) \
+            and len(player.creatures) >= 1:
+        total_mana -= bombardment.cmc
+        player.remove_from_hand(bombardment)
+        if not _try_counter_any(player, opponent, gs, bombardment, log_entries):
+            player.put_enchantment_in_play(bombardment)
+            log_fn("Goblin Bombardment enters play")
+        else:
+            player.add_to_grave(bombardment)
+
+    # 5. Deploy creatures - priority order
+    deploy_priority = ['ocelot', 'guide', 'ajani', 'voice', 'bowm', 'raptor']
+    max_deploys = 3 if total_mana >= 4 else (2 if total_mana >= 2 else 1)
+    deployed = 0
+    for tag in deploy_priority:
+        if deployed >= max_deploys:
+            break
+        crea = player.find_tag(tag)
+        if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
+            continue
+        gs.strat_log.log_decision(
+            gs.turn, 'ocelot',
+            candidates=deploy_priority,
+            chosen=tag,
+            reason=f"mana={total_mana}, deployed={deployed}, "
+                   f"board={len(player.creatures)}")
+        player.remove_from_hand(crea)
+        if not _try_counter_any(player, opponent, gs, crea, log_entries):
+            player.put_creature_in_play(crea)
+            total_mana -= crea.cmc
+            deployed += 1
+            log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
+            if tag == 'bowm':
+                gs.bowmasters_on_board = True
+        else:
+            player.add_to_grave(crea)
+
+    # 6. Wasteland - disrupt opp's dual/fetch
+    wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl and len(player.lands) >= 3:
+        targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
+        if targets:
+            target = max(targets,
+                         key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
+            player.lands.remove(wl); player.add_to_grave(wl.card)
+            opponent.lands.remove(target); opponent.add_to_grave(target.card)
+            log_fn(f"Wasteland -> destroys {target.card.name}")
+            update_goyf(gs)
+
+    # 7. Combat
+    hold = ('bowm',) if opponent.life > 6 and len(player.creatures) >= 2 else ()
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold)
+    combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
+
+    # 8. Goblin Bombardment post-combat reach
+    bombardment_perm = next(
+        (p for p in getattr(player, 'enchantments', [])
+         if getattr(p.card, 'tag', None) == 'bombardment'), None)
+    if bombardment_perm and opponent.life <= 5 and len(player.creatures) >= 2:
+        sac_candidates = list(player.creatures)
+        keep_n = 0 if not any(not c.summoning_sick for c in opponent.creatures) else 1
+        while len(sac_candidates) > keep_n and opponent.life > 0:
+            sac = sac_candidates.pop(0)
+            player.remove_creature(sac)
+            player.add_to_grave(sac.card)
+            opponent.life -= 1
+            log_fn(f"Goblin Bombardment sacs {sac.card.name} -> opp life {opponent.life}")
+            if opponent.life <= 0:
+                break
+
+
 def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
     """Mono Black Aggro — real strategy.
 
@@ -2909,13 +3060,39 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(vial)
 
-    # Eidolon of the Great Revel — CMC2 creature; deploy early to tax BUG's spells
+    # Assess opponent profile: noncreature-heavy decks (combo/control) reward Thalia first,
+    # while creature-heavy aggro mirrors want Eidolon's ETB-damage tax + a 2/2 body sooner.
+    opp_noncreature_heavy = (
+        len(opponent.creatures) == 0 and
+        sum(1 for c in opponent.hand if not c.is_creature() and not c.is_land()) >= 2
+    ) or opponent.__class__.__name__ and any(
+        # Heuristic: if opponent has cast noncreature spells recently (gy), tax matters
+        c.is_creature() is False and c.is_land() is False
+        for c in getattr(opponent, 'graveyard', [])[-4:]
+    )
+
+    # Thalia — priority deploy vs noncreature-heavy opponents (dimir, storm, uwx, burn-bolts).
+    # A turn-2 Thalia taxing FoW/Bolt/Ponder is the single biggest WR swing Boros offers.
+    thalia = player.find_tag('thalia')
+    thalia_on_board_own = any(c.card.tag == 'thalia' for c in player.creatures)
+    if thalia and not thalia_on_board_own and opp_noncreature_heavy and opp_can_cast(thalia, total_mana, gs, caster=player):
+        player.remove_from_hand(thalia)
+        if not _try_counter_any(player, opponent, gs, thalia, log_entries):
+            player.put_creature_in_play(thalia)
+            total_mana -= thalia.cmc
+            log_fn("★ Thalia, Guardian of Thraben — noncreature spells cost +1", True)
+        else:
+            player.add_to_grave(thalia)
+
+    # Eidolon of the Great Revel — CMC2 creature; taxes BUG's spells via ETB damage.
+    # Cast after Thalia (vs noncreature decks) so the lower-CMC tax lands first.
     eidolon = player.find_tag('eidolon')
     eidolon_on_board = any(c.card.tag == 'eidolon' for c in player.creatures)
     if eidolon and not eidolon_on_board and total_mana >= 2:
         player.remove_from_hand(eidolon)
         if not _try_counter_any(player, opponent, gs, eidolon, log_entries):
             player.put_creature_in_play(eidolon)
+            total_mana -= eidolon.cmc
             gs.eidolon_active = True
             log_fn("★ Eidolon of the Great Revel — BUG pays 2 life per CMC≥2 spell", True)
         else:
@@ -2933,6 +3110,24 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         elif gs.vial_counters < 2:
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
+
+    # Vial activation — free creature deploy at matching CMC (bypasses mana, Thalia, FoW).
+    # Picks highest-impact body in hand at the counter value.
+    if vial_perm_b and gs.vial_counters > 0:
+        vial_prio = ('thalia', 'orchid', 'eidolon', 'bowm', 'dungeoneer',
+                     'recruiter', 'minsc')
+        for tag in vial_prio:
+            crea = player.find_tag(tag)
+            if crea and crea.cmc == gs.vial_counters:
+                # Don't duplicate a legendary already on board
+                if tag in ('thalia', 'minsc') and any(c.card.tag == tag for c in player.creatures):
+                    continue
+                player.remove_from_hand(crea)
+                player.put_creature_in_play(crea)  # uncounterable via Vial
+                log_fn(f"★ Vial [{gs.vial_counters}] → {crea.name} (free, uncounterable)", True)
+                if tag == 'eidolon':
+                    gs.eidolon_active = True
+                break
 
     # Hard cast ALL affordable creatures — Boros wants maximum board pressure.
     # Deploy up to 3 per turn (aggro floods the board to overwhelm BUG's removal).
@@ -2979,16 +3174,21 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(ch)
 
-    # Lightning Bolt — aggressive burn plan: face when near-lethal, otherwise kill blocker
-    # Fire all available bolts when BUG life ≤ 9 (burn them out)
+    # Lightning Bolt — aggressive burn plan. Compute expected combat damage from unblocked
+    # attackers this turn; fire bolts face if board-dmg + bolts-in-hand kills the opponent.
     bolts = [c for c in player.hand if c.is_removal and c.cmc == 1 and not c.is_creature()]
+    # Estimate unblocked damage: sum our creature power for which opp has no viable blocker.
+    # Simple model: opp blocks biggest attackers first with any available creature.
+    my_attackers = [c for c in player.creatures if not c.summoning_sick and c.power > 0]
+    board_dmg = max(0, sum(c.power for c in my_attackers) - sum(b.toughness for b in opponent.creatures[:len(my_attackers)]))
+    lethal_with_bolts = (opponent.life - board_dmg) <= 3 * len(bolts)
     for bolt in bolts:
         if not opp_can_cast(bolt, total_mana, gs, caster=player):
             break
         total_mana -= 1  # cost 1R each
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
-        # Burn face if: BUG life ≤ 12 (3-bolt kill range), or no threatening blocker
-        go_face = opponent.life <= 12 or not any(c.toughness <= 3 for c in opponent.creatures)
+        # Burn face if: board+bolts already lethal, opp life ≤ 12, or no killable blocker
+        go_face = lethal_with_bolts or opponent.life <= 12 or not any(c.toughness <= 3 for c in opponent.creatures)
         # Bolt costs 1R; after paying, mana remaining = total_mana (already decremented above)
         small = next((c for c in sorted(opponent.creatures, key=lambda x: x.toughness)
                       if c.toughness <= 3 and _can_target(c, total_mana)), None)
