@@ -1110,34 +1110,35 @@ def play_turn(gs: GameState, turn: int, who: str = 'p1'):
         p.card.tag == 'leyline' for p in opponent.enchantments
     )
 
+    # ── Determine deck key for this player ──
     if who == 'p1':
-        p1_deck = getattr(gs, 'p1_deck', '')
-        # ── Wasteland sacrifice fix (CR 701.16) ──
-        # protagonist_turn taps Wasteland but doesn't sacrifice it.
-        # Real Wasteland: "{T}, Sacrifice ~: Destroy target nonbasic land."
-        # Track which Wastelands were untapped before the turn. After the turn,
-        # any that became tapped were activated and must be sacrificed.
-        # Note: untap_all() runs inside protagonist_turn, so all Wastelands
-        # start untapped. We detect newly-tapped ones after the turn.
-        wl_ids_before = set(id(l) for l in player.lands
-                            if l.card.tag in ('wl', 'wasteland'))
-        opp_land_count_before = len(opponent.lands)
-        from sim import protagonist_turn
-        result = protagonist_turn(gs, turn, p1_deck)
-        # If opponent lost a nonbasic land and a Wasteland was tapped,
-        # it was an activation — sacrifice it
-        opp_land_count_after = len(opponent.lands)
-        if opp_land_count_after < opp_land_count_before:
-            tapped_wl = [l for l in player.lands
-                         if l.card.tag in ('wl', 'wasteland')
-                         and l.tapped and id(l) in wl_ids_before]
-            for wl in tapped_wl[:1]:  # at most 1 Wasteland activation per turn
-                player.lands.remove(wl)
-                player.add_to_grave(wl.card)
-        return result
+        deck_key = getattr(gs, 'p1_deck', '')
     else:
-        matchup = getattr(gs, 'p2_deck', '') or getattr(gs, 'matchup', '')
-        return opp_turn(gs, turn, matchup)
+        deck_key = getattr(gs, 'p2_deck', '') or getattr(gs, 'matchup', '')
+
+    # ── Wasteland sacrifice fix (CR 701.16) ──
+    # _execute_turn taps Wasteland but doesn't sacrifice it.
+    # Real Wasteland: "{T}, Sacrifice ~: Destroy target nonbasic land."
+    # Track which Wastelands were untapped before the turn. After the turn,
+    # any that became tapped were activated and must be sacrificed.
+    wl_ids_before = set(id(l) for l in player.lands
+                        if l.card.tag in ('wl', 'wasteland'))
+    opp_land_count_before = len(opponent.lands)
+
+    from sim import _execute_turn
+    result = _execute_turn(gs, turn, player, opponent, who, deck_key)
+
+    # If opponent lost a nonbasic land and a Wasteland was tapped,
+    # it was an activation — sacrifice it
+    opp_land_count_after = len(opponent.lands)
+    if opp_land_count_after < opp_land_count_before:
+        tapped_wl = [l for l in player.lands
+                     if l.card.tag in ('wl', 'wasteland')
+                     and l.tapped and id(l) in wl_ids_before]
+        for wl in tapped_wl[:1]:  # at most 1 Wasteland activation per turn
+            player.lands.remove(wl)
+            player.add_to_grave(wl.card)
+    return result
 
 
 
@@ -1851,154 +1852,9 @@ def _trace_board_state(player, opponent, log):
 # ─────────────────────────────────────────────
 
 def opp_turn(gs: GameState, turn: int, matchup: str):
-    """P2's turn — symmetric counterpart to protagonist_turn (P1)."""
-    player = gs.p2             # active player this turn (P2)
-    opponent = gs.p1           # opposing player (P1)
-    o, b = player, opponent    # short aliases (legacy, used throughout)
-    log_entries = []
-    gs.p2_spells_cast_this_turn = 0
-    gs.veil_active = False
-    gs.teferi_active = False
-
-    def log(msg, key=False):
-        gs.log_event('p2', 'main', msg, key)
-        log_entries.append(msg)
-
-    # ── Cleanup from previous turn — CR 510.2 ──
-    for player in [b, o]:
-        for c in player.creatures:
-            c.damage_marked = 0
-            # Clear hexproof granted by until-EOT effects (Vines of Vastwood,
-            # Blossoming Defense). Permanent hexproof is on the card, not the perm.
-            if hasattr(c, 'hexproof'):
-                del c.hexproof
-
-    # ── Untap ──
-    o.untap_all()
-    o.revolt_this_turn = False
-    o.clear_summoning_sickness()
-    gs.combat_this_turn = False
-    if gs.trace:
-        log(f"── Untap ── ({len(o.lands)} lands)")
-
-    # ── Draw (first player on play skips T1 draw) ──
-    if gs.trace:
-        if turn == 1 and not gs.p1_goes_first:
-            log("── Draw ── (skipped — on the play, T1)")
-        else:
-            log("── Draw ──")
-    if not (turn == 1 and not gs.p1_goes_first):
-        drawn = o.draw(1, is_draw_step=True)  # first draw step card — Bowmasters exempt
-        if drawn:
-            log(f"Draw: {drawn[0].name}")
-            # Bowmasters does NOT trigger on the first draw in a draw step (oracle)
-            # It triggers on all other draws (cantrips, extra draws, etc.)
-
-    # ── Land ──
-    land = o.find_any(lambda c: c.is_land())
-    if land:
-        perm = o.play_land(land)
-        if perm:
-            # CR 613: apply all active continuous effects to newly entered land
-            gs.apply_continuous_effects(perm)
-            if perm.is_fetch:
-                fetched = o.use_fetch(perm)
-                if fetched:
-                    gs.apply_continuous_effects(fetched)
-                    log(f"Play+crack {land.name} (−1 life, {o.life}) → {fetched.name}")
-            else:
-                log(f"Land: {land.name} ({len(o.lands)} lands)")
-
-    # ── Tap lands ──
-    if gs.trace:
-        log(f"── Main ──")
-        log(f"  Hand ({len(o.hand)}): {', '.join(c.name for c in o.hand)}")
-    # om = available mana from untapped lands (on-demand tapping)
-    om = o.available_mana_count()
-    # Lotus Petal: sac for any color mana (+1 each)
-    om += sum(1 for c in o.hand if c.tag == 'petal')
-    # Ragavan Treasure tokens from previous turn
-    if getattr(gs, 'p2_treasure', 0) > 0:
-        om += gs.p2_treasure
-        if gs.p2_treasure > 0:
-            log(f"Treasure ({gs.p2_treasure}) → +{gs.p2_treasure} mana")
-        gs.p2_treasure = 0
-    # Ancient Tomb: produces 2C but deals 2 damage when tapped (CR 702.9)
-    tomb_count = sum(1 for l in o.lands if l.card.tag == 'tomb' and not l.tapped)
-    if tomb_count > 0:
-        om += tomb_count
-        o.life -= tomb_count * 2
-    # City of Traitors: produces 2C like Tomb but no life loss
-    if gs.trace:
-        log(f"  Mana available: {om}")
-
-    # ── Rishadan Port: tap target BUG land during opponent's upkeep ──
-    # Oracle: {T}: tap target land — fire ALL untapped Port copies, not just one.
-    # With 4 Ports, turns 3+ lock 2-3 BUG lands before BUG even untaps.
-    if matchup in MC.VIAL_DECKS:
-        def land_value(lp):
-            if lp.card.tag == 'dual': return 3
-            if lp.card.is_fetch: return 2
-            if lp.card.is_basic: return 1
-            return 0
-        for port in [l for l in o.lands if l.card.tag == 'port' and not l.tapped]:
-            untapped_bug = [l for l in b.lands if not l.tapped]
-            if not untapped_bug:
-                break
-            target = max(untapped_bug, key=land_value)
-            target.tapped = True
-            port.tapped = True
-            log(f"Rishadan Port taps {target.name} (BUG loses 1 mana)", True)
-
-    # ── Gameplan layer — compute board assessment + active goal ──
-    # Exposes posture to individual strategy functions via gs.p2_goal
-    plan = GAMEPLANS.get(matchup)
-    if plan:
-        ba = assess(gs, turn)
-        gs.p2_goal = active_goal(plan, ba)
-    else:
-        gs.p2_goal = None
-
-    # ── Lock piece enforcement (shared helpers — single source of truth) ──
-    _adjustments = apply_lock_effects(gs, o, log)
-
-    # ── Matchup dispatch (all decks via registry) ──
-    from deck_registry import get_strategy
-    strategy_fn = get_strategy(matchup)
-    if strategy_fn:
-        player, opponent = gs.p2, gs.p1
-        def _plugin_log(msg, key=False):
-            gs.log_event('o', 'main', msg, key)
-            log_entries.append(msg)
-        try:
-            strategy_fn(player, opponent, gs, om, _plugin_log, log_entries)
-        except Exception as e:
-            log(f"⚠ Strategy error ({matchup}): {e} — forfeiting turn")
-
-    # ── Post-strategy: restore lock adjustments ──
-    restore_lock_effects(o, _adjustments)
-
-    # ── Tamiyo flip check (P2's Tamiyo can flip if drew 3+ this turn) ──
-    _check_tamiyo_flip(gs, o, log)
-
-    # ── P1 instant-speed responses during P2's turn ──
-    if not gs.game_over:
-        _p1_respond_on_opp_turn(gs, log, log_entries)
-
-    # ── Fallback combat: attack with eligible creatures if strategy didn't ──
-    if not gs.combat_this_turn and not gs.game_over and o.creatures:
-        attackers = _select_attackers(o, b)
-        if attackers:
-            if gs.trace:
-                log(f"── Combat ── ({len(attackers)} attackers)")
-            combat_declare(o, b, gs, log_entries, attackers)
-
-    gs.state_based_actions()
-
-    if gs.trace:
-        log("── End ──")
-
-    return log_entries
+    """P2's turn — delegates to unified _execute_turn in sim.py."""
+    from sim import opp_turn_unified
+    return opp_turn_unified(gs, turn, matchup)
 
 
 # ─────────────────────────────────────────────

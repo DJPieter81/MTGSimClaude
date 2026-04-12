@@ -57,7 +57,7 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 | No Karn lockout | Karn's -2 doesn't shut off opponent artifacts | Tron variants |
 | Simplified combat | No first strike, no trample (except Emrakul) | Aggro mirrors |
 | No sideboard | Bo1 only in matrix (Bo3 in replayer) | All decks |
-| P1 advantage inflation | Tempo mirrors: both sides win >60% → symmetry >120% | dimir variants, BUG, UR mirrors |
+| ~~P1 advantage inflation~~ | ~~Tempo mirrors: both sides win >60%~~ → **FIXED** by turn unification (avg asym 12.5pp → 7.8pp) | dimir variants, BUG, UR mirrors |
 
 *Previously listed: "No static lock modeling — Chalice/Trinisphere don't actually prevent opponent casts." This is **no longer accurate** as of April 2026. Chalice, Trinisphere, and Thalia all persist across turns and block opponent casts via `apply_lock_effects` + `opp_can_cast`. Verified by 7 new rules tests in `run_rules_tests()` (Control 3).*
 
@@ -80,8 +80,8 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 ### P2 — Nice to Have
 7. **Implement combat detail boxes** in replayer (⚔ attacker + dmg → life).
 8. **Add reasoning toggle** to replayer (hidden by default, · to reveal).
-9. **Symmetry audit** — investigate remaining high-asymmetry pairs (107 pairs >10%).
-10. **Symmetry audit** — investigate the worst symmetry outliers (Dimir_b vs Dimir_c = 150%).
+9. ~~**Symmetry audit**~~ — ✅ FIXED: turn-function unification (`_execute_turn`) merged `protagonist_turn` + `opp_turn` into single code path. Avg asymmetry 12.5pp → 7.8pp. Remaining asymmetry from `_p1_respond_on_opp_turn` / `_p2_respond_on_pro_turn` response functions (different instant-speed options per slot).
+10. ~~**Symmetry audit**~~ — ✅ FIXED: worst outlier (Dimir vs Dimir_flash) dropped from 145% sum to ~126%.
 
 ---
 
