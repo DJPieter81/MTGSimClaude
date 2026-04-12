@@ -496,7 +496,12 @@ def _execute_turn(gs, turn, b, o, who, matchup):
 
     # ── Mana calculation ──
     total_mana = b.available_mana_count()
-    total_mana += sum(1 for c in b.hand if c.tag == 'petal')
+    # Karn lockout: if opponent controls Karn, active player can't activate artifacts
+    opp_has_karn = (gs.p1_karn_active if o is gs.p1 else gs.p2_karn_active)
+    if not opp_has_karn:
+        total_mana += sum(1 for c in b.hand if c.tag == 'petal')
+    else:
+        log(f"Karn lockout — can't activate artifact mana sources")
     treasure = getattr(gs, treasure_attr, 0)
     if treasure > 0:
         total_mana += treasure

@@ -247,6 +247,16 @@ class GameState:
     leyline_active: bool = False      # Leyline of the Void in play pre-game
     trinisphere_active: bool = False  # Trinisphere — all spells cost ≥ {3}
     eidolon_active: bool = False      # Eidolon of the Great Revel — 2 dmg to p1 per CMC≥2 spell cast
+
+    @property
+    def p1_karn_active(self) -> bool:
+        """True if P1 controls Karn (opponent's artifacts can't be activated)."""
+        return any(c.card.tag == 'karn' for c in self.p1.artifacts)
+
+    @property
+    def p2_karn_active(self) -> bool:
+        """True if P2 controls Karn."""
+        return any(c.card.tag == 'karn' for c in self.p2.artifacts)
     tamiyo_flipped: bool = False
     combat_this_turn: bool = False    # Set by combat_declare, reset at turn start
     p1_poison: int = 0                # Infect poison counters (10 = lethal)
