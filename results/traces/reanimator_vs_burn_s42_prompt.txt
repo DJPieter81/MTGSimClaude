@@ -1,0 +1,66 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: reanimator_vs_burn
+Seed: 42
+Result: p1 (Opp life reaches -8 on turn 4) on turn 4 of 4
+
+Opening hands:
+  P1 (reanimator): Brainstorm, Archon of Cruelty, Swamp, Exhume, Dark Ritual, Griselbrand, Swamp
+  P2 (burn): Fireblast, Price of Progress, Goblin Guide, Mountain, Inspiring Vantage, Chain Lightning, Mountain
+
+Strategic decision trace (4 entries):
+  T1 [reanimator] [phase:t1_free_mana] chose pass from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=1, entomb=False, reanimate=True, target=True
+  T2 [reanimator] [phase:t2_plan_b] chose entomb_reanimate from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=1, entomb=True, reanimate=True, target=True
+  T3 [reanimator] [phase:t2_plan_b] chose pass from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=3, entomb=False, reanimate=True, target=True
+  T4 [reanimator] [phase:grind] chose pass from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=3, entomb=False, reanimate=True, target=True
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  REANIMATOR vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  REANIMATOR (P1):
+  Draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Archon of Cruelty (creature 6/6, CMC 8, win-con)
+    3. Swamp (basic)
+    4. Exhume (sorcery, CMC 2, combo)
+    5. Dark Ritual (instant, CMC 1)
+    6. Griselbrand (creature 7/7, CMC 8, win-con)
+    7. Swamp (basic)
+    [Lands: 2  Creatures: 2  Cantrips: 1  Combo: 3]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  BURN (P2):
+  Draw 7:
+    1. Fireblast (instant, CMC 6, win-con)
+    2. Price of Progress (instant, CMC 2, win-con)
+    3. Goblin Guide (creature 2/2, CMC 1)
+    4. Mountain (basic)
+    5. Inspiring Vantage (land)
+    6. Chain Lightning (sorcery, CMC 1, win-con)
+    7. Mountain (basic)
+    [Lands: 3  Creatures: 1  Combo: 3]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 4 threat(s) for a clock; combo pieces present — can threaten early kill
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ──
+
+Grade the **reanimator** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

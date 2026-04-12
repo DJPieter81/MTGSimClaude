@@ -1,0 +1,63 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: goblins_vs_uwx
+Seed: 99
+Result: p1 (Goblins: Sling-Gang drain for 2) on turn 12 of 12
+
+Opening hands:
+  P1 (goblins): Munitions Expert, Skirk Prospector, Wooded Foothills, Badlands, Sling-Gang Lieutenant, Aether Vial, Goblin Matron
+  P2 (uwx): Brainstorm, Preordain, Flooded Strand, Spell Pierce, Plains, Plains, Terminus
+
+Strategic decision trace (0 entries):
+  (no decisions logged)
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  GOBLINS vs UWX
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UWX wins the die roll, goes FIRST
+
+  GOBLINS (P1):
+  Draw 7:
+    1. Munitions Expert (creature 1/1, CMC 2, removal)
+    2. Skirk Prospector (creature 1/1, CMC 1)
+    3. Wooded Foothills (fetch)
+    4. Badlands (dual)
+    5. Sling-Gang Lieutenant (creature 1/1, CMC 4)
+    6. Aether Vial (artifact, CMC 1)
+    7. Goblin Matron (creature 1/1, CMC 3)
+    [Lands: 2  Creatures: 4  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 4 threat(s) for a clock; removal for opponent's threats
+
+  UWX (P2):
+  Draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Preordain (sorcery, CMC 1, cantrip)
+    3. Flooded Strand (fetch)
+    4. Spell Pierce (instant, CMC 1, counter)
+    5. Plains (basic)
+    6. Plains (basic)
+    7. Terminus (sorcery, CMC 6, removal)
+    [Lands: 3  Counters: 1  Cantrips: 2  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 counter(s) for protection/disruption; cantrip(s) to dig for threats; removal for opponent's threats
+
+━━ TURN 1 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | uwx 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Flooded Strand (−1 life, 19) → Tundra
+  ── Main ──
+
+Grade the **goblins** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

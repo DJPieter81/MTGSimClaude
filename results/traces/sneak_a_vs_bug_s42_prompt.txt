@@ -1,0 +1,70 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: sneak_a_vs_bug
+Seed: 42
+Result: p2 (BUG life reaches -1 on turn 8) on turn None of 8
+
+Opening hands:
+  P1 (sneak_a): Show and Tell, Lotus Petal, Force of Will, Scalding Tarn, Thundering Falls, Lotus Petal, Force of Will
+  P2 (bug): Brainstorm, Thoughtseize, Tamiyo, Inquisitive Student, Underground Sea, Island, Kaito, Bane of Nightmares, Flooded Strand
+
+Strategic decision trace (8 entries):
+  T1 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=1, hand=6, threats_in_play=0
+  T2 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=2, hand=5, threats_in_play=0
+  T3 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=4, threats_in_play=0
+  T4 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=5, threats_in_play=0
+  T5 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=4, hand=4, threats_in_play=2
+  T6 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=4, hand=4, threats_in_play=2
+  T7 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=5, hand=3, threats_in_play=3
+  T8 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=5, hand=4, threats_in_play=3
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  SNEAK_A vs BUG
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BUG wins the die roll, goes FIRST
+
+  SNEAK_A (P1):
+  Draw 7:
+    1. Show and Tell (sorcery, CMC 3, combo, win-con)
+    2. Lotus Petal (artifact, CMC 0)
+    3. Force of Will (instant, CMC 5, free counter)
+    4. Scalding Tarn (fetch)
+    5. Thundering Falls (land)
+    6. Lotus Petal (artifact, CMC 0)
+    7. Force of Will (instant, CMC 5, free counter)
+    [Lands: 2  Counters: 2  Combo: 1  Other: 2]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock; 2 counter(s) for protection/disruption
+
+  BUG (P2):
+  Draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Underground Sea (dual)
+    5. Island (basic)
+    6. Kaito, Bane of Nightmares (creature 3/4, CMC 3)
+    7. Flooded Strand (fetch)
+    [Lands: 3  Creatures: 2  Cantrips: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+━━ TURN 1 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: sneak_a 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+  ── Main ──
+
+Grade the **sneak_a** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

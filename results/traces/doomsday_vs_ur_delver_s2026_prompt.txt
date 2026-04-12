@@ -1,0 +1,66 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: doomsday_vs_ur_delver
+Seed: 2026
+Result: p2 (BUG life reaches -2 on turn 5) on turn None of 5
+
+Opening hands:
+  P1 (doomsday): Island, Tropical Island, Doomsday, Flusterstorm, Island, Doomsday, Street Wraith
+  P2 (ur_delver): Murktide Regent, Unholy Heat, Dragon's Rage Channeler, Preordain, Daze, Scalding Tarn, Volcanic Island
+
+Strategic decision trace (4 entries):
+  T1 [doomsday] [phase:dig] chose pass from ['cast_doomsday', 'cycle_and_oracle', 'pass'] — mana=1, dd_resolved=False, life=20
+  T2 [doomsday] [phase:dig] chose pass from ['cast_doomsday', 'cycle_and_oracle', 'pass'] — mana=1, dd_resolved=False, life=17
+  T3 [doomsday] [phase:cast_dd] chose pass from ['cast_doomsday', 'cycle_and_oracle', 'pass'] — mana=2, dd_resolved=False, life=16
+  T4 [doomsday] [phase:cast_dd] chose cast_doomsday from ['cast_doomsday', 'cycle_and_oracle', 'pass'] — mana=3, dd_resolved=False, life=10
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  DOOMSDAY vs UR_DELVER
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UR_DELVER wins the die roll, goes FIRST
+
+  DOOMSDAY (P1):
+  Draw 7:
+    1. Island (basic)
+    2. Tropical Island (dual)
+    3. Doomsday (sorcery, CMC 5, combo)
+    4. Flusterstorm (instant, CMC 1, counter)
+    5. Island (basic)
+    6. Doomsday (sorcery, CMC 5, combo)
+    7. Street Wraith (creature 3/4, CMC 5)
+    [Lands: 3  Creatures: 1  Counters: 1  Combo: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; 1 counter(s) for protection/disruption; combo pieces present — can threaten early kill
+
+  UR_DELVER (P2):
+  Draw 7:
+    1. Murktide Regent (creature 5/5, CMC 7)
+    2. Unholy Heat (instant, CMC 1)
+    3. Dragon's Rage Channeler (creature 1/1, CMC 1)
+    4. Preordain (sorcery, CMC 1)
+    5. Daze (instant, CMC 2, free counter)
+    6. Scalding Tarn (fetch)
+    7. Volcanic Island (dual)
+    [Lands: 2  Creatures: 2  Counters: 1  Other: 2]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: doomsday 20 | ur_delver 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Scalding Tarn (−1 life, 19) → Volcanic Island
+  ── Main ──
+
+Grade the **doomsday** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

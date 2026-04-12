@@ -1,0 +1,63 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: goblins_vs_uwx
+Seed: 42
+Result: p2 (BUG life reaches -4 on turn 11) on turn None of 11
+
+Opening hands:
+  P1 (goblins): Thoughtseize, Goblin Cratermaker, Wooded Foothills, Goblin Ringleader, Goblin Warchief, Sling-Gang Lieutenant, Wooded Foothills
+  P2 (uwx): Flusterstorm, Back to Basics, Brainstorm, Island, Plains, Counterspell, Island
+
+Strategic decision trace (0 entries):
+  (no decisions logged)
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  GOBLINS vs UWX
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UWX wins the die roll, goes FIRST
+
+  GOBLINS (P1):
+  Draw 7:
+    1. Thoughtseize (sorcery, CMC 1)
+    2. Goblin Cratermaker (creature 2/2, CMC 2, removal)
+    3. Wooded Foothills (fetch)
+    4. Goblin Ringleader (creature 2/2, CMC 4)
+    5. Goblin Warchief (creature 2/2, CMC 3)
+    6. Sling-Gang Lieutenant (creature 1/1, CMC 4)
+    7. Wooded Foothills (fetch)
+    [Lands: 2  Creatures: 4  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 4 threat(s) for a clock; removal for opponent's threats
+
+  UWX (P2):
+  Draw 7:
+    1. Flusterstorm (instant, CMC 1, counter)
+    2. Back to Basics (CMC 3)
+    3. Brainstorm (instant, CMC 1, cantrip)
+    4. Island (basic)
+    5. Plains (basic)
+    6. Counterspell (instant, CMC 2, counter)
+    7. Island (basic)
+    [Lands: 3  Counters: 2  Cantrips: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 counter(s) for protection/disruption; cantrip(s) to dig for threats
+
+━━ TURN 1 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: goblins 20 | uwx 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Island (1 lands)
+  ── Main ──
+
+Grade the **goblins** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

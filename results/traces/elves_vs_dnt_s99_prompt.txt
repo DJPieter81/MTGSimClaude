@@ -1,0 +1,77 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: elves_vs_dnt
+Seed: 99
+Result: p1 (Opp life reaches -2 on turn 11) on turn 11 of 11
+
+Opening hands:
+  P1 (elves): Allosaurus Shepherd, Reclamation Sage, Forest, Verdant Catacombs, Elvish Visionary, Glimpse of Nature, Elvish Mystic
+  P2 (dnt): Recruiter of the Guard, Thalia, Guardian of Thraben, Skyclave Apparition, Wasteland
+
+Strategic decision trace (15 entries):
+  T1 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=1, creatures=0, hand=7
+  T2 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=2, creatures=1, hand=6
+  T3 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=2, hand=['recruiter', 'thalia', 'skyclave', 'flickerwisp']
+  T3 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=2, creatures=3, hand=5
+  T4 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=3, creatures=3, hand=3
+  T5 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=4, creatures=5, hand=1
+  T6 [dnt] chose skyclave from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['skyclave', 'flickerwisp']
+  T6 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=5, creatures=4, hand=0
+  T7 [dnt] chose flickerwisp from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=4, hand=['flickerwisp']
+  T7 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=8, creatures=3, hand=0
+  T8 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['thalia']
+  T8 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=7, creatures=2, hand=1
+  T9 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=8, creatures=2, hand=0
+  T10 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=8, creatures=2, hand=1
+  T11 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=9, creatures=3, hand=1
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  ELVES vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  ELVES (P1):
+  Draw 7:
+    1. Allosaurus Shepherd (creature 1/1, CMC 1)
+    2. Reclamation Sage (creature 2/1, CMC 2, removal)
+    3. Forest (basic)
+    4. Verdant Catacombs (fetch)
+    5. Elvish Visionary (creature 1/1, CMC 1)
+    6. Glimpse of Nature (sorcery, CMC 1, combo)
+    7. Elvish Mystic (creature 1/1, CMC 1)
+    [Lands: 2  Creatures: 4  Removal: 1  Combo: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 4 threat(s) for a clock; removal for opponent's threats
+
+  DNT (P2):
+  Draw 7:
+    1. Stoneforge Mystic (creature 1/2, CMC 2)
+    2. Rishadan Port (land)
+    3. Wasteland (land)
+    4. Rishadan Port (land)
+    5. Plains (basic)
+    6. Plains (basic)
+    7. Swords to Plowshares (instant, CMC 1, removal)
+    [Lands: 5  Creatures: 1  Removal: 1]
+  → MULLIGAN
+    Reason: 5 lands — too flooded, not enough spells
+  Mulligan #1 — draw 7:
+    1. Plains (basic)
+    2. Rishadan Port (land)
+    3. Solitude (creature 3/2, CMC 5, removal)
+    4. Plains (basic)
+    5. Karakas (land)
+    6. Rishadan Port (land)
+
+Grade the **elves** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.
