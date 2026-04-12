@@ -3076,11 +3076,18 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             break
         total_mana -= 1  # cost 1R each
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
-        # Burn face if: board+bolts already lethal, opp life ≤ 12, or no killable blocker
-        go_face = lethal_with_bolts or opponent.life <= 12 or not any(c.toughness <= 3 for c in opponent.creatures)
-        # Bolt costs 1R; after paying, mana remaining = total_mana (already decremented above)
+        # Burn face if: (a) board+bolts already lethal, or (b) the bolt
+        # shortens our clock — i.e. going face lowers turns-to-kill vs. the
+        # trade of removing a small blocker. Clock-based instead of a
+        # hardcoded life threshold (CLAUDE.md §"No hardcoded numbers").
+        from clock import board_clock
+        current_clock = board_clock(player.creatures, opponent.creatures, opponent.life)
+        bolt_clock = board_clock(player.creatures, opponent.creatures, opponent.life - 3)
         small = next((c for c in sorted(opponent.creatures, key=lambda x: x.toughness)
                       if c.toughness <= 3 and _can_target(c, total_mana)), None)
+        go_face = (lethal_with_bolts
+                   or small is None
+                   or bolt_clock < current_clock)
         if go_face or not small:
             opponent.life -= 3
             log_fn(f"Lightning Bolt — BUG face ({opponent.life})", True)
@@ -4862,7 +4869,8 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                       'turn': gs.turn, 'belief': belief}
     else:
         belief = _bhi_cache['belief']
-    opp_has_free_counter = belief.p_free_counter > 0.4
+    from config import InteractionParams as IP
+    opp_has_free_counter = belief.p_free_counter > IP.BHI_FREE_COUNTER_THRESHOLD
     # For debugging: log BHI probability alongside the old scan-based comparison.
     _scan_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
     _scan_blue_pitch = any(c for c in opponent.hand
@@ -5266,7 +5274,17 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
         candidates = [c for c in opponent.creatures
                       if bolt_priority(c) < 99 and _can_target(c, _bolt_mana_after)]
         target = min(candidates, key=bolt_priority) if candidates else None
-        go_face = (target is None and opponent.life <= 15 and len(player.creatures) > 0)
+        # Clock-based: go face if no target, OR a bolt to face shortens the
+        # turns-to-kill more than removing this blocker would (requires board
+        # presence to have a clock at all). Replaces hardcoded opp.life <= 15.
+        from clock import board_clock
+        _current_clock = board_clock(player.creatures, opponent.creatures, opponent.life)
+        _face_clock = board_clock(player.creatures, opponent.creatures, opponent.life - 3)
+        go_face = (target is None and len(player.creatures) > 0) or (
+            target is not None and len(player.creatures) > 0
+            and _face_clock < _current_clock
+            and bolt_priority(target) >= 3  # only skip removal of low-priority blockers
+        )
         if target or go_face:
             player.remove_from_hand(bolt); player.add_to_grave(bolt)
             if target:
