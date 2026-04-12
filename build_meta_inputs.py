@@ -141,9 +141,8 @@ def main():
         if not files:
             print('No results/matrix_*.json found.', file=sys.stderr)
             sys.exit(1)
-        # Prefer non-sym files as the base (same data; sym lacks raw context for some downstream use)
-        non_sym = [f for f in files if '_sym' not in f]
-        mpath = (non_sym or files)[-1]
+        # Prefer latest by modification time (alphabetical picks bo3 over G1)
+        mpath = max(files, key=os.path.getmtime)
 
     print(f"Using matrix: {mpath}")
     with open(mpath) as f:
