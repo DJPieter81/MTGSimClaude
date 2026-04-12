@@ -54,6 +54,7 @@ class PlayerState:
     spells_cast_this_turn: int = 0  # for Mindbreak Trap free condition
     opp_cast_blue_black_this_turn: bool = False  # for Veil of Summer conditional draw
     leyline_exile: bool = False  # if True, cards go to exile instead of GY (Leyline of the Void)
+    suspended: List = field(default_factory=list)  # [(Card, turns_remaining)] for suspend mechanic
 
     @property
     def all_permanents(self):

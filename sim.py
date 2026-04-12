@@ -417,6 +417,30 @@ def _execute_turn(gs, turn, b, o, who, matchup):
 
     # ── Upkeep: Goyf update ──
     update_goyf(gs)
+
+    # ── Upkeep: Suspend resolution (CR 702.62) ──
+    # Tick down all suspended cards. When counter reaches 0, cast for free.
+    if b.suspended:
+        still_suspended = []
+        for card, turns_left in b.suspended:
+            if turns_left <= 1:
+                # Cast from exile — opponent gets counter window
+                log(f"★ {card.name} comes off suspend — cast for free!")
+                countered = _try_counter_any(b, o, gs, card, log_entries)
+                if not countered:
+                    b.add_to_grave(card)
+                    if card.tag == 'rift':
+                        o.life -= 3
+                        log(f"  Rift Bolt → 3 damage (opp at {o.life})")
+                        gs.check_life_totals()
+                        if gs.game_over:
+                            break
+                else:
+                    b.add_to_grave(card)
+                    log(f"  {card.name} countered off suspend")
+            else:
+                still_suspended.append((card, turns_left - 1))
+        b.suspended = still_suspended
     if gs.trace:
         log("── Upkeep ──")
 

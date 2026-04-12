@@ -240,7 +240,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     if swiftspear_in_play:
         # Cast face-only R-cost burn spells pre-combat (bolt saved for post-combat)
         while mana >= 1 and not gs.game_over:
-            pre_combat_spell = (player.find_tag('spike') or player.find_tag('rift')
+            pre_combat_spell = (player.find_tag('spike')
                                 or player.find_tag('chain'))
             if not pre_combat_spell or not _worth_casting(3):
                 break
@@ -382,8 +382,42 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             return
 
     # --- Cheap 3-damage spells: Lava Spike first (face-only, no flexibility
-    # to waste), then Rift Bolt, then Chain Lightning (can be bounced back) ---
-    cheap_burn_tags = ['spike', 'rift', 'chain']
+    # to waste), then Rift Bolt (SUSPEND), then Chain Lightning ---
+    # Rift Bolt: suspend for R — exile it, deals 3 damage at next upkeep.
+    # Suspending is a special action (not a spell), so no counter window now.
+    while mana >= 1 and not gs.game_over:
+        rift = player.find_tag('rift')
+        if not rift:
+            break
+        if not _worth_casting(3):
+            break
+        # Hard-cast for 3 mana if opponent is at ≤3 life (need lethal NOW)
+        if opponent.life <= 3 and mana >= 3:
+            budget = [mana]
+            if cast_spell(player, opponent, gs, rift, budget, log_fn, log_entries,
+                          cost_override=3,
+                          on_resolve=lambda c: (player.add_to_grave(c),
+                                                deal_face_damage(3, "Rift Bolt (hard cast)"))):
+                log_fn(f"★ Rift Bolt (hard cast 2R) → 3 damage (opp at {opponent.life})")
+            else:
+                log_fn("Rift Bolt countered")
+            mana = budget[0]
+        else:
+            # Suspend for R — exile, resolve next upkeep
+            player.remove_from_hand(rift)
+            player.exile.append(rift)
+            mana -= 1
+            player.suspended.append((rift, 1))
+            log_fn(f"Rift Bolt suspended (−1 mana) — deals 3 next upkeep")
+            # Prowess triggers from noncreature spells — suspend IS casting? No.
+            # CR 702.62: "Suspend is a keyword that represents three abilities...
+            # The first is a static ability that functions while the card is in hand."
+            # Suspending is a SPECIAL ACTION, not casting a spell. No prowess.
+        if gs.game_over:
+            return
+
+    # Spike and Chain: cast immediately as before
+    cheap_burn_tags = ['spike', 'chain']
     for tag in cheap_burn_tags:
         while mana >= 1:
             card = player.find_tag(tag)
