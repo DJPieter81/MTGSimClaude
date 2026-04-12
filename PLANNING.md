@@ -89,13 +89,16 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 
 ### Data Pipeline
 ```
-run_meta.py --matrix -n 200    → results/matrix_*.json (raw)
-meta_results.py symmetrise     → results/matrix_*_sym.json (averaged)
-build_meta_inputs.py           → meta_fresh.json + deck_agg.json
-build_matrix_html.py           → results/meta_matrix_*.html (template swap)
-gen_guides.py                  → guides/*.html (36 guides, ~30s)
-game_replay.py                 → replay HTML (Bo3)
-verify.py all                  → post-action quality checks
+python3 refresh_all.py              # full rebuild from latest matrix (~62s)
+python3 refresh_all.py --resim 200  # re-run matrix first (~7 min)
+
+Individual steps (chained by refresh_all.py):
+  run_meta.py --matrix -n 200    → results/matrix_*.json (raw)
+  meta_results.py symmetrise     → results/matrix_*_sym.json (averaged)
+  build_meta_inputs.py           → meta_fresh.json + deck_agg.json
+  build_matrix_html.py           → results/meta_matrix_*.html (719KB, C+I loaded)
+  gen_guides.py                  → guides/*.html (36 guides, ~60s)
+  verify.py all                  → 144 tests + matrix JS validation
 ```
 
 ### API Gotchas
