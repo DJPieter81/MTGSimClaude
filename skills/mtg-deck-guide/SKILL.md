@@ -35,9 +35,9 @@ The guide requires data from the meta matrix skill (`mtg-meta-matrix`), plus add
 
 | Data | Source | Purpose |
 |------|--------|---------|
-| `meta_N.json` | Meta matrix | Matchup WRs, kill turns, game stats |
-| `deck_agg.json` | Meta matrix | MVPs, finishers, deck profile |
-| `card_trimmed.json` | Meta matrix | Per-matchup card stats |
+| `meta_N.json` | `results/matrix_*.json` | Matchup WRs, kill turns, game stats |
+| `deck_agg.json` | `results/data/deck_agg.json` | MVPs, finishers, deck profile |
+| `card_trimmed.json` | `results/data/card_trimmed.json` | Per-matchup card stats |
 | Hand samples | New extraction | Real opening hands with outcomes |
 
 ## Hand Analysis Pipeline
@@ -47,10 +47,14 @@ Read `references/hand_analysis.md` for the full methodology. Summary:
 ### Step 1: Collect 2,000 games
 
 ```python
+from sim import run_game
+import random
+opponents = list(DECKS.keys())
 for _ in range(2000):
     opp = random.choice(opponents)
-    r = run_symmetric_game(deck, opp)
-    # Record: hand composition, won/lost, kill_turn, opponent
+    r = run_game(deck, opp)
+    # r.p1_opening_hand = list of card name strings
+    # r.winner, r.kill_turn, r.game_length, r.final_p1_life
 ```
 
 ### Step 2: Classify hand composition
@@ -155,17 +159,20 @@ mtg-deck-guide/
     └── mana_math.md        — Common mana math pitfalls to avoid
 ```
 
-## Quick Generation (NEW)
+## Quick Generation (Legacy)
 
 ```bash
-# All T1/T2 decks at once
-python build_guide.py --all /mnt/user-data/outputs/
+# All decks at once (500 games/deck, ~30s)
+python3 gen_guides.py
 
-# Single deck
-python build_guide.py "Boros Energy" /mnt/user-data/outputs/guide_boros.html
+# Full pipeline refresh (matrix + guides + HTML)
+python3 refresh_all.py
+
+# Output: results/guide_<deck>.html per deck
+# Burn is hand-crafted: templates/reference_deck_guide.html (53KB)
 ```
 
-`build_guide.py` reads `metagame_data.jsx` and generates: hero stats, Stars of Sim (Scryfall thumbnails), G1→match swing table, danger cards, tiered matchup spread, provenance footer.
+`gen_guides.py` reads matrix JSON + `deck_agg.json` and generates: hero stats, two-col decklist with role badges, kill turn chart, hand archetype bars, matchup spread, Scryfall hovers, provenance footer. Outputs flags per guide: `2col|kt|arch|hands|find|hover|meta`.
 
 For tournament-grade guides, read `templates/reference_deck_guide.html` first — it has the full 11-section spec including real sim hands, game plan phases, and 6 pro-level findings.
 
@@ -179,4 +186,4 @@ Each finding must be data-backed, non-obvious, and actionable:
 5. Hidden damage sources (tokens) → boarding rules
 6. Weighted WR gap analysis
 
-Source fields: `matchup_cards[key].d1_finishers`, `.d1_top_damage`, `.g1_wins`, `.sweeps`, `.comebacks`, `.d1_sb`
+Source fields from `results/data/card_trimmed.json`: `[matchup_key].f` (finishers), `.c1`/`.c2` (top casts), `.a1`/`.a2` (top attackers). From `results/data/deck_agg.json`: `.fin` (finishers), `.mvp` (most valuable plays), `.mu` (matchup WRs).
