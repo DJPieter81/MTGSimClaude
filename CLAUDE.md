@@ -269,3 +269,73 @@ Use `random.seed(N)` or `-s N` flag for deterministic results:
 import random; random.seed(42)
 r = run_game('storm', 'burn')  # same result every time with seed 42
 ```
+
+---
+
+## Three Products — Output Standards
+
+### 1. Meta Matrix (HTML + JSX)
+
+**Template**: Use `templates/reference_meta_matrix.html` as the canonical template.
+Never rebuild from scratch — replace the 5 data constants (D, DA, C, I, ARCH).
+
+**Required JS functions** (all must exist before `render()`):
+`pills(cards,color)`, `wc(w)`, `tc(w)`, `muc(w)`, `getCT()`, `tierOf(w)`,
+`tierTag(w)`, `getWR(d)`, `closeDet()`
+
+After any rebuild, verify: `grep 'function pills' output.html` — if missing, inject it.
+
+**Data layers**: D (matchup WRs), DA (deck profiles), C (card-level stats),
+I (interaction events), ARCH (archetype map).
+
+**Weighted WR**: T1+T2 opponents only (flat ≥50%). Thresholds: 58/48/33 weighted, 65/50/35 flat.
+
+### 2. Deck Guides (HTML)
+
+**Design**: Light theme, white bg, system sans-serif, max-width 960px.
+**Reference**: `templates/reference_deck_guide.html`
+
+Components:
+- **Hero**: 4-col grid (Format, WR flat+weighted, Rank/Tier, Best/Worst)
+- **Decklist**: Two-column. Mainboard + card role badges left, sideboard + findings right
+- **Card role badges**: threat, burn, engine, reach, finisher, removal, draw, tutor, hate, flex
+- **Scryfall hovers**: `class="card-tip" data-card="Card Name"` + JS tooltip from api.scryfall.com
+- **Game plan**: Vertical timeline with 3 phase boxes
+- **Kill turn chart**: CSS flex bars
+- **Hand archetype WR**: Horizontal bars with baseline marker (2,000 games)
+- **Real sim hands**: Keep (green) / Mull (red) boxes with T-by-T logs
+- **Provenance footer**: sim params, deck count, game count, date
+
+**Metagame strategy** (7 visual components — NO text walls):
+1. Archetype WR bars
+2. Tournament histogram (8-round, 10K sims)
+3. Prey / Competitive / Danger triptych cards
+4. Tournament arc segmented bar (R1-3 bank → R4-6 gauntlet → R7-8 top)
+5. Delta proof chart (flat→weighted drop)
+6. Danger matchup cards (red header + ✗/⚡/★ bullets)
+7. Game plan as vertical timeline
+
+### 3. Bo3 Replayer (HTML)
+
+**API**: `generate_html(opponent, seeds=[42,99,7], protagonist='deck')`
+**Reference**: See `skills/mtg-bo3-replayer/`
+
+Design:
+- Light theme, max-width 920px
+- 17 play categories (zero 'other')
+- Turn sections: Draw (pill) → Hand (N pills) → Plays → Combat → Board
+- Combat detail boxes: `⚔ Creature` + `N dmg → life X → Y`
+- Reasoning hidden by default, `·` toggle to reveal
+- Response badges: `⚡ Player` for counterspells
+- Legend box at top, result card with stats
+- 6 board zones, mulligan reasoning, strategic narrative, life chart SVG
+
+## Never
+
+- Never re-run the matrix if results/*.json files exist (unless explicitly asked)
+- Never use MTGSimManu imports — this is MTGSimClaude (Legacy)
+- Never produce text-wall metagame sections — use the 7 visual components
+- Never show reasoning by default in replayer — use toggle
+- Never skip the provenance footer
+- Never rebuild matrix HTML from scratch — use template + swap data constants
+- Never forget pills() function in matrix HTML

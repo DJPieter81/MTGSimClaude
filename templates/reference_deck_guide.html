@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Burn — Legacy Deck Guide</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111; font-size: 14px; padding: 24px; max-width: 960px; margin: 0 auto; }
+h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+.subtitle { font-size: 12px; color: #888; margin-bottom: 20px; }
+.hero { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 24px; overflow: hidden; }
+.hero-item { padding: 14px 16px; border-right: 1px solid #e0e0e0; }
+.hero-item:last-child { border-right: none; }
+.hero-label { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: #888; margin-bottom: 4px; }
+.hero-val { font-size: 28px; font-weight: 700; line-height: 1; }
+.hero-val.g { color: #1f7040; } .hero-val.r { color: #b02020; } .hero-val.a { color: #854f0b; }
+.hero-sub { font-size: 11px; color: #666; margin-top: 5px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+@media(max-width:640px) { .two-col { grid-template-columns: 1fr; } }
+.section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #666; margin-bottom: 12px; margin-top: 24px; border-bottom: 1px solid #e8e8e8; padding-bottom: 6px; }
+.card-row { display: flex; align-items: baseline; gap: 8px; padding: 3px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+.card-count { font-weight: 700; color: #111; min-width: 14px; text-align: right; flex-shrink: 0; }
+.card-name { flex: 1; color: #222; }
+.card-note { font-size: 10px; color: #999; flex-shrink: 0; }
+.badge { display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; font-weight: 600; vertical-align: middle; }
+.b-engine { background: #fff0e0; color: #c06010; } .b-payoff { background: #e8f0ff; color: #2060c0; }
+.b-removal { background: #ffe8e8; color: #c02020; } .b-reach { background: #f0e8ff; color: #7030a0; }
+.b-enabler { background: #e8ffe8; color: #207020; } .b-kill { background: #ffe0e0; color: #a01010; }
+.b-draw { background: #e0f0ff; color: #1060a0; } .b-tutor { background: #fff8e0; color: #806010; }
+.b-protect { background: #e8eef8; color: #2a5090; } .b-hate { background: #f8e8f8; color: #802080; }
+.b-flex { background: #f0f0f0; color: #666; } .b-threat { background: #e8f0e8; color: #306030; }
+.b-burn { background: #fff0e8; color: #c04010; }
+.sb-row { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+.sb-vs { font-size: 10px; color: #999; flex: 1; text-align: right; }
+.finding { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+.finding-label { flex: 1; font-size: 12px; color: #333; }
+.finding-val { font-size: 11px; font-weight: 700; }
+.finding-val.g { color: #1f7040; } .finding-val.r { color: #b02020; }
+.finding-note { font-size: 10px; color: #888; padding: 2px 0 6px; border-bottom: 1px solid #f0f0f0; }
+.phase { background: #f9f9f9; border-left: 3px solid #c04010; border-radius: 0 4px 4px 0; padding: 10px 14px; margin: 8px 0; }
+.phase-title { font-size: 11px; font-weight: 700; color: #c04010; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+.phase-body { font-size: 13px; color: #444; line-height: 1.6; }
+.mu-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 12px; }
+.mu-name { width: 120px; text-align: right; color: #555; font-size: 11px; }
+.mu-type { width: 52px; font-size: 9px; color: #aaa; text-align: center; }
+.mu-meta { width: 36px; font-size: 9px; color: #aaa; text-align: center; }
+.mu-bar { flex: 1; height: 10px; background: #f0f0f0; border-radius: 2px; overflow: hidden; max-width: 160px; }
+.mu-fill { height: 100%; border-radius: 2px; }
+.mu-val { width: 36px; font-weight: 700; font-size: 11px; text-align: right; }
+.tier-hdr { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #aaa; margin: 14px 0 4px; padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
+.kt-bar { display: flex; align-items: flex-end; gap: 3px; height: 100px; padding-bottom: 18px; position: relative; margin: 8px 0; }
+.kt-bar::after { content: ''; position: absolute; bottom: 18px; left: 0; right: 0; border-top: 1px solid #e8e8e8; }
+.kt-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.kt-pct { font-size: 9px; font-weight: 700; color: #c04010; margin-bottom: 2px; }
+.kt-fill { width: 100%; background: #c04010; border-radius: 2px 2px 0 0; }
+.kt-label { font-size: 9px; color: #aaa; margin-top: 3px; }
+.arch-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.arch-name { width: 100px; text-align: right; font-size: 11px; color: #555; }
+.arch-bar { flex: 1; height: 14px; background: #f5f5f5; border-radius: 2px; overflow: hidden; }
+.arch-fill { height: 100%; border-radius: 2px; }
+.arch-val { width: 40px; font-weight: 700; font-size: 11px; text-align: right; }
+.arch-base { border-bottom: 1px dashed #ccc; margin: 4px 0; padding: 2px 0; font-size: 10px; color: #aaa; text-align: center; }
+.hand-box { border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px 14px; margin: 8px 0; }
+.hand-box.keep { border-left: 4px solid #1f7040; }
+.hand-box.mull { border-left: 4px solid #b02020; }
+.hand-verdict { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+.hand-verdict.keep { color: #1f7040; } .hand-verdict.mull { color: #b02020; }
+.hand-cards { font-size: 12px; color: #c04010; margin-bottom: 6px; font-family: 'SF Mono', 'Fira Code', monospace; }
+.hand-why { font-size: 12px; color: #555; line-height: 1.6; }
+.prov { font-size: 9px; color: #bbb; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }
+</style>
+<style>
+.card-tip { position: relative; cursor: pointer; border-bottom: 1px dotted #ccc; }
+.card-tip:hover { color: #c04010; }
+#card-popup { position: fixed; z-index: 999; pointer-events: none; display: none;
+  border-radius: 8px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  width: 244px; height: 340px; background: #111; }
+#card-popup img { width: 100%; height: 100%; object-fit: contain; }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const popup = document.createElement('div');
+  popup.id = 'card-popup';
+  popup.innerHTML = '<img id="card-img" src="" alt="">';
+  document.body.appendChild(popup);
+  const img = document.getElementById('card-img');
+  const cache = {};
+
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('.card-tip');
+    if (!el) return;
+    const name = el.dataset.card;
+    if (!name) return;
+    const url = 'https://api.scryfall.com/cards/named?fuzzy=' + encodeURIComponent(name) + '&format=image&version=normal';
+    img.src = cache[name] || url;
+    if (!cache[name]) cache[name] = url;
+    popup.style.display = 'block';
+  });
+
+  document.addEventListener('mouseout', e => {
+    const el = e.target.closest('.card-tip');
+    if (el) popup.style.display = 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (popup.style.display === 'block') {
+      const x = Math.min(e.clientX + 16, window.innerWidth - 260);
+      const y = Math.min(e.clientY - 170, window.innerHeight - 350);
+      popup.style.left = x + 'px';
+      popup.style.top = Math.max(8, y) + 'px';
+    }
+  });
+});
+</script>
+</head><body>
+
+<h1>Burn</h1>
+<div class="subtitle">Aggro · Legacy · April 2026</div>
+
+<div class="hero">
+  <div class="hero-item">
+    <div class="hero-label">Format</div>
+    <div class="hero-val" style="font-size:18px;padding-top:4px">Legacy</div>
+    <div class="hero-sub">Aggro</div>
+  </div>
+  <div class="hero-item">
+    <div class="hero-label">Sim WR (flat)</div>
+    <div class="hero-val g">74.0%</div>
+    <div class="hero-sub">⚖ <span style="color:#1f7040">69.0%</span> T1/T2 weighted</div>
+  </div>
+  <div class="hero-item">
+    <div class="hero-label">Rank</div>
+    <div class="hero-val g" style="font-size:22px;padding-top:2px">#1</div>
+    <div class="hero-sub">Tier 1 · -5.0pp vs field</div>
+  </div>
+  <div class="hero-item">
+    <div class="hero-label">Best / Worst</div>
+    <div class="hero-val g" style="font-size:18px;padding-top:2px">100%</div>
+    <div class="hero-sub">vs uwx / worst 42% vs depths</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div>
+    <div class="section-title">Mainboard — 60 Cards</div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Goblin Guide">Goblin Guide</span><span class="badge b-threat">threat</span></span><span class="card-note">haste, T1 clock</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Monastery Swiftspear">Monastery Swiftspear</span><span class="badge b-threat">threat</span></span><span class="card-note">prowess</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Eidolon of the Great Revel">Eidolon of the Great Revel</span><span class="badge b-engine">engine</span></span><span class="card-note">symmetric 2dmg</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Lightning Bolt">Lightning Bolt</span><span class="badge b-burn">burn</span></span><span class="card-note">3 dmg · 1 mana</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Chain Lightning">Chain Lightning</span><span class="badge b-burn">burn</span></span><span class="card-note">3 dmg · sorcery</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Lava Spike">Lava Spike</span><span class="badge b-burn">burn</span></span><span class="card-note">3 dmg · face only</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Rift Bolt">Rift Bolt</span><span class="badge b-burn">burn</span></span><span class="card-note">suspend R</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Price of Progress">Price of Progress</span><span class="badge b-reach">reach</span></span><span class="card-note">2× nonbasics</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Fireblast">Fireblast</span><span class="badge b-kill">finisher</span></span><span class="card-note">free · sac 2 Mtns</span></div>
+    <div class="card-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Searing Blaze">Searing Blaze</span><span class="badge b-removal">removal</span></span><span class="card-note">creature + face</span></div>
+    <div class="card-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Skullcrack">Skullcrack</span><span class="badge b-reach">reach</span></span><span class="card-note">anti-lifegain</span></div>
+    <div class="card-row"><span class="card-count">10</span><span class="card-name">Mountain<span class="badge b-flex">land</span></span><span class="card-note">basic</span></div>
+    <div class="card-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Inspiring Vantage">Inspiring Vantage</span><span class="badge b-flex">land</span></span><span class="card-note">RW fastland</span></div>
+    <div class="card-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Barbarian Ring">Barbarian Ring</span><span class="badge b-reach">reach</span></span><span class="card-note">threshold 2dmg</span></div>
+    <div class="card-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Fiery Islet">Fiery Islet</span><span class="badge b-draw">draw</span></span><span class="card-note">draw if flooded</span></div>
+    <div class="card-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Wooded Foothills">Wooded Foothills</span><span class="badge b-flex">land</span></span><span class="card-note">fetch</span></div>
+  </div>
+  <div>
+    <div class="section-title">Sideboard — 15 Cards</div>
+    <div class="sb-row"><span class="card-count">4</span><span class="card-name"><span class="card-tip" data-card="Pyroblast">Pyroblast</span><span class="badge b-hate">hate</span></span><span class="sb-vs">blue decks</span></div>
+    <div class="sb-row"><span class="card-count">3</span><span class="card-name"><span class="card-tip" data-card="Smash to Smithereens">Smash to Smithereens</span><span class="badge b-removal">removal</span></span><span class="sb-vs">artifacts + 3dmg</span></div>
+    <div class="sb-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Ensnaring Bridge">Ensnaring Bridge</span><span class="badge b-hate">hate</span></span><span class="sb-vs">creature decks</span></div>
+    <div class="sb-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Roiling Vortex">Roiling Vortex</span><span class="badge b-engine">engine</span></span><span class="sb-vs">free spells</span></div>
+    <div class="sb-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Searing Blood">Searing Blood</span><span class="badge b-removal">removal</span></span><span class="sb-vs">small creatures</span></div>
+    <div class="sb-row"><span class="card-count">2</span><span class="card-name"><span class="card-tip" data-card="Exquisite Firecraft">Exquisite Firecraft</span><span class="badge b-reach">reach</span></span><span class="sb-vs">uncounterable</span></div>
+
+    <div class="section-title">Deck Construction Findings</div>
+    <div class="finding"><span class="finding-label">Meta-weighted vs flat WR</span><span class="finding-val r">-5.0pp</span></div>
+    <div class="finding-note">Smallest drop of any T1 deck — Burn beats strong decks nearly as well as weak ones.</div>
+    <div class="finding"><span class="finding-label">Best formula: 2L-1C-4S</span><span class="finding-val g">79.8%</span></div>
+    <div class="finding-note">2 lands, 1 creature, 4 burn spells. +6.4pp above baseline. Composition > individual cards.</div>
+    <div class="finding"><span class="finding-label">Key cards barely matter</span><span class="finding-val">±2pp</span></div>
+    <div class="finding-note">No single card swings WR more than 2pp. The FORMULA is what matters, not the specific spells.</div>
+    <div class="finding"><span class="finding-label">Best matchup: uwx</span><span class="finding-val g">100%</span></div>
+    <div class="finding"><span class="finding-label">Worst matchup: depths</span><span class="finding-val r">42%</span></div>
+  </div>
+</div>
+
+<div class="section-title">Game Plan</div>
+<div style="position:relative;padding-left:20px;border-left:2px solid #e0e0e0;margin-left:8px">
+<div style="position:absolute;left:-6px;top:0;width:10px;height:10px;border-radius:50%;background:#c04010"></div>
+<div class="phase" style="border-left:3px solid #c04010">
+  <div class="phase-title">T1–T2: Deploy + Burn</div>
+  <div class="phase-body">Mountain → Goblin Guide (2 damage immediately) or suspend Rift Bolt. T2: Monastery Swiftspear + burn spell = prowess trigger for 4+ damage. Eidolon on T2 punishes opponent for casting spells. Target: 6-8 damage by end of T2.</div>
+</div>
+<div style="position:absolute;left:-6px;top:33%;width:10px;height:10px;border-radius:50%;background:#c04010"></div>
+<div class="phase" style="border-left:3px solid #c04010">
+  <div class="phase-title">T3–T4: Reach Phase</div>
+  <div class="phase-body">Price of Progress hits for 4-8 damage against dual land manabases (most of Legacy). Chain Lightning and Lava Spike for face damage. Prowess triggers on Swiftspear. Target: opponent at 4-6 life.</div>
+</div>
+<div style="position:absolute;left:-6px;top:66%;width:10px;height:10px;border-radius:50%;background:#c04010"></div>
+<div class="phase" style="border-left:3px solid #c04010">
+  <div class="phase-title">T4–T5: Fireblast Finish</div>
+  <div class="phase-body">Fireblast (sacrifice 2 Mountains, 4 damage for free) is the closer. Can double-Fireblast for 8 damage if you have 4 Mountains. Average kill: T4.2 — faster than any fair deck in Legacy.</div>
+</div>
+</div>
+
+<div class="section-title">Kill Turn Distribution</div>
+<div class="kt-bar">
+  <div class="kt-col"><div class="kt-pct">3%</div><div class="kt-fill" style="height:3%"></div><div class="kt-label">T3</div></div>
+  <div class="kt-col"><div class="kt-pct">36%</div><div class="kt-fill" style="height:36%"></div><div class="kt-label">T4</div></div>
+  <div class="kt-col"><div class="kt-pct">30%</div><div class="kt-fill" style="height:30%"></div><div class="kt-label">T5</div></div>
+  <div class="kt-col"><div class="kt-pct">17%</div><div class="kt-fill" style="height:17%"></div><div class="kt-label">T6</div></div>
+  <div class="kt-col"><div class="kt-pct">8%</div><div class="kt-fill" style="height:8%"></div><div class="kt-label">T7</div></div>
+  <div class="kt-col"><div class="kt-pct">4%</div><div class="kt-fill" style="height:4%"></div><div class="kt-label">T8</div></div>
+  <div class="kt-col"><div class="kt-pct">2%</div><div class="kt-fill" style="height:2%"></div><div class="kt-label">T9+</div></div>
+</div>
+
+<div class="section-title">Hand Archetype Win Rates — 2,000 Games</div>
+<div class="arch-row"><span class="arch-name">2L + 1C + 4 burn</span><div class="arch-bar"><div class="arch-fill" style="width:79.8%;background:#1f7040"></div></div><span class="arch-val" style="color:#1f7040">79.8%</span></div>
+<div class="arch-row"><span class="arch-name">2L + 2C + 3 burn</span><div class="arch-bar"><div class="arch-fill" style="width:76.2%;background:#1f7040"></div></div><span class="arch-val" style="color:#1f7040">76.2%</span></div>
+<div class="arch-row"><span class="arch-name">3L + 1C + 3 burn</span><div class="arch-bar"><div class="arch-fill" style="width:74.5%;background:#1f7040"></div></div><span class="arch-val" style="color:#1f7040">74.5%</span></div>
+<div class="arch-base">── baseline (all keeps) 73.4% ──</div>
+<div class="arch-row"><span class="arch-name">1L + 1C + 5 burn</span><div class="arch-bar"><div class="arch-fill" style="width:70.1%;background:#854f0b"></div></div><span class="arch-val" style="color:#854f0b">70.1%</span></div>
+<div class="arch-row"><span class="arch-name">3L + 0C + 4 burn</span><div class="arch-bar"><div class="arch-fill" style="width:67.8%;background:#b02020"></div></div><span class="arch-val" style="color:#b02020">67.8%</span></div>
+<div class="arch-row"><span class="arch-name">4L + any (flood)</span><div class="arch-bar"><div class="arch-fill" style="width:58.3%;background:#b02020"></div></div><span class="arch-val" style="color:#b02020">58.3%</span></div>
+
+<div class="section-title">Real Hands From Sim</div>
+<div class="hand-box keep">
+  <div class="hand-verdict keep">✓ WON — T3 Kill vs Dimir Control</div>
+  <div class="hand-cards">Mountain, <span class="card-tip" data-card="Inspiring Vantage">Inspiring Vantage</span>, <span class="card-tip" data-card="Goblin Guide">Goblin Guide</span>, <span class="card-tip" data-card="Monastery Swiftspear">Monastery Swiftspear</span>, <span class="card-tip" data-card="Lightning Bolt">Lightning Bolt</span>, <span class="card-tip" data-card="Chain Lightning">Chain Lightning</span>, <span class="card-tip" data-card="Rift Bolt">Rift Bolt</span></div>
+  <div class="hand-why"><strong>T1:</strong> Mountain → Goblin Guide → attack 2 (opp at 18).<br><strong>T2:</strong> Vantage → Swiftspear → suspend Rift Bolt → Bolt face (prowess) → attack Guide 2 + Swiftspear 2 = 4 (opp at 11).<br><strong>T3:</strong> Rift Bolt resolves (3, prowess) → Chain Lightning (3, prowess) → attack Guide 2 + Swiftspear 4 = 6 (opp at -1). <strong>20 damage in 3 turns.</strong></div>
+</div>
+<div class="hand-box keep">
+  <div class="hand-verdict keep">✓ WON — Price of Progress for 8 vs Duals</div>
+  <div class="hand-cards">Mountain, Mountain, <span class="card-tip" data-card="Goblin Guide">Goblin Guide</span>, <span class="card-tip" data-card="Lava Spike">Lava Spike</span>, <span class="card-tip" data-card="Price of Progress">Price of Progress</span>, <span class="card-tip" data-card="Price of Progress">Price of Progress</span>, <span class="card-tip" data-card="Fireblast">Fireblast</span></div>
+  <div class="hand-why"><strong>T1:</strong> Guide → 2 (18). <strong>T2:</strong> Lava Spike (15). <strong>T3:</strong> Price of Progress — opponent had 4 nonbasic lands = <strong>8 damage</strong> (7). <strong>T4:</strong> Fireblast (sac 2 Mountains) = 4 (3), Guide attacks = dead. Price of Progress is the Legacy-specific card that makes Burn tier 1.</div>
+</div>
+<div class="hand-box mull">
+  <div class="hand-verdict mull">LOST — 4 Lands, Not Enough Burn</div>
+  <div class="hand-cards">Mountain, Mountain, <span class="card-tip" data-card="Inspiring Vantage">Inspiring Vantage</span>, <span class="card-tip" data-card="Wooded Foothills">Wooded Foothills</span>, <span class="card-tip" data-card="Goblin Guide">Goblin Guide</span>, <span class="card-tip" data-card="Eidolon of the Great Revel">Eidolon</span>, <span class="card-tip" data-card="Searing Blaze">Searing Blaze</span></div>
+  <div class="hand-why">4 lands + 2 creatures + 1 conditional burn (Searing Blaze needs landfall). Only 5 total damage from non-land cards. Drew more lands. Opponent stabilized at 8 life. <strong>This is why 4+ land hands win only 58.3%</strong> — each land past 2 is a dead draw.</div>
+</div>
+
+
+<div class="section-title">Metagame Strategy</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0">
+  <div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px">
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Win Rate by Opponent Archetype</div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">Prison</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:100%;height:100%;background:#1f7040;border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:#1f7040">100%</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">Ramp</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:92%;height:100%;background:#1f7040;border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:#1f7040">92%</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">Control</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:88%;height:100%;background:#1f7040;border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:#1f7040">88%</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">Tempo</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:82%;height:100%;background:#1f7040;border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:#1f7040">82%</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">Aggro</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:74%;height:100%;background:#854f0b;border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:#854f0b">74%</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">Midrange</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:70%;height:100%;background:#854f0b;border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:#854f0b">70%</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">Combo</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:65%;height:100%;background:#854f0b;border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:#854f0b">65%</span></div>
+    </div>
+    <div style="font-size:10px;color:#999;margin-top:8px">Burn preys on anything that spends mana on non-damage. Only fast combo threatens.</div>
+  </div>
+
+  <div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px">
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">8-Round Tournament Simulation</div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:4px">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:#b02020">1%</div><div style="width:100%;background:#fde8e8;border-radius:2px 2px 0 0;height:1%"></div><div style="font-size:8px;color:#aaa">2-6</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:#b02020">4%</div><div style="width:100%;background:#fde8e8;border-radius:2px 2px 0 0;height:4%"></div><div style="font-size:8px;color:#aaa">3-5</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:#854f0b">12%</div><div style="width:100%;background:#fff0e0;border-radius:2px 2px 0 0;height:12%"></div><div style="font-size:8px;color:#aaa">4-4</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:#854f0b">24%</div><div style="width:100%;background:#fff0e0;border-radius:2px 2px 0 0;height:24%"></div><div style="font-size:8px;color:#aaa">5-3</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:9px;font-weight:700;color:#1f7040">30%</div><div style="width:100%;background:#1f7040;border-radius:2px 2px 0 0;height:30%"></div><div style="font-size:8px;color:#aaa;font-weight:700">6-2</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:#1f7040">23%</div><div style="width:100%;background:#d0f0d0;border-radius:2px 2px 0 0;height:23%"></div><div style="font-size:8px;color:#aaa">7-1</div></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:#1f7040">7%</div><div style="width:100%;background:#d0f0d0;border-radius:2px 2px 0 0;height:7%"></div><div style="font-size:8px;color:#aaa">8-0</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;padding:6px 8px;background:#f0faf0;border-radius:3px">
+      <span style="font-size:11px;color:#555">Avg: <b style="color:#1f7040">5.7 wins</b></span>
+      <span style="font-size:11px;color:#555">Top 8 rate: <b style="color:#1f7040">59.5%</b></span>
+    </div>
+    <div style="font-size:10px;color:#999;margin-top:6px">10,000 simulated tournaments. Opponents weighted by meta strength.</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0">
+  <div style="border:1px solid #e0e0e0;border-left:3px solid #1f7040;border-radius:0 4px 4px 0;padding:10px 12px">
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#1f7040;font-weight:700;margin-bottom:6px">✓ Prey On (16 decks)</div>
+    <div style="font-size:22px;font-weight:700;color:#1f7040;margin-bottom:2px">80-100%</div>
+    <div style="font-size:11px;color:#666;line-height:1.5">Control, tempo, ramp all fold. They spend mana on card advantage while you spend it on damage. Force of Will costs them 1 life + 1 card — you have 28 more burn spells.</div>
+  </div>
+  <div style="border:1px solid #e0e0e0;border-left:3px solid #854f0b;border-radius:0 4px 4px 0;padding:10px 12px">
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#854f0b;font-weight:700;margin-bottom:6px">⚖ Competitive (16 decks)</div>
+    <div style="font-size:22px;font-weight:700;color:#854f0b;margin-bottom:2px">50-80%</div>
+    <div style="font-size:11px;color:#666;line-height:1.5">Aggro mirrors, slow combo. Eidolon is the key — it turns every opponent's 1-mana spell into a Lightning Bolt for you. Price of Progress hits anyone with dual lands.</div>
+  </div>
+  <div style="border:1px solid #e0e0e0;border-left:3px solid #b02020;border-radius:0 4px 4px 0;padding:10px 12px">
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#b02020;font-weight:700;margin-bottom:6px">⚠ Danger (3 decks)</div>
+    <div style="font-size:22px;font-weight:700;color:#b02020;margin-bottom:2px">42-46%</div>
+    <div style="font-size:11px;color:#666;line-height:1.5">Depths (42%), Oops (44%), Reanimator (46%). All kill before T4. No interaction available — race plan only. Pray they stumble.</div>
+  </div>
+</div>
+
+<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0">
+  <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Tournament Arc — 8 Rounds</div>
+  <div style="display:flex;gap:2px;height:24px;border-radius:3px;overflow:hidden;margin-bottom:8px">
+    <div style="flex:3;background:#d0f0d0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1f7040">R1-3: Bank Wins</div>
+    <div style="flex:3;background:#fff0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#854f0b">R4-6: T1 Gauntlet</div>
+    <div style="flex:2;background:#fde8e8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#b02020">R7-8: Top Tables</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:11px;color:#555">
+    <div><b style="color:#1f7040">Rounds 1-3:</b> Expect 2-3 free wins vs mid-tier (Dimir, D&T, Elves). 82-96% WR. Bank early record.</div>
+    <div><b style="color:#854f0b">Rounds 4-6:</b> Face T1 decks. UR Delver (62%), Infect (50%), Depths (42%). Tournament is won or lost here.</div>
+    <div><b style="color:#b02020">Rounds 7-8:</b> Top tables = T1 only. Want UR Tempo (76%) or Eldrazi (52%). Dodge Depths (42%).</div>
+  </div>
+</div>
+
+<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0;background:#fafafa">
+  <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:8px">Why Burn is #1 — The Delta Proof</div>
+  <div style="display:flex;gap:16px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:3px;flex:1">
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:70px;font-size:11px;color:#555;text-align:right">Burn</span><div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;max-width:120px"><div style="width:33%;height:100%;background:#1f7040;border-radius:2px"></div></div><span style="font-size:11px;font-weight:700;color:#1f7040">-5.0pp</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:70px;font-size:11px;color:#555;text-align:right">Depths</span><div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;max-width:120px"><div style="width:38%;height:100%;background:#854f0b;border-radius:2px"></div></div><span style="font-size:11px;color:#854f0b">-5.7pp</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:70px;font-size:11px;color:#555;text-align:right">Infect</span><div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;max-width:120px"><div style="width:45%;height:100%;background:#854f0b;border-radius:2px"></div></div><span style="font-size:11px;color:#854f0b">-6.7pp</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:70px;font-size:11px;color:#555;text-align:right">UR Delver</span><div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;max-width:120px"><div style="width:49%;height:100%;background:#b02020;border-radius:2px"></div></div><span style="font-size:11px;color:#b02020">-7.4pp</span></div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="width:70px;font-size:11px;color:#555;text-align:right">UR Tempo</span><div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;max-width:120px"><div style="width:51%;height:100%;background:#b02020;border-radius:2px"></div></div><span style="font-size:11px;color:#b02020">-7.7pp</span></div>
+    </div>
+    <div style="font-size:11px;color:#666;max-width:240px;line-height:1.5">
+      <b><span class="card-tip" data-card="Flat → T1/T2 weighted drop.">Flat → T1/T2 weighted drop.</span></b> Smaller = genuinely strong vs real field. Burn's -5.0pp is the smallest — it beats strong decks almost as well as weak ones. Other T1 decks drop 6-8pp because they farm weak opponents.
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-title">Danger Matchups — How to Steal Games</div>
+  <div class="phase-body">Burn is the <b><span class="card-tip" data-card="format's speed police">format's speed police</span></b>. It forces every deck to win by T4 or have lifegain. Decks that spend early turns setting up (control, tempo, ramp) get punished — 82-100% WR. The only decks that threaten Burn are <b><span class="card-tip" data-card="faster combo">faster combo</span></b> (Depths 42%, Oops 44%, Reanimator 46%) that can kill before Burn assembles 20 damage.</div>
+</div>
+
+<div class="phase">
+  <div class="phase-title">By Archetype</div>
+  <div class="phase-body">
+    <b><span class="card-tip" data-card="vs Control/Ramp (88-100%):">vs Control/Ramp (88-100%):</span></b> Free wins. They tap out for card advantage while you kill them.<br>
+    <b><span class="card-tip" data-card="vs Tempo (82%):">vs Tempo (82%):</span></b> Their Force of Will costs 1 life + 1 card. You have 28 burn spells — they can't counter all of them.<br>
+    <b><span class="card-tip" data-card="vs Aggro (74%):">vs Aggro (74%):</span></b> Eidolon punishes their cheap spells. Price of Progress punishes their manabase. You're faster.<br>
+    <b><span class="card-tip" data-card="vs Combo (65%):">vs Combo (65%):</span></b> The danger zone. Fast combo (Depths, Reanimator, Oops) can goldfish before you deal 20. Slow combo (Doomsday, Storm) still loses because their setup takes too long.
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-title">Tournament Arc (8 Rounds)</div>
+  <div class="phase-body">
+    <b><span class="card-tip" data-card="Expected record:">Expected record:</span></b> 5.7 wins / 8 rounds (59.5% Top 8 rate — highest of any deck).<br>
+    <b><span class="card-tip" data-card="Rounds 1-3:">Rounds 1-3:</span></b> Expect 2-3 free wins against mid-tier decks (Dimir variants, D&T, Elves). Bank early wins.<br>
+    <b><span class="card-tip" data-card="Rounds 4-6:">Rounds 4-6:</span></b> Face T1 decks (UR Delver 62%, Infect 50%, Depths 42%). This is where the tournament is won or lost. Against Depths/Reanimator you're unfavored — but you only need to dodge 1-2 of these per event.<br>
+    <b><span class="card-tip" data-card="Rounds 7-8:">Rounds 7-8:</span></b> Top tables are T1 decks. You want to hit UR Tempo (76%) or Eldrazi (52%), not Depths (42%).
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0">
+  <div style="border:1px solid #e8d0d0;border-radius:6px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#b02020,#801818);padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff">Depths</div>
+        <div style="font-size:9px;color:#ffb0b0;text-transform:uppercase;letter-spacing:.05em">combo</div>
+      </div>
+      <div style="font-size:28px;font-weight:700;color:#fff">42%</div>
+    </div>
+    <div style="padding:10px 12px;font-size:11px;color:#555;line-height:1.6">
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#b02020;flex-shrink:0">✗</span><span>Combo is lands — no stack interaction possible</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#b02020;flex-shrink:0">⚡</span><span>T2 Marit Lage (10%) = auto-loss</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#1f7040;flex-shrink:0">★</span><span><b><span class="card-tip" data-card="Price of Progress">Price of Progress</span></b> hits 8+ nonbasics = 16 dmg</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0"><span style="color:#1f7040;flex-shrink:0">★</span><span><b><span class="card-tip" data-card="Eidolon of the Great Revel">Eidolon T2</span></b> taxes their Crop Rotation</span></div>
+    </div>
+  </div>
+
+  <div style="border:1px solid #e8d0d0;border-radius:6px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#b02020,#801818);padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff">Oops All Spells</div>
+        <div style="font-size:9px;color:#ffb0b0;text-transform:uppercase;letter-spacing:.05em">combo</div>
+      </div>
+      <div style="font-size:28px;font-weight:700;color:#fff">44%</div>
+    </div>
+    <div style="padding:10px 12px;font-size:11px;color:#555;line-height:1.6">
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#b02020;flex-shrink:0">✗</span><span>Veil of Summer blanks all interaction</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#b02020;flex-shrink:0">⚡</span><span>T1-T2 combo = faster than your clock</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#1f7040;flex-shrink:0">★</span><span><b><span class="card-tip" data-card="Eidolon of the Great Revel">Eidolon</span></b> taxes every 1-CMC cantrip = 2 dmg</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0"><span style="color:#1f7040;flex-shrink:0">★</span><span><b>T3 kill</b> before they assemble protection</span></div>
+    </div>
+  </div>
+
+  <div style="border:1px solid #e8d0d0;border-radius:6px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#b02020,#801818);padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff">Reanimator</div>
+        <div style="font-size:9px;color:#ffb0b0;text-transform:uppercase;letter-spacing:.05em">combo</div>
+      </div>
+      <div style="font-size:28px;font-weight:700;color:#fff">46%</div>
+    </div>
+    <div style="padding:10px 12px;font-size:11px;color:#555;line-height:1.6">
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#b02020;flex-shrink:0">✗</span><span>T1 Griselbrand (~8%) = auto-loss</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#b02020;flex-shrink:0">⚡</span><span>Draws 7-14 cards to find protection</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5"><span style="color:#1f7040;flex-shrink:0">★</span><span><b>They pay 7+ life</b> to combo — you need only 12 dmg</span></div>
+      <div style="display:flex;gap:6px;padding:3px 0"><span style="color:#1f7040;flex-shrink:0">★</span><span><b><span class="card-tip" data-card="Skullcrack">Skullcrack</span></b> stops Griselbrand lifelink</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="phase-title">Why Burn is #1</div>
+  <div class="phase-body">
+    <b><span class="card-tip" data-card="Smallest flat→weighted drop (-5.0pp)">Smallest flat→weighted drop (-5.0pp)</span></b> of any T1 deck. UR Delver drops -7.4pp, Infect drops -6.7pp, UR Tempo drops -7.7pp. This means Burn doesn't farm weak decks — it beats the real meta field almost as hard. In a tournament where you face 60% T1-T2 opponents, Burn's advantage compounds: 59.5% Top 8 rate vs ~40% for other T1 decks.
+  </div>
+</div>
+
+<div class="section-title">Matchup Spread — By Meta Tier</div>
+<div class="tier-hdr">Tier 1 — Top Meta</div>
+<div class="mu-row">
+  <span class="mu-name">ur_tempo</span>
+  <span class="mu-type">tempo</span>
+  <span class="mu-meta">70.0%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:76.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">76.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">ur_delver</span>
+  <span class="mu-type">tempo</span>
+  <span class="mu-meta">69.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:62.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">62.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">infect</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">68.6%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:50.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">50.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">depths</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">66.2%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:42.0%;background:#b02020"></div></div>
+  <span class="mu-val" style="color:#b02020">42.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">reanimator</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">64.6%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:46.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">46.0%</span>
+</div>
+<div class="tier-hdr">Tier 2 — Competitive</div>
+<div class="mu-row">
+  <span class="mu-name">dimir_d</span>
+  <span class="mu-type">tempo</span>
+  <span class="mu-meta">61.7%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:82.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">82.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">eldrazi</span>
+  <span class="mu-type">aggro</span>
+  <span class="mu-meta">61.5%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:52.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">52.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">oops</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">60.5%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:44.0%;background:#b02020"></div></div>
+  <span class="mu-val" style="color:#b02020">44.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">cephalid</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">60.2%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:68.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">68.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">dimir_c</span>
+  <span class="mu-type">tempo</span>
+  <span class="mu-meta">60.0%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:94.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">94.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">sneak_a</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">59.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:60.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">60.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">sneak_b</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">58.1%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:56.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">56.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">affinity</span>
+  <span class="mu-type">aggro</span>
+  <span class="mu-meta">57.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:50.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">50.0%</span>
+</div>
+<div class="tier-hdr">Tier 3 — Fringe</div>
+<div class="mu-row">
+  <span class="mu-name">mono_black</span>
+  <span class="mu-type">midrange</span>
+  <span class="mu-meta">56.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:68.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">68.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">doomsday</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">56.1%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:82.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">82.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">cloudpost</span>
+  <span class="mu-type">ramp</span>
+  <span class="mu-meta">54.1%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:92.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">92.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">dimir_b</span>
+  <span class="mu-type">control</span>
+  <span class="mu-meta">54.0%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:88.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">88.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">boros</span>
+  <span class="mu-type">aggro</span>
+  <span class="mu-meta">53.1%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:84.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">84.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">bug</span>
+  <span class="mu-type">tempo</span>
+  <span class="mu-meta">51.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:90.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">90.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">dimir</span>
+  <span class="mu-type">tempo</span>
+  <span class="mu-meta">51.7%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:86.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">86.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">uwx</span>
+  <span class="mu-type">control</span>
+  <span class="mu-meta">50.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:100.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">100.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">elves</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">48.3%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:78.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">78.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">tes</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">47.6%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:62.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">62.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">show</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">42.7%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:74.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">74.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">painter</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">42.0%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:74.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">74.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">belcher</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">41.1%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:64.0%;background:#854f0b"></div></div>
+  <span class="mu-val" style="color:#854f0b">64.0%</span>
+</div>
+<div class="tier-hdr">Tier 4 — Rare</div>
+<div class="mu-row">
+  <span class="mu-name">ur_aggro</span>
+  <span class="mu-type">aggro</span>
+  <span class="mu-meta">40.3%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:82.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">82.0%</span>
+</div>
+<div class="tier-hdr">Tier 3 — Fringe</div>
+<div class="mu-row">
+  <span class="mu-name">dnt</span>
+  <span class="mu-type">aggro</span>
+  <span class="mu-meta">40.1%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:96.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">96.0%</span>
+</div>
+<div class="tier-hdr">Tier 4 — Rare</div>
+<div class="mu-row">
+  <span class="mu-name">goblins</span>
+  <span class="mu-type">aggro</span>
+  <span class="mu-meta">39.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:82.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">82.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">eight_cast</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">38.2%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:92.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">92.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">mardu</span>
+  <span class="mu-type">midrange</span>
+  <span class="mu-meta">38.1%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:72.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">72.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">storm</span>
+  <span class="mu-type">combo</span>
+  <span class="mu-meta">34.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:80.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">80.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">dimir_flash</span>
+  <span class="mu-type">control</span>
+  <span class="mu-meta">32.1%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:90.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">90.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">lands</span>
+  <span class="mu-type">control</span>
+  <span class="mu-meta">28.5%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:72.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">72.0%</span>
+</div>
+<div class="mu-row">
+  <span class="mu-name">prison</span>
+  <span class="mu-type">prison</span>
+  <span class="mu-meta">18.9%</span>
+  <div class="mu-bar"><div class="mu-fill" style="width:100.0%;background:#1f7040"></div></div>
+  <span class="mu-val" style="color:#1f7040">100.0%</span>
+</div>
+
+
+<div class="prov">MTGSimClaude · run_symmetric_game() × 50/pair · 36 decks · 1,260 matchups · 63,000 games · April 12 2026</div>
+</body></html>

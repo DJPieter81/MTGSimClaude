@@ -5,13 +5,12 @@ Usage: python3 game_replay.py [matchup] [seed]
   e.g. python3 game_replay.py sneak_a 2
 """
 
-from config import GameRules as GR
 import sys, random, html, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cards import DECKS
-from game import PlayerState, GameState, london_mulligan, opp_keep
-from engine import opp_turn
+from game import PlayerState, GameState, london_mulligan, bug_keep, opp_keep
+from engine import bug_turn, opp_turn
 
 ABBREV = {
     'Tamiyo, Inquisitive Student': 'Tamiyo', 'Orcish Bowmasters': 'Bowmasters',
@@ -61,6 +60,10 @@ def fmt_creatures(player):
         r.append({'name':n,'power':c.power,'toughness':c.toughness,'sick':c.summoning_sick})
     return r
 def fmt_lands(player): return [ab(l.card.name) for l in player.lands]
+def fmt_artifacts(player): return [ab(p.card.name) for p in player.artifacts]
+def fmt_enchantments(player): return [ab(p.card.name) for p in player.enchantments]
+def fmt_planeswalkers(player): return [ab(p.card.name) for p in player.planeswalkers]
+def fmt_graveyard(player): return [ab(c.name) for c in player.graveyard]
 
 def reason(line):
     lo = line.lower()
@@ -106,36 +109,175 @@ def reason(line):
 
 
 def classify_play(line):
-    """Classify a play line into a visual category."""
+    """Classify a play line into a visual category. Minimize 'other' — everything gets a badge."""
     lo = line.lower()
     if lo.startswith('draw:') or 'upkeep draw' in lo: return 'draw'
-    if lo.startswith('land:') or lo.startswith('play ') or lo.startswith('play+crack'): return 'land'
+    if 'play+crack' in lo and '→' in lo: return 'fetch'
+    if lo.startswith('land:') or lo.startswith('play '): return 'land'
     if 'attack:' in lo or 'attacks for' in lo or 'unblocked' in lo or 'blocks' in lo: return 'combat'
-    if 'counter' in lo or 'daze' in lo and 'counter' in lo or 'fow' in lo and 'counter' in lo: return 'interact'
-    if 'thoughtseize' in lo or 'strips' in lo: return 'discard'
-    if 'kills' in lo or 'push' in lo and '→' in lo or 'snuff' in lo or 'bolt' in lo: return 'removal'
-    if '★' in line or 'combo' in lo: return 'combo'
+    # Counter — before removal so "FoW counters X" isn't tagged removal
+    if 'counter' in lo or 'countered' in lo or 'fluster' in lo: return 'counter'
+    # Hand disruption (including TKS exile, abbreviated names)
+    if 'thoughtseize' in lo or 'unmask' in lo or 'strips' in lo: return 'discard'
+    if 'tks exiles' in lo or ('exile' in lo and ('fow' in lo or 'force' in lo)): return 'discard'
+    # Death/destruction
+    if 'dies' in lo or 'destroyed' in lo or 'kills' in lo: return 'death'
+    # Exile removal
+    if 'exile' in lo and ('ending' in lo or 'binding' in lo or 'swords' in lo or 'stp' in lo): return 'exile'
+    # SBA
+    if 'legend rule' in lo or 'sacrifice' in lo: return 'sba'
+    # Removal — bolt/push/heat/snuff targeting creatures (check → or ->)
+    if ('bolt' in lo or 'push' in lo or 'heat' in lo or 'snuff' in lo) and ('→' in lo or '->' in lo or '&gt;' in lo): return 'removal'
+    # Combo / lethal / wins
+    if '★' in line or 'combo' in lo or 'lethal' in lo or 'wins' in lo: return 'combo'
+    # Wasteland / mana denial (abbreviated 'Waste →' or full 'Wasteland destroys')
+    if ('waste' in lo and ('→' in lo or '->' in lo or '&gt;' in lo)) or ('wasteland' in lo and 'destroy' in lo): return 'interact'
+    # Cantrips and draw spells (including abbreviated KozCmd)
+    if 'brainstorm' in lo or 'ponder' in lo or 'stock' in lo or 'preordain' in lo: return 'cantrip'
+    if ('kozcmd' in lo or "kozilek's command" in lo) and 'draw' in lo: return 'cantrip'
+    # Fast mana (abbreviated SSG, Petal, etc.)
+    if 'petal' in lo or 'mox' in lo or 'ritual' in lo or 'ssg' in lo or 'spirit guide' in lo: return 'mana'
+    if '+1 mana' in lo or '+2 mana' in lo or 'mana=' in lo: return 'mana'
+    # Explicit casts
     if 'cast ' in lo or 'flash ' in lo: return 'spell'
-    if 'bowmasters t' in lo or 'orc army' in lo or 'ping' in lo: return 'trigger'
-    if 'brainstorm' in lo or 'ponder' in lo or 'stock' in lo: return 'cantrip'
-    if 'wasteland' in lo and 'destroys' in lo: return 'interact'
-    if 'petal' in lo or 'mox' in lo or 'ritual' in lo: return 'mana'
+    # Triggers / ETB
+    if 'bowmasters' in lo or 'orc army' in lo or 'enters' in lo or 'trigger' in lo or 'etb' in lo or 'energy' in lo: return 'trigger'
+    # Planeswalker
+    if 'flips' in lo or 'loyalty' in lo or 'planeswalker' in lo: return 'pw'
+    # Damage / life
+    if 'damage' in lo or 'drain' in lo or 'ping' in lo: return 'damage'
+    if 'life' in lo and ('gain' in lo or 'pay' in lo or 'lose' in lo): return 'life'
+    # Veil of Summer / protection
+    if 'veil' in lo or 'blanked' in lo: return 'counter'
+    # Chalice lock
+    if 'chalice' in lo and 'blank' in lo: return 'combo'
+    # Fallback: any non-empty line is a spell/creature deployment
+    if lo.strip() and not lo.startswith('(') and not lo.startswith('-'):
+        return 'spell'
     return 'other'
+
+
+def _explain_hand(hand, deck_key):
+    """Explain why a hand is keepable or not based on composition."""
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    threats = [c for c in nonlands if c.is_creature()]
+    cantrips = [c for c in nonlands if c.tag in ('bs', 'ponder', 'preordain', 'probe')]
+    counters = [c for c in nonlands if c.tag in ('fow', 'fon', 'daze', 'fluster', 'pact_neg', 'vos')]
+    removal = [c for c in nonlands if c.tag in ('push', 'bolt', 'heat', 'stp', 'ad', 'dismember', 'snuff')]
+    fast_mana = [c for c in nonlands if c.tag in ('petal', 'led', 'chrome_mox', 'darkrit', 'opal', 'ssg', 'mox_diamond')]
+    combo = [c for c in nonlands if c.tag in ('show', 'sneak', 'omni', 'entomb', 'reanimate', 'exhume',
+             'animate_dead', 'oops', 'spy', 'depths', 'stage', 'crop')]
+
+    parts = []
+    parts.append(f"{lc}L/{len(threats)}T/{len(cantrips)}can")
+    if counters: parts.append(f"{len(counters)} protection")
+    if fast_mana: parts.append(f"{len(fast_mana)} fast mana")
+    if combo: parts.append(f"{len(combo)} combo")
+    if removal: parts.append(f"{len(removal)} removal")
+
+    issues = []
+    if lc == 0: issues.append("no lands")
+    elif lc >= 5: issues.append("flood (5+ lands)")
+    if not threats and not combo and not cantrips: issues.append("no action")
+    if lc == 1 and not cantrips and not fast_mana: issues.append("1 land no cantrip")
+
+    strengths = []
+    if combo and (fast_mana or lc >= 1): strengths.append("combo ready")
+    if threats and counters: strengths.append("threat + protection")
+    if lc in (2, 3) and cantrips: strengths.append("good mana + cantrips")
+    if fast_mana and combo: strengths.append("explosive start")
+
+    summary = " · ".join(parts)
+    if issues: summary += " — ISSUES: " + ", ".join(issues)
+    if strengths: summary += " — " + ", ".join(strengths)
+    return summary
+
+
+def _narrate_turn(td, prev_td, game_context):
+    """Generate strategic commentary for a turn based on plays and board state."""
+    plays = td.get('plays', [])
+    if not plays: return ""
+
+    notes = []
+    cats = [p.get('cat', '') for p in plays]
+    texts = [p.get('text', '').lower() for p in plays]
+    all_text = ' '.join(texts)
+
+    # Combo resolution
+    if 'combo' in cats:
+        notes.append("COMBO TURN — going for the win")
+    # Counter war
+    if any('counter' in t for t in texts):
+        if any('veil' in t for t in texts):
+            notes.append("Veil of Summer blanks all blue interaction before comboing")
+        else:
+            notes.append("Stack interaction — counter war")
+    # Land + pass (developing)
+    if set(cats) <= {'land', 'draw', 'other'} and len(plays) <= 3:
+        hand_size = len(td.get('hand_before', []))
+        if hand_size > 5:
+            notes.append("Developing mana, holding cards — waiting for the right moment")
+    # Aggressive combat
+    if 'combat' in cats:
+        damage_plays = [p for p in plays if 'unblocked' in p.get('text', '').lower()]
+        if damage_plays:
+            notes.append("Pressing damage — clock is ticking")
+    # Cantrip-heavy turn
+    cantrip_count = sum(1 for c in cats if c == 'cantrip')
+    if cantrip_count >= 2:
+        notes.append("Digging hard — looking for a specific answer or combo piece")
+    # Wasteland
+    if any('wasteland' in t and 'destroys' in t for t in texts):
+        notes.append("Mana denial — cutting opponent off key colours")
+    # Discard
+    if any('thoughtseize' in t or 'unmask' in t for t in texts):
+        notes.append("Stripping opponent's best card before committing")
+    # No land drop when expected
+    if td.get('life', 20) > 0 and 'land' not in cats and len(td.get('hand_before', [])) > 0:
+        if prev_td and len(prev_td.get('lands', [])) < 3:
+            notes.append("Missed land drop — mana screw risk")
+
+    return " · ".join(notes) if notes else ""
 
 
 def run_one_game(matchup, seed=None, protagonist='bug'):
     """Run a single game and return structured data.
-    protagonist: deck key for the protagonist (all decks use protagonist_turn).
+    protagonist: deck key for the protagonist ('bug' uses bug_turn AI, others use protagonist_turn).
     """
     if seed is not None: random.seed(seed)
 
     from sim import protagonist_turn
-    from deck_registry import get_keep_fn
 
-    pro_keep = get_keep_fn(protagonist) or opp_keep
-    pro_deck = DECKS[protagonist]
-    pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck, pro_keep, protagonist)
-    opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
+    # Wrap mulligan to capture history
+    pro_keep = bug_keep if protagonist == 'bug' else opp_keep
+    pro_deck = DECKS.get(protagonist, DECKS['bug'])
+
+    pro_mull_history = []
+    def _tracking_keep_pro(hand, matchup_arg=''):
+        kept = pro_keep(hand, matchup_arg)
+        pro_mull_history.append({
+            'hand': [ab(c.name) for c in hand],
+            'size': len(hand),
+            'kept': kept,
+            'reason': _explain_hand(hand, protagonist),
+        })
+        return kept
+
+    opp_mull_history = []
+    def _tracking_keep_opp(hand, matchup_arg=''):
+        kept = opp_keep(hand, matchup_arg)
+        opp_mull_history.append({
+            'hand': [ab(c.name) for c in hand],
+            'size': len(hand),
+            'kept': kept,
+            'reason': _explain_hand(hand, matchup),
+        })
+        return kept
+
+    pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck, _tracking_keep_pro, protagonist if protagonist != 'bug' else None)
+    opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], _tracking_keep_opp, matchup)
     pro_goes_first = random.random() < 0.5
 
     gs = GameState(
@@ -143,8 +285,6 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
         p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
         p1_goes_first=pro_goes_first)
     gs.matchup = matchup
-    gs.p1_deck = protagonist
-    gs.p2_deck = matchup
 
     pro_label = protagonist.upper().replace('_', ' ')
     meta_name = matchup.replace('_', ' ').title()
@@ -153,10 +293,10 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
 
     turns_data = []
     display_turn = 0
-    life_pro = [GR.STARTING_LIFE]
-    life_opp = [GR.STARTING_LIFE]
+    life_pro = [20]
+    life_opp = [20]
 
-    for rnd in range(1, GR.MAX_TURNS + 1):
+    for rnd in range(1, 16):
         if gs.game_over: break
         gs.turn = rnd
 
@@ -170,7 +310,10 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
             life_before = player.life
 
             if is_pro:
-                raw = protagonist_turn(gs, rnd, protagonist)
+                if protagonist == 'bug':
+                    raw = bug_turn(gs, rnd)
+                else:
+                    raw = protagonist_turn(gs, rnd, protagonist)
             else:
                 raw = opp_turn(gs, rnd, matchup)
 
@@ -188,7 +331,7 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
             display_label = pro_label if is_pro else 'OPP'
             td = {
                 'num': display_turn, 'label': display_label,
-                'label_cls': 'pro' if is_pro else 'opp',
+                'label_cls': 'bug' if is_pro else 'opp',
                 'life': player.life, 'life_before': life_before,
                 'opp_life': opponent.life,
                 'hand_before': hand_before,
@@ -197,8 +340,18 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
                 'opp_creatures': fmt_creatures(opponent),
                 'lands': fmt_lands(player),
                 'opp_lands': fmt_lands(opponent),
+                'artifacts': fmt_artifacts(player),
+                'opp_artifacts': fmt_artifacts(opponent),
+                'enchantments': fmt_enchantments(player),
+                'opp_enchantments': fmt_enchantments(opponent),
+                'planeswalkers': fmt_planeswalkers(player),
+                'opp_planeswalkers': fmt_planeswalkers(opponent),
+                'graveyard': fmt_graveyard(player),
+                'opp_graveyard': fmt_graveyard(opponent),
                 'plays': plays,
             }
+            prev = turns_data[-1] if turns_data else None
+            td['narrative'] = _narrate_turn(td, prev, {})
             turns_data.append(td)
             life_pro.append(gs.p1.life)
             life_opp.append(gs.p2.life)
@@ -220,13 +373,14 @@ def run_one_game(matchup, seed=None, protagonist='bug'):
     return {
         'matchup': matchup, 'meta_name': meta_name, 'seed': seed,
         'protagonist': protagonist, 'pro_label': pro_label,
-        'pro_goes_first': pro_goes_first,
-        'pro_mulls': pro_mulls, 'opp_mulls': opp_mulls,
-        'pro_open': pro_open, 'opp_open': opp_open,
-        'turns_data': turns_data, 'life_pro': life_pro, 'life_opp': life_opp,
+        'bug_goes_first': pro_goes_first,
+        'bug_mulls': pro_mulls, 'opp_mulls': opp_mulls,
+        'bug_mull_history': pro_mull_history, 'opp_mull_history': opp_mull_history,
+        'bug_open': pro_open, 'opp_open': opp_open,
+        'turns_data': turns_data, 'life_bug': life_pro, 'life_opp': life_opp,
         'display_turn': display_turn, 'winner': winner, 'win_reason': gs.win_reason or '',
-        'pro_life': gs.p1.life, 'opp_life': gs.p2.life,
-        'pro_board': fmt_creatures(gs.p1), 'opp_board': fmt_creatures(gs.p2),
+        'bug_life': gs.p1.life, 'opp_life': gs.p2.life,
+        'bug_board': fmt_creatures(gs.p1), 'opp_board': fmt_creatures(gs.p2),
     }
 
 
@@ -235,25 +389,13 @@ def generate_html(matchup, seeds, protagonist='bug'):
     if isinstance(seeds, (int, type(None))):
         seeds = [seeds]
 
-    is_bo3 = len(seeds) > 1
-
-    # Play games one at a time, stop when someone reaches 2 wins (Bo3)
-    games = []
-    pro_wins = 0
-    opp_wins = 0
-    for s in seeds:
-        if is_bo3 and (pro_wins == 2 or opp_wins == 2):
-            break
-        g = run_one_game(matchup, s, protagonist=protagonist)
-        games.append(g)
-        pro_label = g.get('pro_label', 'BUG')
-        if g['winner'] == pro_label:
-            pro_wins += 1
-        else:
-            opp_wins += 1
-
+    games = [run_one_game(matchup, s, protagonist=protagonist) for s in seeds]
     meta_name = games[0]['meta_name']
     pro_label = games[0].get('pro_label', 'BUG')
+    is_bo3 = len(games) > 1
+
+    pro_wins = sum(1 for g in games if g['winner'] == pro_label)
+    opp_wins = sum(1 for g in games if g['winner'] == 'OPP')
     series_winner = pro_label if pro_wins > opp_wins else 'OPP'
 
     # Build HTML
@@ -268,22 +410,22 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .header{{background:linear-gradient(135deg,#161b22,#1c2333);border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:20px}}
 .header h1{{font-size:1.6em;margin-bottom:8px;color:#f0f6fc}}
 .header h1 .vs{{color:#666}}
-.header .pro-name{{color:#58a6ff}}
+.header .bug-name{{color:#58a6ff}}
 .header .opp-name{{color:#f85149}}
 .header .meta{{color:#8b949e;font-size:0.9em;margin-top:4px}}
 .series-score{{font-size:1.3em;margin-top:8px;font-weight:700}}
-.series-score .pro-s{{color:#58a6ff}}.series-score .opp-s{{color:#f85149}}
+.series-score .bug-s{{color:#58a6ff}}.series-score .opp-s{{color:#f85149}}
 .game-tabs{{display:flex;gap:4px;margin-bottom:16px}}
 .game-tab{{background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;font-weight:600;font-size:0.95em}}
 .game-tab:hover{{background:#30363d}}
 .game-tab.active{{background:#161b22;color:#f0f6fc;border-bottom-color:#161b22}}
 .game-tab .winner-dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px}}
-.game-tab .winner-dot.pro{{background:#58a6ff}}.game-tab .winner-dot.opp{{background:#f85149}}
+.game-tab .winner-dot.bug{{background:#58a6ff}}.game-tab .winner-dot.opp{{background:#f85149}}
 .game-panel{{display:none}}.game-panel.active{{display:block}}
 .hands{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}}
 .hand-box{{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}}
 .hand-box h3{{font-size:0.85em;color:#8b949e;margin-bottom:8px}}
-.hand-box.pro{{border-left:3px solid #58a6ff}}.hand-box.opp{{border-left:3px solid #f85149}}
+.hand-box.bug{{border-left:3px solid #58a6ff}}.hand-box.opp{{border-left:3px solid #f85149}}
 .pill{{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#e3b341}}
 .controls{{display:flex;gap:8px;margin-bottom:16px}}
 .controls button{{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}}
@@ -292,15 +434,15 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .life-chart h3{{font-size:0.85em;color:#8b949e;margin-bottom:12px}}
 .life-chart svg{{width:100%;height:80px}}
 .turn{{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}}
-.turn.pro{{border-left:3px solid #58a6ff}}.turn.opp{{border-left:3px solid #f85149}}
+.turn.bug{{border-left:3px solid #58a6ff}}.turn.opp{{border-left:3px solid #f85149}}
 .turn.active{{border-color:#e3b341}}
 .turn-header{{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}}
 .turn-header:hover{{background:#1c2333}}
 .turn-header .left{{display:flex;align-items:center;gap:12px}}
 .turn-header .tnum{{font-weight:700;font-size:1.1em;min-width:36px}}
-.turn-header .tnum.pro{{color:#58a6ff}}.turn-header .tnum.opp{{color:#f85149}}
+.turn-header .tnum.bug{{color:#58a6ff}}.turn-header .tnum.opp{{color:#f85149}}
 .turn-header .player{{font-weight:600;font-size:0.9em;padding:2px 8px;border-radius:4px}}
-.turn-header .player.pro{{background:#0d2847;color:#58a6ff}}.turn-header .player.opp{{background:#3d1418;color:#f85149}}
+.turn-header .player.bug{{background:#0d2847;color:#58a6ff}}.turn-header .player.opp{{background:#3d1418;color:#f85149}}
 .turn-header .life{{font-size:0.9em;color:#8b949e}}
 .turn-header .life b{{color:#f0f6fc}}
 .turn-header .arrow{{color:#484f58;transition:transform 0.2s;font-size:0.8em}}
@@ -319,10 +461,12 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .cat-draw{{background:#1a1a2e;color:#8b8bb8}}.cat-land{{background:#0d2611;color:#7ee787}}.cat-combat{{background:#3d1418;color:#f85149}}.cat-interact{{background:#2d1b4e;color:#d2a8ff}}
 .cat-discard{{background:#3d2e14;color:#e3b341}}.cat-removal{{background:#3d1418;color:#ff7b72}}.cat-combo{{background:#4a1942;color:#f778ba}}.cat-spell{{background:#0d2847;color:#58a6ff}}
 .cat-trigger{{background:#2a2000;color:#d29922}}.cat-cantrip{{background:#0a2540;color:#79c0ff}}.cat-mana{{background:#1a2e1a;color:#56d364}}.cat-other{{background:#1c1c1c;color:#6e7681}}
+.cat-fetch{{background:#2a1a3a;color:#a78bfa}}.cat-counter{{background:#2d1b4e;color:#d2a8ff}}.cat-death{{background:#3a1a1a;color:#f85149}}.cat-exile{{background:#2a1a3a;color:#a78bfa}}
+.cat-sba{{background:#2a2a2a;color:#8b949e}}.cat-pw{{background:#1a3a3a;color:#22d3ee}}.cat-damage{{background:#3a1a1a;color:#f85149}}.cat-life{{background:#1a3a1a;color:#4ade80}}
 .board-grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}}
 .board-side{{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px 10px}}
 .board-side h4{{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}}
-.board-side.pro h4{{color:#58a6ff}}.board-side.opp h4{{color:#f85149}}
+.board-side.bug h4{{color:#58a6ff}}.board-side.opp h4{{color:#f85149}}
 .combat-detail{{background:#1a0a0a;border:1px solid #3d1418;border-radius:6px;padding:8px 12px;margin:4px 0;font-family:'Fira Code','Consolas',monospace;font-size:0.82em}}
 .combat-detail .atk-line{{color:#e3b341;margin-bottom:2px}}.combat-detail .blk-line{{color:#d2a8ff;margin-bottom:2px}}
 .combat-detail .dmg-line{{color:#f85149;font-weight:600}}.combat-detail .death-line{{color:#f85149;opacity:0.8;font-style:italic}}
@@ -331,9 +475,23 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .creature-badge .pt{{color:#e3b341;font-weight:700;margin-left:4px}}
 .creature-badge .sick{{color:#f85149;font-size:0.7em}}
 .land-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}}
+.perm-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em}}
+.art-list{{color:#e3b341}}
+.ench-list{{color:#d2a8ff}}
+.pw-list{{color:#79c0ff}}
+.gy-list{{color:#6e7681;font-size:0.75em}}
+.mull-step{{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-size:0.8em}}
+.mull-label{{color:#8b949e;font-weight:600}}
+.keep-tag{{color:#3fb950;font-weight:700;font-size:0.85em}}
+.mull-tag{{color:#f85149;font-weight:700;font-size:0.85em}}
+.mull-pills{{opacity:0.5;margin:2px 0}}
+.mull-pills .pill{{font-size:0.7em;text-decoration:line-through}}
+.mull-reason{{font-size:0.75em;color:#f85149;margin:2px 0 8px;font-style:italic;padding-left:4px;border-left:2px solid #f8514930}}
+.hand-analysis{{font-size:0.75em;color:#3fb950;margin-top:6px;padding:4px 8px;background:#3fb95010;border-radius:4px;border-left:2px solid #3fb95040}}
+.turn-narrative{{font-size:0.8em;color:#d2a8ff;background:#d2a8ff08;border-left:2px solid #d2a8ff40;padding:4px 10px;margin:8px 0;border-radius:0 4px 4px 0;font-style:italic}}
 .result{{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}}
 .result h2{{font-size:1.8em;margin-bottom:8px}}
-.result h2.pro-win{{color:#58a6ff}}.result h2.opp-win{{color:#f85149}}
+.result h2.bug-win{{color:#58a6ff}}.result h2.opp-win{{color:#f85149}}
 .result .reason{{color:#8b949e;font-size:1em;margin-bottom:12px}}
 .result .stats{{color:#6e7681;font-size:0.9em}}
 .kbd{{font-size:0.75em;color:#6e7681;margin-left:auto}}
@@ -342,10 +500,10 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 
     # Header
     h.append(f'<div class="header">')
-    h.append(f'<h1><span class="pro-name">{html.escape(pro_label)}</span> <span class="vs">vs</span> <span class="opp-name">{html.escape(meta_name)}</span></h1>')
+    h.append(f'<h1><span class="bug-name">{html.escape(pro_label)}</span> <span class="vs">vs</span> <span class="opp-name">{html.escape(meta_name)}</span></h1>')
     if is_bo3:
-        h.append(f'<div class="series-score"><span class="pro-s">{html.escape(pro_label)} {pro_wins}</span> — <span class="opp-s">{opp_wins} OPP</span></div>')
-        sw_cls = 'pro-name' if series_winner != 'OPP' else 'opp-name'
+        h.append(f'<div class="series-score"><span class="bug-s">{html.escape(pro_label)} {pro_wins}</span> — <span class="opp-s">{opp_wins} OPP</span></div>')
+        sw_cls = 'bug-name' if series_winner != 'OPP' else 'opp-name'
         h.append(f'<div class="meta"><span class="{sw_cls}">{series_winner} wins the series</span></div>')
     h.append(f'</div>')
 
@@ -354,7 +512,7 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
         h.append(f'<div class="game-tabs">')
         for gi, g in enumerate(games):
             act = ' active' if gi == 0 else ''
-            dot_cls = 'pro' if g['winner'] != 'OPP' else 'opp'
+            dot_cls = 'bug' if g['winner'] != 'OPP' else 'opp'
             h.append(f'<div class="game-tab{act}" onclick="showGame({gi})">Game {gi+1}<span class="winner-dot {dot_cls}"></span></div>')
         h.append(f'</div>')
 
@@ -363,18 +521,48 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
         act = ' active' if gi == 0 else ''
         h.append(f'<div class="game-panel{act}" id="game-{gi}">')
 
-        # Opening hands
-        play_str = 'ON THE PLAY' if g['pro_goes_first'] else 'ON THE DRAW'
+        # Opening hands with mulligan history
+        play_str = 'ON THE PLAY' if g['bug_goes_first'] else 'ON THE DRAW'
         h.append(f'<div class="meta" style="margin-bottom:12px;color:#8b949e">{html.escape(pro_label)} is {play_str} &nbsp;|&nbsp; Seed: {g["seed"]}</div>')
         h.append(f'<div class="hands">')
-        h.append(f'<div class="hand-box pro"><h3>{html.escape(pro_label)} opening (mull {g["pro_mulls"]})</h3>')
-        for c in g['pro_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
-        h.append(f'</div><div class="hand-box opp"><h3>OPP opening (mull {g["opp_mulls"]})</h3>')
+        # Protagonist mulligan history
+        h.append(f'<div class="hand-box bug"><h3>{html.escape(pro_label)} (mull {g["bug_mulls"]})</h3>')
+        for mi, mh in enumerate(g.get('bug_mull_history', [])):
+            kept_cls = 'keep-tag' if mh['kept'] else 'mull-tag'
+            kept_txt = '✓ KEEP' if mh['kept'] else '✗ MULL'
+            if mi > 0 or not mh['kept']:
+                h.append(f'<div class="mull-step">')
+                h.append(f'<span class="mull-label">{mh["size"]} cards</span>')
+                h.append(f'<span class="{kept_cls}">{kept_txt}</span>')
+                h.append(f'</div>')
+            if not mh['kept']:
+                h.append(f'<div class="mull-pills">')
+                for c in mh['hand']: h.append(f'<span class="pill mull-pill">{html.escape(c)}</span>')
+                h.append(f'</div>')
+                h.append(f'<div class="mull-reason">{html.escape(mh["reason"])}</div>')
+        # Final kept hand
+        for c in g['bug_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
+        final_mh = g.get('bug_mull_history', [{}])[-1] if g.get('bug_mull_history') else {}
+        if final_mh.get('reason'):
+            h.append(f'<div class="hand-analysis">{html.escape(final_mh["reason"])}</div>')
+        h.append(f'</div>')
+        # Opponent mulligan history
+        h.append(f'<div class="hand-box opp"><h3>OPP (mull {g["opp_mulls"]})</h3>')
+        for mi, mh in enumerate(g.get('opp_mull_history', [])):
+            if not mh['kept']:
+                h.append(f'<div class="mull-step"><span class="mull-label">{mh["size"]} cards</span><span class="mull-tag">✗ MULL</span></div>')
+                h.append(f'<div class="mull-pills">')
+                for c in mh['hand']: h.append(f'<span class="pill mull-pill">{html.escape(c)}</span>')
+                h.append(f'</div>')
+                h.append(f'<div class="mull-reason">{html.escape(mh["reason"])}</div>')
         for c in g['opp_open']: h.append(f'<span class="pill">{html.escape(c)}</span>')
+        final_opp_mh = g.get('opp_mull_history', [{}])[-1] if g.get('opp_mull_history') else {}
+        if final_opp_mh.get('reason'):
+            h.append(f'<div class="hand-analysis">{html.escape(final_opp_mh["reason"])}</div>')
         h.append(f'</div></div>')
 
         # Life chart
-        lb, lo = g['life_pro'], g['life_opp']
+        lb, lo = g['life_bug'], g['life_opp']
         mt = len(lb)
         h.append(f'<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 {mt*40} 80">')
         for i in range(1, len(lb)):
@@ -441,9 +629,12 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             for j, p in enumerate(td['plays']):
                 cls_p = ' key' if p['key'] else (' counter' if p['counter'] else '')
                 cat = p.get('cat', 'other')
-                cat_label = {'draw':'DRAW','land':'LAND','combat':'COMBAT','interact':'COUNTER',
+                cat_label = {'draw':'DRAW','land':'LAND','fetch':'FETCH','combat':'COMBAT',
+                             'counter':'COUNTER','interact':'COUNTER',
                              'discard':'DISCARD','removal':'REMOVE','combo':'COMBO','spell':'CAST',
-                             'trigger':'TRIGGER','cantrip':'DIG','mana':'MANA','other':''}.get(cat,'')
+                             'trigger':'TRIGGER','cantrip':'DIG','mana':'MANA',
+                             'death':'DIES','exile':'EXILE','sba':'SBA','pw':'PW',
+                             'damage':'DMG','life':'LIFE','other':''}.get(cat,'')
                 is_combat = cat == 'combat'
                 h.append(f'<div class="play"><span class="step">{j+1}.</span>')
                 if cat_label:
@@ -476,14 +667,19 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
             if not td['plays']:
                 h.append(f'<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>')
 
+            # Strategic narrative
+            narrative = td.get('narrative', '')
+            if narrative:
+                h.append(f'<div class="turn-narrative">{html.escape(narrative)}</div>')
+
             # Enhanced board: show BOTH sides
             h.append(f'<div class="section-label">Board State</div>')
             h.append(f'<div class="board-grid">')
             # Player side
             side_label = td['label']
-            side_cls = td.get('label_cls', 'pro')
-            opp_cls = 'opp' if side_cls == 'pro' else 'pro'
-            opp_label = 'OPP' if side_cls == 'pro' else pro_label
+            side_cls = td.get('label_cls', 'bug')
+            opp_cls = 'opp' if side_cls == 'bug' else 'bug'
+            opp_label = 'OPP' if side_cls == 'bug' else pro_label
             h.append(f'<div class="board-side {side_cls}">')
             h.append(f'<h4>{side_label} — {len(td["lands"])} lands</h4>')
             h.append(f'<div class="board">')
@@ -494,6 +690,17 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
                 h.append(f'<span style="color:#484f58;font-size:0.8em">no creatures</span>')
             h.append(f'</div>')
             h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
+            if td.get('artifacts'):
+                h.append(f'<div class="perm-list art-list" style="margin-top:4px">⚙️ {", ".join(html.escape(a) for a in td["artifacts"])}</div>')
+            if td.get('enchantments'):
+                h.append(f'<div class="perm-list ench-list" style="margin-top:4px">✨ {", ".join(html.escape(e) for e in td["enchantments"])}</div>')
+            if td.get('planeswalkers'):
+                h.append(f'<div class="perm-list pw-list" style="margin-top:4px">🔮 {", ".join(html.escape(p) for p in td["planeswalkers"])}</div>')
+            if td.get('graveyard'):
+                gy = td["graveyard"]
+                gy_display = ", ".join(html.escape(c) for c in gy[:8])
+                if len(gy) > 8: gy_display += f" (+{len(gy)-8} more)"
+                h.append(f'<div class="perm-list gy-list" style="margin-top:4px">🪦 {gy_display}</div>')
             h.append(f'</div>')
             # Opponent side
             h.append(f'<div class="board-side {opp_cls}">')
@@ -506,17 +713,28 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
                 h.append(f'<span style="color:#484f58;font-size:0.8em">no creatures</span>')
             h.append(f'</div>')
             h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td.get("opp_lands", [])) if td.get("opp_lands") else "none"}</div>')
+            if td.get('opp_artifacts'):
+                h.append(f'<div class="perm-list art-list" style="margin-top:4px">⚙️ {", ".join(html.escape(a) for a in td["opp_artifacts"])}</div>')
+            if td.get('opp_enchantments'):
+                h.append(f'<div class="perm-list ench-list" style="margin-top:4px">✨ {", ".join(html.escape(e) for e in td["opp_enchantments"])}</div>')
+            if td.get('opp_planeswalkers'):
+                h.append(f'<div class="perm-list pw-list" style="margin-top:4px">🔮 {", ".join(html.escape(p) for p in td["opp_planeswalkers"])}</div>')
+            if td.get('opp_graveyard'):
+                gy = td["opp_graveyard"]
+                gy_display = ", ".join(html.escape(c) for c in gy[:8])
+                if len(gy) > 8: gy_display += f" (+{len(gy)-8} more)"
+                h.append(f'<div class="perm-list gy-list" style="margin-top:4px">🪦 {gy_display}</div>')
             h.append(f'</div>')
             h.append(f'</div>')  # board-grid
             h.append(f'</div></div>')
 
         # Game result
-        wcls = 'pro-win' if g['winner'] != 'OPP' else 'opp-win'
+        wcls = 'bug-win' if g['winner'] != 'OPP' else 'opp-win'
         h.append(f'<div class="result">')
         h.append(f'<h2 class="{wcls}">{g["winner"]} WINS</h2>')
         h.append(f'<div class="reason">{html.escape(g["win_reason"])}</div>')
-        h.append(f'<div class="stats">Final life: {pro_label} {g["pro_life"]} | OPP {g["opp_life"]} &nbsp;|&nbsp; Length: T{g["display_turn"]}</div>')
-        for side, board in [(pro_label, g['pro_board']), ('OPP', g['opp_board'])]:
+        h.append(f'<div class="stats">Final life: {pro_label} {g["bug_life"]} | OPP {g["opp_life"]} &nbsp;|&nbsp; Length: T{g["display_turn"]}</div>')
+        for side, board in [(pro_label, g['bug_board']), ('OPP', g['opp_board'])]:
             if board:
                 h.append(f'<div class="stats" style="margin-top:6px">{side}: ')
                 for c in board:
@@ -576,25 +794,3 @@ if __name__ == '__main__':
     with open(out_path, 'w') as f:
         f.write(html_content)
     print(f"Game replay written to: {out_path}")
-
-    # Auto-save trace log alongside HTML replay
-    from sim import run_game
-    if '--bo3' in sys.argv:
-        idx = sys.argv.index('--bo3')
-        trace_seeds = [int(s) for s in sys.argv[idx+1:idx+4]]
-    elif len(sys.argv) > 2 and sys.argv[2] not in ('--bo3', '--pro'):
-        trace_seeds = [int(sys.argv[2])]
-    else:
-        trace_seeds = [None]
-
-    for ts in trace_seeds:
-        if ts is not None:
-            random.seed(ts)
-        r = run_game(protagonist, matchup, trace=True)
-        seed_str = f"_s{ts}" if ts is not None else ""
-        trace_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'results', f'trace_{protagonist}_vs_{matchup}{seed_str}.txt')
-        with open(trace_path, 'w') as f:
-            for line in r.log_lines:
-                f.write(line + '\n')
-        print(f"Trace log saved: {trace_path}")
