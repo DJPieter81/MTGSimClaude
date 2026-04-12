@@ -137,6 +137,7 @@ class Card:
     reach: bool = False
     trample: bool = False
     indestructible: bool = False
+    infect: bool = False                 # CR 702.89: damage dealt as poison counters to players
     deathtouch: bool = False             # CR 702.2: any damage dealt is lethal damage
     lifelink: bool = False               # CR 702.15: damage dealt also causes life gain
     vigilance: bool = False              # CR 702.20: attacking doesn't cause creature to tap
@@ -157,6 +158,7 @@ class Card:
 
     # Strategic role properties — set in cards.py from oracle text, used in engine/interaction.
     # These replace tag-based frozenset membership checks with property-based decisions.
+    is_mdfc_land: bool = False    # modal double-faced card (spell front, land back) — Oops uses these
     lock_piece: bool = False       # locks the game state (Chalice, Bridge, Moon, Trinisphere, B2B)
     engine: bool = False           # ongoing value each turn if it sticks (Vial, Kaito, WST, Narset)
     is_removal: bool = False       # destroys/exiles permanents or deals damage (Push, STP, Terminus)
@@ -504,8 +506,9 @@ class MTGRules:
 
     @staticmethod
     def fatal_push_valid_target(permanent: Permanent, revolt: bool) -> bool:
-        """CMC ≤ 2; with revolt CMC ≤ 4. Power is irrelevant."""
+        """CMC ≤ 2; with revolt CMC ≤ 4. Can't destroy indestructible (CR 702.12)."""
         if permanent.card.card_type != CardType.CREATURE: return False
+        if getattr(permanent.card, 'indestructible', False): return False
         threshold = 4 if revolt else 2
         return permanent.cmc <= threshold
 
@@ -513,7 +516,8 @@ class MTGRules:
 
     @staticmethod
     def abrupt_decay_valid_target(permanent: Permanent) -> bool:
-        """Destroys target permanent with CMC 3 or less. Cannot be countered."""
+        """Destroys target permanent with CMC 3 or less. Can't destroy indestructible."""
+        if getattr(permanent.card, 'indestructible', False): return False
         return permanent.cmc <= 3
 
     # ── Chalice of the Void ───────────────────

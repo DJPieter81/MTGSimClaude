@@ -1,0 +1,900 @@
+══════════════════════════════════════════════════════════════════════
+  LANDS vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  LANDS (P1):
+  Draw 7:
+    1. Malevolent Rumble (sorcery, CMC 2)
+    2. Dark Depths (land)
+    3. Skateboard (artifact, CMC 1)
+    4. Thespian's Stage (land)
+    5. Wasteland (land)
+    6. Wasteland (land)
+    7. Yavimaya, Cradle of Growth (land)
+    [Lands: 5  Combo: 2]
+  → KEEP (opening 7)
+    Reason: combo pieces present — can threaten early kill
+
+  DIMIR (P2):
+  Draw 7:
+    1. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    2. Daze (instant, CMC 2, free counter)
+    3. Force of Will (instant, CMC 5, free counter)
+    4. Polluted Delta (fetch)
+    5. Fatal Push (instant, CMC 1, removal)
+    6. Brainstorm (instant, CMC 1, cantrip)
+    7. Mishra's Bauble (artifact, CMC 0)
+    [Lands: 1  Creatures: 1  Counters: 2  Cantrips: 1  Removal: 1  Other: 1]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Orcish Bowmasters (creature 1/1, CMC 2)
+    2. Force of Will (instant, CMC 5, free counter)
+    3. Bloodstained Mire (fetch)
+    4. Brainstorm (instant, CMC 1, cantrip)
+    5. Nethergoyf (creature 0/1, CMC 2)
+    6. Scalding Tarn (fetch)
+    7. Scalding Tarn (fetch)
+    [Lands: 3  Creatures: 2  Counters: 1  Cantrips: 1]
+  Keep best 6: Force of Will, Orcish Bowmasters, Nethergoyf, Bloodstained Mire, Brainstorm, Scalding Tarn
+  Bottom 1: 
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Bloodstained Mire (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (5): Force of Will, Orcish Bowmasters, Nethergoyf, Brainstorm, Scalding Tarn
+    Mana available: 1
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 7  Lib: 49  GY: 3        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Dark Depths              │         Orcish Bowmasters        │
+  │         Skateboard               │         Nethergoyf               │
+  │         Thespian's Stage         │         Scalding Tarn            │
+  │         Wasteland, Wasteland     │         Polluted Delta           │
+  │         Yavimaya                 │         Fatal Push               │
+  │         Cradle of Growth         │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 20 | dimir 19
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Life from the Loam
+  Land: Dark Depths (1 lands)
+  ── Main ── Mana: 0
+    Hand (7): Malevolent Rumble, Skateboard, Thespian's Stage, Wasteland, Wasteland, Yavimaya, Cradle of Growth, Life from the Loam
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 7  Lib: 52  GY: 0        │   Hand: 7  Lib: 49  GY: 3        │
+  │   Lands: Dark Depths             │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Thespian's Stage         │         Nethergoyf               │
+  │         Wasteland, Wasteland     │         Scalding Tarn            │
+  │         Yavimaya                 │         Polluted Delta           │
+  │         Cradle of Growth         │         Fatal Push               │
+  │         Life from the Loam       │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 20 | dimir 19
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Play+crack Scalding Tarn (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (7): Force of Will, Orcish Bowmasters, Nethergoyf, Polluted Delta, Fatal Push, Murktide Regent, Fatal Push
+    Mana available: 2
+      → Nethergoyf goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 7  Lib: 52  GY: 0        │   Hand: 6  Lib: 47  GY: 5        │
+  │   Lands: Dark Depths             │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (0/1)    │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Thespian's Stage         │         Polluted Delta           │
+  │         Wasteland, Wasteland     │         Fatal Push               │
+  │         Yavimaya                 │         Murktide Regent          │
+  │         Cradle of Growth         │         Fatal Push               │
+  │         Life from the Loam       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 20 | dimir 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Life from the Loam
+  Land: Thespian's Stage (2 lands)
+  ── Main ── Mana: 1
+    Hand (7): Malevolent Rumble, Skateboard, Wasteland, Wasteland, Yavimaya, Cradle of Growth, Life from the Loam, Life from the Loam
+  Dark Depths combo → triggered ability (StackType: TRIGGERED)
+  ★ RULES: Triggered ability — FoW/Daze/Counterspell CANNOT counter CR 113.9
+  No Borrower — Marit Lage 20/20 flying indestructible in play
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 7  Lib: 51  GY: 0        │   Hand: 6  Lib: 47  GY: 5        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Nethergoyf (2/3)    │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland, Yavimaya      │         Polluted Delta           │
+  │         Cradle of Growth         │         Fatal Push               │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 20 | dimir 18
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Play+crack Polluted Delta (−1 life, 17) → Undercity Sewers
+  ── Main ──
+    Hand (6): Force of Will, Orcish Bowmasters, Fatal Push, Murktide Regent, Fatal Push, Wasteland
+    Mana available: 3
+  Fatal Push [revolt CMC≤4] → kills Marit Lage
+  Attack: Nethergoyf — 2 unblocked → b at 18
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 18                       │   Life: 17                       │
+  │   Hand: 7  Lib: 51  GY: 1        │   Hand: 5  Lib: 45  GY: 8        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3)    │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland, Yavimaya      │         Murktide Regent          │
+  │         Cradle of Growth         │         Fatal Push, Wasteland    │
+  │         Life from the Loam       │                                  │
+  │         Life from the Loam       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 18 | dimir 17
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Boseiju, Who Endures
+  Land: Yavimaya, Cradle of Growth (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Malevolent Rumble, Skateboard, Wasteland, Wasteland, Life from the Loam, Life from the Loam, Boseiju, Who Endures
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 18                       │   Life: 17                       │
+  │   Hand: 7  Lib: 50  GY: 1        │   Hand: 5  Lib: 45  GY: 8        │
+  │   Lands: Yavimaya, Cradle of Growth │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3)    │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland                │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Wasteland    │
+  │         Life from the Loam       │                                  │
+  │         Boseiju, Who Endures     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 18 | dimir 17
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (5): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push
+    Mana available: 4
+  Wasteland [ACTIVATED-uncounterable] → Yavimaya, Cradle of Growth
+  Attack: Nethergoyf — 2 unblocked → b at 16
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 16                       │   Life: 17                       │
+  │   Hand: 7  Lib: 50  GY: 2        │   Hand: 5  Lib: 44  GY: 9        │
+  │   Lands: (none)                  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3)    │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland                │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Life from the Loam       │                                  │
+  │         Boseiju, Who Endures     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 16 | dimir 17
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Forest
+  Land: Forest (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Malevolent Rumble, Skateboard, Wasteland, Wasteland, Life from the Loam, Life from the Loam, Boseiju, Who Endures
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 16                       │   Life: 17                       │
+  │   Hand: 7  Lib: 49  GY: 2        │   Hand: 5  Lib: 44  GY: 9        │
+  │   Lands: Forest                  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3)    │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland                │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Life from the Loam       │                                  │
+  │         Boseiju, Who Endures     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 16 | dimir 17
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Brazen Borrower
+  ── Main ──
+    Hand (6): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Brazen Borrower
+    Mana available: 3
+      → Brazen Borrower goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Brazen Borrower RESOLVES
+  Brazen Borrower (3/1)
+  Attack: Nethergoyf — 2 unblocked → b at 14
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 14                       │   Life: 17                       │
+  │   Hand: 7  Lib: 49  GY: 2        │   Hand: 5  Lib: 43  GY: 9        │
+  │   Lands: Forest                  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland                │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Life from the Loam       │                                  │
+  │         Boseiju, Who Endures     │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 14 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Maze of Ith
+  Land: Boseiju, Who Endures (2 lands)
+  ── Main ── Mana: 2
+    Hand (7): Malevolent Rumble, Skateboard, Wasteland, Wasteland, Life from the Loam, Life from the Loam, Maze of Ith
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 14                       │   Life: 17                       │
+  │   Hand: 7  Lib: 48  GY: 2        │   Hand: 5  Lib: 43  GY: 9        │
+  │   Lands: Forest, Boseiju, Who Endures │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland                │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Life from the Loam       │                                  │
+  │         Maze of Ith              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 14 | dimir 17
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Kaito, Bane of Nightmares
+  ── Main ──
+    Hand (6): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares
+    Mana available: 3
+  Attack: Nethergoyf, Brazen Borrower — 5 unblocked → b at 9
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 9                        │   Life: 17                       │
+  │   Hand: 7  Lib: 48  GY: 2        │   Hand: 6  Lib: 42  GY: 9        │
+  │   Lands: Forest, Boseiju, Who Endures │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland                │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Life from the Loam       │         Kaito                    │
+  │         Maze of Ith              │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 9 | dimir 17
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Once Upon a Time
+  Land: Maze of Ith (3 lands)
+  ── Main ── Mana: 2
+    Hand (7): Malevolent Rumble, Skateboard, Wasteland, Wasteland, Life from the Loam, Life from the Loam, Once Upon a Time
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 9                        │   Life: 17                       │
+  │   Hand: 7  Lib: 47  GY: 2        │   Hand: 6  Lib: 42  GY: 9        │
+  │   Lands: Forest, Boseiju, Who Endu... │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland                │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Life from the Loam       │         Kaito                    │
+  │         Once Upon a Time         │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 9 | dimir 17
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Land: Wasteland (4 lands)
+  ── Main ──
+    Hand (6): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares
+    Mana available: 4
+  Wasteland [ACTIVATED-uncounterable] → Boseiju, Who Endures
+    Maze of Ith removes Brazen Borrower from combat
+  Attack: Nethergoyf — 2 unblocked → b at 7
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 7                        │   Life: 17                       │
+  │   Hand: 7  Lib: 47  GY: 3        │   Hand: 6  Lib: 41  GY: 10       │
+  │   Lands: Forest, Maze of Ith     │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Wasteland                │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Life from the Loam       │         Kaito                    │
+  │         Once Upon a Time         │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 7 | dimir 17
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Grafdigger's Cage
+  Land: Wasteland (3 lands)
+  ── Main ── Mana: 2
+    Hand (7): Malevolent Rumble, Skateboard, Wasteland, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 7                        │   Life: 17                       │
+  │   Hand: 7  Lib: 46  GY: 3        │   Hand: 6  Lib: 41  GY: 11       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Underground Sea, Undercit... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 7 | dimir 17
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ──
+    Hand (7): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares, Force of Will
+    Mana available: 2
+    Maze of Ith removes Brazen Borrower from combat
+  Attack: Nethergoyf — 2 unblocked → b at 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 5                        │   Life: 17                       │
+  │   Hand: 7  Lib: 46  GY: 3        │   Hand: 7  Lib: 40  GY: 11       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Underground Sea, Undercit... │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard, Wasteland    │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 5 | dimir 17
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Pithing Needle
+  Land: Wasteland (4 lands)
+  ── Main ── Mana: 3
+    Hand (7): Malevolent Rumble, Skateboard, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage, Pithing Needle
+  Wasteland [ACTIVATED-uncounterable] → Underground Sea
+  Wasteland [ACTIVATED-uncounterable] → Undercity Sewers
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 5                        │   Life: 17                       │
+  │   Hand: 7  Lib: 45  GY: 4        │   Hand: 7  Lib: 40  GY: 13       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 5 | dimir 17
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Swamp
+  Land: Swamp (1 lands)
+  ── Main ──
+    Hand (7): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares, Force of Will
+    Mana available: 1
+    Maze of Ith removes Brazen Borrower from combat
+  Attack: Nethergoyf — 2 unblocked → b at 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 7  Lib: 45  GY: 4        │   Hand: 7  Lib: 39  GY: 13       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Nethergoyf (2/3), Brazen ... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 18 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: The Tabernacle at Pendrell Vale
+  Land: The Tabernacle at Pendrell Vale (4 lands)
+  ── Main ── Mana: 2
+    Hand (7): Malevolent Rumble, Skateboard, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage, Pithing Needle
+  Tabernacle — BUG sacrifices ['Nethergoyf']
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 7  Lib: 44  GY: 4        │   Hand: 7  Lib: 39  GY: 14       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Brazen Borrower (3/1) │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 19 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ──
+    Hand (8): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares, Force of Will, Thoughtseize
+    Mana available: 1
+    Maze of Ith removes Brazen Borrower from combat
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 7  Lib: 44  GY: 4        │   Hand: 8  Lib: 38  GY: 14       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Brazen Borrower (3/1) │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 20 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Exploration
+  ── Main ── Mana: 2
+    Hand (8): Malevolent Rumble, Skateboard, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage, Pithing Needle, Exploration
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 8  Lib: 43  GY: 4        │   Hand: 8  Lib: 38  GY: 14       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Brazen Borrower (3/1) │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration              │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 21 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ──
+    Hand (9): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares, Force of Will, Thoughtseize, Thoughtseize
+    Mana available: 1
+    Maze of Ith removes Brazen Borrower from combat
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 8  Lib: 43  GY: 4        │   Hand: 9  Lib: 37  GY: 14       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Brazen Borrower (3/1) │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration              │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 22 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Exploration
+  ── Main ── Mana: 2
+    Hand (9): Malevolent Rumble, Skateboard, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage, Pithing Needle, Exploration, Exploration
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 9  Lib: 42  GY: 4        │   Hand: 9  Lib: 37  GY: 14       │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Brazen Borrower (3/1) │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration, Exploration │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 23 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ──
+    Hand (10): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares, Force of Will, Thoughtseize, Thoughtseize, Thoughtseize
+    Mana available: 1
+    Maze of Ith removes Brazen Borrower from combat
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 9  Lib: 42  GY: 4        │   Hand: 10  Lib: 36  GY: 14      │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Brazen Borrower (3/1) │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration, Exploration │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 24 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Urza's Saga
+  Land: Urza's Saga (5 lands)
+  ── Main ── Mana: 3
+    Hand (9): Malevolent Rumble, Skateboard, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage, Pithing Needle, Exploration, Exploration
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 9  Lib: 41  GY: 4        │   Hand: 10  Lib: 36  GY: 14      │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Brazen Borrower (3/1) │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration, Exploration │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 25 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  ── Main ──
+    Hand (11): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares, Force of Will, Thoughtseize, Thoughtseize, Thoughtseize, Tamiyo, Inquisitive Student
+    Mana available: 1
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+    Maze of Ith removes Brazen Borrower from combat
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 9  Lib: 41  GY: 4        │   Hand: 10  Lib: 35  GY: 14      │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Brazen Borrower (3/1), Ta... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration, Exploration │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 26 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (5 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Urza's Saga
+  Land: Urza's Saga (6 lands)
+  ── Main ── Mana: 4
+    Hand (9): Malevolent Rumble, Skateboard, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage, Pithing Needle, Exploration, Exploration
+  Tabernacle — BUG sacrifices ['Brazen Borrower']
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 9  Lib: 40  GY: 4        │   Hand: 10  Lib: 35  GY: 15      │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration, Exploration │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 27 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  ── Main ──
+    Hand (11): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares, Force of Will, Thoughtseize, Thoughtseize, Thoughtseize, Tamiyo, Inquisitive Student
+    Mana available: 1
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to LANDS
+      → LANDS has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 9  Lib: 40  GY: 4        │   Hand: 10  Lib: 34  GY: 16      │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration, Exploration │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 28 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (6 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Malevolent Rumble
+  ── Main ── Mana: 4
+    Hand (10): Malevolent Rumble, Skateboard, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage, Pithing Needle, Exploration, Exploration, Malevolent Rumble
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 10  Lib: 39  GY: 4       │   Hand: 10  Lib: 34  GY: 16      │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration              │         Thoughtseize             │
+  │         Exploration              │         Thoughtseize             │
+  │         Malevolent Rumble        │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 29 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  ── Main ──
+    Hand (11): Force of Will, Orcish Bowmasters, Murktide Regent, Fatal Push, Fatal Push, Kaito, Bane of Nightmares, Force of Will, Thoughtseize, Thoughtseize, Thoughtseize, Thoughtseize
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 10  Lib: 39  GY: 4       │   Hand: 11  Lib: 33  GY: 16      │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration              │         Thoughtseize             │
+  │         Exploration              │         Thoughtseize             │
+  │         Malevolent Rumble        │         Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 30 — LANDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: lands 3 | dimir 17
+
+  ── Untap ── (6 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Malevolent Rumble
+  ── Main ── Mana: 4
+    Hand (11): Malevolent Rumble, Skateboard, Life from the Loam, Life from the Loam, Once Upon a Time, Grafdigger's Cage, Pithing Needle, Exploration, Exploration, Malevolent Rumble, Malevolent Rumble
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ LANDS                            │ DIMIR                            │
+  │   Life: 3                        │   Life: 17                       │
+  │   Hand: 11  Lib: 38  GY: 4       │   Hand: 11  Lib: 33  GY: 16      │
+  │   Lands: Forest, Maze of Ith, Wast... │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Malevolent Rumble        │   Hand: Force of Will            │
+  │         Skateboard               │         Orcish Bowmasters        │
+  │         Life from the Loam       │         Murktide Regent          │
+  │         Life from the Loam       │         Fatal Push, Fatal Push   │
+  │         Once Upon a Time         │         Kaito                    │
+  │         Grafdigger's Cage        │         Bane of Nightmares       │
+  │         Pithing Needle           │         Force of Will            │
+  │         Exploration              │         Thoughtseize             │
+  │         Exploration              │         Thoughtseize             │
+  │         Malevolent Rumble        │         Thoughtseize             │
+  │         Malevolent Rumble        │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DIMIR — Board/life advantage after T15
+  Final life: lands 3 | dimir 17
+══════════════════════════════════════════════════════════════════════

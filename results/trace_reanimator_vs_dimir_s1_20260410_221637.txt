@@ -1,0 +1,156 @@
+══════════════════════════════════════════════════════════════════════
+  REANIMATOR vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  REANIMATOR (P1):
+  Draw 7:
+    1. Force of Will (instant, CMC 5, free counter)
+    2. Swamp (basic)
+    3. Atraxa, Grand Unifier (creature 7/7, CMC 7, win-con)
+    4. Exhume (sorcery, CMC 2, combo)
+    5. Entomb (instant, CMC 1, combo)
+    6. Reanimate (sorcery, CMC 1, combo)
+    7. Griselbrand (creature 7/7, CMC 8, win-con)
+    [Lands: 1  Creatures: 2  Counters: 1  Combo: 5]
+  → KEEP (opening 7)
+    Reason: 2 threat(s) for a clock; 1 counter(s) for protection/disruption; combo pieces present — can threaten early kill
+
+  DIMIR (P2):
+  Draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Underground Sea (dual)
+    3. Ponder (sorcery, CMC 1, cantrip)
+    4. Ponder (sorcery, CMC 1, cantrip)
+    5. Orcish Bowmasters (creature 1/1, CMC 2)
+    6. Polluted Delta (fetch)
+    7. Orcish Bowmasters (creature 1/1, CMC 2)
+    [Lands: 2  Creatures: 2  Cantrips: 3]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (6): Brainstorm, Ponder, Ponder, Orcish Bowmasters, Polluted Delta, Orcish Bowmasters
+    Mana available: 1
+  Brainstorm (3 draws)
+  Mishra's Bauble (sac, artifact in GY, +1 draw next upkeep)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 7  Lib: 50  GY: 2        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Force of Will, Swamp     │   Hand: Ponder, Ponder           │
+  │         Atraxa, Grand Unifier    │         Orcish Bowmasters        │
+  │         Exhume, Entomb           │         Polluted Delta           │
+  │         Reanimate, Griselbrand   │         Orcish Bowmasters        │
+  │                                  │         Scalding Tarn            │
+  │                                  │         Nethergoyf               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Polluted Delta
+  Land: Swamp (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Force of Will, Atraxa, Grand Unifier, Exhume, Entomb, Reanimate, Griselbrand, Polluted Delta
+      → Entomb goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Entomb RESOLVES
+  Entomb → Griselbrand in GY
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 51  GY: 2        │   Hand: 7  Lib: 50  GY: 2        │
+  │   Lands: Swamp                   │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Force of Will, Atraxa    │   Hand: Ponder, Ponder           │
+  │         Grand Unifier, Exhume    │         Orcish Bowmasters        │
+  │         Reanimate, Griselbrand   │         Polluted Delta           │
+  │         Polluted Delta           │         Orcish Bowmasters        │
+  │                                  │         Scalding Tarn            │
+  │                                  │         Nethergoyf               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Brazen Borrower
+  Play+crack Polluted Delta (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (7): Ponder, Ponder, Orcish Bowmasters, Orcish Bowmasters, Scalding Tarn, Nethergoyf, Brazen Borrower
+    Mana available: 2
+  Ponder (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 51  GY: 2        │   Hand: 7  Lib: 47  GY: 5        │
+  │   Lands: Swamp                   │   Lands: Underground Sea, Undergro... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Force of Will, Atraxa    │   Hand: Ponder                   │
+  │         Grand Unifier, Exhume    │         Orcish Bowmasters        │
+  │         Reanimate, Griselbrand   │         Orcish Bowmasters        │
+  │         Polluted Delta           │         Scalding Tarn            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Brazen Borrower          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | dimir 19
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Marsh Flats
+  Play+crack Polluted Delta (−1 life, 19) → Underground Sea
+  ── Main ── Mana: 2
+    Hand (6): Force of Will, Atraxa, Grand Unifier, Exhume, Reanimate, Griselbrand, Marsh Flats
+      → Reanimate goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Reanimate RESOLVES
+    Reanimate: pay 8 life (11 remaining)
+  ★ Reanimate → Griselbrand enters play
+  ★ Griselbrand wins the game
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ REANIMATOR                       │ DIMIR                            │
+  │   Life: 11                       │   Life: 19                       │
+  │   Hand: 5  Lib: 49  GY: 4        │   Hand: 7  Lib: 47  GY: 5        │
+  │   Lands: Swamp, Underground Sea  │   Lands: Underground Sea, Undergro... │
+  │   Creatures: Griselbrand (7/7)   │   Creatures: (none)              │
+  │   Hand: Force of Will, Atraxa    │   Hand: Ponder                   │
+  │         Grand Unifier, Exhume    │         Orcish Bowmasters        │
+  │         Griselbrand, Marsh Flats │         Orcish Bowmasters        │
+  │                                  │         Scalding Tarn            │
+  │                                  │         Nethergoyf               │
+  │                                  │         Brazen Borrower          │
+  │                                  │         Brazen Borrower          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: REANIMATOR — Reanimator: Griselbrand resolves uncountered
+  Final life: reanimator 11 | dimir 19
+══════════════════════════════════════════════════════════════════════

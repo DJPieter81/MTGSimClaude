@@ -39,5 +39,5 @@ DECK_META = {
     'keep':       _keep_mono_black,
     'categories': {'aggro', 'bowm_decks'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
-    'meta_share': 0.03,
+    'meta_share': 0.01,
 }

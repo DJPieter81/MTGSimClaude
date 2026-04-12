@@ -16,7 +16,7 @@ DECK_META schema:
     }
 
 Valid categories:
-    combo, mirror, tempo_mirror, aggro, prison, gy_combo, land_combo,
+    combo, mirror, tempo_mirror, aggro, prison, control, gy_combo, land_combo,
     vial_decks, dimir_only, bowm_decks, fast_combo, tribal
 """
 
@@ -109,9 +109,19 @@ def get_categories(key):
 
 
 def get_meta_share(key):
-    """Get metagame share for a deck key."""
+    """Get metagame share for a deck key. Falls back to MATCHUP_META for built-ins."""
     meta = get_meta(key)
-    return meta.get('meta_share', 0.02) if meta else 0.02
+    if meta:
+        return meta.get('meta_share', 0.02)
+    # Fallback for built-in decks (e.g. BUG) not in deck_registry
+    try:
+        from cards import MATCHUP_META
+        mm = MATCHUP_META.get(key, {})
+        if isinstance(mm, dict) and 'share' in mm:
+            return mm['share']
+    except ImportError:
+        pass
+    return 0.02
 
 
 def is_in_category(key, category):

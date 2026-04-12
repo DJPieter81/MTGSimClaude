@@ -1,0 +1,567 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Price of Progress (instant, CMC 2)
+    2. Mountain (basic)
+    3. Mountain (basic)
+    4. Mountain (basic)
+    5. Lava Spike (sorcery, CMC 1)
+    6. Skullcrack (instant, CMC 2)
+    7. Mountain (basic)
+    [Lands: 4  Other: 3]
+  → MULLIGAN
+    Reason: no action (threats, counters, or cantrips)
+  Mulligan #1 — draw 7:
+    1. Fireblast (instant, CMC 6)
+    2. Mountain (basic)
+    3. Inspiring Vantage (land)
+    4. Rift Bolt (sorcery, CMC 3)
+    5. Lava Spike (sorcery, CMC 1)
+    6. Monastery Swiftspear (creature 1/2, CMC 1)
+    7. Fiery Islet (land)
+    [Lands: 3  Creatures: 1  Other: 3]
+  Keep best 6: Monastery Swiftspear, Mountain, Inspiring Vantage, Fiery Islet, Fireblast, Rift Bolt
+  Bottom 1: Lava Spike
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Plains (basic)
+    2. Kaldra Compleat (artifact, CMC 7)
+    3. Solitude (creature 3/2, CMC 5, removal)
+    4. Wasteland (land)
+    5. Skyclave Apparition (creature 2/2, CMC 3, removal)
+    6. Recruiter of the Guard (creature 1/1, CMC 3)
+    7. Plains (basic)
+    [Lands: 3  Creatures: 3  Removal: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 3 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (5): Monastery Swiftspear, Inspiring Vantage, Fiery Islet, Fireblast, Rift Bolt
+      → Monastery Swiftspear goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Monastery Swiftspear RESOLVES
+  Monastery Swiftspear enters the battlefield
+  Attack: Monastery Swiftspear — 1 unblocked → o at 19
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 4  Lib: 54  GY: 0        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Mountain                │   Lands: (none)                  │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Inspiring Vantage        │   Hand: Plains                   │
+  │         Fiery Islet, Fireblast   │         Kaldra Compleat          │
+  │         Rift Bolt                │         Solitude, Wasteland      │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 19
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Arid Mesa
+  Land: Plains (1 lands)
+  ── Main ──
+    Hand (7): Kaldra Compleat, Solitude, Wasteland, Skyclave Apparition, Recruiter of the Guard, Plains, Arid Mesa
+    Mana available: 1
+  ★ Solitude (evoke, pitch Recruiter of the Guard) exiles Monastery Swiftspear (+2 life)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 21                       │
+  │   Hand: 4  Lib: 54  GY: 0        │   Hand: 5  Lib: 52  GY: 1        │
+  │   Lands: Mountain                │   Lands: Plains                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Inspiring Vantage        │   Hand: Kaldra Compleat          │
+  │         Fiery Islet, Fireblast   │         Wasteland                │
+  │         Rift Bolt                │         Skyclave Apparition      │
+  │                                  │         Plains, Arid Mesa        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 21
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  Land: Inspiring Vantage (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Fiery Islet, Fireblast, Rift Bolt, Lightning Bolt
+      → Rift Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Rift Bolt RESOLVES
+  ★ Rift Bolt → 3 damage (opp at 18)
+      → Lightning Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 15)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 15                       │
+  │   Hand: 2  Lib: 53  GY: 2        │   Hand: 5  Lib: 52  GY: 1        │
+  │   Lands: Mountain, Inspiring Vantage │   Lands: Plains                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fiery Islet, Fireblast   │   Hand: Kaldra Compleat          │
+  │                                  │         Wasteland                │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Plains, Arid Mesa        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 15
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Aether Vial
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (5): Kaldra Compleat, Skyclave Apparition, Plains, Arid Mesa, Aether Vial
+    Mana available: 1
+      → Aether Vial goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Aether Vial RESOLVES
+  Aether Vial enters play
+  Wasteland → destroys Inspiring Vantage
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 15                       │
+  │   Hand: 2  Lib: 53  GY: 3        │   Hand: 4  Lib: 51  GY: 2        │
+  │   Lands: Mountain                │   Lands: Plains                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fiery Islet, Fireblast   │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Plains, Arid Mesa        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 15
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Price of Progress
+  Land: Fiery Islet (2 lands)
+  ── Main ── Mana: 2
+    Hand (2): Fireblast, Price of Progress
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 15                       │
+  │   Hand: 2  Lib: 52  GY: 3        │   Hand: 4  Lib: 51  GY: 2        │
+  │   Lands: Mountain, Fiery Islet   │   Lands: Plains                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Price of Progress        │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Plains, Arid Mesa        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 15
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Batterskull
+  Land: Plains (2 lands)
+  ── Main ──
+    Hand (4): Kaldra Compleat, Skyclave Apparition, Arid Mesa, Batterskull
+    Mana available: 2
+  Aether Vial — 1 counter(s)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 15                       │
+  │   Hand: 2  Lib: 52  GY: 3        │   Hand: 4  Lib: 50  GY: 2        │
+  │   Lands: Mountain, Fiery Islet   │   Lands: Plains, Plains          │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Price of Progress        │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Arid Mesa, Batterskull   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 15
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (3 lands)
+  ── Main ── Mana: 3
+    Hand (2): Fireblast, Price of Progress
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 15                       │
+  │   Hand: 2  Lib: 51  GY: 3        │   Hand: 4  Lib: 50  GY: 2        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains          │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Price of Progress        │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Arid Mesa, Batterskull   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 15
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Flickerwisp
+  Play+crack Arid Mesa (−1 life, 14) → Plains
+  ── Main ──
+    Hand (4): Kaldra Compleat, Skyclave Apparition, Batterskull, Flickerwisp
+    Mana available: 3
+  Aether Vial — 2 counter(s)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 14                       │
+  │   Hand: 2  Lib: 51  GY: 3        │   Hand: 4  Lib: 48  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Price of Progress        │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull, Flickerwisp │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 14
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (4 lands)
+  ── Main ── Mana: 4
+    Hand (2): Fireblast, Price of Progress
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 14                       │
+  │   Hand: 2  Lib: 50  GY: 3        │   Hand: 4  Lib: 48  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Price of Progress        │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull, Flickerwisp │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 14
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Rishadan Port
+  Land: Rishadan Port (4 lands)
+  ── Main ──
+    Hand (4): Kaldra Compleat, Skyclave Apparition, Batterskull, Flickerwisp
+    Mana available: 3
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  Aether Vial — 3 counter(s)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 14                       │
+  │   Hand: 2  Lib: 50  GY: 3        │   Hand: 4  Lib: 47  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Price of Progress        │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull, Flickerwisp │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 14
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fireblast
+  ── Main ── Mana: 4
+    Hand (3): Fireblast, Price of Progress, Fireblast
+      → Price of Progress goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 12)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 12                       │
+  │   Hand: 2  Lib: 49  GY: 4        │   Hand: 4  Lib: 47  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull, Flickerwisp │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 12
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Karakas
+  Land: Karakas (5 lands)
+  ── Main ──
+    Hand (4): Kaldra Compleat, Skyclave Apparition, Batterskull, Flickerwisp
+    Mana available: 4
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 12                       │
+  │   Hand: 2  Lib: 49  GY: 4        │   Hand: 4  Lib: 46  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull, Flickerwisp │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 12
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Searing Blaze
+  ── Main ── Mana: 4
+    Hand (3): Fireblast, Fireblast, Searing Blaze
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 12                       │
+  │   Hand: 3  Lib: 48  GY: 4        │   Hand: 4  Lib: 46  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull, Flickerwisp │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 12
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Swords to Plowshares
+  ── Main ──
+    Hand (5): Kaldra Compleat, Skyclave Apparition, Batterskull, Flickerwisp, Swords to Plowshares
+    Mana available: 4
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 12                       │
+  │   Hand: 3  Lib: 48  GY: 4        │   Hand: 5  Lib: 45  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull              │
+  │                                  │         Flickerwisp              │
+  │                                  │         Swords to Plowshares     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 12
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  ── Main ── Mana: 4
+    Hand (4): Fireblast, Fireblast, Searing Blaze, Lightning Bolt
+      → Lightning Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 9)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 9                        │
+  │   Hand: 3  Lib: 47  GY: 5        │   Hand: 5  Lib: 45  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull              │
+  │                                  │         Flickerwisp              │
+  │                                  │         Swords to Plowshares     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 9
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Recruiter of the Guard
+  ── Main ──
+    Hand (6): Kaldra Compleat, Skyclave Apparition, Batterskull, Flickerwisp, Swords to Plowshares, Recruiter of the Guard
+    Mana available: 4
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 9                        │
+  │   Hand: 3  Lib: 47  GY: 5        │   Hand: 6  Lib: 44  GY: 4        │
+  │   Lands: Mountain, Fiery Islet, Mo... │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fireblast     │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull              │
+  │                                  │         Flickerwisp              │
+  │                                  │         Swords to Plowshares     │
+  │                                  │         Recruiter of the Guard   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 17 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 9
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Goblin Guide
+  ── Main ── Mana: 4
+    Hand (4): Fireblast, Fireblast, Searing Blaze, Goblin Guide
+      → Goblin Guide goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Goblin Guide — 2 unblocked → o at 7
+      → Fireblast goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 3)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 3                        │
+  │   Hand: 2  Lib: 46  GY: 6        │   Hand: 6  Lib: 44  GY: 4        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Fireblast, Searing Blaze │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull              │
+  │                                  │         Flickerwisp              │
+  │                                  │         Swords to Plowshares     │
+  │                                  │         Recruiter of the Guard   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 18 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 3
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Solitude
+  ── Main ──
+    Hand (7): Kaldra Compleat, Skyclave Apparition, Batterskull, Flickerwisp, Swords to Plowshares, Recruiter of the Guard, Solitude
+    Mana available: 4
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  Swords to Plowshares exiles Goblin Guide (+2 life)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 22                       │   Life: 3                        │
+  │   Hand: 2  Lib: 46  GY: 6        │   Hand: 6  Lib: 43  GY: 5        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Searing Blaze │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull              │
+  │                                  │         Flickerwisp              │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Solitude                 │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 19 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 22 | dnt 3
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Inspiring Vantage
+  Land: Inspiring Vantage (3 lands)
+  ── Main ── Mana: 3
+    Hand (2): Fireblast, Searing Blaze
+      → Fireblast goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at -1)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 22                       │   Life: -1                       │
+  │   Hand: 1  Lib: 45  GY: 7        │   Hand: 6  Lib: 43  GY: 5        │
+  │   Lands: Inspiring Vantage       │   Lands: Plains, Plains, Plains, R... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Kaldra Compleat          │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Batterskull              │
+  │                                  │         Flickerwisp              │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Solitude                 │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches -1 on turn 10
+  Final life: burn 22 | dnt -1
+══════════════════════════════════════════════════════════════════════

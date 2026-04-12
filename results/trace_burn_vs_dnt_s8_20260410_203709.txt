@@ -1,0 +1,426 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Fireblast (instant, CMC 6)
+    2. Monastery Swiftspear (creature 1/2, CMC 1)
+    3. Skullcrack (instant, CMC 2)
+    4. Lava Spike (sorcery, CMC 1)
+    5. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    6. Goblin Guide (creature 2/1, CMC 1)
+    7. Monastery Swiftspear (creature 1/2, CMC 1)
+    [Lands: 0  Creatures: 4  Other: 3]
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Mulligan #1 — draw 7:
+    1. Mountain (basic)
+    2. Goblin Guide (creature 2/1, CMC 1)
+    3. Mountain (basic)
+    4. Price of Progress (instant, CMC 2)
+    5. Lava Spike (sorcery, CMC 1)
+    6. Monastery Swiftspear (creature 1/2, CMC 1)
+    7. Inspiring Vantage (land)
+    [Lands: 3  Creatures: 2  Other: 2]
+  Keep best 6: Goblin Guide, Monastery Swiftspear, Mountain, Mountain, Inspiring Vantage, Price of Progress
+  Bottom 1: Lava Spike
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Plains (basic)
+    2. Batterskull (artifact, CMC 5)
+    3. Flooded Strand (fetch)
+    4. Skyclave Apparition (creature 2/2, CMC 3, removal)
+    5. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    6. Flickerwisp (creature 3/1, CMC 3)
+    7. Karakas (land)
+    [Lands: 3  Creatures: 3  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 3 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (5): Goblin Guide, Monastery Swiftspear, Mountain, Inspiring Vantage, Price of Progress
+      → Goblin Guide goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Goblin Guide — 2 unblocked → o at 18
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 54  GY: 0        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Mountain                │   Lands: (none)                  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Monastery Swiftspear     │   Hand: Plains, Batterskull      │
+  │         Mountain                 │         Flooded Strand           │
+  │         Inspiring Vantage        │         Skyclave Apparition      │
+  │         Price of Progress        │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Flickerwisp, Karakas     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 18
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Plains
+  Land: Plains (1 lands)
+  ── Main ──
+    Hand (7): Batterskull, Flooded Strand, Skyclave Apparition, Thalia, Guardian of Thraben, Flickerwisp, Karakas, Plains
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 4  Lib: 54  GY: 0        │   Hand: 7  Lib: 52  GY: 0        │
+  │   Lands: Mountain                │   Lands: Plains                  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Monastery Swiftspear     │   Hand: Batterskull              │
+  │         Mountain                 │         Flooded Strand           │
+  │         Inspiring Vantage        │         Skyclave Apparition      │
+  │         Price of Progress        │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Flickerwisp, Karakas     │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Price of Progress
+  Land: Mountain (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Monastery Swiftspear, Inspiring Vantage, Price of Progress, Price of Progress
+      → Monastery Swiftspear goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Monastery Swiftspear RESOLVES
+  Monastery Swiftspear enters the battlefield
+  Attack: Goblin Guide, Monastery Swiftspear — 3 unblocked → o at 15
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 15                       │
+  │   Hand: 3  Lib: 53  GY: 0        │   Hand: 7  Lib: 52  GY: 0        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains                  │
+  │   Creatures: Goblin Guide (2/1), Monas... │   Creatures: (none)              │
+  │   Hand: Inspiring Vantage        │   Hand: Batterskull              │
+  │         Price of Progress        │         Flooded Strand           │
+  │         Price of Progress        │         Skyclave Apparition      │
+  │                                  │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Flickerwisp, Karakas     │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 15
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Wasteland
+  Play+crack Flooded Strand (−1 life, 14) → Plains
+  ── Main ──
+    Hand (7): Batterskull, Skyclave Apparition, Thalia, Guardian of Thraben, Flickerwisp, Karakas, Plains, Wasteland
+    Mana available: 2
+      → Thalia, Guardian of Thraben goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Thalia, Guardian of Thraben RESOLVES
+  Thalia, Guardian of Thraben (2/1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 14                       │
+  │   Hand: 3  Lib: 53  GY: 0        │   Hand: 6  Lib: 50  GY: 2        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains, Plains          │
+  │   Creatures: Goblin Guide (2/1), Monas... │   Creatures: Thalia, Guardian of Thrab... │
+  │   Hand: Inspiring Vantage        │   Hand: Batterskull              │
+  │         Price of Progress        │         Skyclave Apparition      │
+  │         Price of Progress        │         Flickerwisp, Karakas     │
+  │                                  │         Plains, Wasteland        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 14
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Inspiring Vantage
+  Land: Inspiring Vantage (3 lands)
+  ── Main ── Mana: 3
+    Hand (3): Price of Progress, Price of Progress, Inspiring Vantage
+  Attack: Goblin Guide, Monastery Swiftspear — Thalia, Guardian of Thraben blocks Goblin Guide. Goblin Guide deals 2, Thalia, Guardian of Thraben deals 2 back. 0 unblocked damage to player (o at 14)
+      Thalia, Guardian of Thraben dies.
+      Goblin Guide dies.
+    1 unblocked → o at 13
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 13                       │
+  │   Hand: 3  Lib: 52  GY: 2        │   Hand: 6  Lib: 50  GY: 3        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains          │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Hand: Batterskull              │
+  │         Price of Progress        │         Skyclave Apparition      │
+  │         Inspiring Vantage        │         Flickerwisp, Karakas     │
+  │                                  │         Plains, Wasteland        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 13
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Phelia, Exuberant Shepherd
+  Land: Karakas (3 lands)
+  ── Main ──
+    Hand (6): Batterskull, Skyclave Apparition, Flickerwisp, Plains, Wasteland, Phelia, Exuberant Shepherd
+    Mana available: 3
+      → Phelia, Exuberant Shepherd goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Phelia, Exuberant Shepherd RESOLVES
+  Phelia, Exuberant Shepherd (2/2)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 13                       │
+  │   Hand: 3  Lib: 52  GY: 2        │   Hand: 5  Lib: 49  GY: 3        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains, Karakas │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: Phelia, Exuberant Shepher... │
+  │   Hand: Price of Progress        │   Hand: Batterskull              │
+  │         Price of Progress        │         Skyclave Apparition      │
+  │         Inspiring Vantage        │         Flickerwisp, Plains      │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 13
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Goblin Guide
+  Land: Inspiring Vantage (4 lands)
+  ── Main ── Mana: 4
+    Hand (3): Price of Progress, Price of Progress, Goblin Guide
+      → Goblin Guide goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Goblin Guide — Phelia, Exuberant Shepherd blocks Goblin Guide. Goblin Guide deals 2, Phelia, Exuberant Shepherd deals 2 back. 0 unblocked damage to player (o at 13)
+      Phelia, Exuberant Shepherd dies.
+      Goblin Guide dies.
+      → Price of Progress goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 11)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 11                       │
+  │   Hand: 1  Lib: 51  GY: 5        │   Hand: 5  Lib: 49  GY: 4        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains, Karakas │
+  │   Creatures: Monastery Swiftspear (1/2) │   Creatures: (none)              │
+  │   Hand: Price of Progress        │   Hand: Batterskull              │
+  │                                  │         Skyclave Apparition      │
+  │                                  │         Flickerwisp, Plains      │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 11
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Plains
+  Land: Plains (4 lands)
+  ── Main ──
+    Hand (5): Batterskull, Skyclave Apparition, Flickerwisp, Wasteland, Plains
+    Mana available: 4
+      → Skyclave Apparition goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Skyclave Apparition RESOLVES
+  Skyclave Apparition (2/2)
+    Skyclave Apparition exiles Monastery Swiftspear
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 11                       │
+  │   Hand: 1  Lib: 51  GY: 6        │   Hand: 4  Lib: 48  GY: 4        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains, Karakas, ... │
+  │   Creatures: (none)              │   Creatures: Skyclave Apparition (2/2) │
+  │   Hand: Price of Progress        │   Hand: Batterskull              │
+  │                                  │         Flickerwisp, Wasteland   │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 11
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  ── Main ── Mana: 4
+    Hand (2): Price of Progress, Lightning Bolt
+      → Price of Progress goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 9)
+      → Lightning Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 6)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 6                        │
+  │   Hand: 0  Lib: 50  GY: 8        │   Hand: 4  Lib: 48  GY: 4        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains, Karakas, ... │
+  │   Creatures: (none)              │   Creatures: Skyclave Apparition (2/2) │
+  │   Hand: (empty)                  │   Hand: Batterskull              │
+  │                                  │         Flickerwisp, Wasteland   │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 6
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Plains
+  Land: Wasteland (5 lands)
+  ── Main ──
+    Hand (4): Batterskull, Flickerwisp, Plains, Plains
+    Mana available: 4
+      → Flickerwisp goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Flickerwisp RESOLVES
+  Flickerwisp (3/1)
+    Flickerwisp blinks Inspiring Vantage (re-enters tapped)
+  Wasteland → destroys Inspiring Vantage
+  Attack: Skyclave Apparition — 2 unblocked → b at 18
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 18                       │   Life: 6                        │
+  │   Hand: 0  Lib: 50  GY: 9        │   Hand: 3  Lib: 47  GY: 5        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains, Karakas, ... │
+  │   Creatures: (none)              │   Creatures: Skyclave Apparition (2/2)... │
+  │   Hand: (empty)                  │   Hand: Batterskull, Plains      │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | dnt 6
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lava Spike
+  ── Main ── Mana: 3
+    Hand (1): Lava Spike
+      → Lava Spike goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lava Spike RESOLVES
+  ★ Lava Spike → 3 damage (opp at 3)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 18                       │   Life: 3                        │
+  │   Hand: 0  Lib: 49  GY: 10       │   Hand: 3  Lib: 47  GY: 5        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains, Karakas, ... │
+  │   Creatures: (none)              │   Creatures: Skyclave Apparition (2/2)... │
+  │   Hand: (empty)                  │   Hand: Batterskull, Plains      │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | dnt 3
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Plains
+  Land: Plains (5 lands)
+  ── Main ──
+    Hand (3): Batterskull, Plains, Plains
+    Mana available: 5
+  Attack: Skyclave Apparition, Flickerwisp — 5 unblocked → b at 13
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 13                       │   Life: 3                        │
+  │   Hand: 0  Lib: 49  GY: 10       │   Hand: 3  Lib: 46  GY: 5        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains, Karakas, ... │
+  │   Creatures: (none)              │   Creatures: Skyclave Apparition (2/2)... │
+  │   Hand: (empty)                  │   Hand: Batterskull, Plains      │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 13 | dnt 3
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lightning Bolt
+  ── Main ── Mana: 3
+    Hand (1): Lightning Bolt
+      → Lightning Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 0)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 13                       │   Life: 0                        │
+  │   Hand: 0  Lib: 48  GY: 11       │   Hand: 3  Lib: 46  GY: 5        │
+  │   Lands: Mountain, Mountain, Inspi... │   Lands: Plains, Plains, Karakas, ... │
+  │   Creatures: (none)              │   Creatures: Skyclave Apparition (2/2)... │
+  │   Hand: (empty)                  │   Hand: Batterskull, Plains      │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches 0 on turn 7
+  Final life: burn 13 | dnt 0
+══════════════════════════════════════════════════════════════════════

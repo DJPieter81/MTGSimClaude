@@ -1,0 +1,458 @@
+══════════════════════════════════════════════════════════════════════
+  DEPTHS vs UR_DELVER
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DEPTHS wins the die roll, goes FIRST
+
+  DEPTHS (P1):
+  Draw 7:
+    1. Mox Diamond (artifact, CMC 0)
+    2. Dark Depths (land)
+    3. Elvish Reclaimer (creature 1/2, CMC 1)
+    4. Knight of the Reliquary (creature 4/4, CMC 3)
+    5. Windswept Heath (fetch)
+    6. Bayou (dual)
+    7. Green Sun's Zenith (sorcery, CMC 1, combo)
+    [Lands: 3  Creatures: 2  Combo: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+  UR_DELVER (P2):
+  Draw 7:
+    1. Murktide Regent (creature 5/5, CMC 7)
+    2. Unholy Heat (instant, CMC 1)
+    3. Brainstorm (instant, CMC 1, cantrip)
+    4. Force of Will (instant, CMC 5, free counter)
+    5. Delver of Secrets (creature 1/1, CMC 1)
+    6. Delver of Secrets (creature 1/1, CMC 1)
+    7. Mountain (basic)
+    [Lands: 1  Creatures: 3  Counters: 1  Cantrips: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; 3 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | ur_delver 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Bayou (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Mox Diamond, Dark Depths, Elvish Reclaimer, Knight of the Reliquary, Windswept Heath, Green Sun's Zenith
+  Mox Diamond (discard Windswept Heath) → mana=2
+      → Green Sun's Zenith goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER evaluates: MAJOR THREAT — responds!
+    ★ UR_DELVER Force of Will counters Green Sun's Zenith (exiles Brainstorm)
+    Green Sun's Zenith COUNTERED — goes to graveyard
+  Green Sun's Zenith countered
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 53  GY: 2        │   Hand: 5  Lib: 53  GY: 1        │
+  │   Lands: Bayou                   │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Dark Depths              │         Unholy Heat              │
+  │         Elvish Reclaimer         │         Delver of Secrets        │
+  │         Knight of the Reliquary, │         Delver of Secrets        │
+  │         Green Sun's Zenith       │         Mountain                 │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | ur_delver 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Dragon's Rage Channeler
+  Land: Mountain (1 lands)
+  ── Main ──
+    Hand (5): Murktide Regent, Unholy Heat, Delver of Secrets, Delver of Secrets, Dragon's Rage Channeler
+    Mana available: 1
+      → Delver of Secrets goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Delver of Secrets RESOLVES
+  Delver of Secrets (1/1 — flips next upkeep)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 4  Lib: 53  GY: 2        │   Hand: 4  Lib: 52  GY: 1        │
+  │   Lands: Bayou                   │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Delver of Secrets (1/1) │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Dark Depths              │         Unholy Heat              │
+  │         Elvish Reclaimer         │         Delver of Secrets        │
+  │         Knight of the Reliquary, │         Dragon's Rage Channeler  │
+  │         Green Sun's Zenith       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | ur_delver 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Exploration
+  Land: Dark Depths (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Elvish Reclaimer, Knight of the Reliquary, Green Sun's Zenith, Exploration
+      → Exploration goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER has no counters — passes priority
+      → Exploration RESOLVES
+  Exploration → extra land drops
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 3  Lib: 52  GY: 2        │   Hand: 4  Lib: 52  GY: 1        │
+  │   Lands: Bayou, Dark Depths      │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Delver of Secrets (1/1) │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Elvish Reclaimer         │         Unholy Heat              │
+  │         Knight of the Reliquary, │         Delver of Secrets        │
+  │         Green Sun's Zenith       │         Dragon's Rage Channeler  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | ur_delver 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Ponder
+  ── Main ──
+    Hand (5): Murktide Regent, Unholy Heat, Delver of Secrets, Dragon's Rage Channeler, Ponder
+    Mana available: 1
+  Delver of Secrets flips → Insectile Aberration (3/2 flying)
+      → Delver of Secrets goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Delver of Secrets RESOLVES
+  Delver of Secrets (1/1 — flips next upkeep)
+  Attack: Delver of Secrets — 3 unblocked → b at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 3  Lib: 52  GY: 2        │   Hand: 4  Lib: 51  GY: 1        │
+  │   Lands: Bayou, Dark Depths      │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Delver of Secrets (3/2), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Elvish Reclaimer         │         Unholy Heat              │
+  │         Knight of the Reliquary, │         Dragon's Rage Channeler, │
+  │         Green Sun's Zenith       │         Ponder                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 17 | ur_delver 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Verdant Catacombs
+  Play+crack Verdant Catacombs (−1 life, 16) → Forest
+  ── Main ── Mana: 3
+    Hand (3): Elvish Reclaimer, Knight of the Reliquary, Green Sun's Zenith
+      → Green Sun's Zenith goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER has no counters — passes priority
+      → Green Sun's Zenith RESOLVES
+  Green Sun's Zenith → Elvish Reclaimer
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 16                       │   Life: 20                       │
+  │   Hand: 2  Lib: 49  GY: 5        │   Hand: 4  Lib: 51  GY: 1        │
+  │   Lands: Bayou, Dark Depths, Forest │   Lands: Mountain                │
+  │   Creatures: Elvish Reclaimer (1/2) │   Creatures: Delver of Secrets (3/2), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Elvish Reclaimer         │         Unholy Heat              │
+  │         Knight of the Reliquary  │         Dragon's Rage Channeler, │
+  │                                  │         Ponder                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 16 | ur_delver 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Polluted Delta (−1 life, 19) → Steam Vents
+  ── Main ──
+    Hand (4): Murktide Regent, Unholy Heat, Dragon's Rage Channeler, Ponder
+    Mana available: 2
+  Delver upkeep — no flip (stays 1/1)
+      → Dragon's Rage Channeler goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Dragon's Rage Channeler RESOLVES
+  Dragon's Rage Channeler
+  Ponder — cantrip
+  Attack: Delver of Secrets, Delver of Secrets — 4 unblocked → b at 12
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 19                       │
+  │   Hand: 2  Lib: 49  GY: 5        │   Hand: 3  Lib: 48  GY: 4        │
+  │   Lands: Bayou, Dark Depths, Forest │   Lands: Mountain, Steam Vents   │
+  │   Creatures: Elvish Reclaimer (1/2) │   Creatures: Delver of Secrets (3/2), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Elvish Reclaimer         │         Unholy Heat, Preordain   │
+  │         Knight of the Reliquary  │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 19
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Wasteland
+  Land: Wasteland (4 lands)
+  ── Main ── Mana: 4
+    Hand (2): Elvish Reclaimer, Knight of the Reliquary
+  ★ Reclaimer activates (sac Wasteland) → find stage
+    -> Thespian's Stage enters the battlefield
+  ★ Stage copies Depths → Marit Lage 20/20!
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 19                       │
+  │   Hand: 2  Lib: 47  GY: 8        │   Hand: 3  Lib: 48  GY: 4        │
+  │   Lands: Bayou, Forest           │   Lands: Mountain, Steam Vents   │
+  │   Creatures: Elvish Reclaimer (1/2), M... │   Creatures: Delver of Secrets (3/2), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Elvish Reclaimer         │         Unholy Heat, Preordain   │
+  │         Knight of the Reliquary  │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 19
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ──
+    Hand (4): Murktide Regent, Unholy Heat, Preordain, Brainstorm
+    Mana available: 2
+  Delver of Secrets flips → Insectile Aberration (3/2 flying)
+  DRC gains delirium → 3/3
+  Brainstorm — cantrip
+  Unholy Heat (2 dmg) -> Elvish Reclaimer
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 19                       │
+  │   Hand: 2  Lib: 47  GY: 9        │   Hand: 3  Lib: 46  GY: 6        │
+  │   Lands: Bayou, Forest           │   Lands: Mountain, Steam Vents   │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Delver of Secrets (3/2), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Elvish Reclaimer         │         Preordain, Scalding Tarn │
+  │         Knight of the Reliquary  │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 19
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Sylvan Library
+  ── Main ── Mana: 2
+    Hand (3): Elvish Reclaimer, Knight of the Reliquary, Sylvan Library
+      → Sylvan Library goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER has no counters — passes priority
+      → Sylvan Library RESOLVES
+  Sylvan Library → draw engine online
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage — Delver of Secrets blocks Marit Lage. Marit Lage deals 20, Delver of Secrets deals 3 back. 0 unblocked damage to player (o at 19)
+      Delver of Secrets dies.
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 19                       │
+  │   Hand: 2  Lib: 46  GY: 9        │   Hand: 3  Lib: 46  GY: 7        │
+  │   Lands: Bayou, Forest           │   Lands: Mountain, Steam Vents   │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Delver of Secrets (3/2), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Murktide Regent          │
+  │   Hand: Elvish Reclaimer         │         Preordain, Scalding Tarn │
+  │         Knight of the Reliquary  │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 19
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Force of Will
+  Play+crack Scalding Tarn (−1 life, 18) → Volcanic Island
+  ── Main ──
+    Hand (3): Murktide Regent, Preordain, Force of Will
+    Mana available: 3
+      → Murktide Regent goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Murktide Regent RESOLVES
+  Murktide Regent (delve 6, paid 2)
+  Preordain — cantrip
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 18                       │
+  │   Hand: 2  Lib: 46  GY: 9        │   Hand: 2  Lib: 43  GY: 4        │
+  │   Lands: Bayou, Forest           │   Lands: Mountain, Steam Vents, Vo... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Delver of Secrets (3/2), ... │
+  │   Artifacts: Mox Diamond         │   Hand: Force of Will            │
+  │   Hand: Elvish Reclaimer         │         Misty Rainforest         │
+  │         Knight of the Reliquary  │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 18
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Once Upon a Time
+  ── Main ── Mana: 2
+    Hand (3): Elvish Reclaimer, Knight of the Reliquary, Once Upon a Time
+  Once Upon a Time (free) → dig
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage — Delver of Secrets blocks Marit Lage. Marit Lage deals 20, Delver of Secrets deals 3 back. 0 unblocked damage to player (o at 18)
+      Delver of Secrets dies.
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 18                       │
+  │   Hand: 3  Lib: 44  GY: 10       │   Hand: 2  Lib: 43  GY: 5        │
+  │   Lands: Bayou, Forest           │   Lands: Mountain, Steam Vents, Vo... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Dragon's Rage Channeler (... │
+  │   Artifacts: Mox Diamond         │   Hand: Force of Will            │
+  │   Hand: Elvish Reclaimer         │         Misty Rainforest         │
+  │         Knight of the Reliquary, │                                  │
+  │         Dark Depths              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 18
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Lightning Bolt
+  Play+crack Misty Rainforest (−1 life, 17) → Volcanic Island
+  ── Main ──
+    Hand (2): Force of Will, Lightning Bolt
+    Mana available: 4
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 17                       │
+  │   Hand: 3  Lib: 44  GY: 10       │   Hand: 2  Lib: 41  GY: 7        │
+  │   Lands: Bayou, Forest           │   Lands: Mountain, Steam Vents, Vo... │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: Dragon's Rage Channeler (... │
+  │   Artifacts: Mox Diamond         │   Hand: Force of Will            │
+  │   Hand: Elvish Reclaimer         │         Lightning Bolt           │
+  │         Knight of the Reliquary, │                                  │
+  │         Dark Depths              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 17
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Plains
+  Land: Plains (3 lands)
+  ── Main ── Mana: 3
+    Hand (3): Elvish Reclaimer, Knight of the Reliquary, Dark Depths
+      → Knight of the Reliquary goes on the STACK
+      → Priority passes to UR_DELVER
+      → UR_DELVER has [Force of Will] but PASSES (low-priority target)
+      → Knight of the Reliquary RESOLVES
+  Knight of the Reliquary (4/4)
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage — Murktide Regent blocks Marit Lage. Marit Lage deals 20, Murktide Regent deals 5 back. 0 unblocked damage to player (o at 17)
+      Murktide Regent dies.
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 17                       │
+  │   Hand: 2  Lib: 43  GY: 10       │   Hand: 2  Lib: 41  GY: 8        │
+  │   Lands: Bayou, Forest, Plains   │   Lands: Mountain, Steam Vents, Vo... │
+  │   Creatures: Marit Lage (20/20), Knigh... │   Creatures: Dragon's Rage Channeler (... │
+  │   Artifacts: Mox Diamond         │   Hand: Force of Will            │
+  │   Hand: Elvish Reclaimer         │         Lightning Bolt           │
+  │         Dark Depths              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — UR_DELVER ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 17
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Dragon's Rage Channeler
+  ── Main ──
+    Hand (3): Force of Will, Lightning Bolt, Dragon's Rage Channeler
+    Mana available: 4
+      → Dragon's Rage Channeler goes on the STACK
+      → Priority passes to DEPTHS
+      → DEPTHS has no counters — passes priority
+      → Dragon's Rage Channeler RESOLVES
+  Dragon's Rage Channeler
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: 17                       │
+  │   Hand: 2  Lib: 43  GY: 10       │   Hand: 2  Lib: 40  GY: 8        │
+  │   Lands: Bayou, Forest, Plains   │   Lands: Mountain, Steam Vents, Vo... │
+  │   Creatures: Marit Lage (20/20), Knigh... │   Creatures: Dragon's Rage Channeler (... │
+  │   Artifacts: Mox Diamond         │   Hand: Force of Will            │
+  │   Hand: Elvish Reclaimer         │         Lightning Bolt           │
+  │         Dark Depths              │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 12 | ur_delver 17
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Sejiri Steppe
+  Land: Dark Depths (4 lands)
+  ── Main ── Mana: 4
+    Hand (2): Elvish Reclaimer, Sejiri Steppe
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage, Knight of the Reliquary — Dragon's Rage Channeler blocks Knight of the Reliquary. Knight of the Reliquary deals 4, Dragon's Rage Channeler deals 1 back. 0 unblocked damage to player (o at 17)
+      Dragon's Rage Channeler dies.
+    20 unblocked → o at -3
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ UR_DELVER                        │
+  │   Life: 12                       │   Life: -3                       │
+  │   Hand: 2  Lib: 42  GY: 10       │   Hand: 2  Lib: 40  GY: 9        │
+  │   Lands: Bayou, Forest, Plains, Da... │   Lands: Mountain, Steam Vents, Vo... │
+  │   Creatures: Marit Lage (20/20), Knigh... │   Creatures: Dragon's Rage Channeler (... │
+  │   Artifacts: Mox Diamond         │   Hand: Force of Will            │
+  │   Hand: Elvish Reclaimer         │         Lightning Bolt           │
+  │         Sejiri Steppe            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DEPTHS — Opp life reaches -3 on turn 8
+  Final life: depths 12 | ur_delver -3
+══════════════════════════════════════════════════════════════════════

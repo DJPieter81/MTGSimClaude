@@ -1,0 +1,196 @@
+══════════════════════════════════════════════════════════════════════
+  DEPTHS vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DEPTHS wins the die roll, goes FIRST
+
+  DEPTHS (P1):
+  Draw 7:
+    1. Sejiri Steppe (land)
+    2. Dryad Arbor (creature 1/1, CMC 0)
+    3. Savannah (dual)
+    4. Endurance (creature 3/4, CMC 3)
+    5. Verdant Catacombs (fetch)
+    6. Crop Rotation (instant, CMC 1, combo)
+    7. Crop Rotation (instant, CMC 1, combo)
+    [Lands: 3  Creatures: 2  Combo: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DIMIR (P2):
+  Draw 7:
+    1. Underground Sea (dual)
+    2. Mishra's Bauble (artifact, CMC 0)
+    3. Thoughtseize (sorcery, CMC 1)
+    4. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    5. Polluted Delta (fetch)
+    6. Daze (instant, CMC 2, free counter)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 2  Creatures: 1  Counters: 1  Cantrips: 1  Other: 2]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Savannah (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Sejiri Steppe, Dryad Arbor, Endurance, Verdant Catacombs, Crop Rotation, Crop Rotation
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has counters but cannot use them (conditions not met)
+      → Crop Rotation RESOLVES
+  ★ Crop Rotation (sac Savannah) → find depths
+    -> Dark Depths enters the battlefield
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 52  GY: 2        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Dark Depths             │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Sejiri Steppe            │   Hand: Underground Sea          │
+  │         Dryad Arbor, Endurance   │         Mishra's Bauble          │
+  │         Verdant Catacombs        │         Thoughtseize, Tamiyo     │
+  │         Crop Rotation            │         Inquisitive Student      │
+  │                                  │         Polluted Delta, Daze     │
+  │                                  │         Brainstorm               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (7): Mishra's Bauble, Thoughtseize, Tamiyo, Inquisitive Student, Polluted Delta, Daze, Brainstorm, Polluted Delta
+    Mana available: 1
+  Mishra's Bauble (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 52  GY: 2        │   Hand: 7  Lib: 51  GY: 1        │
+  │   Lands: Dark Depths             │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Sejiri Steppe            │   Hand: Thoughtseize, Tamiyo     │
+  │         Dryad Arbor, Endurance   │         Inquisitive Student      │
+  │         Verdant Catacombs        │         Polluted Delta, Daze     │
+  │         Crop Rotation            │         Brainstorm               │
+  │                                  │         Polluted Delta           │
+  │                                  │         Wasteland                │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Bayou
+  Land: Bayou (2 lands)
+  ── Main ── Mana: 2
+    Hand (5): Sejiri Steppe, Dryad Arbor, Endurance, Verdant Catacombs, Crop Rotation
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR evaluates: MAJOR THREAT — responds!
+    ★ DIMIR Daze counters Crop Rotation — Underground Sea returned
+    Crop Rotation COUNTERED — goes to graveyard
+  Crop Rotation countered
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 5  Lib: 51  GY: 3        │   Hand: 7  Lib: 51  GY: 2        │
+  │   Lands: Dark Depths, Bayou      │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Sejiri Steppe            │   Hand: Thoughtseize, Tamiyo     │
+  │         Dryad Arbor, Endurance   │         Inquisitive Student      │
+  │         Verdant Catacombs        │         Polluted Delta           │
+  │         Crop Rotation            │         Brainstorm               │
+  │                                  │         Polluted Delta           │
+  │                                  │         Wasteland                │
+  │                                  │         Underground Sea          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Thoughtseize
+  Play+crack Polluted Delta (−1 life, 19) → Underground Sea
+  ── Main ──
+    Hand (7): Thoughtseize, Tamiyo, Inquisitive Student, Brainstorm, Polluted Delta, Wasteland, Underground Sea, Thoughtseize
+    Mana available: 1
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 5  Lib: 51  GY: 3        │   Hand: 9  Lib: 46  GY: 5        │
+  │   Lands: Dark Depths, Bayou      │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Sejiri Steppe            │   Hand: Thoughtseize, Tamiyo     │
+  │         Dryad Arbor, Endurance   │         Inquisitive Student      │
+  │         Verdant Catacombs        │         Polluted Delta           │
+  │         Crop Rotation            │         Wasteland                │
+  │                                  │         Underground Sea          │
+  │                                  │         Thoughtseize             │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Fatal Push               │
+  │                                  │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DEPTHS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: depths 20 | dimir 19
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mox Diamond
+  Play+crack Verdant Catacombs → ?
+  ── Main ── Mana: 2
+    Hand (5): Sejiri Steppe, Dryad Arbor, Endurance, Crop Rotation, Mox Diamond
+  Mox Diamond (discard Sejiri Steppe) → mana=3
+      → Crop Rotation goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Crop Rotation RESOLVES
+  ★ Crop Rotation (sac Bayou) → find stage
+    -> Thespian's Stage enters the battlefield
+  ★ Stage copies Depths → Marit Lage 20/20!
+  ★ Marit Lage attacks! (20/20 flying indestructible)
+  Attack: Marit Lage — 20 unblocked → o at -1
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ DEPTHS                           │ DIMIR                            │
+  │   Life: 19                       │   Life: -1                       │
+  │   Hand: 2  Lib: 49  GY: 9        │   Hand: 9  Lib: 46  GY: 5        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: Marit Lage (20/20)  │   Creatures: (none)              │
+  │   Artifacts: Mox Diamond         │   Hand: Thoughtseize, Tamiyo     │
+  │   Hand: Dryad Arbor, Endurance   │         Inquisitive Student      │
+  │                                  │         Polluted Delta           │
+  │                                  │         Wasteland                │
+  │                                  │         Underground Sea          │
+  │                                  │         Thoughtseize             │
+  │                                  │         Orcish Bowmasters        │
+  │                                  │         Fatal Push               │
+  │                                  │         Polluted Delta           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: DEPTHS — Opp life reaches -1 on turn 3
+  Final life: depths 19 | dimir -1
+══════════════════════════════════════════════════════════════════════

@@ -1,0 +1,104 @@
+══════════════════════════════════════════════════════════════════════
+  OOPS vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  OOPS (P1):
+  Draw 7:
+    1. Turntimber Symbiosis (sorcery, CMC 7)
+    2. Simian Spirit Guide (creature 2/2, CMC 3)
+    3. Balustrade Spy (creature 2/3, CMC 4, combo)
+    4. Lotus Petal (artifact, CMC 0)
+    5. Summoner's Pact (instant, CMC 0)
+    6. Cabal Ritual (instant, CMC 2)
+    7. Agadeem's Awakening (sorcery, CMC 3)
+    [Lands: 0  Creatures: 2  Combo: 1  Other: 4]
+  → KEEP (opening 7)
+    Reason: 2 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Flooded Strand (fetch)
+    2. Swords to Plowshares (instant, CMC 1, removal)
+    3. Arid Mesa (fetch)
+    4. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    5. Recruiter of the Guard (creature 1/1, CMC 3)
+    6. Solitude (creature 3/2, CMC 5, removal)
+    7. Skyclave Apparition (creature 2/2, CMC 3, removal)
+    [Lands: 2  Creatures: 4  Removal: 3]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 4 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Flooded Strand (−1 life, 19) → Plains
+  ── Main ──
+    Hand (6): Swords to Plowshares, Arid Mesa, Phelia, Exuberant Shepherd, Recruiter of the Guard, Solitude, Skyclave Apparition
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DNT                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 52  GY: 2        │
+  │   Lands: (none)                  │   Lands: Plains                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Turntimber Symbiosis     │   Hand: Swords to Plowshares     │
+  │         Simian Spirit Guide      │         Arid Mesa, Phelia        │
+  │         Balustrade Spy           │         Exuberant Shepherd       │
+  │         Lotus Petal              │         Recruiter of the Guard   │
+  │         Summoner's Pact          │         Solitude                 │
+  │         Cabal Ritual             │         Skyclave Apparition      │
+  │         Agadeem's Awakening      │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — OOPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: oops 20 | dnt 19
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Pact of Negation
+  ── Main ── Mana: 1
+    Hand (8): Turntimber Symbiosis, Simian Spirit Guide, Balustrade Spy, Lotus Petal, Summoner's Pact, Cabal Ritual, Agadeem's Awakening, Pact of Negation
+  Turntimber Symbiosis → enters tapped as land (G)
+  Lotus Petal → +1 mana
+  Exile Simian Spirit Guide → +1 mana
+  Cabal Ritual → mana now 4
+      → Balustrade Spy goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Balustrade Spy RESOLVES
+  ★ Balustrade Spy → mill entire deck (52 cards)
+    4 Narcomoeba(s) enter from graveyard
+    Flashback Dread Return (sac 3) → Thassa's Oracle
+      → Dread Return goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Dread Return RESOLVES
+    ★ Thassa's Oracle ETB — library empty → WIN
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ OOPS                             │ DNT                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 3  Lib: 0  GY: 52        │   Hand: 6  Lib: 52  GY: 2        │
+  │   Lands: Turntimber Symbiosis    │   Lands: Plains                  │
+  │   Creatures: Narcomoeba (1/1), Thassa'... │   Creatures: (none)              │
+  │   Hand: Summoner's Pact          │   Hand: Swords to Plowshares     │
+  │         Agadeem's Awakening      │         Arid Mesa, Phelia        │
+  │         Pact of Negation         │         Exuberant Shepherd       │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Solitude                 │
+  │                                  │         Skyclave Apparition      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: OOPS — Oops combo (Balustrade Spy → Oracle)
+  Final life: oops 20 | dnt 19
+══════════════════════════════════════════════════════════════════════

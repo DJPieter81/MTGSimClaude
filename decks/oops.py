@@ -18,16 +18,13 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
 # ─── Mulligan ────────────────────────────────────────────────────────────────
 
 def _keep_oops(hand, matchup=''):
-    lands = [c for c in hand if c.is_land()]
-    nonlands = [c for c in hand if not c.is_land()]
-    lc = len(lands)
-    threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
-    combo = [c for c in nonlands if c.is_combo_piece or c.win_condition]
-    can = [c for c in nonlands if c.tag in ('bs', 'ponder')]
-    return 1 <= lc <= 4 and (combo or can)
+    # Oops needs: combo piece (spy/informer) + enough mana to cast it (4 mana)
+    # Mana sources: MDFC lands, Petals, Spirit Guides, Rituals, Chrome Mox
+    combo = any(c.tag in ('spy', 'informer') for c in hand)
+    spact = any(c.tag == 'spact' for c in hand)  # Summoner's Pact finds spy
+    has_combo_access = combo or spact
+    mana_sources = sum(1 for c in hand if c.mana_ritual or getattr(c, 'is_mdfc_land', False))
+    return has_combo_access and mana_sources >= 2
 
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
@@ -40,5 +37,5 @@ DECK_META = {
     'keep':       _keep_oops,
     'categories': {'combo', 'gy_combo', 'fast_combo'},
     'interaction': {'speed': 1, 'resilience': 1, 'uses_graveyard': True, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.04,
+    'meta_share': 0.06,
 }

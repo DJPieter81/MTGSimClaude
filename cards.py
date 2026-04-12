@@ -149,7 +149,7 @@ def make_bug_deck() -> List[Card]:
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 1
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 4
     d += [dual_land_tapped('Undercity Sewers', ['U','B'], ['Island','Swamp'], tag='sewers')] * 1
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [basic_land('Island', 'U', 'Island')] * 1
     d += [basic_land('Swamp', 'B', 'Swamp')] * 1
     assert len(d) == 60, f"BUG deck has {len(d)} cards"
@@ -213,7 +213,7 @@ def make_dimir_deck() -> List[Card]:
     d = []
     # Creatures (15)
     d += [creature('Tamiyo, Inquisitive Student', 1, {'U':1}, {'U'}, 0, 3,
-                   tag='tamiyo', flying=True)] * 4
+                   tag='tamiyo')] * 4
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1,
                    tag='bowm',    draw_trigger=True, flash=True)] * 4
     d += [creature('Nethergoyf', 2, {'B':1,'generic':1}, {'B'}, 0, 1, tag='nether')] * 3
@@ -237,7 +237,7 @@ def make_dimir_deck() -> List[Card]:
     d += [fetch_land('Bloodstained Mire',['Swamp','Mountain'])]  * 2
     d += [fetch_land('Scalding Tarn',    ['Island','Mountain'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 4
-    d += [utility_land('Wasteland', [], 'wl')]                   * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')]                   * 4
     d += [dual_land_tapped('Undercity Sewers', ['U','B'], ['Island','Swamp'])] * 1
     d += [basic_land('Island', 'U', 'Island')]                   * 1
     d += [basic_land('Swamp',  'B', 'Swamp')]                    * 1
@@ -250,7 +250,7 @@ def make_dimir_b_deck() -> List[Card]:
     d = []
     # Creatures (14)
     d += [creature('Tamiyo, Inquisitive Student', 1, {'U':1}, {'U'}, 0, 3,
-                        tag='tamiyo', flying=True)] * 4
+                        tag='tamiyo')] * 4
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1,
                    tag='bowm',    draw_trigger=True, flash=True)] * 3
     d += [make_barrowgoyf()] * 2
@@ -284,91 +284,125 @@ def make_dimir_b_deck() -> List[Card]:
     d += [fetch_land('Bloodstained Mire', ['Swamp','Mountain'])] * 1
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
     d += [dual_land_tapped('Undercity Sewers', ['U','B'], ['Island','Swamp'])] * 2
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [basic_land('Island', 'U', 'Island')] * 1
     d += [basic_land('Swamp', 'B', 'Swamp')] * 1
 
     assert len(d) == 60, f"Dimir B deck: {len(d)}"
     return d
 
-# ── Show and Tell (60) ─────────────────────────────────────────
+# ── Show and Tell (60) — updated for 2026 meta ───────────────
 
 def make_show_deck() -> List[Card]:
     d = []
+    # Combo (14)
     d += [sorcery('Show and Tell', 3, {'U':1,'generic':2}, {'U'}, tag='sat', is_combo_piece=True, win_condition=True)] * 4
-    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
-    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'}, tag='fon', free_cast_if_blue=True)] * 2
-    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 3
+    d += [creature('Atraxa, Grand Unifier', 7, {'G':1,'W':1,'U':1,'B':1,'generic':3}, {'G','W','U','B'}, 7, 7,
+                   tag='atraxa', flying=True, lifelink=True, deathtouch=True, vigilance=True, win_condition=True)] * 4
     d += [creature('Emrakul, the Aeons Torn', 15, {'generic':15}, set(), 15, 15,
                    tag='emrakul', flying=True, trample=True, haste=True,
-                   win_condition=True)] * 2  # haste simulates extra turn attack
+                   win_condition=True)] * 2
     d += [enchantment('Omniscience', 10, {'U':1,'generic':9}, {'U'}, tag='omni', win_condition=True)] * 2
     d += [enchantment('Sneak Attack', 4, {'R':1,'generic':3}, {'R'}, tag='sneak', is_combo_piece=True, win_condition=True)] * 2
-    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 3
-    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='pre', is_cantrip=True)] * 2
-    d += [sorcery('Cunning Wish', 3, {'U':1,'generic':2}, {'U'}, tag='wish')] * 1
-    # 27 lands
+    # Cantrips (10)
+    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
+    d += [instant('Stock Up', 2, {'U':1,'generic':1}, {'U'}, tag='stockup', is_cantrip=True)] * 2
+    # Protection (8)
+    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
+    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos')] * 2
+    d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'}, tag='fon', free_cast_if_blue=True)] * 2
+    # Fast mana (4)
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    # Daze (2)
+    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 2
+    # Lands (22)
+    d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 4
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
-    d += [fetch_land('Scalding Tarn', ['Island','Mountain'])] * 4
-    d += [dual_land('Volcanic Island', ['U','R'], ['Island','Mountain'])] * 3
-    d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 2
-    d += [basic_land('Island', 'U', 'Island')] * 14
+    d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 4
+    d += [dual_land('Volcanic Island', ['U','R'], ['Island','Mountain'])] * 2
+    d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 2
+    d += [basic_land('Island', 'U', 'Island')] * 4
+    d += [utility_land('City of Traitors', ['C','C'], 'cot', mana_ritual=True)] * 1
+    d += [utility_land('Boseiju, Who Endures', ['G'], 'boseiju')] * 1
     assert len(d) == 60, f"Show deck: {len(d)}"
     return d
 
 
-# ── Lands (60) ─────────────────────────────────────────────────
+# ── Lands (60) — based on storm994 4th Legacy Showcase 2026-04-05 ──
 
 def make_lands_deck() -> List[Card]:
     d = []
-    d += [sorcery('Life from the Loam', 3, {'G':1,'generic':2}, {'G'}, tag='loam',      engine=True)] * 4
-    d += [instant('Crop Rotation', 1, {'G':1}, {'G'}, tag='crop',      is_combo_piece=True)] * 4
-    d += [creature('Elvish Reclaimer', 1, {'G':1}, {'G'}, 1, 2, tag='reclaimer')] * 3
-    d += [instant('Punishing Fire', 2, {'R':1,'generic':1}, {'R'}, tag='pfire')] * 2
-    d += [creature('Endurance', 3, {'G':1,'generic':2}, {'G'}, 3, 4, tag='endurance', flash=True, reach=True)] * 2
-    # 45 lands
-    d += [utility_land('Dark Depths', [], 'depths', is_combo_piece=True)] * 3
-    d += [utility_land("Thespian's Stage", ['C'], 'stage', is_combo_piece=True)] * 3
-    d += [utility_land('Wasteland', [], 'wl')] * 4
-    d += [utility_land('Rishadan Port', ['C'], 'port')] * 4
-    d += [utility_land('Maze of Ith', [], 'maze')] * 3
-    d += [utility_land('The Tabernacle at Pendrell Vale', [], 'tab')] * 2
-    d += [utility_land('Grove of the Burnwillows', ['G','R'], 'grove')] * 4
-    d += [fetch_land('Windswept Heath', ['Forest','Plains'])] * 4
-    d += [fetch_land('Verdant Catacombs', ['Swamp','Forest'])] * 4
-    d += [dual_land('Bayou', ['B','G'], ['Swamp','Forest'])] * 2
-    d += [dual_land('Taiga', ['R','G'], ['Mountain','Forest'])] * 2
-    d += [basic_land('Forest', 'G', 'Forest')] * 10
+    # Spells (30)
+    d += [enchantment('Exploration', 1, {'G':1}, {'G'}, tag='exploration', engine=True)] * 4
+    d += [sorcery('Life from the Loam', 2, {'G':1,'generic':1}, {'G'}, tag='loam', engine=True)] * 4
+    d += [instant('Crop Rotation', 1, {'G':1}, {'G'}, tag='crop', is_combo_piece=True)] * 4
+    d += [sorcery('Malevolent Rumble', 2, {'G':1,'generic':1}, {'G'}, tag='rumble')] * 4
+    d += [artifact('Mox Diamond', 0, {}, tag='moxd', mana_ritual=True)] * 4
+    d += [artifact('Disruptor Flute', 3, {'generic':3}, tag='flute', lock_piece=True)] * 3
+    d += [instant('Once Upon a Time', 2, {'G':1,'generic':1}, {'G'}, tag='ouat', is_cantrip=True)] * 3
+    d += [artifact('Expedition Map', 1, {'generic':1}, tag='map')] * 1
+    d += [artifact("Grafdigger's Cage", 1, {'generic':1}, tag='cage')] * 1
+    d += [artifact('Pithing Needle', 1, {'generic':1}, tag='needle')] * 1
+    d += [artifact('Skateboard', 1, {'generic':1}, tag='skateboard')] * 1
+    # Lands (30)
+    d += [utility_land('Dark Depths', [], 'depths', is_combo_piece=True)] * 4
+    d += [utility_land("Thespian's Stage", ['C'], 'stage', is_combo_piece=True)] * 4
+    d += [utility_land("Urza's Saga", ['C'], 'saga')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
+    d += [utility_land('Yavimaya, Cradle of Growth', ['G'], 'yavimaya')] * 4
+    d += [utility_land('Boseiju, Who Endures', ['G'], 'boseiju')] * 3
+    d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 1
+    d += [utility_land('Bojuka Bog', ['B'], 'bog')] * 1
+    d += [basic_land('Forest', 'G', 'Forest')] * 1
+    d += [utility_land('Ghost Quarter', ['C'], 'gq')] * 1
+    d += [utility_land('Karakas', ['W'], 'karakas')] * 1
+    d += [utility_land('Maze of Ith', [], 'maze')] * 1
+    d += [utility_land('The Tabernacle at Pendrell Vale', [], 'tab')] * 1
     assert len(d) == 60, f"Lands deck: {len(d)}"
     return d
 
 
 # ── Oops All Spells (60) ────────────────────────────────────────
+# KEY: real Oops runs ZERO lands. MDFCs (Agadeem's Awakening, Turntimber Symbiosis)
+# are spells that can be played as lands. Balustrade Spy/Undercity Informer mill
+# entire deck because there are no land cards, then Thassa's Oracle wins.
 
 def make_oops_deck() -> List[Card]:
     d = []
-    d += [sorcery('Oops, All Spells', 2, {'U':1,'G':1}, {'U','G'}, tag='oops',
-                  is_combo_piece=True, win_condition=True)] * 4
-    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
-    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 4
+    # Combo pieces: mill self, then win
+    d += [creature('Balustrade Spy', 4, {'B':1,'generic':3}, {'B'}, 2, 3, tag='spy',
+                    is_combo_piece=True)] * 4
+    d += [creature('Undercity Informer', 3, {'B':1,'generic':2}, {'B'}, 2, 3, tag='informer',
+                    is_combo_piece=True)] * 4
+    d += [creature("Thassa's Oracle", 2, {'U':1,'generic':1}, {'U'}, 1, 3, tag='oracle',
+                    win_condition=True)] * 1
+    d += [creature('Narcomoeba', 2, {'U':1,'generic':1}, {'U'}, 1, 1, tag='narco', flying=True)] * 4
+    d += [sorcery('Dread Return', 4, {'B':1,'generic':3}, {'B'}, tag='dread',
+                   is_combo_piece=True)] * 1
+    # Free mana
+    d += [creature('Elvish Spirit Guide', 3, {'G':1,'generic':2}, {'G'}, 2, 2, tag='esg',
+                    mana_ritual=True)] * 4
+    d += [creature('Simian Spirit Guide', 3, {'R':1,'generic':2}, {'R'}, 2, 2, tag='ssg',
+                    mana_ritual=True)] * 4
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    d += [artifact('Chrome Mox', 0, {}, tag='cmox', mana_ritual=True)] * 2
+    # Rituals
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit', mana_ritual=True)] * 4
+    d += [instant('Cabal Ritual', 2, {'B':1,'generic':1}, {'B'}, tag='cabalrit', mana_ritual=True)] * 3
+    # Protection
     d += [instant('Pact of Negation', 0, {}, {'U'}, tag='pact', free_cast_if_blue=True)] * 4
-    d += [instant('Cabal Ritual', 2, {'B':1,'generic':1}, {'B'}, tag='ritual', mana_ritual=True)] * 4
-    d += [sorcery('Unmask', 4, {'B':1,'generic':3}, {'B'}, tag='unmask')] * 2
-    d += [creature('Balustrade Spy', 4, {'B':1,'generic':3}, {'B'}, 2, 3, tag='spy')] * 2
-    # 28 lands
-    d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
-    d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 4
-    d += [fetch_land('Verdant Catacombs', ['Swamp','Forest'])] * 2
-    d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
-    d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 3
-    d += [dual_land('Bayou', ['B','G'], ['Swamp','Forest'])] * 2
-    d += [basic_land('Island', 'U', 'Island')] * 5
-    d += [basic_land('Swamp', 'B', 'Swamp')] * 4
-    d += [basic_land('Forest', 'G', 'Forest')] * 1
+    d += [instant("Summoner's Pact", 0, {}, {'G'}, tag='spact')] * 4
+    # Disruption
+    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief')] * 4
+    d += [sorcery('Cabal Therapy', 1, {'B':1}, {'B'}, tag='therapy')] * 2
+    # MDFC "lands" (spell side: these count as spells, not lands in the library)
+    d += [sorcery("Agadeem's Awakening", 3, {'B':1,'generic':2}, {'B'}, tag='agadeem',
+                   is_mdfc_land=True)] * 4
+    d += [sorcery('Turntimber Symbiosis', 7, {'G':1,'generic':6}, {'G'}, tag='turntimber',
+                   is_mdfc_land=True)] * 4
+    d += [enchantment('Bridge from Below', 3, {'B':1,'generic':2}, {'B'}, tag='bfb')] * 1
+    d += [creature('Wild Cantor', 1, {'R':1}, {'R','G'}, 1, 1, tag='cantor', mana_ritual=True)] * 2
     assert len(d) == 60, f"Oops deck: {len(d)}"
     return d
 
@@ -382,14 +416,18 @@ def make_prison_deck() -> List[Card]:
     d += [artifact('Ensnaring Bridge', 3, {'generic':3}, tag='bridge',  lock_piece=True)] * 3
     d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(), tag='karn', engine=True, lock_piece=True)] * 4
     d += [creature('Thought-Knot Seer', 4, {'C':1,'generic':3}, set(), 4, 4, tag='tks')] * 4
-    d += [artifact("Painter's Servant", 2, {'generic':2}, tag='painter', is_combo_piece=True)] * 2
-    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', win_condition=True)] * 2
+    d += [creature("Painter's Servant", 2, {'generic':2}, set(), 1, 3, tag='painter', is_combo_piece=True)] * 3
+    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', win_condition=True)] * 3
     d += [artifact('Null Rod', 2, {'generic':2}, tag='nullrod')] * 2
-    # 36 lands
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    d += [artifact('Grim Monolith', 2, {'generic':2}, tag='monolith', mana_ritual=True)] * 4
+    d += [instant('Pyroblast', 1, {'R':1}, {'R'}, tag='pyro')] * 2
+    # 24 lands (sol lands + utility)
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 4
     d += [utility_land('City of Traitors', ['C','C'], 'cot', mana_ritual=True)] * 4
-    d += [utility_land('Eldrazi Temple', ['C'], 'temple')] * 4
-    d += [basic_land('Wastes', 'C', 'Wastes')] * 24
+    d += [utility_land('Eldrazi Temple', ['C'], 'temple')] * 2
+    d += [utility_land('Urza\'s Saga', ['C'], 'saga')] * 4
+    d += [basic_land('Wastes', 'C', 'Wastes')] * 10
     assert len(d) == 60, f"Prison deck: {len(d)}"
     return d
 
@@ -410,11 +448,15 @@ def make_uwx_deck() -> List[Card]:
     d += [creature('Snapcaster Mage', 2, {'U':1,'generic':1}, {'U'}, 2, 1, tag='snap', flash=True)] * 2
     d += [enchantment('Back to Basics', 3, {'U':1,'generic':2}, {'U'}, tag='b2b',     lock_piece=True)] * 2
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 2
-    # 26 lands
+    # Spell Pierce: {U} instant, counters noncreature spells unless opponent pays {2}
+    d += [instant('Spell Pierce', 1, {'U':1}, {'U'}, tag='fluster')] * 1
+    # Preordain: 1 mana cantrip — additional card selection
+    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 2
+    # 22 lands (reduced from 25 — Legacy control runs 20-22 lands)
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
-    d += [fetch_land('Scalding Tarn', ['Island','Mountain'])] * 3
-    d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 4
-    d += [basic_land('Island', 'U', 'Island')] * 9
+    d += [fetch_land('Scalding Tarn', ['Island','Mountain'])] * 2
+    d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 3
+    d += [basic_land('Island', 'U', 'Island')] * 8
     d += [basic_land('Plains', 'W', 'Plains')] * 5
     assert len(d) == 60, f"UWx deck: {len(d)}"
     return d
@@ -457,7 +499,7 @@ def make_eldrazi_deck() -> List[Card]:
     # Kozilek's Command: modal colorless instant, ~CMC 2-4
     d += [instant("Kozilek's Command", 3, {'generic':3}, set(), tag='kcommand')] * 4
     # Simian Spirit Guide: exile→{R}, CANNOT pay Chalice (generic), but kept as body
-    d += [creature('Simian Spirit Guide', 2, {'R':1,'generic':2}, {'R'}, 2, 2,
+    d += [creature('Simian Spirit Guide', 3, {'R':1,'generic':2}, {'R'}, 2, 2,
                    tag='ssg')] * 4
 
     # ── Lands (24) ──
@@ -470,34 +512,44 @@ def make_eldrazi_deck() -> List[Card]:
     # City of Traitors: {T}→{CC}, sacrifices itself when next land played
     d += [utility_land('City of Traitors',['C','C'], 'city',  sac_on_land=True)] * 3
     # Eye of Ugin: {T}→nothing, but reduces Eldrazi costs by 2
-    d += [utility_land('Eye of Ugin',     ['C'],     'eye')] * 1
+    d += [utility_land('Eye of Ugin',     [],     'eye')] * 1
     # Abundant Countryside: enters tapped, fetches any basic type
     d += [fetch_land('Abundant Countryside', ['Forest','Plains','Island','Swamp','Mountain'])] * 4
     # Wasteland: destroy target nonbasic
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
 
     assert len(d) == 60, f"Eldrazi deck: {len(d)}"
     return d
 
-# ── Painter Combo (60) ─────────────────────────────────────────
+# ── Painter Combo (60) — based on XanaZero 1st Legacy Challenge 2026-04-04 ──
 
 def make_painter_deck() -> List[Card]:
     d = []
-    d += [artifact("Painter's Servant", 2, {'generic':2}, tag='painter', is_combo_piece=True)] * 4
-    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', is_combo_piece=True, win_condition=True)] * 4
-    d += [instant('Pyroblast', 1, {'R':1}, {'R'}, tag='pyro')] * 4
-    d += [instant('Red Elemental Blast', 1, {'R':1}, {'R'}, tag='reb')] * 4
-    d += [creature('Imperial Recruiter', 3, {'R':1,'generic':2}, {'R'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
-    d += [enchantment('Blood Moon', 3, {'R':1,'generic':2}, {'R'}, tag='moon',    lock_piece=True)] * 3
-    d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(), tag='karn', engine=True, lock_piece=True)] * 2
-    d += [artifact('Ensnaring Bridge', 3, {'generic':3}, tag='bridge',  lock_piece=True)] * 2
-    d += [creature('Walking Ballista', 0, {}, set(), 0, 0, tag='ballista')] * 2
-    # 31 lands
+    # Combo
+    d += [creature("Painter's Servant", 2, {'generic':2}, set(), 1, 3, tag='painter', is_combo_piece=True)] * 3
+    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', is_combo_piece=True, win_condition=True)] * 1
+    # Planeswalkers
+    d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(), tag='karn', engine=True, lock_piece=True)] * 4
+    d += [planeswalker('Tezzeret, Cruel Captain', 3, {'generic':3}, set(), tag='tezzeret', engine=True)] * 4
+    # Artifacts
+    d += [artifact('The One Ring', 4, {'generic':4}, tag='ring', engine=True)] * 4
+    d += [artifact('Grim Monolith', 2, {'generic':2}, tag='monolith', mana_ritual=True)] * 4
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    d += [instant("Kozilek's Command", 4, {'C':2,'generic':2}, set(), tag='kozcommand')] * 4
+    d += [artifact('Manifold Key', 1, {'generic':1}, tag='mfkey')] * 3
+    d += [artifact("Mishra's Research Desk", 1, {'generic':1}, tag='desk', is_cantrip=True)] * 3
+    d += [artifact('Disruptor Flute', 3, {'generic':3}, tag='flute', lock_piece=True)] * 1
+    d += [artifact('Mox Opal', 0, {}, tag='opal', mana_ritual=True)] * 1
+    d += [artifact('Pithing Needle', 1, {'generic':1}, tag='needle')] * 1
+    d += [artifact('Portable Hole', 1, {'W':1}, tag='hole', is_removal=True)] * 1
+    d += [artifact('Soul-Guide Lantern', 1, {'generic':1}, tag='lantern')] * 1
+    d += [artifact('Voltaic Key', 1, {'generic':1}, tag='vkey')] * 1
+    # 20 lands (Tron + sol lands + Urza's Saga)
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 4
-    d += [utility_land('City of Traitors', ['C','C'], 'cot', mana_ritual=True)] * 4
-    d += [fetch_land('Arid Mesa', ['Mountain','Plains'])] * 4
-    d += [dual_land('Volcanic Island', ['U','R'], ['Island','Mountain'])] * 2
-    d += [basic_land('Mountain', 'R', 'Mountain')] * 17
+    d += [utility_land('Planar Nexus', ['C','C','C'], 'nexus')] * 4
+    d += [utility_land("Urza's Saga", ['C'], 'saga')] * 4
+    d += [utility_land("Urza's Tower", ['C','C','C'], 'tower')] * 4
+    d += [utility_land("Urza's Workshop", ['C','C','C'], 'workshop')] * 4
     assert len(d) == 60, f"Painter deck: {len(d)}"
     return d
 
@@ -507,23 +559,23 @@ def make_painter_deck() -> List[Card]:
 def make_doomsday_deck() -> List[Card]:
     d = []
     d += [sorcery('Doomsday', 5, {'B':2,'generic':3}, {'B'}, tag='dd',
-                  is_combo_piece=True, win_condition=True)] * 4
+                  is_combo_piece=True)] * 4  # removed win_condition — only Oracle is the kill
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3, tag='oracle', win_condition=True)] * 4
-    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 3
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 4  # was 3
     d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 3
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 3
-    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 3
-    d += [instant('Edge of Autumn', 2, {'G':1,'generic':1}, {'G'}, tag='edge', is_cantrip=True)] * 2
+    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 4  # was 3
+    d += [instant('Edge of Autumn', 2, {'G':1,'generic':1}, {'G'}, tag='edge', is_cantrip=True)] * 1  # was 2 (trimmed to fit 60)
     # 26 lands
     d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 4
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
     d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 1
-    d += [basic_land('Island', 'U', 'Island')] * 6
+    d += [basic_land('Island', 'U', 'Island')] * 5  # was 6 (trimmed to fit 60)
     d += [basic_land('Swamp', 'B', 'Swamp')] * 4
     d += [basic_land('Forest', 'G', 'Forest')] * 2
     assert len(d) == 60, f"Doomsday deck: {len(d)}"
@@ -545,17 +597,17 @@ def make_dnt_deck() -> List[Card]:
     d += [creature('Solitude', 5, {'W':2,'generic':3}, {'W'}, 3, 2, tag='solitude', is_removal=True, flash=True, flying=True, lifelink=True)] * 2
     d += [creature('Phelia, Exuberant Shepherd', 2, {'W':1,'generic':1}, {'W'}, 2, 2, tag='phelia')] * 3
     d += [creature('Flickerwisp', 3, {'W':1,'generic':2}, {'W'}, 3, 1, tag='flickerwisp', flying=True)] * 2
-    d += [creature('White Orchid Phantom', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='orchid')] * 1
     # Spells (8)
     d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'}, tag='stp',     is_removal=True)] * 4
     d += [artifact('Aether Vial', 1, {'generic':1}, tag='vial',    engine=True)] * 4
-    # Equipment (3)
+    # Equipment (2)
     d += [artifact('Kaldra Compleat', 7, {'generic':7}, tag='kaldra')] * 1
-    d += [artifact('Pre-War Formalwear', 4, {'generic':4}, tag='equipment')] * 1
     d += [artifact('Batterskull', 5, {'generic':5}, tag='equipment')] * 1
+    # Lock pieces (2)
+    d += [creature('Sanctum Prelate', 3, {'W':1,'generic':2}, {'W'}, 2, 2, tag='prelate', lock_piece=True)] * 2
     # Lands (27 — DnT runs lots of utility lands)
-    d += [utility_land('Rishadan Port', [], 'port')] * 4
-    d += [utility_land('Wasteland',     [], 'wl')]   * 4
+    d += [utility_land('Rishadan Port', ['C'], 'port')] * 4
+    d += [utility_land('Wasteland',     ['C'], 'wl')]   * 4
     d += [utility_land('Karakas',       ['W'], 'karakas')] * 3
     d += [fetch_land('Flooded Strand', ['Plains'])]  * 2
     d += [fetch_land('Arid Mesa',      ['Plains'])]  * 2
@@ -571,7 +623,7 @@ def make_mono_black_deck() -> List[Card]:
     d = []
     # Creatures (20)
     d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief', flash=True)] * 4  # evoke exile black
-    d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm',    draw_trigger=True)] * 4
+    d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm',    draw_trigger=True, flash=True)] * 4
     d += [creature('Dauthi Voidwalker', 2, {'B':2}, {'B'}, 3, 2, tag='dauthi')] * 4
     d += [creature('Carnage Interpreter', 2, {'B':1,'generic':1}, {'B'}, 2, 2, tag='carnage')] * 4
     d += [creature('Braids, Arisen Nightmare', 4, {'B':2,'generic':2}, {'B'}, 3, 3, tag='braids')] * 4
@@ -581,7 +633,7 @@ def make_mono_black_deck() -> List[Card]:
     d += [instant('Snuff Out', 4, {'B':1,'generic':3}, {'B'}, tag='snuffout', life_cost=4)] * 4  # free if Swamp
     d += [sorcery('Hymn to Tourach', 2, {'B':2}, {'B'}, tag='hymn')] * 4
     # Lands (24)
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [fetch_land('Polluted Delta',   ['Swamp'])] * 4
     d += [fetch_land('Marsh Flats',      ['Swamp'])] * 4
     d += [basic_land('Swamp', 'B', 'Swamp')]          * 12
@@ -613,8 +665,8 @@ def make_boros_deck() -> List[Card]:
     d += [fetch_land('Arid Mesa',      ['Plains','Mountain'])] * 4
     d += [fetch_land('Flooded Strand', ['Plains'])]             * 2
     d += [dual_land('Plateau', ['W','R'], ['Plains','Mountain'])] * 2
-    d += [utility_land('Wasteland', [], 'wl')]  * 4
-    d += [utility_land('Rishadan Port', [], 'port')] * 2
+    d += [utility_land('Wasteland', ['C'], 'wl')]  * 4
+    d += [utility_land('Rishadan Port', ['C'], 'port')] * 2
     d += [basic_land('Plains',   'W', 'Plains')]  * 6
     d += [basic_land('Mountain', 'R', 'Mountain')] * 4
     assert len(d) == 60, f"Boros: {len(d)}"
@@ -625,7 +677,7 @@ def _bug_base(daze=3, ponder=3, kaito=2, bowm=4, bauble=2, snuff=1, extra_snuff=
     """Shared builder for BUG variant decks. All counts relative to baseline."""
     d = []
     d += [creature('Tamiyo, Inquisitive Student', 1, {'U':1}, {'U'}, 0, 3,
-                   tag='tamiyo', flying=True)] * 4
+                   tag='tamiyo')] * 4
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1,
                    tag='bowm', flash=True, draw_trigger=True)] * bowm
     d += [creature('Nethergoyf', 2, {'B':1,'generic':1}, {'B'}, 0, 1, tag='nether')] * 3
@@ -650,7 +702,7 @@ def _bug_base(daze=3, ponder=3, kaito=2, bowm=4, bauble=2, snuff=1, extra_snuff=
     d += [fetch_land('Verdant Catacombs', ['Swamp','Forest'])] * 1
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 4
     d += [dual_land_tapped('Undercity Sewers', ['U','B'], ['Island','Swamp'])] * 1
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [basic_land('Island', 'U', 'Island')] * 1
     d += [basic_land('Swamp', 'B', 'Swamp')] * 1
     return d
@@ -954,7 +1006,7 @@ def make_elves_deck() -> List[Card]:
     d += [creature('Reclamation Sage',  2, {'G':1,'generic':1}, {'G'}, 2, 1, tag='recsage', is_removal=True)] * 1
     # ── Finisher ──
     d += [creature('Craterhoof Behemoth', 8, {'G':1,'generic':7}, {'G'}, 5, 5,
-                   tag='hoof', win_condition=True, engine=True)] * 1
+                   tag='hoof', win_condition=True, engine=True, trample=True, haste=True)] * 1
     # ── Spells ──
     d += [sorcery('Glimpse of Nature',  1, {'G':1}, {'G'}, tag='glimpse',    is_combo_piece=True)] * 4
     d += [sorcery("Green Sun's Zenith", 1, {'G':1}, {'G'}, tag='gsz',       is_combo_piece=True)] * 4
@@ -1803,14 +1855,14 @@ def make_reanimator_deck() -> List[Card]:
     d += [instant('Entomb', 1, {'B':1}, {'B'}, tag='entomb', is_combo_piece=True)] * 4
     d += [sorcery('Reanimate', 1, {'B':1}, {'B'}, tag='reanimate', is_combo_piece=True)] * 4
     d += [sorcery('Exhume', 2, {'B':1,'generic':1}, {'B'}, tag='exhume', is_combo_piece=True)] * 4
-    d += [enchantment('Animate Dead', 2, {'B':1,'generic':1}, {'B'}, tag='animatedead', is_combo_piece=True)] * 4
+    d += [enchantment('Animate Dead', 2, {'B':1,'generic':1}, {'B'}, tag='animatedead', is_combo_piece=True)] * 2
+    # Fast mana
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit', mana_ritual=True)] * 4
     # Win conditions
     d += [creature('Griselbrand', 8, {'B':4,'generic':4}, {'B'}, 7, 7,
-                   tag='gris', flying=True, win_condition=True)] * 4
+                   tag='gris', flying=True, lifelink=True, win_condition=True)] * 4
     d += [creature('Archon of Cruelty', 8, {'B':2,'generic':6}, {'B'}, 6, 6,
-                   tag='archon', flying=True, win_condition=True)] * 2
-    d += [creature('Atraxa, Grand Unifier', 7, {'W':1,'U':1,'B':1,'G':1,'generic':3},
-                   {'W','U','B','G'}, 7, 7, tag='atraxa', flying=True, win_condition=True)] * 2
+                   tag='archon', flying=True, lifelink=True, win_condition=True)] * 2
     # Protection / disruption
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 4
@@ -1832,7 +1884,7 @@ def make_reanimator_deck() -> List[Card]:
 def make_mardu_deck() -> List[Card]:
     d = []
     # Free evoke engine
-    d += [creature('Grief', 3, {'B':1,'generic':2}, {'B'}, 3, 2,
+    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2,
                    tag='grief', flash=True, is_combo_piece=True)] * 4
     d += [creature('Fury', 5, {'R':1,'generic':4}, {'R'}, 3, 3,
                    tag='fury', flash=True, trample=True, is_combo_piece=True)] * 4
@@ -1872,12 +1924,14 @@ def make_mardu_deck() -> List[Card]:
 def make_ur_aggro_deck() -> List[Card]:
     d = []
     # Threats
+    d += [creature('Delver of Secrets', 1, {'U':1}, {'U'}, 1, 1,
+                   tag='delver')] * 4
     d += [creature('Ragavan, Nimble Pilferer', 1, {'R':1}, {'R'}, 2, 1,
                    tag='ragavan', haste=True)] * 4
     d += [creature('Dragon\'s Rage Channeler', 1, {'R':1}, {'R'}, 3, 3,
                    tag='drc')] * 4
     d += [creature('Murktide Regent', 7, {'U':1,'generic':6}, {'U'}, 8, 8,
-                   tag='murk', delve=True)] * 4
+                   tag='murk', delve=True, flying=True)] * 4
     d += [creature('Brazen Borrower', 3, {'U':1,'generic':2}, {'U'}, 3, 1,
                    tag='borrow', flash=True, flying=True)] * 2
     # Burn / removal
@@ -1887,7 +1941,6 @@ def make_ur_aggro_deck() -> List[Card]:
     # Cantrips / filtering
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs')] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder')] * 4
-    d += [sorcery('Expressive Iteration', 2, {'U':1,'R':1}, {'U','R'}, tag='ei')] * 4
     # Counterspells
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 2
@@ -1927,16 +1980,16 @@ def make_dimir_flash_deck() -> List[Card]:
                   tag='fon', free_cast_if_blue=True)] * 2
     d += [instant('Daze', 1, {'U':1}, {'U'}, tag='daze')] * 3
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 1
-    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs')] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder')] * 4
-    d += [instant('Fatal Push', 1, {'B':1}, {'B'}, tag='push')] * 4
+    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
+    d += [instant('Fatal Push', 1, {'B':1}, {'B'}, tag='push', is_removal=True)] * 4
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 3
-    d += [fetch_land('Polluted Delta', ['Underground Sea', 'Tropical Island'])] * 4
-    d += [fetch_land('Misty Rainforest', ['Underground Sea', 'Tropical Island'])] * 2
-    d += [fetch_land('Scalding Tarn', ['Underground Sea', 'Volcanic Island'])] * 2
+    d += [fetch_land('Polluted Delta', ['Island', 'Swamp'])] * 4
+    d += [fetch_land('Misty Rainforest', ['Island', 'Swamp'])] * 2
+    d += [fetch_land('Scalding Tarn', ['Island', 'Swamp'])] * 2
     d += [dual_land('Underground Sea', ['U', 'B'], ['Island', 'Swamp'])] * 4
     d += [dual_land_tapped('Undercity Sewers', ['U', 'B'], ['Island', 'Swamp'])] * 2
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
     d += [basic_land('Island', 'U', 'Island')] * 3
     d += [basic_land('Swamp', 'B', 'Swamp')] * 1
     assert len(d) == 60, f"Dimir Flash: {len(d)}"
@@ -1968,7 +2021,7 @@ DECKS = {
 # MATCHUP_META: auto-built from deck_registry (each deck declares name + meta_share)
 # Fallback for built-in decks that don't have DECK_META yet
 _BUILTIN_META = {
-    'bug': {'name': 'BUG Tempo', 'share': 0.10},
+    'bug': {'name': 'BUG Tempo', 'share': 0.02},
 }
 try:
     from deck_registry import build_matchup_meta

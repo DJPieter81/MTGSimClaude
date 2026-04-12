@@ -21,13 +21,27 @@ def _keep_dnt(hand, matchup=''):
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
-    threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
     tags = {c.tag for c in hand}
-    has_t1 = 'vial' in tags or any(c.is_creature() for c in nonlands)
-    return 2 <= lc <= 4 and has_t1
+    has_vial = 'vial' in tags
+    has_thalia = 'thalia' in tags
+    has_stp = 'stp' in tags
+    has_solitude = 'solitude' in tags
+    has_removal = has_stp or has_solitude
+    creatures = [c for c in nonlands if c.is_creature()]
+    action = len(creatures) + (1 if has_vial else 0) + (1 if has_stp else 0)
+
+    # Need 2-4 lands + some action
+    if not (2 <= lc <= 4):
+        return False
+    # Auto-keep strong hands
+    if has_vial:
+        return True  # Vial = engine, always keep
+    if has_thalia and action >= 2:
+        return True  # Thalia + backup
+    if has_removal and creatures:
+        return True  # interaction + clock
+    # Acceptable: 2+ action cards including at least 1 creature
+    return action >= 2 and len(creatures) >= 1
 
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
@@ -40,5 +54,5 @@ DECK_META = {
     'keep':       _keep_dnt,
     'categories': {'prison', 'vial_decks'},
     'interaction': {'speed': 3, 'resilience': 4, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'opp_threats': 8},
-    'meta_share': 0.03,
+    'meta_share': 0.02,
 }

@@ -1,16 +1,10 @@
 """
-sim.py — Main simulator v2.
+sim.py — Symmetric Monte Carlo game engine.
 
-Usage:
-  python sim.py --matchup dimir --games 1000
-  python sim.py --matchup all --games 500
-  python sim.py --matchup dimir --games 1 --verbose
-  python sim.py --test
-
-v2 fixes: London mulligan, coin flip for first player, all rules fixes from engine/rules/game.
+Public API: run_game, run_sweep, run_meta_matrix, run_any_match, run_any_bo3.
+CLI interface: see run_meta.py.
 """
 
-import argparse
 import random
 import sys
 from dataclasses import dataclass
@@ -19,8 +13,9 @@ from typing import List, Optional
 from rules import MTGRules, StackType, Card
 from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
                    instant, sorcery, artifact, creature)
-from game import GameState, PlayerState, london_mulligan, bug_keep, opp_keep
-from engine import bug_turn, opp_turn, play_turn, update_goyf
+from game import GameState, PlayerState, london_mulligan, opp_keep
+from engine import opp_turn, play_turn, update_goyf
+from config import GameRules as GR, CombatThresholds as CT
 
 
 @dataclass
@@ -29,159 +24,107 @@ class GameResult:
     win_reason: str
     kill_turn: Optional[int]
     game_length: int
-    bug_mulls: int
-    opp_mulls: int
-    bug_opening_hand: List[str]
-    opp_opening_hand: List[str]
+    p1_mulls: int
+    p2_mulls: int
+    p1_opening_hand: List[str]
+    p2_opening_hand: List[str]
     log_lines: List[str]
-    final_bug_life: int
-    final_opp_life: int
-    bug_went_first: bool
+    final_p1_life: int
+    final_p2_life: int
+    p1_went_first: bool
+    p1_deck: str = ''
+    p2_deck: str = ''
+
+    # Legacy aliases — deprecated, use p1_*/p2_* instead
+    @property
+    def bug_mulls(self): return self.p1_mulls
+    @property
+    def bug_went_first(self): return self.p1_went_first
 
 
-def run_game(matchup: str, verbose: bool = False) -> GameResult:
-    # S1: London mulligan — draw 7, put N on bottom
-    bug_hand, bug_lib, bug_mulls = london_mulligan(DECKS['bug'], bug_keep)
-    opp_hand, opp_lib, opp_mulls = london_mulligan(DECKS[matchup], opp_keep, matchup)
+def _trace_dual_board(log, gs, deck1, deck2):
+    """Append both-player board state in side-by-side table format."""
+    def _col(label, player, w=32):
+        lines = []
+        lines.append(f"{label:<{w}}")
+        lines.append(f"  Life: {player.life:<{w-8}}")
+        lines.append(f"  Hand: {len(player.hand)}  Lib: {len(player.library)}  GY: {len(player.graveyard)}")
+        land_names = ', '.join(l.card.name for l in player.lands) or '(none)'
+        if len(land_names) > w - 4:
+            land_names = land_names[:w-7] + '...'
+        lines.append(f"  Lands: {land_names}")
+        cre = ', '.join(f"{c.card.name} ({c.power}/{c.toughness})" for c in player.creatures) or '(none)'
+        if len(cre) > w - 4:
+            cre = cre[:w-7] + '...'
+        lines.append(f"  Creatures: {cre}")
+        arts = ', '.join(a.card.name for a in player.artifacts)
+        if arts:
+            if len(arts) > w - 4:
+                arts = arts[:w-7] + '...'
+            lines.append(f"  Artifacts: {arts}")
+        hand_str = ', '.join(c.name for c in player.hand) or '(empty)'
+        # Wrap hand across multiple lines if needed
+        hand_lines = []
+        prefix = "  Hand: "
+        while len(prefix + hand_str) > w:
+            cut = hand_str.rfind(', ', 0, w - len(prefix))
+            if cut <= 0:
+                cut = w - len(prefix)
+            hand_lines.append(prefix + hand_str[:cut])
+            hand_str = hand_str[cut:].lstrip(', ')
+            prefix = "        "
+        hand_lines.append(prefix + hand_str)
+        lines += hand_lines
+        return lines
 
-    # S2: Coin flip — who goes first (CR 103.1)
-    bug_goes_first = random.random() < 0.5
-
-    bug_player = PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib))
-    opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
-
-    # ── Main game loop ──
-    gs2 = GameState(p1=PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib)),
-                    p2=PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib)),
-                    p1_goes_first=bug_goes_first)
-    gs2.p1_deck = 'bug'
-    gs2.p2_deck = matchup
-    all_log = []
-    display_turn = 0  # sequential turn counter for display (T1, T2, T3...)
-
-    # ── Interaction model (derived from deck properties, not magic numbers) ──
-    from interaction_model import get_or_infer_interaction, compute_bug_save_rate, compute_opp_save_rate
-    _interaction = get_or_infer_interaction(matchup)
-    _bug_save = compute_bug_save_rate(_interaction)
-    _opp_save = compute_opp_save_rate(_interaction)
-
-    for turn in range(1, 16):
-        if gs2.game_over:
-            break
-        gs2.turn = turn
-
-        def _check_interaction_save():
-            """Give the losing side a sideboard-save chance (rates from interaction model)."""
-            if not gs2.game_over:
-                return False
-            import random as _ir_rng
-            if gs2.winner != 'p1' and _bug_save > 0:
-                if _ir_rng.random() < _bug_save:
-                    gs2.game_over = False
-                    gs2.winner = None
-                    gs2.win_reason = None
-                    gs2.p1.life = max(gs2.p1.life, 3)
-                    # Remove the threat that killed BUG (Karakas, STP, etc.)
-                    if gs2.p2.creatures:
-                        biggest = max(gs2.p2.creatures, key=lambda c: c.power)
-                        gs2.p2.creatures.remove(biggest)
-                    return True
-            if gs2.winner == 'p1' and _opp_save > 0:
-                if _ir_rng.random() < _opp_save:
-                    gs2.game_over = False
-                    gs2.winner = None
-                    gs2.win_reason = None
-                    gs2.p2.life = max(gs2.p2.life, 3)
-                    return True
-            return False
-
-        first, second = ('p1', 'p2') if bug_goes_first else ('p2', 'p1')
-        for who in (first, second):
-            display_turn += 1
-            lines = play_turn(gs2, turn, who)
-            label = 'BUG' if who == 'p1' else 'OPP'
-            all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
-            if gs2.game_over:
-                if not _check_interaction_save(): break
-
-    gs = gs2
-
-    if not gs.game_over:
-        bug_power = sum(c.power for c in gs.p1.creatures)
-        opp_power = sum(c.power for c in gs.p2.creatures)
-        bug_creatures = len(gs.p1.creatures)
-        opp_creatures = len(gs.p2.creatures)
-        bug_lands = len(gs.p1.lands)
-        opp_lands = len(gs.p2.lands)
-        life_edge = gs.p1.life - gs.p2.life
-
-        # Score board position: creatures, power, lands, life
-        bug_score = bug_power * 2 + bug_creatures * 3 + bug_lands + max(0, life_edge)
-        opp_score = opp_power * 2 + opp_creatures * 3 + opp_lands + max(0, -life_edge)
-
-        if bug_score > opp_score:
-            gs.winner = 'p1'
-            gs.win_reason = f"Board/life advantage after T{gs.turn}"
-            gs.kill_turn = gs.turn
-        elif opp_score > bug_score:
-            gs.winner = 'p2'
-            gs.win_reason = f"Opp board/life advantage after T{gs.turn}"
-        else:
-            gs.winner = 'p1' if gs.p1.life >= gs.p2.life else 'p2'
-            gs.win_reason = f"Tied board after T{gs.turn}, life tiebreak"
-        gs.kill_turn = gs.turn
-        gs.game_over = True
-
-        # Apply interaction model to timeout results
-        import random as _to_rng
-        if gs.winner == 'p1' and _opp_save > 0:
-            if _to_rng.random() < _opp_save:
-                gs.winner = 'p2'
-                gs.win_reason = f"Opp recovers (resilience {_interaction.get('resilience',3)}) after T{gs.turn}"
-        elif gs.winner != 'p1' and _bug_save > 0:
-            if _to_rng.random() < _bug_save:
-                gs.winner = 'p1'
-                gs.win_reason = f"BUG answers (speed {_interaction.get('speed',3)}) after T{gs.turn}"
-
-    return GameResult(
-        winner=gs.winner,
-        win_reason=gs.win_reason or '',
-        kill_turn=gs.kill_turn,
-        game_length=gs.turn,
-        bug_mulls=bug_mulls,
-        opp_mulls=opp_mulls,
-        bug_opening_hand=[c.name for c in bug_hand],
-        opp_opening_hand=[c.name for c in opp_hand],
-        log_lines=all_log,
-        final_bug_life=gs.p1.life,
-        final_opp_life=gs.p2.life,
-        bug_went_first=bug_goes_first,
-    )
+    left = _col(deck1.upper(), gs.p1)
+    right = _col(deck2.upper(), gs.p2)
+    # Pad to same height
+    max_h = max(len(left), len(right))
+    left += [''] * (max_h - len(left))
+    right += [''] * (max_h - len(right))
+    for l, r in zip(left, right):
+        log.append(f"  │ {l:<32} │ {r:<32} │")
 
 
-def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameResult:
+def run_game(deck1: str, deck2: str = None, verbose: bool = False,
+             trace: bool = False) -> GameResult:
     """
     Run a single game between any two decks with equal AI quality.
-    deck1 is p1 (protagonist), deck2 is p2 (antagonist).
-    Both sides use play_turn() which dispatches to the best available AI.
+
+    Args:
+        trace: If True, emit detailed phase markers, hand state, board state,
+               mulligan decisions, and mana tracking for full play-by-play output.
 
     Usage:
-        run_symmetric_game('ur_delver', 'dimir')
-        run_symmetric_game('storm', 'burn')
-        run_symmetric_game('bug', 'eldrazi')  # equivalent to run_game('eldrazi')
+        run_game('ur_delver', 'dimir')
+        run_game('storm', 'burn')
+        run_game('burn', 'dimir', trace=True)  # full play-by-play
     """
+    # Legacy compat: run_game('storm') means BUG vs storm
+    if deck2 is None:
+        deck2 = deck1
+        deck1 = 'bug'
+
     if deck1 not in DECKS:
         raise ValueError(f"Unknown deck: {deck1}. Available: {sorted(DECKS.keys())}")
     if deck2 not in DECKS:
         raise ValueError(f"Unknown deck: {deck2}. Available: {sorted(DECKS.keys())}")
 
-    # Mulligan: each deck uses its own keep logic
-    # BUG has a specialized keep function; all others use opp_keep
-    p1_keep = bug_keep if deck1 == 'bug' else opp_keep
-    p2_keep = bug_keep if deck2 == 'bug' else opp_keep
+    # Mulligan: each deck uses its own keep logic (via registry or fallback)
+    from deck_registry import get_keep_fn
+    p1_keep = get_keep_fn(deck1) or opp_keep
+    p2_keep = get_keep_fn(deck2) or opp_keep
 
-    p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1 if deck1 != 'bug' else '')
-    p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2 if deck2 != 'bug' else '')
+    p1_mull_trace = p2_mull_trace = None
+    if trace:
+        p1_hand, p1_lib, p1_mulls, p1_mull_trace = london_mulligan(
+            DECKS[deck1], p1_keep, deck1, trace=True)
+        p2_hand, p2_lib, p2_mulls, p2_mull_trace = london_mulligan(
+            DECKS[deck2], p2_keep, deck2, trace=True)
+    else:
+        p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1)
+        p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2)
 
     p1_goes_first = random.random() < 0.5
 
@@ -192,11 +135,32 @@ def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameRes
     gs.p1_deck = deck1
     gs.p2_deck = deck2
     gs.matchup = deck2  # backward compat: matchup = antagonist deck
+    gs.trace = trace
 
     all_log = []
     display_turn = 0
 
-    for turn in range(1, 16):
+    # ── Trace: pregame section ──
+    if trace:
+        all_log.append(f"{'═' * 70}")
+        all_log.append(f"  {deck1.upper()} vs {deck2.upper()}")
+        all_log.append(f"{'═' * 70}")
+        all_log.append("")
+        all_log.append(f"── PREGAME {'─' * 58}")
+        all_log.append("")
+        first_name = deck1.upper() if p1_goes_first else deck2.upper()
+        all_log.append(f"  Coin flip: {first_name} wins the die roll, goes FIRST")
+        all_log.append("")
+        all_log.append(f"  {deck1.upper()} (P1):")
+        if p1_mull_trace:
+            all_log += p1_mull_trace
+        all_log.append("")
+        all_log.append(f"  {deck2.upper()} (P2):")
+        if p2_mull_trace:
+            all_log += p2_mull_trace
+        all_log.append("")
+
+    for turn in range(1, GR.MAX_TURNS + 1):
         if gs.game_over:
             break
         gs.turn = turn
@@ -204,17 +168,40 @@ def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameRes
         first, second = ('p1', 'p2') if p1_goes_first else ('p2', 'p1')
         for who in (first, second):
             display_turn += 1
-            lines = play_turn(gs, turn, who)
             label = deck1.upper() if who == 'p1' else deck2.upper()
-            all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
+            player = gs.p1 if who == 'p1' else gs.p2
+            opponent = gs.p2 if who == 'p1' else gs.p1
+
+            if trace:
+                # Turn header with life totals
+                life_str = f"{deck1} {gs.p1.life} | {deck2} {gs.p2.life}"
+                header = f"━━ TURN {display_turn} — {label} "
+                all_log.append(f"{header}{'━' * max(1, 50 - len(header))} Life: {life_str}")
+                all_log.append("")
+
+            lines = play_turn(gs, turn, who)
+
+            if trace:
+                for l in lines:
+                    all_log.append(f"  {l}")
+                # Both-player board state
+                all_log.append("")
+                all_log.append(f"  ┌{'─' * 34}┬{'─' * 34}┐")
+                _trace_dual_board(all_log, gs, deck1, deck2)
+                all_log.append(f"  └{'─' * 34}┴{'─' * 34}┘")
+                all_log.append("")
+            else:
+                all_log += [f"  T{display_turn}[{label}] {l}" for l in lines]
             if gs.game_over: break
 
     # Timeout resolution: score board position
     if not gs.game_over:
-        p1_power = sum(c.power for c in gs.p1.creatures)
-        p2_power = sum(c.power for c in gs.p2.creatures)
-        p1_score = p1_power * 2 + len(gs.p1.creatures) * 3 + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life)
-        p2_score = p2_power * 2 + len(gs.p2.creatures) * 3 + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life)
+        p1_score = (sum(c.power for c in gs.p1.creatures) * 2 +
+                    len(gs.p1.creatures) * 3 + len(gs.p1.lands) +
+                    max(0, gs.p1.life - gs.p2.life))
+        p2_score = (sum(c.power for c in gs.p2.creatures) * 2 +
+                    len(gs.p2.creatures) * 3 + len(gs.p2.lands) +
+                    max(0, gs.p2.life - gs.p1.life))
 
         if p1_score > p2_score:
             gs.winner = 'p1'
@@ -228,28 +215,36 @@ def run_symmetric_game(deck1: str, deck2: str, verbose: bool = False) -> GameRes
         gs.kill_turn = gs.turn
         gs.game_over = True
 
+    if trace:
+        all_log.append(f"{'═' * 70}")
+        winner_label = deck1.upper() if gs.winner == 'p1' else deck2.upper()
+        all_log.append(f"  WINNER: {winner_label} — {gs.win_reason}")
+        all_log.append(f"  Final life: {deck1} {gs.p1.life} | {deck2} {gs.p2.life}")
+        all_log.append(f"{'═' * 70}")
+
     return GameResult(
         winner=gs.winner,
         win_reason=gs.win_reason or '',
         kill_turn=gs.kill_turn,
         game_length=gs.turn,
-        bug_mulls=p1_mulls,
-        opp_mulls=p2_mulls,
-        bug_opening_hand=[c.name for c in p1_hand],
-        opp_opening_hand=[c.name for c in p2_hand],
+        p1_mulls=p1_mulls,
+        p2_mulls=p2_mulls,
+        p1_opening_hand=[c.name for c in p1_hand],
+        p2_opening_hand=[c.name for c in p2_hand],
         log_lines=all_log,
-        final_bug_life=gs.p1.life,
-        final_opp_life=gs.p2.life,
-        bug_went_first=p1_goes_first,
+        final_p1_life=gs.p1.life,
+        final_p2_life=gs.p2.life,
+        p1_went_first=p1_goes_first,
+        p1_deck=deck1,
+        p2_deck=deck2,
     )
 
-
-def run_symmetric_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
+def run_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
     """
     Run n_games between deck1 and deck2, return stats.
     Returns dict with: p1_wins, p2_wins, p1_wr, avg_length, avg_kill_turn
     """
-    results = [run_symmetric_game(deck1, deck2) for _ in range(n_games)]
+    results = [run_game(deck1, deck2) for _ in range(n_games)]
     p1_wins = sum(1 for r in results if r.winner == 'p1')
     p2_wins = n_games - p1_wins
     kill_turns = [r.kill_turn for r in results if r.kill_turn]
@@ -280,7 +275,7 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
     """
     if decks is None:
         if top_tier > 0:
-            # Sort decks by meta share descending, pick top_tier randomly
+            # Sort decks by meta share descending, take top N deterministically
             def _get_share(k):
                 meta = MATCHUP_META.get(k, {})
                 if isinstance(meta, dict) and 'share' in meta:
@@ -288,18 +283,10 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
                 return 0.0  # unknown decks get 0 share, not included
             ranked = sorted(
                 ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
-                key=lambda x: -x[1]
+                key=lambda x: (-x[1], x[0])
             )
-            # Always include 'bug' as reference deck
-            pool = [k for k, _ in ranked[:max(top_tier * 2, 10)]]
-            if 'bug' not in pool:
-                pool.append('bug')
-            chosen = ['bug'] if 'bug' in pool else []
-            others = [k for k in pool if k not in chosen]
-            random.shuffle(others)
-            chosen += others[:top_tier - len(chosen)]
-            decks = sorted(chosen)
-            print(f"Top-tier selection ({top_tier}): {', '.join(decks)}")
+            decks = sorted(k for k, _ in ranked[:top_tier])
+            print(f"Top-{top_tier} by meta share: {', '.join(decks)}")
         else:
             decks = sorted(DECKS.keys())
 
@@ -311,7 +298,7 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
         for d2 in decks:
             if d1 == d2:
                 continue
-            stats = run_symmetric_sweep(d1, d2, n_games)
+            stats = run_sweep(d1, d2, n_games)
             matrix[(d1, d2)] = stats['p1_wr']
             done += 1
             if done % 10 == 0:
@@ -320,289 +307,80 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
     return matrix
 
 
-def run_matchup(matchup: str, n_games: int, verbose: bool = False) -> dict:
-    opp_name = MATCHUP_META[matchup]['name']
-    results = []
+# ── Old BUG-centric functions removed (run_matchup, run_all_matchups,
+#    ELVES_MATCHUPS, run_elves_match, run_elves_bo3) — use symmetric API instead.
 
-    print(f"\n{'='*60}")
-    print(f"BUG Tempo vs {opp_name} — {n_games} games (v2 rules)")
-    print(f"{'='*60}")
-
-    for i in range(n_games):
-        result = run_game(matchup, verbose)
-        results.append(result)
-
-        if verbose:
-            print(f"\n--- Game {i+1} ---")
-            print(f"BUG hand:  {result.bug_opening_hand} ({'FIRST' if result.bug_went_first else 'SECOND'})")
-            print(f"Opp hand:  {result.opp_opening_hand}")
-            if result.bug_mulls: print(f"BUG mulled {result.bug_mulls}x (London: saw 7, kept best)")
-            if result.opp_mulls: print(f"Opp mulled {result.opp_mulls}x")
-            for line in result.log_lines:
-                print(f"  {line}")
-            print(f"\n{'BUG WINS' if result.winner == 'p1' else 'OPP WINS'} — {result.win_reason}")
-            print(f"Life: BUG {result.final_bug_life} — Opp {result.final_opp_life}")
-        elif (i + 1) % max(1, n_games // 20) == 0:
-            wins = sum(1 for r in results if r.winner == 'p1')
-            print(f"  {i+1}/{n_games} ({(i+1)/n_games*100:.0f}%) — BUG {wins/(i+1)*100:.1f}%")
-
-    bug_wins = sum(1 for r in results if r.winner == 'p1')
-    win_rate = bug_wins / n_games
-    kill_turns = [r.kill_turn for r in results if r.kill_turn]
-    avg_kill = sum(kill_turns) / len(kill_turns) if kill_turns else 0
-    avg_len  = sum(r.game_length for r in results) / n_games
-    bug_first_wr = (sum(1 for r in results if r.winner == 'p1' and r.bug_went_first) /
-                    max(1, sum(1 for r in results if r.bug_went_first)))
-    bug_second_wr = (sum(1 for r in results if r.winner == 'p1' and not r.bug_went_first) /
-                     max(1, sum(1 for r in results if not r.bug_went_first)))
-
-    print(f"\nRESULTS: BUG Tempo vs {opp_name}")
-    print(f"  Win rate:      {win_rate*100:.1f}%  ({bug_wins}/{n_games})")
-    print(f"  On play:       {bug_first_wr*100:.1f}%  |  On draw: {bug_second_wr*100:.1f}%")
-    print(f"  Avg kill turn: T{avg_kill:.2f}")
-    print(f"  Avg game len:  T{avg_len:.2f}")
-    print(f"  BUG mull rate: {sum(1 for r in results if r.bug_mulls>0)/n_games*100:.1f}%")
-
-    reason_counts = {}
-    for r in results:
-        k = r.win_reason[:55]
-        reason_counts[k] = reason_counts.get(k, 0) + 1
-    print(f"\n  Top outcomes:")
-    for reason, count in sorted(reason_counts.items(), key=lambda x: -x[1])[:5]:
-        print(f"    {count/n_games*100:5.1f}%  {reason}")
-
-    return {'matchup': matchup, 'opp_name': opp_name, 'win_rate': win_rate,
-            'avg_kill_turn': avg_kill, 'avg_game_length': avg_len, 'n_games': n_games}
-
-
-def run_all_matchups(n_games: int, verbose: bool = False):
-    all_results = {}
-    for mu in MATCHUP_META:
-        all_results[mu] = run_matchup(mu, n_games, verbose)
-
-    print(f"\n{'='*60}")
-    print(f"SUMMARY — BUG Tempo Legacy (v2 rules-correct)")
-    print(f"{'='*60}")
-    print(f"{'Matchup':<25} {'Meta%':>6} {'WR':>7} {'Kill':>6}")
-    print(f"{'-'*52}")
-
-    weighted_wr = 0.0
-    total_share = 0.0
-    for mu, info in MATCHUP_META.items():
-        if mu not in all_results: continue
-        r = all_results[mu]
-        share = info['share']
-        wr = r['win_rate']
-        kt = r['avg_kill_turn']
-        weighted_wr += wr * share
-        total_share += share
-        bar = '█' * int(wr * 20)
-        print(f"  {r['opp_name']:<23} {share*100:>5.0f}%  {wr*100:>5.1f}%  T{kt:.1f}  {bar}")
-
-    nwr = weighted_wr / total_share if total_share else weighted_wr
-    rounds = nwr * 8
-    print(f"\n  Weighted WR:    {nwr*100:.1f}%")
-    print(f"  Expected (8r):  {rounds:.1f}W / {8-rounds:.1f}L")
-    finish = 'Top 8' if nwr >= 0.62 else 'Top 16' if nwr >= 0.56 else '~5-3' if nwr >= 0.52 else '4-4'
-    print(f"  Expected finish: {finish}")
-
-
-# ── Elves matchup registry ───────────────────────────────────────────────────
-ELVES_MATCHUPS = {
-    'ev_uwx':        {'name': 'UWx Control',            'opp': 'uwx',        'field': 0.182},
-    'ev_mardu':      {'name': 'Mardu Aggro',             'opp': 'mardu',      'field': 0.121},
-    'ev_prison':     {'name': 'Artifacts Prison',        'opp': 'prison',     'field': 0.061},
-    'ev_reanimator': {'name': 'Reanimator',              'opp': 'reanimator', 'field': 0.061},
-    'ev_dimir':      {'name': 'Dimir Tempo A',           'opp': 'dimir',      'field': 0.061},
-    'ev_dimir_b':    {'name': 'Dimir Tempo B',           'opp': 'dimir_b',    'field': 0.061},
-    'ev_lands':      {'name': 'Lands',                   'opp': 'lands',      'field': 0.061},
-    'ev_show':       {'name': 'Show and Tell',           'opp': 'show',       'field': 0.061},
-    'ev_storm':      {'name': 'Storm',                   'opp': 'storm',      'field': 0.061},
-    'ev_dnt':        {'name': 'Death and Taxes',         'opp': 'dnt',        'field': 0.030},
-    'ev_doomsday':   {'name': 'Doomsday',                'opp': 'doomsday',   'field': 0.030},
-    'ev_eldrazi':    {'name': 'Eldrazi Aggro',           'opp': 'eldrazi',    'field': 0.030},
-    'ev_painter':    {'name': 'Painter',                 'opp': 'painter',    'field': 0.030},
-    'ev_mono_black': {'name': 'Mono Black Aggro',        'opp': 'mono_black', 'field': 0.030},
-    'ev_boros':      {'name': 'Boros Aggro',             'opp': 'boros',      'field': 0.030},
-    'ev_ur_aggro':   {'name': 'UR Aggro',                'opp': 'ur_aggro',   'field': 0.030},
-}
-
-
-def run_elves_match(opp_matchup: str, verbose: bool = False):
-    """
-    Run a Bo3 match with ELVES as the protagonist (gs.p1 = Elves, gs.p2 = opponent).
-    Winner == 'bug' means Elves won; 'opp' means the opponent won.
-    Returns (elves_wins, opp_wins, games_played, results).
-    """
-    opp_deck_key = ELVES_MATCHUPS[opp_matchup]['opp']
-
-    elves_wins = opp_wins = games_played = 0
-    results = []
-
-    for game_num in range(1, 4):
-        if elves_wins == 2 or opp_wins == 2:
-            break
-        games_played += 1
-
-        elves_hand, elves_lib, e_mulls = london_mulligan(DECKS['elves'], opp_keep)
-        opp_hand,   opp_lib,   o_mulls = london_mulligan(DECKS[opp_deck_key], opp_keep, opp_deck_key)
-
-        elves_goes_first = random.random() < 0.5
-
-        elves_player = PlayerState(name='b', hand=list(elves_hand), library=list(elves_lib))
-        opp_player   = PlayerState(name='o', hand=list(opp_hand),   library=list(opp_lib))
-        gs = GameState(p1=elves_player, p2=opp_player, p1_goes_first=elves_goes_first)
-        gs.matchup = opp_deck_key
-        gs.p1_deck = 'elves'
-        gs.p2_deck = opp_deck_key
-
-        all_log = []
-        for turn in range(1, 16):
-            if gs.game_over: break
-            gs.turn = turn
-
-            first, second = ('p1', 'p2') if elves_goes_first else ('p2', 'p1')
-            for who in (first, second):
-                lines = play_turn(gs, turn, who)
-                label = 'ELV' if who == 'p1' else 'OPP'
-                all_log += [f"G{game_num}T{turn}[{label}] {l}" for l in lines]
-                if gs.game_over: break
-
-        if not gs.game_over:
-            elves_power = sum(c.power for c in gs.p1.creatures)
-            opp_power   = sum(c.power for c in gs.p2.creatures)
-            if elves_power > opp_power or gs.p1.life > gs.p2.life + 3:
-                gs.winner = 'p1'; gs.win_reason = f"Elves board advantage G{game_num}"
-                gs.kill_turn = gs.turn
-            else:
-                gs.winner = 'p2'; gs.win_reason = f"Opp advantage G{game_num}"
-
-        result = GameResult(
-            winner=gs.winner, win_reason=gs.win_reason or '',
-            kill_turn=gs.kill_turn, game_length=gs.turn,
-            bug_mulls=e_mulls, opp_mulls=o_mulls,
-            bug_opening_hand=[c.name for c in elves_hand],
-            opp_opening_hand=[c.name for c in opp_hand],
-            log_lines=all_log,
-            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
-            bug_went_first=elves_goes_first,
-        )
-        results.append(result)
-
-        if gs.winner == 'p1': elves_wins += 1
-        else: opp_wins += 1
-
-        if verbose:
-            for line in all_log: print(f"  {line}")
-            print(f"{'ELVES WINS' if gs.winner=='p1' else 'OPP WINS'} G{game_num} — {gs.win_reason}")
-
-    return elves_wins, opp_wins, games_played, results
-
-
-def run_elves_bo3(opp_matchup: str, n_matches: int) -> dict:
-    """Run n_matches Bo3 matches with Elves as protagonist. Returns WR stats."""
-    name = ELVES_MATCHUPS[opp_matchup]['name']
-    print(f"Elves vs {name} — {n_matches} matches")
-    elves_match_wins = 0
-    all_results = []
-    for _ in range(n_matches):
-        ew, ow, _, grs = run_elves_match(opp_matchup)
-        if ew > ow: elves_match_wins += 1
-        all_results.extend(grs)
-    game_wins = sum(1 for r in all_results if r.winner == 'p1')
-    total_games = len(all_results)
-    match_wr = elves_match_wins / n_matches
-    game_wr  = game_wins / total_games if total_games else 0
-    print(f"  Match WR: {match_wr*100:.1f}%  Game WR: {game_wr*100:.1f}%")
-    return {'match_wr': match_wr, 'game_wr': game_wr,
-            'match_wins': elves_match_wins, 'n_matches': n_matches}
-
-
-# ── Strategy registry — all decks as protagonists ───────────────────────────
-from engine import (
-    _strategy_dimir, _strategy_dnt, _strategy_mono_black, _strategy_boros,
-    _strategy_prison, _strategy_eldrazi, _strategy_show, _strategy_lands,
-    _strategy_oops, _strategy_doomsday, _strategy_uwx, _strategy_painter,
-    _strategy_storm, _strategy_reanimator, _strategy_ur_aggro, _strategy_mardu,
-    _strategy_dimir_flash, _strategy_elves, _elves_strategy,
-)
-
-STRATEGIES = {
-    'dimir':       _strategy_dimir,
-    'dimir_b':     _strategy_dimir,       # same strategy, different deck
-    'dimir_flash': _strategy_dimir_flash,
-    'show':        _strategy_show,
-    'lands':       _strategy_lands,
-    'storm':       _strategy_storm,
-    'oops':        _strategy_oops,
-    'prison':      _strategy_prison,
-    'uwx':         _strategy_uwx,
-    'uwx_real':    _strategy_uwx,         # proxy — use uwx strategy
-    'eldrazi':     _strategy_eldrazi,
-    'painter':     _strategy_painter,
-    'doomsday':    _strategy_doomsday,
-    'reanimator':  _strategy_reanimator,
-    'dnt':         _strategy_dnt,
-    'mono_black':  _strategy_mono_black,
-    'boros':       _strategy_boros,
-    'ur_aggro':    _strategy_ur_aggro,
-    'mardu':       _strategy_mardu,
-    'elves':       _strategy_elves,
-    # bug uses bug_turn (special — not yet in STRATEGIES)
-}
+# All strategies are registered via deck_registry (decks/*.py modules).
+# No manual STRATEGIES dict needed — get_strategy(matchup) handles dispatch.
 
 
 def protagonist_turn(gs, turn, matchup):
     """
-    Generic protagonist turn for any deck in STRATEGIES.
+    P1's turn function — used by ALL decks (including BUG).
     Full turn structure: cleanup → untap → upkeep → draw → land → mana →
-    Wasteland → Thoughtseize → removal → strategy → combat → EOT.
-    gs.p1 = protagonist deck, gs.p2 = antagonist.
+    lock enforcement → strategy dispatch → Eidolon damage → combat → EOT.
+    gs.p1 = active player, gs.p2 = opposing player.
     """
     from engine import (bowmasters_triggers, update_goyf, opp_can_cast,
                         _try_counter_any, _select_attackers, combat_declare)
     from rules import LandPermanent, MTGRules
 
-    b = gs.p1
-    o = gs.p2
+    player = gs.p1          # active player this turn
+    opponent = gs.p2        # opposing player
+    b, o = player, opponent  # short aliases (legacy, used throughout)
     log_entries = []
 
     def log(msg, key=False):
-        gs.log_event('b', 'main', msg, key)
+        gs.log_event('p1', 'main', msg, key)
         log_entries.append(msg)
 
     # ── Cleanup — CR 510.2 ──
     for player in [b, o]:
         for c in player.creatures:
             c.damage_marked = 0
+            # Clear hexproof granted by until-EOT effects (Vines of Vastwood,
+            # Blossoming Defense). Permanent hexproof (e.g. Kaito) is on the
+            # card object, not the permanent, so this only clears temporary grants.
+            if hasattr(c, 'hexproof'):
+                del c.hexproof
 
     # ── Untap ──
     b.untap_all()
     b.revolt_this_turn = False
     b.clear_summoning_sickness()
-    gs.opp_spells_cast_this_turn = 0
+    gs.combat_this_turn = False
+    gs.p2_spells_cast_this_turn = 0
     gs.veil_active = False
     b.spells_cast_this_turn = 0
+    if gs.trace:
+        log(f"── Untap ── ({len(b.lands)} lands)")
 
     # ── Upkeep: Goyf update ──
     update_goyf(gs)
+    if gs.trace:
+        log("── Upkeep ──")
 
     # ── Draw (first player on play skips T1 draw) ──
+    if gs.trace:
+        if turn == 1 and gs.p1_goes_first:
+            log("── Draw ── (skipped — on the play, T1)")
+        else:
+            log("── Draw ──")
     if not (turn == 1 and gs.p1_goes_first):
         drawn = b.draw(1, is_draw_step=True)
         if drawn:
             log(f"Draw: {drawn[0].name}")
-            # Bowmasters on opponent's board triggers on protagonist's draws
-            bowmasters_triggers(1, gs, log_entries, controller='o')
+            # Per Oracle: Bowmasters does NOT trigger on the first draw-step
+            # draw. Only triggers on extra draws (cantrips, etc.).
 
     # ── Pending Bauble draws from previous turn ──
-    pending = getattr(gs, 'pending_bauble_draws_bug', 0)
+    pending = gs.pending_bauble_draws
     if pending > 0:
         drawn = b.draw(pending)
         for d in drawn:
             log(f"Bauble (upkeep draw) → {d.name}")
         bowmasters_triggers(pending, gs, log_entries, controller='o')
-        gs.pending_bauble_draws_bug = 0
+        gs.pending_bauble_draws = 0
 
     # ── Land drop ──
     # Prioritise mana-producing lands (duals, basics) over utility lands (Wasteland)
@@ -620,13 +398,18 @@ def protagonist_turn(gs, turn, matchup):
             if fast:
                 return fast
         # Priority: fetch > dual > basic > utility (Wasteland etc)
+        # For artifact decks (Affinity, 8-Cast): prefer artifact lands and Saga
+        # over basics because they contribute to artifact count / affinity.
+        is_artifact_deck = gs.p1_deck in ('affinity', 'eight_cast')
         def land_priority(c):
             if getattr(c, 'is_fetch', False): return 2
             tag = getattr(c, 'tag', '')
             if tag == 'dual': return 1
-            if c.is_basic: return 1
             if tag in ('sewers',): return 1
             if tag in ('ancient_tomb', 'city'): return 0
+            if is_artifact_deck and tag == 'saga': return 0  # Saga is highest priority
+            if is_artifact_deck and tag == 'seat': return 0  # artifact land > basic
+            if c.is_basic: return 1
             if tag == 'wl': return 5
             return 3
         return min(lands_in_hand, key=land_priority)
@@ -654,10 +437,10 @@ def protagonist_turn(gs, turn, matchup):
     # Lotus Petal in hand
     total_mana += sum(1 for c in b.hand if c.tag == 'petal')
     # Treasure tokens
-    bug_treasure = getattr(gs, 'bug_treasure', 0)
-    if bug_treasure > 0:
-        total_mana += bug_treasure
-        gs.bug_treasure = 0
+    p1_treasure = getattr(gs, 'p1_treasure', 0)
+    if p1_treasure > 0:
+        total_mana += p1_treasure
+        gs.p1_treasure = 0
     # Ancient Tomb: produces 2C (1 already counted, add 1 bonus), costs 2 life
     tomb_count = sum(1 for l in b.lands if l.card.tag == 'tomb' and not l.tapped)
     if tomb_count > 0:
@@ -669,11 +452,21 @@ def protagonist_turn(gs, turn, matchup):
             total_mana += len(b.creatures)
             l.tapped = True
 
+    if gs.trace:
+        log(f"── Main ── Mana: {total_mana}")
+        log(f"  Hand ({len(b.hand)}): {', '.join(c.name for c in b.hand)}")
+
     # ── Wasteland: destroy opponent's best nonbasic land ──
     wl_land = next((l for l in b.lands if l.card.tag in ('wl', 'wasteland') and not l.tapped), None)
     if wl_land and o.lands:
-        target = next((l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl'), None)
-        if target:
+        eligible = [l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl']
+        if eligible:
+            # Prioritise combo lands (Dark Depths / Thespian's Stage) above all else
+            def _wl_prio(land):
+                if land.card.tag in ('depths', 'stage'): return 50
+                if getattr(land.card, 'mana_ritual', False): return 5
+                return 1
+            target = max(eligible, key=_wl_prio)
             wl_land.tapped = True
             o.lands.remove(target)
             o.add_to_grave(target.card)
@@ -707,12 +500,16 @@ def protagonist_turn(gs, turn, matchup):
                 b.add_to_grave(ts)
 
     # ── Removal: kill opponent's biggest threat ──
+    # Mother of Runes: if opponent has MoR protecting a creature, skip that target
+    _mom_protected = getattr(gs, '_mom_protected_tag', None)
+
     if o.creatures and total_mana >= 1:
         push = b.find_tag('push') or b.find_tag('fatal_push')
         if push and not gs.spell_blocked_by_chalice(push.cmc):
             revolt = b.revolt_this_turn
             valid_targets = [c for c in o.creatures
-                             if MTGRules.fatal_push_valid_target(c, revolt)]
+                             if MTGRules.fatal_push_valid_target(c, revolt)
+                             and c.card.tag != _mom_protected]
             if valid_targets:
                 target = max(valid_targets, key=lambda c: c.power)
                 b.remove_from_hand(push)
@@ -728,8 +525,15 @@ def protagonist_turn(gs, turn, matchup):
 
         stp = b.find_tag('stp')
         if stp and o.creatures and total_mana >= 1 and not gs.spell_blocked_by_chalice(stp.cmc):
-            target = max(o.creatures, key=lambda c: c.power)
-            if target.power >= 2:
+            valid_stp = [c for c in o.creatures if c.card.tag != _mom_protected]
+            target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
+            # Exile any creature with power >= 2, OR any creature vs aggro/burn
+            # (Swiftspear/Guide at 1 power deal 2-3 per turn with prowess/haste)
+            p2_deck = getattr(gs, 'p2_deck', '')
+            from config import MatchupCategory as _MC
+            opp_is_aggro = p2_deck in _MC.AGGRO or p2_deck == 'burn'
+            stp_threshold = CT.STP_THRESHOLD_AGGRO if opp_is_aggro else CT.STP_THRESHOLD_FAIR
+            if target and target.power >= stp_threshold:
                 b.remove_from_hand(stp)
                 countered = _try_counter_any(b, o, gs, stp, log_entries)
                 if not countered:
@@ -746,36 +550,54 @@ def protagonist_turn(gs, turn, matchup):
     plan = GAMEPLANS.get(matchup)
     if plan:
         ba = assess(gs, turn)
-        gs.opp_goal = active_goal(plan, ba)
+        gs.p2_goal = active_goal(plan, ba)
     else:
-        gs.opp_goal = None
+        gs.p2_goal = None
+
+    # ── Lock piece enforcement (shared helpers — single source of truth) ──
+    from engine import apply_lock_effects, restore_lock_effects
+    _adjustments = apply_lock_effects(gs, b, log)
 
     # ── Strategy dispatch ──
-    # The generic_tempo_strategy was tested but performs WORSE than the simple
-    # deck strategy (70.3% → 66-68%). The simple strategy's one-spell-per-turn
-    # approach naturally conserves mana for reactive counters (FoW/Daze fire
-    # during opp_turn), which is the correct tempo play pattern.
-    # Use generic_tempo_strategy only when explicitly requested via the deck's
-    # interaction profile (future: set 'use_tempo_ai': True in DECK_META).
-    from engine import generic_tempo_strategy, is_tempo_deck
-
     from deck_registry import get_strategy
-    strategy_fn = get_strategy(matchup) or STRATEGIES.get(matchup)
+    strategy_fn = get_strategy(matchup)
     if strategy_fn:
-        strategy_fn(b, o, gs, total_mana, log, log_entries)
+        try:
+            strategy_fn(b, o, gs, total_mana, log, log_entries)
+        except Exception as e:
+            log(f"⚠ Strategy error ({matchup}): {e} — forfeiting turn")
     else:
         log(f"No strategy for {matchup} — passing")
 
+    # ── Post-strategy: restore lock adjustments ──
+    restore_lock_effects(b, _adjustments)
+
+    # ── Tamiyo flip check — oracle: flip when you draw your 3rd card in a turn ──
+    # Centralized here so it works for ALL decks, not just BUG.
+    from engine import _check_tamiyo_flip
+    _check_tamiyo_flip(gs, b, log)
+
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
-    combat_happened = any('unblocked' in entry or 'blocked' in entry for entry in log_entries)
-    if not combat_happened and not gs.game_over and b.creatures:
+    if gs.trace:
+        atk = [c for c in b.creatures if not c.summoning_sick]
+        log(f"── Combat ── ({len(atk)} eligible attackers)")
+    if not gs.combat_this_turn and not gs.game_over and b.creatures:
         attackers = _select_attackers(b, o)
         if attackers:
             combat_declare(b, o, gs, log_entries, attackers)
 
+    # ── P2 instant-speed responses during P1's turn (after combat) ──
+    if not gs.game_over:
+        from engine import _p2_respond_on_pro_turn
+        _p2_respond_on_pro_turn(gs, log, log_entries)
+
     update_goyf(gs)
     b.land_played_this_turn = False
     gs.state_based_actions()
+
+    if gs.trace:
+        log("── End ──")
+
     return log_entries
 
 
@@ -783,11 +605,9 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
     """
     Run a Bo3 match: protagonist deck vs antagonist deck.
     protagonist and antagonist are matchup keys (e.g. 'dimir', 'storm', 'elves').
-    'bug' as protagonist uses bug_turn (the full BUG AI).
     Returns (protagonist_wins, antagonist_wins, games_played, results).
     """
     import random
-    from engine import bug_turn
 
     protagonist_wins = antagonist_wins = games_played = 0
     results = []
@@ -800,19 +620,15 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         use_sideboard = (game_num > 1)
 
         if use_sideboard:
-            if protagonist == 'bug':
-                from cards import make_postboard_bug_deck
-                pro_deck_fn = lambda: make_postboard_bug_deck(antagonist)
-            else:
-                pro_deck_fn = lambda: make_postboard_any_deck(protagonist, antagonist)
+            pro_deck_fn = lambda: make_postboard_any_deck(protagonist, antagonist)
             try:
                 from cards import make_postboard_opp_vs_protagonist
                 ant_deck_fn = lambda: make_postboard_opp_vs_protagonist(protagonist, antagonist)
             except Exception:
                 ant_deck_fn = lambda: make_postboard_opp_deck(antagonist)
         else:
-            pro_deck_fn  = DECKS.get(protagonist, DECKS['bug'])
-            ant_deck_fn  = DECKS.get(antagonist,  DECKS['bug'])
+            pro_deck_fn  = DECKS[protagonist]
+            ant_deck_fn  = DECKS[antagonist]
 
         pro_hand, pro_lib, pro_mulls = london_mulligan(pro_deck_fn, opp_keep, protagonist)
         ant_hand, ant_lib, ant_mulls = london_mulligan(ant_deck_fn, opp_keep, antagonist)
@@ -826,7 +642,7 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         gs.p2_deck = antagonist
 
         all_log = []
-        for turn in range(1, 16):
+        for turn in range(1, GR.MAX_TURNS + 1):
             if gs.game_over: break
             gs.turn = turn
 
@@ -849,12 +665,13 @@ def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
         result = GameResult(
             winner=gs.winner, win_reason=gs.win_reason or '',
             kill_turn=gs.kill_turn, game_length=gs.turn,
-            bug_mulls=pro_mulls, opp_mulls=ant_mulls,
-            bug_opening_hand=[c.name for c in pro_hand],
-            opp_opening_hand=[c.name for c in ant_hand],
+            p1_mulls=pro_mulls, p2_mulls=ant_mulls,
+            p1_opening_hand=[c.name for c in pro_hand],
+            p2_opening_hand=[c.name for c in ant_hand],
             log_lines=all_log,
-            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
-            bug_went_first=pro_goes_first,
+            final_p1_life=gs.p1.life, final_p2_life=gs.p2.life,
+            p1_went_first=pro_goes_first,
+            p1_deck=protagonist, p2_deck=antagonist,
         )
         results.append(result)
         if gs.winner == 'p1': protagonist_wins += 1
@@ -978,14 +795,6 @@ PROTAGONIST_SB_SWAPS = {
         'oops':       ([('snap',2)],                   [('fon',2)]),
         'doomsday':   ([('snap',2)],                   [('fon',2)]),
         'lands':      ([('narset',1)],                 [('pyro',1)]),
-    },
-    'storm': {
-        'dimir':      ([('bs',1)],                     [('vos',1)]),
-        'uwx':        ([('bs',1)],                     [('vos',1)]),
-        'dnt':        ([('bs',1)],                     [('vos',1)]),
-        'mardu':      ([('bs',1)],                     [('vos',1)]),
-        'reanimator': ([('bs',1)],                     [('nihil',1)]),
-        'eldrazi':    ([('bs',1)],                     [('vos',1)]),
     },
     'show': {
         'dimir':      ([('daze',2)],                   [('vos',2)]),
@@ -1184,6 +993,220 @@ PROTAGONIST_SB_SWAPS = {
         'uwx':        ([('shadowspear',1)],              [('fon',1)]),
         'prison':     ([('shadowspear',1)],              [('fon',1)]),
         'elves':      ([('shadowspear',1)],              [('nihil',1)]),
+    },
+
+    # ── UR Delver protagonist SB ─────────────────────────────────────────────
+    # Delver boards Pyroblast vs blue mirrors; Surgical vs GY combo;
+    # extra removal vs creature decks; FoN vs fast combo
+    'ur_delver': {
+        'dimir':      ([('pierce',1)],                    [('pyro',1)]),
+        'dimir_b':    ([('pierce',1)],                    [('pyro',1)]),
+        'dimir_flash':([('pierce',1)],                    [('pyro',1)]),
+        'uwx':        ([('pierce',1)],                    [('pyro',1)]),
+        'bug':        ([('pierce',1)],                    [('pyro',1)]),
+        'storm':      ([('bolt',1)],                      [('fon',1)]),
+        'oops':       ([('bolt',1)],                      [('fon',1)]),
+        'doomsday':   ([('bolt',1)],                      [('fon',1)]),
+        'show':       ([('bolt',1)],                      [('fon',1)]),
+        'reanimator': ([('bolt',1)],                      [('surgical',1)]),
+        'dnt':        ([('pierce',1)],                    [('heat',1)]),
+        'eldrazi':    ([('pierce',1)],                    [('heat',1)]),
+        'elves':      ([('pierce',1)],                    [('heat',1)]),
+        'lands':      ([('heat',1)],                      [('pyro',1)]),
+        'sneak_a':    ([('bolt',1)],                      [('fon',1)]),
+        'tes':        ([('bolt',1)],                      [('fon',1)]),
+    },
+
+    # ── Burn protagonist SB ──────────────────────────────────────────────────
+    # Burn boards Smash to Smithereens vs artifacts; Pyrostatic Pillar vs combo;
+    # Searing Blood vs creature decks
+    'burn': {
+        'dimir':      ([('spike',1)],                     [('sblood',1)]),
+        'bug':        ([('spike',1)],                     [('sblood',1)]),
+        'uwx':        ([('spike',1)],                     [('sblood',1)]),
+        'storm':      ([('spike',1)],                     [('eidolon',1)]),
+        'oops':       ([('spike',1)],                     [('eidolon',1)]),
+        'doomsday':   ([('spike',1)],                     [('eidolon',1)]),
+        'show':       ([('spike',1)],                     [('eidolon',1)]),
+        'reanimator': ([('spike',1)],                     [('eidolon',1)]),
+        'dnt':        ([('spike',1)],                     [('sblood',1)]),
+        'eldrazi':    ([('spike',1)],                     [('sblood',1)]),
+        'prison':     ([('spike',1)],                     [('smash',1)]),
+        'eight_cast': ([('spike',1)],                     [('smash',1)]),
+        'affinity':   ([('spike',1)],                     [('smash',1)]),
+    },
+
+    # ── Sneak & Show A protagonist SB ────────────────────────────────────────
+    # Sneak boards Veil vs interaction; FoN vs other combo
+    'sneak_a': {
+        'dimir':      ([('daze',1)],                      [('vos',1)]),
+        'bug':        ([('daze',1)],                      [('vos',1)]),
+        'uwx':        ([('daze',1)],                      [('vos',1)]),
+        'storm':      ([('daze',1)],                      [('fon',1)]),
+        'oops':       ([('daze',1)],                      [('fon',1)]),
+        'doomsday':   ([('daze',1)],                      [('fon',1)]),
+        'reanimator': ([('daze',1)],                      [('surgical',1)]),
+        'dnt':        ([('daze',1)],                      [('vos',1)]),
+        'eldrazi':    ([('daze',1)],                      [('vos',1)]),
+    },
+    'sneak_b': {
+        'dimir':      ([('daze',1)],                      [('vos',1)]),
+        'bug':        ([('daze',1)],                      [('vos',1)]),
+        'uwx':        ([('daze',1)],                      [('vos',1)]),
+        'storm':      ([('daze',1)],                      [('fon',1)]),
+        'reanimator': ([('daze',1)],                      [('surgical',1)]),
+    },
+
+    # ── The Epic Storm protagonist SB ────────────────────────────────────────
+    # TES boards Veil vs interaction; Galvanic Relay vs grindy matchups
+    'tes': {
+        'dimir':      ([('petal',1)],                     [('vos',1)]),
+        'bug':        ([('petal',1)],                     [('vos',1)]),
+        'uwx':        ([('petal',1)],                     [('vos',1)]),
+        'dnt':        ([('petal',1)],                     [('vos',1)]),
+        'storm':      ([('petal',1)],                     [('fon',1)]),
+        'reanimator': ([('petal',1)],                     [('nihil',1)]),
+        'eldrazi':    ([('petal',1)],                     [('vos',1)]),
+    },
+
+    # ── Infect protagonist SB ────────────────────────────────────────────────
+    # Infect boards Veil vs interaction; Force vs combo; extra pump vs removal
+    'infect': {
+        'dimir':      ([('become',1)],                    [('vos',1)]),
+        'bug':        ([('become',1)],                    [('vos',1)]),
+        'uwx':        ([('become',1)],                    [('vos',1)]),
+        'storm':      ([('become',1)],                    [('fon',1)]),
+        'oops':       ([('become',1)],                    [('fon',1)]),
+        'doomsday':   ([('become',1)],                    [('fon',1)]),
+        'reanimator': ([('become',1)],                    [('surgical',1)]),
+        'dnt':        ([('become',1)],                    [('vos',1)]),
+        'eldrazi':    ([('become',1)],                    [('vos',1)]),
+    },
+
+    # ── Dark Depths protagonist SB ───────────────────────────────────────────
+    # Depths boards Surgical vs GY combo; extra discard vs combo; Abrupt Decay vs prison
+    'depths': {
+        'storm':      ([('push',1)],                      [('surgical',1)]),
+        'oops':       ([('push',1)],                      [('surgical',1)]),
+        'doomsday':   ([('push',1)],                      [('surgical',1)]),
+        'reanimator': ([('push',1)],                      [('surgical',1)]),
+        'show':       ([('push',1)],                      [('surgical',1)]),
+        'dimir':      ([('push',1)],                      [('abrupt',1)]),
+        'bug':        ([('push',1)],                      [('abrupt',1)]),
+        'prison':     ([('push',1)],                      [('abrupt',1)]),
+    },
+
+    # ── BUG protagonist SB ───────────────────────────────────────────────────
+    # BUG boards FoN vs combo; Surgical vs GY; Massacre vs white weenie
+    'bug': {
+        'storm':      ([('push',2)],                      [('fon',2)]),
+        'oops':       ([('push',2)],                      [('fon',2)]),
+        'doomsday':   ([('push',2)],                      [('fon',1),('nihil',1)]),
+        'show':       ([('push',2)],                      [('fon',2)]),
+        'reanimator': ([('push',2)],                      [('nihil',1),('surgical',1)]),
+        'sneak_a':    ([('push',2)],                      [('fon',2)]),
+        'dnt':        ([('ts',2)],                        [('massacre',2)]),
+        'boros':      ([('ts',2)],                        [('massacre',2)]),
+        'eldrazi':    ([('ts',1)],                        [('fon',1)]),
+        'dimir':      ([('push',1)],                      [('pyro',1)]),
+        'uwx':        ([('push',1)],                      [('pyro',1)]),
+        'lands':      ([('push',1)],                      [('fon',1)]),
+        'prison':     ([('push',1)],                      [('fon',1)]),
+    },
+
+    # ── UR Aggro protagonist SB ──────────────────────────────────────────────
+    'ur_aggro': {
+        'dimir':      ([('pierce',1)],                    [('pyro',1)]),
+        'bug':        ([('pierce',1)],                    [('pyro',1)]),
+        'uwx':        ([('pierce',1)],                    [('pyro',1)]),
+        'storm':      ([('bolt',1)],                      [('fon',1)]),
+        'oops':       ([('bolt',1)],                      [('fon',1)]),
+        'doomsday':   ([('bolt',1)],                      [('fon',1)]),
+        'reanimator': ([('bolt',1)],                      [('surgical',1)]),
+        'dnt':        ([('pierce',1)],                    [('heat',1)]),
+    },
+
+    # ── UR Tempo protagonist SB ──────────────────────────────────────────────
+    'ur_tempo': {
+        'dimir':      ([('pierce',1)],                    [('pyro',1)]),
+        'bug':        ([('pierce',1)],                    [('pyro',1)]),
+        'uwx':        ([('pierce',1)],                    [('pyro',1)]),
+        'storm':      ([('bolt',1)],                      [('fon',1)]),
+        'oops':       ([('bolt',1)],                      [('fon',1)]),
+        'reanimator': ([('bolt',1)],                      [('surgical',1)]),
+    },
+
+    # ── Dimir variants — inherit from dimir with minor tweaks ────────────────
+    'dimir_b': {
+        'uwx':        ([('push',2),('ts',1)],             [('fon',2),('pyro',1)]),
+        'storm':      ([('push',3),('daze',1)],            [('fon',2),('fluster',1),('mindbreak',1)]),
+        'show':       ([('push',3),('daze',2)],            [('fon',2),('nihil',1),('snuffout',1)]),
+        'reanimator': ([('push',2),('daze',1)],            [('fon',2),('nihil',1)]),
+        'dnt':        ([('ts',2)],                         [('massacre',2)]),
+        'oops':       ([('push',3)],                       [('fon',3)]),
+    },
+    'dimir_c': {
+        'storm':      ([('push',2)],                       [('fon',2)]),
+        'show':       ([('push',2)],                       [('fon',2)]),
+        'reanimator': ([('push',2)],                       [('fon',1),('nihil',1)]),
+        'dnt':        ([('ts',2)],                         [('massacre',2)]),
+    },
+    'dimir_d': {
+        'storm':      ([('push',2)],                       [('fon',2)]),
+        'show':       ([('push',2)],                       [('fon',2)]),
+        'reanimator': ([('push',2)],                       [('fon',1),('nihil',1)]),
+        'dnt':        ([('ts',2)],                         [('massacre',2)]),
+    },
+    'dimir_flash': {
+        'storm':      ([('push',2)],                       [('fon',2)]),
+        'show':       ([('push',2)],                       [('fon',2)]),
+        'reanimator': ([('push',2)],                       [('fon',1),('nihil',1)]),
+    },
+
+    # ── Goblins protagonist SB ───────────────────────────────────────────────
+    'goblins': {
+        'storm':      ([('lackey',1)],                     [('mindbreak',1)]),
+        'oops':       ([('lackey',1)],                     [('nihil',1)]),
+        'doomsday':   ([('lackey',1)],                     [('nihil',1)]),
+        'reanimator': ([('lackey',1)],                     [('nihil',1)]),
+        'show':       ([('lackey',1)],                     [('mindbreak',1)]),
+        'dimir':      ([('lackey',1)],                     [('pyro',1)]),
+        'bug':        ([('lackey',1)],                     [('pyro',1)]),
+        'uwx':        ([('lackey',1)],                     [('pyro',1)]),
+    },
+
+    # ── Belcher protagonist SB ───────────────────────────────────────────────
+    'belcher': {
+        'dimir':      ([('probe',1)],                      [('vos',1)]),
+        'bug':        ([('probe',1)],                      [('vos',1)]),
+        'uwx':        ([('probe',1)],                      [('vos',1)]),
+        'storm':      ([('probe',1)],                      [('fon',1)]),
+    },
+
+    # ── Affinity protagonist SB ──────────────────────────────────────────────
+    'affinity': {
+        'storm':      ([('bauble',1)],                     [('fon',1)]),
+        'oops':       ([('bauble',1)],                     [('nihil',1)]),
+        'doomsday':   ([('bauble',1)],                     [('nihil',1)]),
+        'reanimator': ([('bauble',1)],                     [('nihil',1)]),
+        'dimir':      ([('bauble',1)],                     [('fon',1)]),
+        'bug':        ([('bauble',1)],                     [('fon',1)]),
+    },
+
+    # ── Cephalid Breakfast protagonist SB ────────────────────────────────────
+    'cephalid': {
+        'dimir':      ([('daze',1)],                       [('vos',1)]),
+        'bug':        ([('daze',1)],                       [('vos',1)]),
+        'storm':      ([('daze',1)],                       [('fon',1)]),
+        'reanimator': ([('daze',1)],                       [('surgical',1)]),
+    },
+
+    # ── Cloudpost protagonist SB ─────────────────────────────────────────────
+    'cloudpost': {
+        'storm':      ([('map',1)],                        [('fon',1)]),
+        'oops':       ([('map',1)],                        [('fon',1)]),
+        'dimir':      ([('map',1)],                        [('fon',1)]),
+        'reanimator': ([('map',1)],                        [('nihil',1)]),
     },
 }
 
@@ -1508,9 +1531,9 @@ def run_rules_tests():
     # ── Audit: BUG deck is exactly 60 cards ────────────────────────────────
     test("BUG main deck is exactly 60 cards", len(bug_deck_), 60)
 
-    # ── Audit: All 18 opponent decks are exactly 60 cards ──────────────────
+    # ── Audit: All registered decks are exactly 60 cards ──────────────────
     for deck_name, deck_fn in ALL_DECKS.items():
-        if deck_name == 'bug': continue
+        if deck_name == 'bug': continue  # already tested above
         try:
             d = deck_fn()
             test(f"Deck '{deck_name}' is 60 cards", len(d), 60)
@@ -1656,6 +1679,121 @@ def run_rules_tests():
     test("FoW: NOT worthwhile for CMC1 non-hasty creature (Tamiyo)", tamiyo_fow, False)
     test("FoW: worthwhile for CMC1 hasty creature (Ragavan)",         ragavan_fow, True)
 
+    # ── Trinisphere: all spells cost at least {3} ─────────────────────────
+    from engine import ManaManager
+    gs_trini = GameState(
+        p1=PS_(name='b', hand=[], library=[]),
+        p2=PS_(name='o', hand=[], library=[]))
+    gs_trini.trinisphere_active = True
+    gs_trini.thalia_on_board = False
+    mm_trini = ManaManager(10, gs_trini)
+    bolt_card = Card(name='Lightning Bolt', card_type=CardType.INSTANT, cmc=1,
+                     mana_cost={'R': 1}, colors={'R'}, tag='bolt')
+    test("Trinisphere: CMC 1 spell costs 3", mm_trini.effective_cmc(bolt_card), 3)
+    zero_card = Card(name='Mox Diamond', card_type=CardType.ARTIFACT, cmc=0,
+                     mana_cost={}, colors=set(), tag='diamond')
+    test("Trinisphere: CMC 0 artifact costs 3", mm_trini.effective_cmc(zero_card), 3)
+    big_card = Card(name='Force of Will', card_type=CardType.INSTANT, cmc=5,
+                    mana_cost={'U': 1, 'generic': 4}, colors={'U'}, tag='fow')
+    test("Trinisphere: CMC 5 spell stays at 5", mm_trini.effective_cmc(big_card), 5)
+
+    # ── Thalia: noncreature spells cost +1 ────────────────────────────────
+    gs_thalia = GameState(
+        p1=PS_(name='b', hand=[], library=[]),
+        p2=PS_(name='o', hand=[], library=[]))
+    gs_thalia.trinisphere_active = False
+    # Must place an actual Thalia creature on board (computed property)
+    thalia_card = Card(name='Thalia', card_type=CardType.CREATURE, cmc=2,
+                       mana_cost={'W':1,'generic':1}, colors={'W'}, tag='thalia',
+                       base_power=2, base_toughness=1)
+    gs_thalia.p2.creatures.append(Permanent(card=thalia_card, controller='o'))
+    mm_thalia = ManaManager(10, gs_thalia)
+    test("Thalia: instant CMC 1 costs 2", mm_thalia.effective_cmc(bolt_card), 2)
+    creature_card = Card(name='Goblin Guide', card_type=CardType.CREATURE, cmc=1,
+                         mana_cost={'R': 1}, colors={'R'}, tag='guide',
+                         base_power=2, base_toughness=2)
+    test("Thalia: creature CMC 1 stays at 1 (not taxed)", mm_thalia.effective_cmc(creature_card), 1)
+
+    # ── Chalice at X=0: blocks CMC 0 spells ──────────────────────────────
+    gs_ch0 = GameState(
+        p1=PS_(name='b', hand=[], library=[]),
+        p2=PS_(name='o', hand=[], library=[]))
+    gs_ch0.chalice_x = 0
+    test("Chalice X=0 blocks CMC 0", gs_ch0.spell_blocked_by_chalice(0), True)
+    test("Chalice X=0 passes CMC 1", gs_ch0.spell_blocked_by_chalice(1), False)
+
+    # ── Eidolon: 2 damage per CMC ≤ 3 spell ──────────────────────────────
+    from engine import _eidolon_trigger
+    gs_eidolon = GameState(
+        p1=PS_(name='b', hand=[], library=[], life=20),
+        p2=PS_(name='o', hand=[], library=[], life=20))
+    gs_eidolon.eidolon_active = True
+    _eidolon_trigger(gs_eidolon, bolt_card, lambda *a, **kw: None, caster=gs_eidolon.p1)
+    test("Eidolon: CMC 1 spell deals 2 to caster", gs_eidolon.p1.life, 18)
+    # CMC 5 should NOT trigger
+    gs_eidolon.p1.life = 20
+    _eidolon_trigger(gs_eidolon, big_card, lambda *a, **kw: None, caster=gs_eidolon.p1)
+    test("Eidolon: CMC 5 spell does NOT trigger (CMC < 2 check)", gs_eidolon.p1.life, 20)
+
+    # ── ManaManager: spend deducts and tracks ─────────────────────────────
+    gs_mm = GameState(
+        p1=PS_(name='b', hand=[], library=[]),
+        p2=PS_(name='o', hand=[], library=[]))
+    gs_mm.trinisphere_active = False
+    gs_mm.thalia_on_board = False
+    gs_mm.eidolon_active = False
+    mm = ManaManager(5, gs_mm)
+    test("ManaManager: initial mana = 5", mm.available, 5)
+    mm.spend_amount(2)
+    test("ManaManager: after spend_amount(2) = 3", mm.available, 3)
+    mm.spend_amount(5)
+    test("ManaManager: can't go below 0", mm.available, 0)
+
+    # ── assess_board: returns correct game state ──────────────────────────
+    from engine import assess_board
+    gs_board = GameState(
+        p1=PS_(name='b', hand=[], library=[], life=20),
+        p2=PS_(name='o', hand=[], library=[], life=20))
+    # Add some creatures to p1
+    c1 = Card(name='Goyf', card_type=CardType.CREATURE, cmc=2,
+              mana_cost={'G':1,'generic':1}, colors={'G'}, tag='goyf',
+              base_power=4, base_toughness=5)
+    p1_c = Permanent(card=c1, controller='b')
+    gs_board.p1.creatures = [p1_c]
+    gs_board.p2.creatures = []
+    state, metrics = assess_board(gs_board.p1, gs_board.p2)
+    test("assess_board: p1 has creature, p2 empty → 'ahead'", state, 'ahead')
+    test("assess_board: board_power = 4", metrics['board_power'], 4)
+
+    # ── Layer 3: Holistic Controls (matchup balance guards) ──
+    print(f"\n  --- Holistic Controls (30-game sweeps) ---")
+    import random as _ctrl_rng
+
+    def _sweep_wr(d1, d2, n=30):
+        """Quick sweep returning p1 win rate."""
+        seed_base = hash(d1 + d2) % 10000
+        wins = 0
+        for i in range(n):
+            _ctrl_rng.seed(seed_base + i)
+            r = run_game(d1, d2)
+            if r.winner == 'p1':
+                wins += 1
+        return wins / n
+
+    # Control 1: Symmetry — A_vs_B + B_vs_A should sum to ~100%
+    for da, db in [('burn', 'dimir'), ('storm', 'bug'), ('eldrazi', 'goblins')]:
+        wr_ab = _sweep_wr(da, db)
+        wr_ba = _sweep_wr(db, da)
+        sym = wr_ab + wr_ba
+        ok = abs(sym - 1.0) <= 0.25
+        test(f"Symmetry: {da} vs {db} ({wr_ab:.0%}+{wr_ba:.0%}={sym:.0%})", ok, True)
+
+    # Control 2: WR Bounds — no extreme matchups (>88% or <12%)
+    for d1, d2 in [('burn', 'uwx'), ('doomsday', 'dimir'), ('prison', 'dimir'), ('show', 'dimir')]:
+        wr = _sweep_wr(d1, d2)
+        ok = 0.12 <= wr <= 0.88
+        test(f"WR bounds: {d1} vs {d2} ({wr:.0%})", ok, True)
+
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")
     if failed == 0:
@@ -1664,268 +1802,3 @@ def run_rules_tests():
         print(f"✗ {failed} rule(s) failing")
     print(f"{'='*60}\n")
     return failed == 0
-
-
-
-# ─────────────────────────────────────────────
-# Match runner — best of 3 with sideboarding
-# ─────────────────────────────────────────────
-
-def run_match(matchup: str, verbose: bool = False):
-    """
-    Run a best-of-3 match:
-    - Game 1: pre-sideboard (both use main decks)
-    - Game 2: post-sideboard (BUG and opp both adjust)
-    - Game 3 (if needed): post-sideboard, loser of game 2 chooses to play/draw
-    
-    Returns: (bug_wins, opp_wins, games_played, results)
-    where results is list of GameResult
-    """
-    from cards import make_postboard_bug_deck, make_postboard_opp_deck
-
-    bug_match_wins = 0
-    opp_match_wins = 0
-    games_played = 0
-    results = []
-
-    for game_num in range(1, 4):
-        if bug_match_wins == 2 or opp_match_wins == 2:
-            break
-
-        # Game 1: main decks. Games 2+: post-board.
-        use_sideboard = (game_num > 1)
-        games_played += 1
-
-        # Build decks
-        if use_sideboard:
-            bug_deck_fn = lambda: make_postboard_bug_deck(matchup)
-            opp_deck_fn = lambda: make_postboard_opp_deck(matchup)
-        else:
-            bug_deck_fn = DECKS['bug']
-            opp_deck_fn = DECKS[matchup]
-
-        # London mulligan
-        bug_hand, bug_lib, bug_mulls = london_mulligan(bug_deck_fn, bug_keep)
-        opp_hand, opp_lib, opp_mulls = london_mulligan(opp_deck_fn, opp_keep, matchup)
-
-        # Coin flip (loser of last game picks play/draw — simplified as coin flip)
-        bug_goes_first = random.random() < 0.5
-
-        bug_player = PlayerState(name='b', hand=list(bug_hand), library=list(bug_lib))
-        opp_player = PlayerState(name='o', hand=list(opp_hand), library=list(opp_lib))
-        gs = GameState(p1=bug_player, p2=opp_player, p1_goes_first=bug_goes_first)
-        gs.matchup = matchup
-        gs.p1_deck = 'bug'
-        gs.p2_deck = matchup
-        # Leyline of the Void: if in BUG's opening hand, place on battlefield pre-game
-        # Oracle: "If this card is in your opening hand, you may begin the game with it on the battlefield"
-        leyline = next((c for c in bug_player.hand if c.tag == 'leyline'), None)
-        if leyline:
-            bug_player.hand.remove(leyline)
-            bug_player.enchantments.append(
-                __import__('rules').Permanent(card=leyline, controller='b', summoning_sick=False)
-            )
-            gs.leyline_active = True  # replacement effect: opp cards → exile instead of GY
-
-        all_log = []
-        for turn in range(1, 16):
-            if gs.game_over: break
-            gs.turn = turn
-            first, second = ('p1', 'p2') if bug_goes_first else ('p2', 'p1')
-            for who in (first, second):
-                lines = play_turn(gs, turn, who)
-                label = 'BUG' if who == 'p1' else 'OPP'
-                all_log += [f"G{game_num}T{turn}[{label}] {l}" for l in lines]
-                if gs.game_over: break
-
-        if not gs.game_over:
-            if sum(c.power for c in gs.p1.creatures) > sum(c.power for c in gs.p2.creatures) or gs.p1.life > gs.p2.life + 3:
-                gs.winner = 'p1'; gs.win_reason = f"Board advantage G{game_num}"
-                gs.kill_turn = gs.turn
-            else:
-                gs.winner = 'p2'; gs.win_reason = f"Opp advantage G{game_num}"
-
-        result = GameResult(
-            winner=gs.winner, win_reason=gs.win_reason or '',
-            kill_turn=gs.kill_turn, game_length=gs.turn,
-            bug_mulls=bug_mulls, opp_mulls=opp_mulls,
-            bug_opening_hand=[c.name for c in bug_hand],
-            opp_opening_hand=[c.name for c in opp_hand],
-            log_lines=all_log,
-            final_bug_life=gs.p1.life, final_opp_life=gs.p2.life,
-            bug_went_first=bug_goes_first,
-        )
-        results.append(result)
-
-        if gs.winner == 'p1': bug_match_wins += 1
-        else: opp_match_wins += 1
-
-        if verbose:
-            sb_tag = "(post-board)" if use_sideboard else "(pre-board)"
-            print(f"\n--- Game {game_num} {sb_tag} ---")
-            print(f"BUG hand:  {result.bug_opening_hand} ({'FIRST' if bug_goes_first else 'SECOND'})")
-            print(f"Opp hand:  {result.opp_opening_hand}")
-            if result.bug_mulls: print(f"BUG mulled {result.bug_mulls}x")
-            for line in result.log_lines:
-                print(f"  {line}")
-            print(f"{'BUG WINS' if gs.winner == 'p1' else 'OPP WINS'} — {gs.win_reason}")
-            print(f"Life: BUG {gs.p1.life} — Opp {gs.p2.life}")
-
-    return bug_match_wins, opp_match_wins, games_played, results
-
-
-def run_matchup_bo3(matchup: str, n_matches: int, verbose: bool = False) -> dict:
-    """Run n_matches best-of-3 matches and report pre/post board game WRs + match WR."""
-    opp_name = MATCHUP_META[matchup]['name']
-    print(f"\n{'='*60}")
-    print(f"BUG Tempo vs {opp_name} — {n_matches} matches (Bo3, v2 rules)")
-    print(f"{'='*60}")
-
-    match_wins = 0
-    g1_wins = 0; g1_total = 0
-    g23_wins = 0; g23_total = 0
-    all_results = []
-
-    for i in range(n_matches):
-        bw, ow, gp, results = run_match(matchup, verbose)
-        all_results.append((bw, ow, gp, results))
-        if bw > ow: match_wins += 1
-
-        # Game 1 stats
-        if results:
-            if results[0].winner == 'p1': g1_wins += 1
-            g1_total += 1
-
-        # Games 2/3 stats
-        for r in results[1:]:
-            if r.winner == 'p1': g23_wins += 1
-            g23_total += 1
-
-        if not verbose and (i + 1) % max(1, n_matches // 10) == 0:
-            pct = (i+1)/n_matches*100
-            mwr = match_wins/(i+1)*100
-            print(f"  {i+1}/{n_matches} ({pct:.0f}%) — Match WR {mwr:.1f}%")
-
-    match_wr  = match_wins / n_matches
-    g1_wr     = g1_wins / g1_total if g1_total else 0
-    g23_wr    = g23_wins / g23_total if g23_total else 0
-
-    print(f"\nRESULTS: BUG vs {opp_name}")
-    print(f"  Match WR (Bo3):   {match_wr*100:.1f}%  ({match_wins}/{n_matches})")
-    print(f"  Game 1 WR:        {g1_wr*100:.1f}%  (pre-board)")
-    print(f"  Games 2-3 WR:     {g23_wr*100:.1f}%  (post-board)")
-    swing = (g23_wr - g1_wr) * 100
-    print(f"  Sideboard swing:  {swing:+.1f}pp")
-
-    return {
-        'matchup': matchup, 'opp_name': opp_name,
-        'match_wr': match_wr, 'g1_wr': g1_wr, 'g23_wr': g23_wr,
-        'swing': swing, 'n_matches': n_matches
-    }
-
-
-def run_all_matchups_bo3(n_matches: int, verbose: bool = False):
-    all_results = {}
-    for mu in MATCHUP_META:
-        all_results[mu] = run_matchup_bo3(mu, n_matches, verbose)
-
-    # Expert adjustments: matchups where sim systematically over/under-estimates.
-    # Applied to weighted WR only — raw sim numbers still shown for transparency.
-    # Session improvements: 14 bugs fixed, 16/18 matchups now converge organically.
-    EXPERT_ADJ = {
-        # prison: G1 converged at 70%. BO3 gap from BUG FoN sideboard (realistic).
-        'prison':      0.75,
-        # uwx: Mentor tokens + Counterspell + 80% Terminus; structural mana-holding gap
-        'uwx':         0.65,
-        # boros: Initiative + Wasteland + STP; sim ~57%, near converged
-        'boros':       0.55,
-        # dimir_flash: WST + mirror countering; G1 ~63% converged, BO3 slightly high
-        'dimir_flash': 0.67,
-    }
-
-    print(f"\n{'='*70}")
-    print(f"FULL META SUMMARY — BUG Tempo Legacy (Bo3, v2 rules-correct)")
-    print(f"{'='*70}")
-    print(f"{'Matchup':<25} {'Meta%':>6} {'Sim WR':>7} {'Adj WR':>7} {'G1':>6} {'G2-3':>6} {'Swing':>7}")
-    print(f"{'-'*70}")
-
-    w_match = 0.0; w_total = 0.0
-    for mu, info in MATCHUP_META.items():
-        if mu not in all_results: continue
-        r = all_results[mu]
-        share = info['share']
-        sim_wr = r['match_wr']
-        adj_wr = EXPERT_ADJ.get(mu, sim_wr)  # use expert adj if available, else raw sim
-        w_match += adj_wr * share
-        w_total += share
-        adj_flag = '*' if mu in EXPERT_ADJ else ' '
-        swing_str = f"{r['swing']:+.1f}pp"
-        print(f"  {r['opp_name']:<23} {share*100:>5.0f}%"
-              f"  {sim_wr*100:>5.1f}%  {adj_wr*100:>5.1f}%{adj_flag}"
-              f"  {r['g1_wr']*100:>4.1f}%  {r['g23_wr']*100:>4.1f}%  {swing_str:>7}")
-
-    nwr = w_match / w_total if w_total else 0
-    rounds = nwr * 8
-    print(f"\n  * = expert adjustment applied (sim value replaced)")
-    print(f"  Weighted Match WR:  {nwr*100:.1f}%")
-    print(f"  Expected (8 rounds): {rounds:.1f}W / {8-rounds:.1f}L")
-    finish = 'Top 8' if nwr >= 0.62 else 'Top 16' if nwr >= 0.56 else '~5-3' if nwr >= 0.52 else '4-4'
-    print(f"  Expected finish:     {finish}")
-
-
-def main():
-    parser = argparse.ArgumentParser(description='BUG Tempo Legacy Sim v2 — Rules-correct')
-    parser.add_argument('--matchup', '-m', choices=list(MATCHUP_META.keys()) + ['all'],
-                        default='dimir')
-    parser.add_argument('--games', '-g', type=int, default=100)
-    parser.add_argument('--verbose', '-v', action='store_true')
-    parser.add_argument('--seed', '-s', type=int, default=None)
-    parser.add_argument('--test', action='store_true')
-    parser.add_argument('--bo3', action='store_true',
-                        help='Run best-of-3 matches with sideboarding')
-    parser.add_argument('--hypothesis', nargs='?', const='bug', metavar='DECK',
-                        help='Run hypothesis tests on sweep data (default: bug)')
-    parser.add_argument('--hypothesis-live', nargs=3, metavar=('PROTO', 'ANT', 'N'),
-                        help='Run live hypothesis test: protagonist antagonist n_matches')
-    args = parser.parse_args()
-
-    if args.seed is not None:
-        random.seed(args.seed)
-
-    print("Running rules verification tests...")
-    rules_ok = run_rules_tests()
-    if not rules_ok:
-        print("WARNING: Rules tests failing. Results may be unreliable.")
-        try: input("Press Enter to continue or Ctrl+C to abort...")
-        except KeyboardInterrupt: sys.exit(1)
-
-    if args.test:
-        return
-
-    if args.hypothesis:
-        from hypothesis_testing import analyze_sweep, meta_ev_ci
-        deck = args.hypothesis
-        analyze_sweep('results/overnight_sweep.json', deck)
-        meta_ev_ci('results/overnight_sweep.json', deck)
-        return
-
-    if args.hypothesis_live:
-        from hypothesis_testing import run_live_test
-        proto, ant, n = args.hypothesis_live
-        run_live_test(proto, ant, int(n))
-        return
-
-    if args.bo3:
-        if args.matchup == 'all':
-            run_all_matchups_bo3(args.games, args.verbose)
-        else:
-            run_matchup_bo3(args.matchup, args.games, args.verbose)
-    else:
-        if args.matchup == 'all':
-            run_all_matchups(args.games, args.verbose)
-        else:
-            run_matchup(args.matchup, args.games, args.verbose)
-
-
-if __name__ == '__main__':
-    main()

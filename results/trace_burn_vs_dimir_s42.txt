@@ -1,0 +1,486 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Skullcrack (instant, CMC 2)
+    2. Lava Spike (sorcery, CMC 1)
+    3. Fiery Islet (land)
+    4. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    5. Chain Lightning (sorcery, CMC 1)
+    6. Lava Spike (sorcery, CMC 1)
+    7. Fiery Islet (land)
+    [Lands: 2  Creatures: 1  Other: 4]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Thoughtseize (sorcery, CMC 1)
+    2. Fatal Push (instant, CMC 1, removal)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Underground Sea (dual)
+    5. Island (basic)
+    6. Brainstorm (instant, CMC 1, cantrip)
+    7. Scalding Tarn (fetch)
+    [Lands: 3  Creatures: 1  Cantrips: 1  Removal: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (6): Thoughtseize, Fatal Push, Tamiyo, Inquisitive Student, Island, Brainstorm, Scalding Tarn
+    Mana available: 1
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 8  Lib: 50  GY: 1        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Skullcrack, Lava Spike   │   Hand: Thoughtseize             │
+  │         Fiery Islet              │         Fatal Push, Tamiyo       │
+  │         Eidolon of the Great Rev │         Inquisitive Student      │
+  │         el, Chain Lightning      │         Island, Scalding Tarn    │
+  │         Lava Spike, Fiery Islet  │         Polluted Delta, Ponder   │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Inspiring Vantage
+  Land: Fiery Islet (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Skullcrack, Lava Spike, Eidolon of the Great Revel, Chain Lightning, Lava Spike, Fiery Islet, Inspiring Vantage
+      → Chain Lightning goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 17)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 8  Lib: 50  GY: 1        │
+  │   Lands: Fiery Islet             │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Skullcrack, Lava Spike   │   Hand: Thoughtseize             │
+  │         Eidolon of the Great Rev │         Fatal Push, Tamiyo       │
+  │         el, Lava Spike           │         Inquisitive Student      │
+  │         Fiery Islet              │         Island, Scalding Tarn    │
+  │         Inspiring Vantage        │         Polluted Delta, Ponder   │
+  │                                  │         Thoughtseize             │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Land: Island (2 lands)
+  ── Main ──
+    Hand (8): Thoughtseize, Fatal Push, Tamiyo, Inquisitive Student, Scalding Tarn, Polluted Delta, Ponder, Thoughtseize, Fatal Push
+    Mana available: 2
+  Ponder (1 draw)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 7  Lib: 48  GY: 2        │
+  │   Lands: Fiery Islet             │   Lands: Underground Sea, Island │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack, Lava Spike   │   Hand: Thoughtseize             │
+  │         Eidolon of the Great Rev │         Fatal Push               │
+  │         el, Lava Spike           │         Scalding Tarn            │
+  │         Fiery Islet              │         Polluted Delta           │
+  │         Inspiring Vantage        │         Thoughtseize             │
+  │                                  │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 17
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fireblast
+  Land: Fiery Islet (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Skullcrack, Lava Spike, Eidolon of the Great Revel, Lava Spike, Inspiring Vantage, Fireblast
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 17                       │
+  │   Hand: 5  Lib: 51  GY: 1        │   Hand: 7  Lib: 48  GY: 2        │
+  │   Lands: Fiery Islet, Fiery Islet │   Lands: Underground Sea, Island │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack, Lava Spike   │   Hand: Thoughtseize             │
+  │         Lava Spike               │         Fatal Push               │
+  │         Inspiring Vantage        │         Scalding Tarn            │
+  │         Fireblast                │         Polluted Delta           │
+  │                                  │         Thoughtseize             │
+  │                                  │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 17
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Nethergoyf
+  Play+crack Scalding Tarn (−1 life, 16) → Underground Sea
+  ── Main ──
+    Hand (7): Thoughtseize, Fatal Push, Polluted Delta, Thoughtseize, Fatal Push, Murktide Regent, Nethergoyf
+    Mana available: 3
+      → Nethergoyf goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Nethergoyf RESOLVES
+  Nethergoyf (0/1)
+  Fatal Push [revolt CMC≤4] → kills Eidolon of the Great Revel
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 16                       │
+  │   Hand: 5  Lib: 51  GY: 2        │   Hand: 5  Lib: 46  GY: 5        │
+  │   Lands: Fiery Islet, Fiery Islet │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack, Lava Spike   │   Hand: Thoughtseize             │
+  │         Lava Spike               │         Polluted Delta           │
+  │         Inspiring Vantage        │         Thoughtseize             │
+  │         Fireblast                │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 16
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Chain Lightning
+  Land: Inspiring Vantage (3 lands)
+  ── Main ── Mana: 3
+    Hand (5): Skullcrack, Lava Spike, Lava Spike, Fireblast, Chain Lightning
+      → Chain Lightning goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 13)
+      → Lava Spike goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Lava Spike RESOLVES
+  ★ Lava Spike → 3 damage (opp at 10)
+      → Lava Spike goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Lava Spike RESOLVES
+  ★ Lava Spike → 3 damage (opp at 7)
+      → Fireblast goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 3)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 20                       │   Life: 3                        │
+  │   Hand: 1  Lib: 50  GY: 6        │   Hand: 5  Lib: 46  GY: 5        │
+  │   Lands: Inspiring Vantage       │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │                                  │         Polluted Delta           │
+  │                                  │         Thoughtseize             │
+  │                                  │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dimir 3
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Tamiyo, Inquisitive Student
+  Play+crack Polluted Delta (−1 life, 2) → Underground Sea
+  ── Main ──
+    Hand (5): Thoughtseize, Thoughtseize, Fatal Push, Murktide Regent, Tamiyo, Inquisitive Student
+    Mana available: 4
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Attack: Nethergoyf — 3 unblocked → b at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 17                       │   Life: 2                        │
+  │   Hand: 1  Lib: 50  GY: 6        │   Hand: 4  Lib: 44  GY: 8        │
+  │   Lands: Inspiring Vantage       │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │                                  │         Thoughtseize             │
+  │                                  │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 17 | dimir 2
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Eidolon of the Great Revel
+  ── Main ── Mana: 1
+    Hand (2): Skullcrack, Eidolon of the Great Revel
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 17                       │   Life: 2                        │
+  │   Hand: 2  Lib: 49  GY: 6        │   Hand: 4  Lib: 44  GY: 8        │
+  │   Lands: Inspiring Vantage       │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Eidolon of the Great Rev │         Thoughtseize             │
+  │         el                       │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 17 | dimir 2
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Bloodstained Mire
+  Play+crack Bloodstained Mire (−1 life, 1) → Underground Sea
+  ── Main ──
+    Hand (4): Thoughtseize, Thoughtseize, Fatal Push, Murktide Regent
+    Mana available: 5
+  Attack: Nethergoyf — 4 unblocked → b at 13
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 13                       │   Life: 1                        │
+  │   Hand: 2  Lib: 49  GY: 6        │   Hand: 4  Lib: 42  GY: 10       │
+  │   Lands: Inspiring Vantage       │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Eidolon of the Great Rev │         Thoughtseize             │
+  │         el                       │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 13 | dimir 1
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Searing Blaze
+  ── Main ── Mana: 1
+    Hand (3): Skullcrack, Eidolon of the Great Revel, Searing Blaze
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 13                       │   Life: 1                        │
+  │   Hand: 3  Lib: 48  GY: 6        │   Hand: 4  Lib: 42  GY: 10       │
+  │   Lands: Inspiring Vantage       │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Eidolon of the Great Rev │         Thoughtseize             │
+  │         el, Searing Blaze        │         Fatal Push               │
+  │                                  │         Murktide Regent          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 13 | dimir 1
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Daze
+  ── Main ──
+    Hand (5): Thoughtseize, Thoughtseize, Fatal Push, Murktide Regent, Daze
+    Mana available: 5
+  Attack: Nethergoyf — 4 unblocked → b at 9
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 9                        │   Life: 1                        │
+  │   Hand: 3  Lib: 48  GY: 6        │   Hand: 5  Lib: 41  GY: 10       │
+  │   Lands: Inspiring Vantage       │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Eidolon of the Great Rev │         Thoughtseize             │
+  │         el, Searing Blaze        │         Fatal Push               │
+  │                                  │         Murktide Regent, Daze    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 9 | dimir 1
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Price of Progress
+  ── Main ── Mana: 1
+    Hand (4): Skullcrack, Eidolon of the Great Revel, Searing Blaze, Price of Progress
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 9                        │   Life: 1                        │
+  │   Hand: 4  Lib: 47  GY: 6        │   Hand: 5  Lib: 41  GY: 10       │
+  │   Lands: Inspiring Vantage       │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Eidolon of the Great Rev │         Thoughtseize             │
+  │         el, Searing Blaze        │         Fatal Push               │
+  │         Price of Progress        │         Murktide Regent, Daze    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 9 | dimir 1
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Daze
+  ── Main ──
+    Hand (6): Thoughtseize, Thoughtseize, Fatal Push, Murktide Regent, Daze, Daze
+    Mana available: 5
+  Attack: Nethergoyf — 4 unblocked → b at 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 5                        │   Life: 1                        │
+  │   Hand: 4  Lib: 47  GY: 6        │   Hand: 6  Lib: 40  GY: 10       │
+  │   Lands: Inspiring Vantage       │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Eidolon of the Great Rev │         Thoughtseize             │
+  │         el, Searing Blaze        │         Fatal Push               │
+  │         Price of Progress        │         Murktide Regent, Daze    │
+  │                                  │         Daze                     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 5 | dimir 1
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (2 lands)
+  ── Main ── Mana: 2
+    Hand (4): Skullcrack, Eidolon of the Great Revel, Searing Blaze, Price of Progress
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Daze] but PASSES (low-priority target)
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 5                        │   Life: 1                        │
+  │   Hand: 3  Lib: 46  GY: 6        │   Hand: 6  Lib: 40  GY: 10       │
+  │   Lands: Inspiring Vantage, Mountain │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Searing Blaze            │         Thoughtseize             │
+  │         Price of Progress        │         Fatal Push               │
+  │                                  │         Murktide Regent, Daze    │
+  │                                  │         Daze                     │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 5 | dimir 1
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Force of Will
+  ── Main ──
+    Hand (7): Thoughtseize, Thoughtseize, Fatal Push, Murktide Regent, Daze, Daze, Force of Will
+    Mana available: 5
+  Fatal Push [CMC≤2] → kills Eidolon of the Great Revel
+  Attack: Nethergoyf — 4 unblocked → b at 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 1                        │   Life: 1                        │
+  │   Hand: 3  Lib: 46  GY: 7        │   Hand: 6  Lib: 39  GY: 11       │
+  │   Lands: Inspiring Vantage, Mountain │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Searing Blaze            │         Thoughtseize             │
+  │         Price of Progress        │         Murktide Regent, Daze    │
+  │                                  │         Daze, Force of Will      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 16 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 1 | dimir 1
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Price of Progress
+  ── Main ── Mana: 2
+    Hand (4): Skullcrack, Searing Blaze, Price of Progress, Price of Progress
+      → Price of Progress goes on the STACK
+      → Priority passes to DIMIR
+      → DIMIR has [Daze, Force of Will] but PASSES (low-priority target)
+      → Price of Progress RESOLVES
+  ★ Price of Progress (4 nonbasics) → 8 damage (opp at -7)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DIMIR                            │
+  │   Life: 1                        │   Life: -7                       │
+  │   Hand: 3  Lib: 45  GY: 8        │   Hand: 6  Lib: 39  GY: 11       │
+  │   Lands: Inspiring Vantage, Mountain │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Skullcrack               │   Hand: Thoughtseize             │
+  │         Searing Blaze            │         Thoughtseize             │
+  │         Price of Progress        │         Murktide Regent, Daze    │
+  │                                  │         Daze, Force of Will      │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches -7 on turn 8
+  Final life: burn 1 | dimir -7
+══════════════════════════════════════════════════════════════════════

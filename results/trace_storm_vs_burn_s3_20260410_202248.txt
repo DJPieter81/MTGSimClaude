@@ -1,0 +1,209 @@
+══════════════════════════════════════════════════════════════════════
+  STORM vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  STORM (P1):
+  Draw 7:
+    1. Infernal Tutor (sorcery, CMC 2, combo)
+    2. Ponder (sorcery, CMC 1, cantrip)
+    3. Veil of Summer (instant, CMC 1)
+    4. Past in Flames (sorcery, CMC 5, combo)
+    5. Volcanic Island (dual)
+    6. Infernal Tutor (sorcery, CMC 2, combo)
+    7. Lion's Eye Diamond (artifact, CMC 0, combo)
+    [Lands: 1  Cantrips: 1  Combo: 4  Other: 1]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; cantrip(s) to dig for threats; combo pieces present — can threaten early kill
+
+  BURN (P2):
+  Draw 7:
+    1. Fiery Islet (land)
+    2. Fireblast (instant, CMC 6)
+    3. Skullcrack (instant, CMC 2)
+    4. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    5. Price of Progress (instant, CMC 2)
+    6. Lava Spike (sorcery, CMC 1)
+    7. Inspiring Vantage (land)
+    [Lands: 2  Creatures: 1  Other: 4]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Fiery Islet (1 lands)
+  ── Main ──
+    Hand (6): Fireblast, Skullcrack, Eidolon of the Great Revel, Price of Progress, Lava Spike, Inspiring Vantage
+    Mana available: 1
+      → Lava Spike goes on the STACK
+      → Priority passes to STORM
+      → STORM has no counters — passes priority
+      → Lava Spike RESOLVES
+  ★ Lava Spike → 3 damage (opp at 17)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ STORM                            │ BURN                             │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 5  Lib: 53  GY: 1        │
+  │   Lands: (none)                  │   Lands: Fiery Islet             │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Infernal Tutor, Ponder   │   Hand: Fireblast, Skullcrack    │
+  │         Veil of Summer           │         Eidolon of the Great Rev │
+  │         Past in Flames           │         el, Price of Progress    │
+  │         Volcanic Island          │         Inspiring Vantage        │
+  │         Infernal Tutor           │                                  │
+  │         Lion's Eye Diamond       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 17 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Ad Nauseam
+  Land: Volcanic Island (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Infernal Tutor, Ponder, Veil of Summer, Past in Flames, Infernal Tutor, Lion's Eye Diamond, Ad Nauseam
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ STORM                            │ BURN                             │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 7  Lib: 52  GY: 0        │   Hand: 5  Lib: 53  GY: 1        │
+  │   Lands: Volcanic Island         │   Lands: Fiery Islet             │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Infernal Tutor, Ponder   │   Hand: Fireblast, Skullcrack    │
+  │         Veil of Summer           │         Eidolon of the Great Rev │
+  │         Past in Flames           │         el, Price of Progress    │
+  │         Infernal Tutor           │         Inspiring Vantage        │
+  │         Lion's Eye Diamond       │                                  │
+  │         Ad Nauseam               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 17 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Chain Lightning
+  Land: Inspiring Vantage (2 lands)
+  ── Main ──
+    Hand (5): Fireblast, Skullcrack, Eidolon of the Great Revel, Price of Progress, Chain Lightning
+    Mana available: 2
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to STORM
+      → STORM has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ STORM                            │ BURN                             │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 7  Lib: 52  GY: 0        │   Hand: 4  Lib: 52  GY: 1        │
+  │   Lands: Volcanic Island         │   Lands: Fiery Islet, Inspiring Va... │
+  │   Creatures: (none)              │   Creatures: Eidolon of the Great Reve... │
+  │   Hand: Infernal Tutor, Ponder   │   Hand: Fireblast, Skullcrack    │
+  │         Veil of Summer           │         Price of Progress        │
+  │         Past in Flames           │         Chain Lightning          │
+  │         Infernal Tutor           │                                  │
+  │         Lion's Eye Diamond       │                                  │
+  │         Ad Nauseam               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 17 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Cabal Ritual
+  ── Main ── Mana: 1
+    Hand (8): Infernal Tutor, Ponder, Veil of Summer, Past in Flames, Infernal Tutor, Lion's Eye Diamond, Ad Nauseam, Cabal Ritual
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ STORM                            │ BURN                             │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 8  Lib: 51  GY: 0        │   Hand: 4  Lib: 52  GY: 1        │
+  │   Lands: Volcanic Island         │   Lands: Fiery Islet, Inspiring Va... │
+  │   Creatures: (none)              │   Creatures: Eidolon of the Great Reve... │
+  │   Hand: Infernal Tutor, Ponder   │   Hand: Fireblast, Skullcrack    │
+  │         Veil of Summer           │         Price of Progress        │
+  │         Past in Flames           │         Chain Lightning          │
+  │         Infernal Tutor           │                                  │
+  │         Lion's Eye Diamond       │                                  │
+  │         Ad Nauseam, Cabal Ritual │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 17 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Fireblast
+  ── Main ──
+    Hand (5): Fireblast, Skullcrack, Price of Progress, Chain Lightning, Fireblast
+    Mana available: 2
+  Attack: Eidolon of the Great Revel — 2 unblocked → b at 15
+      → Price of Progress goes on the STACK
+      → Priority passes to STORM
+      → STORM has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 13)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ STORM                            │ BURN                             │
+  │   Life: 13                       │   Life: 20                       │
+  │   Hand: 8  Lib: 51  GY: 0        │   Hand: 4  Lib: 51  GY: 2        │
+  │   Lands: Volcanic Island         │   Lands: Fiery Islet, Inspiring Va... │
+  │   Creatures: (none)              │   Creatures: Eidolon of the Great Reve... │
+  │   Hand: Infernal Tutor, Ponder   │   Hand: Fireblast, Skullcrack    │
+  │         Veil of Summer           │         Chain Lightning          │
+  │         Past in Flames           │         Fireblast                │
+  │         Infernal Tutor           │                                  │
+  │         Lion's Eye Diamond       │                                  │
+  │         Ad Nauseam, Cabal Ritual │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 13 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Polluted Delta
+  Play+crack Polluted Delta (−1 life, 12) → Bayou
+  ── Main ── Mana: 2
+    Hand (8): Infernal Tutor, Ponder, Veil of Summer, Past in Flames, Infernal Tutor, Lion's Eye Diamond, Ad Nauseam, Cabal Ritual
+      → Infernal Tutor goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Infernal Tutor RESOLVES
+  ★ Storm Ad Nauseam — wins (est. storm ~4)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ STORM                            │ BURN                             │
+  │   Life: 12                       │   Life: 20                       │
+  │   Hand: 6  Lib: 49  GY: 4        │   Hand: 4  Lib: 51  GY: 2        │
+  │   Lands: Volcanic Island, Bayou  │   Lands: Fiery Islet, Inspiring Va... │
+  │   Creatures: (none)              │   Creatures: Eidolon of the Great Reve... │
+  │   Hand: Ponder, Veil of Summer   │   Hand: Fireblast, Skullcrack    │
+  │         Past in Flames           │         Chain Lightning          │
+  │         Infernal Tutor           │         Fireblast                │
+  │         Lion's Eye Diamond       │                                  │
+  │         Ad Nauseam               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: STORM — ANT combo (Ad Nauseam)
+  Final life: storm 12 | burn 20
+══════════════════════════════════════════════════════════════════════

@@ -63,7 +63,7 @@ def make_belcher_deck():
 
     # Simian Spirit Guide: exile from hand → add {R}
     for _ in range(4):
-        d.append(creature('Simian Spirit Guide', 2, {'R': 2, 'generic': 1},
+        d.append(creature('Simian Spirit Guide', 3, {'R': 1, 'generic': 2},
                           'R', power=2, toughness=2, tag='ssg'))
 
     # ── Rituals (16) ─────────────────────────────────────────────────────────
@@ -533,5 +533,5 @@ DECK_META = {
     'keep':       _keep_belcher,
     'categories': {'combo', 'fast_combo'},
     'interaction': {'speed': 1, 'resilience': 1, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.02,
+    'meta_share': 0.01,
 }

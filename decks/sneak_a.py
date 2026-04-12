@@ -111,7 +111,7 @@ def make_sneak_a_deck():
                           {'W': 1, 'U': 1, 'B': 1, 'G': 2, 'generic': 2},
                           {'W', 'U', 'B', 'G'}, 7, 7, tag='atraxa',
                           flying=True, lifelink=True, vigilance=True,
-                          win_condition=True))
+                          deathtouch=True, win_condition=True))
 
     # Omniscience x2
     for _ in range(2):
@@ -437,5 +437,5 @@ DECK_META = {
     'keep':       _keep_sneak_a,
     'categories': {'combo', 'land_combo'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.03,
+    'meta_share': 0.04,
 }

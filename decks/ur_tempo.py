@@ -79,7 +79,7 @@ def make_ur_tempo_deck() -> List[Card]:
 
     d += [dual_land('Volcanic Island', ['U', 'R'], ['Island', 'Mountain'])] * 4
 
-    d += [utility_land('Wasteland', [], 'wl')] * 4
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 4
 
     d += [utility_land('Thundering Falls', ['U', 'R'], 'tfall')]
 
@@ -359,5 +359,5 @@ DECK_META = {
     'keep':       _keep_ur_tempo,
     'categories': {'aggro', 'tempo_mirror'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True},
-    'meta_share': 0.03,
+    'meta_share': 0.02,
 }

@@ -1,0 +1,385 @@
+══════════════════════════════════════════════════════════════════════
+  BUG vs STORM
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BUG wins the die roll, goes FIRST
+
+  BUG (P1):
+  Draw 7:
+    1. Ponder (sorcery, CMC 1, cantrip)
+    2. Daze (instant, CMC 2, free counter)
+    3. Wasteland (land)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Kaito, Bane of Nightmares (creature 3/4, CMC 3)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Wasteland (land)
+    [Lands: 2  Creatures: 2  Counters: 2  Cantrips: 1]
+  → MULLIGAN
+    Reason: doesn't meet deck-specific keep criteria
+  Mulligan #1 — draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Underground Sea (dual)
+    5. Island (basic)
+    6. Kaito, Bane of Nightmares (creature 3/4, CMC 3)
+    7. Flooded Strand (fetch)
+    [Lands: 3  Creatures: 2  Cantrips: 1  Other: 1]
+  Keep best 6: Tamiyo, Inquisitive Student, Kaito, Bane of Nightmares, Brainstorm, Thoughtseize, Underground Sea, Island
+  Bottom 1: Flooded Strand
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock
+
+  STORM (P2):
+  Draw 7:
+    1. Flusterstorm (instant, CMC 1, counter)
+    2. Swamp (basic)
+    3. Ponder (sorcery, CMC 1, cantrip)
+    4. Volcanic Island (dual)
+    5. Cabal Ritual (instant, CMC 2)
+    6. Ponder (sorcery, CMC 1, cantrip)
+    7. Infernal Tutor (sorcery, CMC 2, combo)
+    [Lands: 2  Counters: 1  Cantrips: 2  Combo: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 counter(s) for protection/disruption; cantrip(s) to dig for threats
+
+━━ TURN 1 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 20 | storm 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  ── Main ── Mana: 0
+    Hand (6): Tamiyo, Inquisitive Student, Kaito, Bane of Nightmares, Brainstorm, Thoughtseize, Underground Sea, Island
+  Play Underground Sea (1 lands)
+  Thoughtseize (−2 life, 18)
+  Thoughtseize -> strips Infernal Tutor
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 4  Lib: 54  GY: 1        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Underground Sea         │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Tamiyo                   │   Hand: Flusterstorm, Swamp      │
+  │         Inquisitive Student      │         Ponder                   │
+  │         Kaito                    │         Volcanic Island          │
+  │         Bane of Nightmares       │         Cabal Ritual, Ponder     │
+  │         Brainstorm, Island       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 18 | storm 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Veil of Summer
+  Land: Swamp (1 lands)
+  ── Main ──
+    Hand (6): Flusterstorm, Ponder, Volcanic Island, Cabal Ritual, Ponder, Veil of Summer
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 4  Lib: 54  GY: 1        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Underground Sea         │   Lands: Swamp                   │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Tamiyo                   │   Hand: Flusterstorm, Ponder     │
+  │         Inquisitive Student      │         Volcanic Island          │
+  │         Kaito                    │         Cabal Ritual, Ponder     │
+  │         Bane of Nightmares       │         Veil of Summer           │
+  │         Brainstorm, Island       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 18 | storm 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Polluted Delta
+  ── Main ── Mana: 1
+    Hand (5): Tamiyo, Inquisitive Student, Kaito, Bane of Nightmares, Brainstorm, Island, Polluted Delta
+  Play+crack Polluted Delta (−1 life, 17) → Underground Sea [untapped]
+  Brainstorm (3 draws = 3 separate draw events) → [Force of Will, Brainstorm, Thoughtseize]
+    Puts back: ['Island', 'Brainstorm']
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to STORM
+      → STORM evaluates: minor threat + only 1 counter(s) — PASSES
+      → Tamiyo, Inquisitive Student RESOLVES
+  Cast Tamiyo (CMC 1, summoning sick)
+  ── Combat ── (0 eligible attackers)
+  ★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 3  Lib: 51  GY: 4        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp                   │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Kaito                    │   Hand: Flusterstorm, Ponder     │
+  │         Bane of Nightmares       │         Volcanic Island          │
+  │         Force of Will            │         Cabal Ritual, Ponder     │
+  │         Thoughtseize             │         Veil of Summer           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 17 | storm 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Lion's Eye Diamond
+  Land: Volcanic Island (2 lands)
+  ── Main ──
+    Hand (6): Flusterstorm, Ponder, Cabal Ritual, Ponder, Veil of Summer, Lion's Eye Diamond
+    Mana available: 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 17                       │   Life: 20                       │
+  │   Hand: 3  Lib: 51  GY: 4        │   Hand: 6  Lib: 51  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island  │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Kaito                    │   Hand: Flusterstorm, Ponder     │
+  │         Bane of Nightmares       │         Cabal Ritual, Ponder     │
+  │         Force of Will            │         Veil of Summer           │
+  │         Thoughtseize             │         Lion's Eye Diamond       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 17 | storm 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+  ── Main ── Mana: 2
+    Hand (4): Kaito, Bane of Nightmares, Force of Will, Thoughtseize, Brainstorm
+  Thoughtseize (−2 life, 15)
+  Thoughtseize -> strips Lion's Eye Diamond
+  Brainstorm (3 draws = 3 separate draw events) → [Island, Orcish Bowmasters, Orcish Bowmasters]
+    Puts back: ['Island', 'Kaito, Bane of Nightmares']
+  ── Combat ── (1 eligible attackers)
+  Attack: Tamiyo, Inquisitive Student — 3 unblocked → o at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 15                       │   Life: 17                       │
+  │   Hand: 3  Lib: 49  GY: 6        │   Hand: 5  Lib: 51  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island  │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Orcish Bowmasters        │         Veil of Summer           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 15 | storm 17
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Underground Sea
+  Land: Underground Sea (3 lands)
+  ── Main ──
+    Hand (5): Flusterstorm, Ponder, Cabal Ritual, Ponder, Veil of Summer
+    Mana available: 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 15                       │   Life: 17                       │
+  │   Hand: 3  Lib: 49  GY: 6        │   Hand: 5  Lib: 50  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island, U... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Orcish Bowmasters        │         Veil of Summer           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 15 | storm 17
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Kaito, Bane of Nightmares
+  ── Main ── Mana: 2
+    Hand (4): Force of Will, Orcish Bowmasters, Orcish Bowmasters, Kaito, Bane of Nightmares
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to STORM
+      → STORM has [Flusterstorm] but PASSES (low-priority target)
+      → Orcish Bowmasters RESOLVES
+  Flash Bowmasters (1 trigger per card opp draws)
+  ── Combat ── (1 eligible attackers)
+  Attack: Tamiyo, Inquisitive Student — 3 unblocked → o at 14
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 15                       │   Life: 14                       │
+  │   Hand: 3  Lib: 48  GY: 6        │   Hand: 5  Lib: 50  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island, U... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Kaito                    │         Veil of Summer           │
+  │         Bane of Nightmares       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 15 | storm 14
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Dark Ritual
+  ── Main ──
+    Hand (6): Flusterstorm, Ponder, Cabal Ritual, Ponder, Veil of Summer, Dark Ritual
+    Mana available: 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 15                       │   Life: 14                       │
+  │   Hand: 3  Lib: 48  GY: 6        │   Hand: 6  Lib: 49  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island, U... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Kaito                    │         Veil of Summer           │
+  │         Bane of Nightmares       │         Dark Ritual              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 15 | storm 14
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Island
+  ── Main ── Mana: 2
+    Hand (4): Force of Will, Orcish Bowmasters, Kaito, Bane of Nightmares, Island
+  Play Island (3 lands)
+      → Kaito, Bane of Nightmares goes on the STACK
+      → Priority passes to STORM
+      → STORM has counters but cannot use them (conditions not met)
+      → Kaito, Bane of Nightmares RESOLVES
+  Cast Kaito, Bane of Nightmares (3/4 hexproof) → Surveil 2, draw 1 [Tamiyo, Inquisitive Student]
+  ── Combat ── (2 eligible attackers)
+  Attack: Tamiyo, Inquisitive Student, Orcish Bowmasters — 4 unblocked → o at 10
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 15                       │   Life: 10                       │
+  │   Hand: 3  Lib: 46  GY: 6        │   Hand: 6  Lib: 49  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island, U... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Tamiyo                   │         Veil of Summer           │
+  │         Inquisitive Student      │         Dark Ritual              │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 15 | storm 10
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Ad Nauseam
+  ── Main ──
+    Hand (7): Flusterstorm, Ponder, Cabal Ritual, Ponder, Veil of Summer, Dark Ritual, Ad Nauseam
+    Mana available: 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 15                       │   Life: 10                       │
+  │   Hand: 3  Lib: 46  GY: 6        │   Hand: 7  Lib: 48  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island, U... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Tamiyo                   │         Veil of Summer           │
+  │         Inquisitive Student      │         Dark Ritual, Ad Nauseam  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 15 | storm 10
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Misty Rainforest
+  ── Main ── Mana: 3
+    Hand (4): Force of Will, Orcish Bowmasters, Tamiyo, Inquisitive Student, Misty Rainforest
+  Play+crack Misty Rainforest (−1 life, 14) → Underground Sea [untapped]
+  ── Combat ── (3 eligible attackers)
+  Attack: Tamiyo, Inquisitive Student, Orcish Bowmasters, Kaito, Bane of Nightmares — 7 unblocked → o at 3
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 14                       │   Life: 3                        │
+  │   Hand: 3  Lib: 44  GY: 8        │   Hand: 7  Lib: 48  GY: 0        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island, U... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Tamiyo                   │         Veil of Summer           │
+  │         Inquisitive Student      │         Dark Ritual, Ad Nauseam  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 14 | storm 3
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Dark Ritual
+  ── Main ──
+    Hand (8): Flusterstorm, Ponder, Cabal Ritual, Ponder, Veil of Summer, Dark Ritual, Ad Nauseam, Dark Ritual
+    Mana available: 3
+      → Veil of Summer goes on the STACK
+      → Priority passes to BUG
+      → BUG has [Force of Will] but PASSES (low-priority target)
+      → Veil of Summer RESOLVES
+  Veil of Summer — opponent's blue interaction blanked this turn
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 14                       │   Life: 3                        │
+  │   Hand: 3  Lib: 44  GY: 8        │   Hand: 7  Lib: 47  GY: 1        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island, U... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Tamiyo                   │         Dark Ritual              │
+  │         Inquisitive Student      │         Ad Nauseam, Dark Ritual  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 14 | storm 3
+
+  ── Untap ── (4 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ── Mana: 4
+    Hand (4): Force of Will, Orcish Bowmasters, Tamiyo, Inquisitive Student, Fatal Push
+  ── Combat ── (3 eligible attackers)
+  Attack: Tamiyo, Inquisitive Student, Orcish Bowmasters, Kaito, Bane of Nightmares — 7 unblocked → o at -4
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BUG                              │ STORM                            │
+  │   Life: 14                       │   Life: -4                       │
+  │   Hand: 4  Lib: 43  GY: 8        │   Hand: 7  Lib: 47  GY: 1        │
+  │   Lands: Underground Sea, Undergro... │   Lands: Swamp, Volcanic Island, U... │
+  │   Creatures: Tamiyo, Inquisitive Stude... │   Creatures: (none)              │
+  │   Hand: Force of Will            │   Hand: Flusterstorm, Ponder     │
+  │         Orcish Bowmasters        │         Cabal Ritual, Ponder     │
+  │         Tamiyo                   │         Dark Ritual              │
+  │         Inquisitive Student      │         Ad Nauseam, Dark Ritual  │
+  │         Fatal Push               │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BUG — Opp life reaches -4 on turn 7
+  Final life: bug 14 | storm -4
+══════════════════════════════════════════════════════════════════════

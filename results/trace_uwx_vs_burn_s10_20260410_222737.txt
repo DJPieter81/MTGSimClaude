@@ -1,0 +1,271 @@
+══════════════════════════════════════════════════════════════════════
+  UWX vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UWX wins the die roll, goes FIRST
+
+  UWX (P1):
+  Draw 7:
+    1. Monastery Mentor (creature 2/2, CMC 3)
+    2. Island (basic)
+    3. Back to Basics (CMC 3)
+    4. Scalding Tarn (fetch)
+    5. Island (basic)
+    6. Ponder (sorcery, CMC 1, cantrip)
+    7. Island (basic)
+    [Lands: 4  Creatures: 1  Cantrips: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 1 threat(s) for a clock
+
+  BURN (P2):
+  Draw 7:
+    1. Goblin Guide (creature 2/1, CMC 1)
+    2. Fireblast (instant, CMC 6, win-con)
+    3. Fireblast (instant, CMC 6, win-con)
+    4. Fireblast (instant, CMC 6, win-con)
+    5. Mountain (basic)
+    6. Fiery Islet (land)
+    7. Chain Lightning (sorcery, CMC 1)
+    [Lands: 2  Creatures: 1  Combo: 3  Other: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 4 threat(s) for a clock; combo pieces present — can threaten early kill
+
+━━ TURN 1 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Island (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Monastery Mentor, Back to Basics, Scalding Tarn, Island, Ponder, Island
+  Ponder (1 draw)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 1        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Island                  │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Monastery Mentor         │   Hand: Goblin Guide             │
+  │         Back to Basics           │         Fireblast, Fireblast     │
+  │         Scalding Tarn, Island    │         Fireblast, Mountain      │
+  │         Island, Island           │         Fiery Islet              │
+  │                                  │         Chain Lightning          │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Lightning Bolt
+  Land: Mountain (1 lands)
+  ── Main ──
+    Hand (7): Goblin Guide, Fireblast, Fireblast, Fireblast, Fiery Islet, Chain Lightning, Lightning Bolt
+    Mana available: 1
+      → Goblin Guide goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+    Goblin Guide trigger → reveals Tundra (land) — opponent draws it
+  Attack: Goblin Guide — 2 unblocked → b at 18
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 7  Lib: 51  GY: 1        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Island                  │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Monastery Mentor         │   Hand: Fireblast, Fireblast     │
+  │         Back to Basics           │         Fireblast, Fiery Islet   │
+  │         Scalding Tarn, Island    │         Chain Lightning          │
+  │         Island, Island, Tundra   │         Lightning Bolt           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 18 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Plains
+  Land: Island (2 lands)
+  ── Main ── Mana: 2
+    Hand (7): Monastery Mentor, Back to Basics, Scalding Tarn, Island, Island, Tundra, Plains
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 7  Lib: 50  GY: 1        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Island, Island          │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Monastery Mentor         │   Hand: Fireblast, Fireblast     │
+  │         Back to Basics           │         Fireblast, Fiery Islet   │
+  │         Scalding Tarn, Island    │         Chain Lightning          │
+  │         Island, Tundra, Plains   │         Lightning Bolt           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 18 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Price of Progress
+  Land: Fiery Islet (2 lands)
+  ── Main ──
+    Hand (6): Fireblast, Fireblast, Fireblast, Chain Lightning, Lightning Bolt, Price of Progress
+    Mana available: 2
+    Goblin Guide trigger → reveals Flooded Strand (land) — opponent draws it
+  Attack: Goblin Guide — 2 unblocked → b at 16
+      → Chain Lightning goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 13)
+      → Lightning Bolt goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt → 3 damage (opp at 10)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 8  Lib: 49  GY: 1        │   Hand: 4  Lib: 51  GY: 2        │
+  │   Lands: Island, Island          │   Lands: Mountain, Fiery Islet   │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Monastery Mentor         │   Hand: Fireblast, Fireblast     │
+  │         Back to Basics           │         Fireblast                │
+  │         Scalding Tarn, Island    │         Price of Progress        │
+  │         Island, Tundra, Plains   │                                  │
+  │         Flooded Strand           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 10 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Ponder
+  Land: Island (3 lands)
+  ── Main ── Mana: 3
+    Hand (8): Monastery Mentor, Back to Basics, Scalding Tarn, Island, Tundra, Plains, Flooded Strand, Ponder
+  Ponder (1 draw)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 8  Lib: 47  GY: 2        │   Hand: 4  Lib: 51  GY: 2        │
+  │   Lands: Island, Island, Island  │   Lands: Mountain, Fiery Islet   │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Monastery Mentor         │   Hand: Fireblast, Fireblast     │
+  │         Back to Basics           │         Fireblast                │
+  │         Scalding Tarn, Island    │         Price of Progress        │
+  │         Tundra, Plains           │                                  │
+  │         Flooded Strand           │                                  │
+  │         Flooded Strand           │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 10 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Chain Lightning
+  ── Main ──
+    Hand (5): Fireblast, Fireblast, Fireblast, Price of Progress, Chain Lightning
+    Mana available: 2
+    Goblin Guide trigger → reveals Tundra (land) — opponent draws it
+  Attack: Goblin Guide — 2 unblocked → b at 8
+      → Chain Lightning goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Chain Lightning RESOLVES
+  ★ Chain Lightning → 3 damage (opp at 5)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 5                        │   Life: 20                       │
+  │   Hand: 9  Lib: 46  GY: 2        │   Hand: 4  Lib: 50  GY: 3        │
+  │   Lands: Island, Island, Island  │   Lands: Mountain, Fiery Islet   │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Monastery Mentor         │   Hand: Fireblast, Fireblast     │
+  │         Back to Basics           │         Fireblast                │
+  │         Scalding Tarn, Island    │         Price of Progress        │
+  │         Tundra, Plains           │                                  │
+  │         Flooded Strand           │                                  │
+  │         Flooded Strand, Tundra   │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 5 | burn 20
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+  Land: Island (4 lands)
+  ── Main ── Mana: 4
+    Hand (9): Monastery Mentor, Back to Basics, Scalding Tarn, Tundra, Plains, Flooded Strand, Flooded Strand, Tundra, Brainstorm
+  Brainstorm (3 draws)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 5                        │   Life: 20                       │
+  │   Hand: 11  Lib: 42  GY: 3       │   Hand: 4  Lib: 50  GY: 3        │
+  │   Lands: Island, Island, Island, I... │   Lands: Mountain, Fiery Islet   │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Monastery Mentor         │   Hand: Fireblast, Fireblast     │
+  │         Back to Basics           │         Fireblast                │
+  │         Scalding Tarn, Tundra    │         Price of Progress        │
+  │         Plains, Flooded Strand   │                                  │
+  │         Flooded Strand, Tundra   │                                  │
+  │         Flooded Strand, Island   │                                  │
+  │         Island                   │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 5 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (3 lands)
+  ── Main ──
+    Hand (4): Fireblast, Fireblast, Fireblast, Price of Progress
+    Mana available: 3
+  Attack: Goblin Guide — 2 unblocked → b at 3
+      → Fireblast goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at -1)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: -1                       │   Life: 20                       │
+  │   Hand: 11  Lib: 42  GY: 3       │   Hand: 3  Lib: 49  GY: 4        │
+  │   Lands: Island, Island, Island, I... │   Lands: Mountain                │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Monastery Mentor         │   Hand: Fireblast, Fireblast     │
+  │         Back to Basics           │         Price of Progress        │
+  │         Scalding Tarn, Tundra    │                                  │
+  │         Plains, Flooded Strand   │                                  │
+  │         Flooded Strand, Tundra   │                                  │
+  │         Flooded Strand, Island   │                                  │
+  │         Island                   │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — BUG life reaches -1 on turn 4
+  Final life: uwx -1 | burn 20
+══════════════════════════════════════════════════════════════════════

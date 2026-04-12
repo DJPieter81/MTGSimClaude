@@ -10,6 +10,7 @@ v2 fixes:
 
 import random
 from dataclasses import dataclass, field
+from config import GameRules as GR
 from typing import List, Dict, Optional
 from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
                    StackObject, StackType, MTGRules)
@@ -30,7 +31,7 @@ class LogEntry:
 @dataclass
 class PlayerState:
     name: str
-    life: int = 20
+    life: int = GR.STARTING_LIFE
     hand: List[Card] = field(default_factory=list)
     library: List[Card] = field(default_factory=list)
     graveyard: List[Card] = field(default_factory=list)
@@ -46,6 +47,7 @@ class PlayerState:
     draws_this_turn: int = 0  # track for Tamiyo flip (3rd draw) and Bowmasters
     spells_cast_this_turn: int = 0  # for Mindbreak Trap free condition
     opp_cast_blue_black_this_turn: bool = False  # for Veil of Summer conditional draw
+    leyline_exile: bool = False  # if True, cards go to exile instead of GY (Leyline of the Void)
 
     @property
     def all_permanents(self):
@@ -69,7 +71,10 @@ class PlayerState:
         return drawn
 
     def add_to_grave(self, card: Card):
-        self.graveyard.append(card)
+        if self.leyline_exile:
+            self.exile.append(card)
+        else:
+            self.graveyard.append(card)
 
     def tap_lands_for_mana(self):
         """Tap all available lands for their best mana color."""
@@ -81,12 +86,19 @@ class PlayerState:
                         land.tap_for_mana(self.mana, color)
                         break
 
-    def available_mana_count(self) -> int:
-        """Count untapped mana-producing lands (for quick checks)."""
+    def available_mana_count(self, include_dorks=False) -> int:
+        """Count untapped mana-producing lands (+ mana dorks if requested)."""
         count = 0
         for l in self.lands:
             if not l.tapped and not l.is_fetch and l.effective_produces():
                 count += 1
+        if include_dorks:
+            # Count untapped creatures that produce mana (Llanowar Elves, Heritage Druid, etc.)
+            dork_tags = {'llanowar', 'mystic', 'heritage', 'nettle', 'deathrite',
+                         'bop', 'arbor', 'druid', 'priest', 'prospector'}
+            for c in self.creatures:
+                if not c.summoning_sick and not c.tapped and c.card.tag in dork_tags:
+                    count += 1
         return count
 
     def untap_all(self):
@@ -230,6 +242,9 @@ class GameState:
     trinisphere_active: bool = False  # Trinisphere — all spells cost ≥ {3}
     eidolon_active: bool = False      # Eidolon of the Great Revel — 2 dmg to p1 per CMC≥2 spell cast
     tamiyo_flipped: bool = False
+    combat_this_turn: bool = False    # Set by combat_declare, reset at turn start
+    p1_poison: int = 0                # Infect poison counters (10 = lethal)
+    p2_poison: int = 0
     p1_goes_first: bool = True        # S2: set by coin flip in run_game
     vial_counters: int = 0            # Aether Vial counter tracker
     _vial_entered_last_turn: bool = False  # prevents tick on entry turn
@@ -238,13 +253,16 @@ class GameState:
     p2_deck: str = ''                 # antagonist deck key
     # Kept for Storm/Oops spell-count tracking
     pending_bauble_draws: int = 0
+    # Trace mode: when True, turn functions emit phase markers and state snapshots
+    trace: bool = False
 
     # ── Computed properties — always derived from board state, never manually synced ──
 
     @property
     def bowmasters_on_board(self) -> bool:
-        """True iff p1 controls at least one Orcish Bowmasters permanent."""
-        return any(c.card.tag == 'bowm' for c in self.p1.creatures)
+        """True iff ANY player controls at least one Orcish Bowmasters permanent."""
+        return any(c.card.tag == 'bowm'
+                   for c in self.p1.creatures + self.p2.creatures)
 
     @bowmasters_on_board.setter
     def bowmasters_on_board(self, value):
@@ -252,8 +270,9 @@ class GameState:
 
     @property
     def orc_army(self):
-        """The Orc Army token permanent, or None. Derived from p1.creatures."""
-        return next((c for c in self.p1.creatures if c.card.tag == 'orc_army'), None)
+        """The Orc Army token permanent, or None. Checks both players."""
+        return next((c for c in self.p1.creatures + self.p2.creatures
+                     if c.card.tag == 'orc_army'), None)
 
     @orc_army.setter
     def orc_army(self, value):
@@ -269,8 +288,9 @@ class GameState:
 
     @property
     def thalia_on_board(self) -> bool:
-        """True iff p2 controls Thalia — noncreature spells cost +1 (CR 613)."""
-        return any(c.card.tag == 'thalia' for c in self.p2.creatures)
+        """True iff ANY player controls Thalia — noncreature spells cost +1 (CR 613)."""
+        return any(c.card.tag == 'thalia'
+                   for c in self.p1.creatures + self.p2.creatures)
 
     @thalia_on_board.setter
     def thalia_on_board(self, value):
@@ -278,9 +298,11 @@ class GameState:
 
     @property
     def narset_active(self) -> bool:
-        """True iff p2 controls Narset, Parter of Veils — p1 can't draw extra cards."""
-        return any(c.card.tag == 'narset' for c in self.p2.planeswalkers
-                   ) if hasattr(self.p2, 'planeswalkers') else False
+        """True iff ANY player controls Narset — opponents can't draw extra cards.
+        Note: Narset's draw lock is applied per-player in play_turn via _narset_lock."""
+        p1_narset = any(c.card.tag == 'narset' for c in self.p1.planeswalkers) if hasattr(self.p1, 'planeswalkers') else False
+        p2_narset = any(c.card.tag == 'narset' for c in self.p2.planeswalkers) if hasattr(self.p2, 'planeswalkers') else False
+        return p1_narset or p2_narset
 
     def log_event(self, player: str, phase: str, message: str, key: bool = False):
         self.log.append(LogEntry(self.turn, player, phase, message, key))
@@ -512,21 +534,127 @@ class GameState:
 # Mulligan  CR 103.5 — London format
 # ─────────────────────────────────────────────
 
-def london_mulligan(deck_fn, keep_fn, matchup: str = '') -> tuple:
+def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) -> tuple:
     """
     S1 fix — London mulligan: draw 7, put N on bottom (choosing best N to discard).
-    Returns (hand, library, mulls_taken).
+    Returns (hand, library, mulls_taken) or (hand, library, mulls_taken, trace_lines) if trace=True.
     """
-    for mulls in range(4):  # 0 mulls = keep opening 7, max 3 mulls
+    trace_lines = [] if trace else None
+
+    def _hand_detail(hand):
+        """Per-card listing with type annotation."""
+        lines = []
+        for i, c in enumerate(hand, 1):
+            parts = [f"    {i}. {c.name}"]
+            tags = []
+            if c.is_land():
+                if getattr(c, 'is_fetch', False): tags.append('fetch')
+                elif c.is_basic: tags.append('basic')
+                elif getattr(c, 'tag', '') == 'dual': tags.append('dual')
+                else: tags.append('land')
+            else:
+                if c.is_creature(): tags.append(f"creature {c.base_power}/{c.base_toughness}")
+                elif c.card_type.name == 'INSTANT': tags.append('instant')
+                elif c.card_type.name == 'SORCERY': tags.append('sorcery')
+                elif c.card_type.name == 'ARTIFACT': tags.append('artifact')
+                elif c.card_type.name == 'PLANESWALKER': tags.append('planeswalker')
+                tags.append(f"CMC {c.cmc}")
+                if c.is_combo_piece: tags.append('combo')
+                if c.win_condition: tags.append('win-con')
+                if c.tag in ('fow', 'fon'): tags.append('free counter')
+                elif c.tag in ('daze',): tags.append('free counter')
+                elif c.tag in ('counter', 'veto', 'fluster'): tags.append('counter')
+                if c.is_removal and c.tag not in ('fow', 'fon', 'daze'): tags.append('removal')
+                if c.tag in ('bs', 'ponder'): tags.append('cantrip')
+            lines.append(f"{parts[0]} ({', '.join(tags)})")
+        return lines
+
+    def _hand_summary(hand):
+        lands = sum(1 for c in hand if c.is_land())
+        creatures = sum(1 for c in hand if c.is_creature())
+        counters = sum(1 for c in hand if c.tag in ('fow', 'fon', 'daze', 'fluster', 'counter', 'veto'))
+        cantrips = sum(1 for c in hand if c.tag in ('bs', 'ponder'))
+        removal = sum(1 for c in hand if c.is_removal and c.tag not in ('fow', 'fon', 'daze'))
+        combo = sum(1 for c in hand if c.is_combo_piece or c.win_condition)
+        parts = [f"Lands: {lands}"]
+        if creatures: parts.append(f"Creatures: {creatures}")
+        if counters: parts.append(f"Counters: {counters}")
+        if cantrips: parts.append(f"Cantrips: {cantrips}")
+        if removal: parts.append(f"Removal: {removal}")
+        if combo: parts.append(f"Combo: {combo}")
+        other = len(hand) - lands - creatures - counters - cantrips - removal - combo
+        if other > 0: parts.append(f"Other: {other}")
+        return '  '.join(parts)
+
+    def _keep_reason(hand, kept):
+        """Generate human-readable explanation for keep/mull decision."""
+        lands = sum(1 for c in hand if c.is_land())
+        threats = sum(1 for c in hand if c.is_creature() or c.win_condition)
+        counters = sum(1 for c in hand if c.tag in ('fow', 'fon', 'daze', 'fluster', 'counter', 'veto'))
+        cantrips = sum(1 for c in hand if c.tag in ('bs', 'ponder'))
+        removal = sum(1 for c in hand if c.is_removal and c.tag not in ('fow', 'fon', 'daze'))
+        combo = sum(1 for c in hand if c.is_combo_piece or c.win_condition)
+        action = threats + counters + cantrips + removal + combo
+
+        if kept:
+            reasons = []
+            if 2 <= lands <= 3:
+                reasons.append(f"{lands} lands — good mana base")
+            elif lands == 1 and cantrips:
+                reasons.append("1 land + cantrip to find more")
+            elif lands == 4:
+                reasons.append("4 lands — slightly land-heavy but playable")
+            if threats >= 1:
+                reasons.append(f"{threats} threat(s) for a clock")
+            if counters >= 1:
+                reasons.append(f"{counters} counter(s) for protection/disruption")
+            if cantrips and not threats:
+                reasons.append("cantrip(s) to dig for threats")
+            if combo >= 2:
+                reasons.append(f"combo pieces present — can threaten early kill")
+            if removal:
+                reasons.append(f"removal for opponent's threats")
+            return "    Reason: " + "; ".join(reasons) if reasons else "    Reason: meets minimum keep criteria"
+        else:
+            problems = []
+            if lands < 1:
+                problems.append("zero lands — can't cast anything")
+            elif lands == 1 and not cantrips:
+                problems.append("only 1 land with no cantrips to find more")
+            elif lands >= 5:
+                problems.append(f"{lands} lands — too flooded, not enough spells")
+            if action == 0:
+                problems.append("no action (threats, counters, or cantrips)")
+            if threats == 0 and combo == 0 and counters >= 3:
+                problems.append("too many counters, no proactive plan")
+            if lands >= 2 and action >= 2 and not problems:
+                problems.append("doesn't meet deck-specific keep criteria")
+            return "    Reason: " + "; ".join(problems) if problems else "    Reason: doesn't meet keep criteria"
+
+    for mulls in range(GR.MAX_MULLIGANS + 1):  # 0 mulls = keep opening 7
         deck = list(deck_fn())
         random.shuffle(deck)
         # Always draw 7
         hand7 = deck[:7]
         rest = deck[7:]
 
+        if trace:
+            if mulls == 0:
+                trace_lines.append(f"  Draw 7:")
+            else:
+                trace_lines.append(f"  Mulligan #{mulls} — draw 7:")
+            trace_lines += _hand_detail(hand7)
+            trace_lines.append(f"    [{_hand_summary(hand7)}]")
+
         if mulls == 0:
             if keep_fn(hand7, matchup):
-                return hand7, rest, 0
+                if trace:
+                    trace_lines.append(f"  → KEEP (opening 7)")
+                    trace_lines.append(_keep_reason(hand7, True))
+                return (hand7, rest, 0, trace_lines) if trace else (hand7, rest, 0)
+            if trace:
+                trace_lines.append(f"  → MULLIGAN")
+                trace_lines.append(_keep_reason(hand7, False))
             continue
 
         # Keep the best (7 - mulls) cards from the 7 seen
@@ -534,17 +662,34 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '') -> tuple:
         bottomed = [c for c in hand7 if c not in hand]
         library = rest + bottomed  # bottomed go to... bottom
 
+        if trace:
+            trace_lines.append(f"  Keep best {7 - mulls}: {', '.join(c.name for c in hand)}")
+            trace_lines.append(f"  Bottom {mulls}: {', '.join(c.name for c in bottomed)}")
+            trace_lines.append(f"    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)")
+
         if keep_fn(hand, matchup):
-            return hand, library, mulls
+            if trace:
+                trace_lines.append(f"  → KEEP (mull to {7 - mulls})")
+                trace_lines.append(_keep_reason(hand, True))
+            return (hand, library, mulls, trace_lines) if trace else (hand, library, mulls)
+        if trace:
+            trace_lines.append(f"  → MULLIGAN")
+            trace_lines.append(_keep_reason(hand, False))
 
     # Forced keep after 3 mulligans — still draw 7, keep best 4
     deck = list(deck_fn())
     random.shuffle(deck)
     hand7 = deck[:7]
     rest  = deck[7:]
-    hand  = _choose_best_n(hand7, 4)  # choose best 4 (prioritises lands)
+    hand  = _choose_best_n(hand7, GR.FORCED_KEEP_SIZE)
     bottomed = [c for c in hand7 if c not in hand]
-    return hand, rest + bottomed, 3
+    if trace:
+        trace_lines.append(f"  Forced keep after 3 mulligans — draw 7:")
+        trace_lines += _hand_detail(hand7)
+        trace_lines.append(f"  Keep best 4: {', '.join(c.name for c in hand)}")
+        trace_lines.append(f"  Bottom 3: {', '.join(c.name for c in bottomed)}")
+    result = (hand, rest + bottomed, 3)
+    return (*result, trace_lines) if trace else result
 
 
 def _choose_best_n(hand7: List[Card], n: int) -> List[Card]:

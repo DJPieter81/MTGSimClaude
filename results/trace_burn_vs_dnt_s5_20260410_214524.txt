@@ -1,0 +1,411 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Mountain (basic)
+    2. Fireblast (instant, CMC 6)
+    3. Fiery Islet (land)
+    4. Searing Blaze (instant, CMC 2)
+    5. Mountain (basic)
+    6. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    7. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    [Lands: 3  Creatures: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Plains (basic)
+    2. Wasteland (land)
+    3. Rishadan Port (land)
+    4. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    5. Flooded Strand (fetch)
+    6. Aether Vial (artifact, CMC 1)
+    7. Solitude (creature 3/2, CMC 5, removal)
+    [Lands: 4  Creatures: 2  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 2 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Fireblast, Fiery Islet, Searing Blaze, Mountain, Eidolon of the Great Revel, Eidolon of the Great Revel
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 53  GY: 0        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Mountain                │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fiery Islet   │   Hand: Plains, Wasteland        │
+  │         Searing Blaze            │         Rishadan Port, Thalia    │
+  │         Mountain                 │         Guardian of Thraben      │
+  │         Eidolon of the Great Rev │         Flooded Strand           │
+  │         el                       │         Aether Vial, Solitude    │
+  │         Eidolon of the Great Rev │                                  │
+  │         el                       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Karakas
+  Land: Plains (1 lands)
+  ── Main ──
+    Hand (7): Wasteland, Rishadan Port, Thalia, Guardian of Thraben, Flooded Strand, Aether Vial, Solitude, Karakas
+    Mana available: 1
+      → Aether Vial goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Aether Vial RESOLVES
+  Aether Vial enters play
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 53  GY: 0        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Mountain                │   Lands: Plains                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Fireblast, Fiery Islet   │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Wasteland                │
+  │         Mountain                 │         Rishadan Port, Thalia    │
+  │         Eidolon of the Great Rev │         Guardian of Thraben      │
+  │         el                       │         Flooded Strand           │
+  │         Eidolon of the Great Rev │         Solitude, Karakas        │
+  │         el                       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | dnt 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Fiery Islet
+  Land: Mountain (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Fireblast, Fiery Islet, Searing Blaze, Eidolon of the Great Revel, Eidolon of the Great Revel, Fiery Islet
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  Eidolon trigger — 1 spell(s) cast, 2 damage to P1 (18)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 5  Lib: 52  GY: 0        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains                  │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast, Fiery Islet   │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Wasteland                │
+  │         Eidolon of the Great Rev │         Rishadan Port, Thalia    │
+  │         el, Fiery Islet          │         Guardian of Thraben      │
+  │                                  │         Flooded Strand           │
+  │                                  │         Solitude, Karakas        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | dnt 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Plains
+  Land: Wasteland (2 lands)
+  ── Main ──
+    Hand (6): Rishadan Port, Thalia, Guardian of Thraben, Flooded Strand, Solitude, Karakas, Plains
+    Mana available: 1
+  Aether Vial — 1 counter(s)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 5  Lib: 52  GY: 0        │   Hand: 6  Lib: 51  GY: 0        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains, Wasteland       │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast, Fiery Islet   │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Rishadan Port, Thalia    │
+  │         Eidolon of the Great Rev │         Guardian of Thraben      │
+  │         el, Fiery Islet          │         Flooded Strand           │
+  │                                  │         Solitude, Karakas        │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | dnt 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Rift Bolt
+  Land: Fiery Islet (3 lands)
+  ── Main ── Mana: 3
+    Hand (5): Fireblast, Searing Blaze, Eidolon of the Great Revel, Fiery Islet, Rift Bolt
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  Attack: Eidolon of the Great Revel — 2 unblocked → o at 18
+      → Rift Bolt goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Rift Bolt RESOLVES
+  ★ Rift Bolt → 3 damage (opp at 15)
+  Eidolon trigger — 2 spell(s) cast, 4 damage to P1 (14)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 14                       │   Life: 15                       │
+  │   Hand: 3  Lib: 51  GY: 1        │   Hand: 6  Lib: 51  GY: 0        │
+  │   Lands: Mountain, Mountain, Fiery... │   Lands: Plains, Wasteland       │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Rishadan Port, Thalia    │
+  │         Fiery Islet              │         Guardian of Thraben      │
+  │                                  │         Flooded Strand           │
+  │                                  │         Solitude, Karakas        │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 14 | dnt 15
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Rishadan Port
+  Land: Rishadan Port (3 lands)
+  ── Main ──
+    Hand (6): Thalia, Guardian of Thraben, Flooded Strand, Solitude, Karakas, Plains, Rishadan Port
+    Mana available: 1
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  Aether Vial — 2 counter(s)
+  Wasteland → destroys Fiery Islet
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 14                       │   Life: 15                       │
+  │   Hand: 3  Lib: 51  GY: 2        │   Hand: 6  Lib: 50  GY: 1        │
+  │   Lands: Mountain, Mountain      │   Lands: Plains, Rishadan Port   │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Thalia                   │
+  │         Fiery Islet              │         Guardian of Thraben      │
+  │                                  │         Flooded Strand           │
+  │                                  │         Solitude, Karakas        │
+  │                                  │         Plains, Rishadan Port    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 14 | dnt 15
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Price of Progress
+  Land: Fiery Islet (3 lands)
+  ── Main ── Mana: 3
+    Hand (3): Fireblast, Searing Blaze, Price of Progress
+  ★ Vial [2] combat ambush → Thalia, Guardian of Thraben (2/1) enters as blocker
+  Attack: Eidolon of the Great Revel, Eidolon of the Great Revel — Thalia, Guardian of Thraben blocks Eidolon of the Great Revel. Eidolon of the Great Revel deals 2, Thalia, Guardian of Thraben deals 2 back. 0 unblocked damage to player (o at 15)
+      Thalia, Guardian of Thraben dies.
+      Eidolon of the Great Revel dies.
+    2 unblocked → o at 13
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 14                       │   Life: 13                       │
+  │   Hand: 3  Lib: 50  GY: 4        │   Hand: 5  Lib: 50  GY: 2        │
+  │   Lands: Mountain, Mountain, Fiery... │   Lands: Plains, Rishadan Port   │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Flooded Strand           │
+  │         Price of Progress        │         Solitude, Karakas        │
+  │                                  │         Plains, Rishadan Port    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 14 | dnt 13
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Plains
+  Play+crack Flooded Strand (−1 life, 12) → Plains
+  ── Main ──
+    Hand (5): Solitude, Karakas, Plains, Rishadan Port, Plains
+    Mana available: 2
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  Aether Vial — 3 counter(s)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 14                       │   Life: 12                       │
+  │   Hand: 3  Lib: 50  GY: 4        │   Hand: 5  Lib: 48  GY: 4        │
+  │   Lands: Mountain, Mountain, Fiery... │   Lands: Plains, Rishadan Port, Pl... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Solitude, Karakas        │
+  │         Price of Progress        │         Plains, Rishadan Port    │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 14 | dnt 12
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Eidolon of the Great Revel
+  ── Main ── Mana: 3
+    Hand (4): Fireblast, Searing Blaze, Price of Progress, Eidolon of the Great Revel
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  Attack: Eidolon of the Great Revel — 2 unblocked → o at 10
+  Eidolon trigger — 1 spell(s) cast, 2 damage to P1 (12)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 12                       │   Life: 10                       │
+  │   Hand: 3  Lib: 49  GY: 4        │   Hand: 5  Lib: 48  GY: 4        │
+  │   Lands: Mountain, Mountain, Fiery... │   Lands: Plains, Rishadan Port, Pl... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Solitude, Karakas        │
+  │         Price of Progress        │         Plains, Rishadan Port    │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 12 | dnt 10
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Recruiter of the Guard
+  Land: Karakas (4 lands)
+  ── Main ──
+    Hand (5): Solitude, Plains, Rishadan Port, Plains, Recruiter of the Guard
+    Mana available: 3
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ★ Solitude (evoke, pitch Recruiter of the Guard) exiles Eidolon of the Great Revel (+2 life)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 12                       │   Life: 12                       │
+  │   Hand: 3  Lib: 49  GY: 4        │   Hand: 3  Lib: 47  GY: 5        │
+  │   Lands: Mountain, Mountain, Fiery... │   Lands: Plains, Rishadan Port, Pl... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Fireblast                │   Artifacts: Aether Vial         │
+  │         Searing Blaze            │   Hand: Plains, Rishadan Port    │
+  │         Price of Progress        │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 12 | dnt 12
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (4 lands)
+  ── Main ── Mana: 4
+    Hand (3): Fireblast, Searing Blaze, Price of Progress
+  Attack: Eidolon of the Great Revel — 2 unblocked → o at 10
+      → Price of Progress goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (2 nonbasics) → 4 damage (opp at 6)
+      → Fireblast goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Fireblast RESOLVES
+  ★ Fireblast (sac 2 Mountains) → 4 damage (opp at 2)
+  Eidolon trigger — 2 spell(s) cast, 4 damage to P1 (8)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 8                        │   Life: 2                        │
+  │   Hand: 1  Lib: 48  GY: 6        │   Hand: 3  Lib: 47  GY: 5        │
+  │   Lands: Fiery Islet, Mountain   │   Lands: Plains, Rishadan Port, Pl... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Plains, Rishadan Port    │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 8 | dnt 2
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Pre-War Formalwear
+  Land: Plains (5 lands)
+  ── Main ──
+    Hand (3): Rishadan Port, Plains, Pre-War Formalwear
+    Mana available: 4
+  Rishadan Port taps Mountain (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 8                        │   Life: 2                        │
+  │   Hand: 1  Lib: 48  GY: 6        │   Hand: 3  Lib: 46  GY: 5        │
+  │   Lands: Fiery Islet, Mountain   │   Lands: Plains, Rishadan Port, Pl... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Artifacts: Aether Vial         │
+  │                                  │   Hand: Rishadan Port, Plains    │
+  │                                  │         Pre-War Formalwear       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 8 | dnt 2
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Lava Spike
+  ── Main ── Mana: 2
+    Hand (2): Searing Blaze, Lava Spike
+  Attack: Eidolon of the Great Revel — 2 unblocked → o at 0
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ DNT                              │
+  │   Life: 8                        │   Life: 0                        │
+  │   Hand: 2  Lib: 47  GY: 6        │   Hand: 3  Lib: 46  GY: 5        │
+  │   Lands: Fiery Islet, Mountain   │   Lands: Plains, Rishadan Port, Pl... │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Artifacts: Aether Vial         │
+  │         Lava Spike               │   Hand: Rishadan Port, Plains    │
+  │                                  │         Pre-War Formalwear       │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches 0 on turn 7
+  Final life: burn 8 | dnt 0
+══════════════════════════════════════════════════════════════════════

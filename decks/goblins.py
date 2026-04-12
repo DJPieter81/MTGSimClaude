@@ -74,7 +74,7 @@ def make_goblins_deck():
     # Fury: 3/3, {3RR}, evoke: exile red card, 4 damage divided
     for _ in range(2):
         d.append(creature('Fury', 5, {'R': 2, 'generic': 3}, {'R'}, 3, 3,
-                          tag='fury', haste=True))
+                          tag='fury', haste=True, trample=True))
 
     # ── Artifacts (6) ─────────────────────────────────────────────────────────
     # Aether Vial: {1}
@@ -112,18 +112,20 @@ def make_goblins_deck():
                  colors=set(), tag='hovel', produces={'B', 'R'}, gy_type='land')
         d.append(c)
 
-    # Bloodstained Mire (fetch)
+    # Bloodstained Mire (fetch) — searches for Swamp or Mountain
     for _ in range(2):
         c = Card('Bloodstained Mire', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='fetch', gy_type='land')
+                 colors=set(), tag='fetch', gy_type='land',
+                 fetch_targets={'Swamp', 'Mountain'})
         c.is_fetch = True
         c.produces = set()
         d.append(c)
 
-    # Wooded Foothills (fetch)
+    # Wooded Foothills (fetch) — searches for Mountain or Forest
     for _ in range(2):
         c = Card('Wooded Foothills', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='fetch', gy_type='land')
+                 colors=set(), tag='fetch', gy_type='land',
+                 fetch_targets={'Mountain', 'Forest'})
         c.is_fetch = True
         c.produces = set()
         d.append(c)
@@ -132,14 +134,14 @@ def make_goblins_deck():
     for _ in range(2):
         c = Card('Mountain', CardType.LAND, cmc=0, mana_cost={},
                  colors=set(), tag='basic', produces={'R'}, gy_type='land',
-                 is_basic=True)
+                 is_basic=True, subtypes={'Mountain'})
         d.append(c)
 
     # Swamp (basic)
     for _ in range(2):
         c = Card('Swamp', CardType.LAND, cmc=0, mana_cost={},
                  colors=set(), tag='basic', produces={'B'}, gy_type='land',
-                 is_basic=True)
+                 is_basic=True, subtypes={'Swamp'})
         d.append(c)
 
     assert len(d) == 60, f"Goblins deck has {len(d)} cards"
@@ -363,11 +365,12 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
         # Lackey combat damage trigger: put a Goblin from hand into play
         lackey_atk = next((c for c in attackers if c.card.tag == 'lackey'), None)
         if lackey_atk:
-            # Check if lackey would be blocked
+            # Check if lackey would be blocked — Lackey triggers on combat damage
+            # to a player (i.e. when unblocked). It connects if the opponent
+            # doesn't have enough blockers to cover all attackers.
             blockers = [c for c in opponent.creatures if not c.summoning_sick]
-            lackey_blocked = len(blockers) > 0 and not any(
-                c.card.tag == 'lackey' for c in attackers if c is not lackey_atk)
-            if not lackey_blocked or len(attackers) > len(blockers):
+            lackey_connects = len(blockers) == 0 or len(attackers) > len(blockers)
+            if lackey_connects:
                 # Lackey gets through — put best Goblin from hand
                 best = next((c for c in player.hand if c.tag == 'muxus'), None)
                 if not best:
@@ -388,7 +391,7 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
                             if card.is_creature() and card.tag in (
                                 'lackey', 'matron', 'ringleader', 'warchief',
                                 'expert', 'sling', 'cratermaker', 'pashalik',
-                                'prospector'):
+                                'prospector', 'fury'):
                                 player.library.remove(card)
                                 p2 = player.put_creature_in_play(card)
                                 p2.summoning_sick = False
@@ -461,5 +464,5 @@ DECK_META = {
     'keep':       _keep_goblins,
     'categories': {'aggro', 'tribal', 'vial_decks'},
     'interaction': {'speed': 2, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'opp_threats': 12},
-    'meta_share': 0.03,
+    'meta_share': 0.01,
 }

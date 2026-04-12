@@ -1,0 +1,410 @@
+══════════════════════════════════════════════════════════════════════
+  BURN vs UWX
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UWX wins the die roll, goes FIRST
+
+  BURN (P1):
+  Draw 7:
+    1. Barbarian Ring (land)
+    2. Mountain (basic)
+    3. Rift Bolt (sorcery, CMC 3, win-con)
+    4. Price of Progress (instant, CMC 2, win-con)
+    5. Price of Progress (instant, CMC 2, win-con)
+    6. Barbarian Ring (land)
+    7. Goblin Guide (creature 2/1, CMC 1)
+    [Lands: 3  Creatures: 1  Combo: 3]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 4 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  UWX (P2):
+  Draw 7:
+    1. Ponder (sorcery, CMC 1, cantrip)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Flooded Strand (fetch)
+    4. Flusterstorm (instant, CMC 1, counter)
+    5. Ponder (sorcery, CMC 1, cantrip)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Counterspell (instant, CMC 2, counter)
+    [Lands: 1  Counters: 3  Cantrips: 3]
+  → MULLIGAN
+    Reason: too many counters, no proactive plan
+  Mulligan #1 — draw 7:
+    1. Narset, Parter of Veils (planeswalker, CMC 3)
+    2. Island (basic)
+    3. Snapcaster Mage (creature 2/1, CMC 2)
+    4. Force of Negation (instant, CMC 3, free counter)
+    5. Preordain (sorcery, CMC 1, cantrip)
+    6. Island (basic)
+    7. Scalding Tarn (fetch)
+    [Lands: 3  Creatures: 1  Counters: 1  Cantrips: 1  Other: 1]
+  Keep best 6: Force of Negation, Snapcaster Mage, Island, Preordain, Island, Scalding Tarn
+  Bottom 1: Narset, Parter of Veils
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | uwx 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Island (1 lands)
+  ── Main ──
+    Hand (5): Force of Negation, Snapcaster Mage, Preordain, Island, Scalding Tarn
+    Mana available: 1
+  Preordain (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 5  Lib: 53  GY: 1        │
+  │   Lands: (none)                  │   Lands: Island                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Barbarian Ring           │   Hand: Force of Negation        │
+  │         Mountain, Rift Bolt      │         Snapcaster Mage          │
+  │         Price of Progress        │         Island, Scalding Tarn    │
+  │         Price of Progress        │         Counterspell             │
+  │         Barbarian Ring           │                                  │
+  │         Goblin Guide             │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | uwx 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Eidolon of the Great Revel
+  Land: Mountain (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Barbarian Ring, Rift Bolt, Price of Progress, Price of Progress, Barbarian Ring, Goblin Guide, Eidolon of the Great Revel
+      → Goblin Guide goes on the STACK
+      → Priority passes to UWX
+      → UWX has [Force of Negation, Counterspell] but PASSES (low-priority target)
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Goblin Guide — 2 unblocked → o at 18
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 5  Lib: 53  GY: 1        │
+  │   Lands: Mountain                │   Lands: Island                  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Barbarian Ring           │   Hand: Force of Negation        │
+  │         Rift Bolt                │         Snapcaster Mage          │
+  │         Price of Progress        │         Island, Scalding Tarn    │
+  │         Price of Progress        │         Counterspell             │
+  │         Barbarian Ring           │                                  │
+  │         Eidolon of the Great Rev │                                  │
+  │         el                       │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | uwx 18
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Snapcaster Mage
+  Land: Island (2 lands)
+  ── Main ──
+    Hand (5): Force of Negation, Snapcaster Mage, Scalding Tarn, Counterspell, Snapcaster Mage
+    Mana available: 2
+      → Snapcaster Mage goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Snapcaster Mage RESOLVES
+  Snapcaster Mage (2/1) -- flashback Preordain
+    Snapcaster flashback Brainstorm (3 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 7  Lib: 49  GY: 0        │
+  │   Lands: Mountain                │   Lands: Island, Island          │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: Snapcaster Mage (2/1) │
+  │   Hand: Barbarian Ring           │   Hand: Force of Negation        │
+  │         Rift Bolt                │         Scalding Tarn            │
+  │         Price of Progress        │         Counterspell             │
+  │         Price of Progress        │         Snapcaster Mage          │
+  │         Barbarian Ring           │         Island                   │
+  │         Eidolon of the Great Rev │         Swords to Plowshares     │
+  │         el                       │         Monastery Mentor         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 20 | uwx 18
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Searing Blaze
+  Land: Barbarian Ring (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Rift Bolt, Price of Progress, Price of Progress, Barbarian Ring, Eidolon of the Great Revel, Searing Blaze
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to UWX
+      → UWX evaluates: MAJOR THREAT — responds!
+    ★ UWX Force of Negation counters Eidolon of the Great Revel (exiles Counterspell)
+    Eidolon of the Great Revel COUNTERED — goes to graveyard
+  Eidolon of the Great Revel countered
+      → Eidolon of the Great Revel goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Eidolon of the Great Revel RESOLVES
+  Eidolon of the Great Revel enters the battlefield
+  ★ Eidolon of the Great Revel — opponent pays 2 life per CMC≤3 spell
+  Attack: Goblin Guide — Snapcaster Mage blocks Goblin Guide. Goblin Guide deals 2, Snapcaster Mage deals 2 back. 0 unblocked damage to player (o at 18)
+      Snapcaster Mage dies.
+      Goblin Guide dies.
+  Eidolon trigger — 2 spell(s) cast, 4 damage to P1 (16)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 16                       │   Life: 18                       │
+  │   Hand: 5  Lib: 51  GY: 3        │   Hand: 5  Lib: 49  GY: 2        │
+  │   Lands: Mountain, Barbarian Ring │   Lands: Island, Island          │
+  │   Creatures: Eidolon of the Great Reve... │   Creatures: (none)              │
+  │   Hand: Rift Bolt                │   Hand: Scalding Tarn            │
+  │         Price of Progress        │         Snapcaster Mage          │
+  │         Price of Progress        │         Island                   │
+  │         Barbarian Ring           │         Swords to Plowshares     │
+  │         Searing Blaze            │         Monastery Mentor         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 16 | uwx 18
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Ponder
+  Play+crack Scalding Tarn (−1 life, 17) → Tundra
+  ── Main ──
+    Hand (5): Snapcaster Mage, Island, Swords to Plowshares, Monastery Mentor, Ponder
+    Mana available: 3
+  Swords to Plowshares -> exiles Eidolon of the Great Revel, opp gains 2 life
+  Ponder (1 draw)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 18                       │   Life: 17                       │
+  │   Hand: 5  Lib: 51  GY: 3        │   Hand: 4  Lib: 46  GY: 6        │
+  │   Lands: Mountain, Barbarian Ring │   Lands: Island, Island, Tundra  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Rift Bolt                │   Hand: Snapcaster Mage          │
+  │         Price of Progress        │         Island                   │
+  │         Price of Progress        │         Monastery Mentor         │
+  │         Barbarian Ring           │         Terminus                 │
+  │         Searing Blaze            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | uwx 17
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Goblin Guide
+  Land: Barbarian Ring (3 lands)
+  ── Main ── Mana: 3
+    Hand (5): Rift Bolt, Price of Progress, Price of Progress, Searing Blaze, Goblin Guide
+      → Goblin Guide goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+    Goblin Guide trigger → reveals Island (land) — opponent draws it
+  Attack: Goblin Guide — 2 unblocked → o at 15
+      → Price of Progress goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 13)
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 18                       │   Life: 13                       │
+  │   Hand: 3  Lib: 50  GY: 4        │   Hand: 5  Lib: 45  GY: 6        │
+  │   Lands: Mountain, Barbarian Ring,... │   Lands: Island, Island, Tundra  │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: (none)              │
+  │   Hand: Rift Bolt                │   Hand: Snapcaster Mage          │
+  │         Price of Progress        │         Island                   │
+  │         Searing Blaze            │         Monastery Mentor         │
+  │                                  │         Terminus, Island         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | uwx 13
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Force of Will
+  Land: Island (4 lands)
+  ── Main ──
+    Hand (5): Snapcaster Mage, Monastery Mentor, Terminus, Island, Force of Will
+    Mana available: 4
+      → Monastery Mentor goes on the STACK
+      → Priority passes to BURN
+      → BURN has no counters — passes priority
+      → Monastery Mentor RESOLVES
+  Monastery Mentor (2/2 prowess -- tokens on noncreature spells)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 18                       │   Life: 13                       │
+  │   Hand: 3  Lib: 50  GY: 4        │   Hand: 4  Lib: 44  GY: 6        │
+  │   Lands: Mountain, Barbarian Ring,... │   Lands: Island, Island, Tundra, I... │
+  │   Creatures: Goblin Guide (2/1)  │   Creatures: Monastery Mentor (2/2) │
+  │   Hand: Rift Bolt                │   Hand: Snapcaster Mage          │
+  │         Price of Progress        │         Terminus, Island         │
+  │         Searing Blaze            │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | uwx 13
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (4 lands)
+  ── Main ── Mana: 4
+    Hand (3): Rift Bolt, Price of Progress, Searing Blaze
+    Goblin Guide trigger → reveals Flooded Strand (land) — opponent draws it
+  Attack: Goblin Guide — Monastery Mentor blocks Goblin Guide. Goblin Guide deals 2, Monastery Mentor deals 2 back. 0 unblocked damage to player (o at 13)
+      Monastery Mentor dies.
+      Goblin Guide dies.
+      → Price of Progress goes on the STACK
+      → Priority passes to UWX
+      → UWX evaluates: MAJOR THREAT — responds!
+    ★ UWX Force of Will counters Price of Progress (exiles Snapcaster Mage)
+    Price of Progress COUNTERED — goes to graveyard
+  Price of Progress countered
+      → Price of Progress goes on the STACK
+      → Priority passes to UWX
+      → UWX has no counters — passes priority
+      → Price of Progress RESOLVES
+  ★ Price of Progress (1 nonbasics) → 2 damage (opp at 11)
+  ★ Barbarian Ring (threshold) → 2 damage (opp at 9)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 18                       │   Life: 9                        │
+  │   Hand: 2  Lib: 49  GY: 9        │   Hand: 3  Lib: 43  GY: 8        │
+  │   Lands: Mountain, Barbarian Ring,... │   Lands: Island, Island, Tundra, I... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Rift Bolt, Searing Blaze │   Hand: Terminus, Island         │
+  │                                  │         Flooded Strand           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | uwx 9
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Force of Will
+  Land: Island (5 lands)
+  ── Main ──
+    Hand (3): Terminus, Flooded Strand, Force of Will
+    Mana available: 5
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 18                       │   Life: 9                        │
+  │   Hand: 2  Lib: 49  GY: 9        │   Hand: 3  Lib: 42  GY: 8        │
+  │   Lands: Mountain, Barbarian Ring,... │   Lands: Island, Island, Tundra, I... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Rift Bolt, Searing Blaze │   Hand: Terminus                 │
+  │                                  │         Flooded Strand           │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | uwx 9
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (4 lands)
+  ── Main ── Mana: 4
+    Hand (2): Rift Bolt, Searing Blaze
+      → Rift Bolt goes on the STACK
+      → Priority passes to UWX
+      → UWX has counters but cannot use them (conditions not met)
+      → Rift Bolt RESOLVES
+  ★ Rift Bolt → 3 damage (opp at 6)
+  ★ Barbarian Ring (threshold) → 2 damage (opp at 4)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 18                       │   Life: 4                        │
+  │   Hand: 1  Lib: 48  GY: 11       │   Hand: 3  Lib: 42  GY: 8        │
+  │   Lands: Mountain, Mountain, Mountain │   Lands: Island, Island, Tundra, I... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Hand: Terminus                 │
+  │                                  │         Flooded Strand           │
+  │                                  │         Force of Will            │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | uwx 4
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Flooded Strand
+  Play+crack Flooded Strand (−1 life, 3) → Tundra
+  ── Main ──
+    Hand (3): Terminus, Force of Will, Flooded Strand
+    Mana available: 6
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 18                       │   Life: 3                        │
+  │   Hand: 1  Lib: 48  GY: 11       │   Hand: 3  Lib: 40  GY: 10       │
+  │   Lands: Mountain, Mountain, Mountain │   Lands: Island, Island, Tundra, I... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Hand: Terminus                 │
+  │                                  │         Force of Will            │
+  │                                  │         Flooded Strand           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: burn 18 | uwx 3
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Rift Bolt
+  ── Main ── Mana: 3
+    Hand (2): Searing Blaze, Rift Bolt
+      → Rift Bolt goes on the STACK
+      → Priority passes to UWX
+      → UWX has counters but cannot use them (conditions not met)
+      → Rift Bolt RESOLVES
+  ★ Rift Bolt → 3 damage (opp at 0)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ BURN                             │ UWX                              │
+  │   Life: 18                       │   Life: 0                        │
+  │   Hand: 1  Lib: 47  GY: 12       │   Hand: 3  Lib: 40  GY: 10       │
+  │   Lands: Mountain, Mountain, Mountain │   Lands: Island, Island, Tundra, I... │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Searing Blaze            │   Hand: Terminus                 │
+  │                                  │         Force of Will            │
+  │                                  │         Flooded Strand           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — Opp life reaches 0 on turn 6
+  Final life: burn 18 | uwx 0
+══════════════════════════════════════════════════════════════════════

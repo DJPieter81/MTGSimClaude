@@ -31,20 +31,23 @@ def make_tes_deck():
 
     # ── Lands (14) ────────────────────────────────────────────────────────────
     from rules import Card, CardType
-    # Volcanic Island: U/R dual
+    # Volcanic Island: U/R dual (Island Mountain subtypes for fetch targeting)
     for _ in range(4):
         c = Card('Volcanic Island', CardType.LAND, cmc=0, mana_cost={},
-                 colors={'U','R'}, tag='dual', produces={'U','R'}, gy_type='land')
+                 colors={'U','R'}, tag='dual', produces={'U','R'}, gy_type='land',
+                 subtypes={'Island', 'Mountain'})
         d.append(c)
-    # Underground Sea: U/B dual
+    # Underground Sea: U/B dual (Island Swamp subtypes)
     for _ in range(4):
         c = Card('Underground Sea', CardType.LAND, cmc=0, mana_cost={},
-                 colors={'U','B'}, tag='dual', produces={'U','B'}, gy_type='land')
+                 colors={'U','B'}, tag='dual', produces={'U','B'}, gy_type='land',
+                 subtypes={'Island', 'Swamp'})
         d.append(c)
-    # Scalding Tarn / Polluted Delta (fetches)
+    # Scalding Tarn / Polluted Delta (fetches) — fetch Island or Mountain
     for _ in range(6):
         c = Card('Scalding Tarn', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='fetch', gy_type='land')
+                 colors=set(), tag='fetch', gy_type='land',
+                 fetch_targets={'Island', 'Mountain'})
         c.is_fetch = True
         c.produces = set()
         d.append(c)
@@ -118,10 +121,10 @@ def make_tes_deck():
         d.append(sorcery('Infernal Tutor', 2, {'B':1,'generic':1}, {'B'},
                          tag='infernal', is_combo_piece=True))
 
-    # Gitaxian Probe: 2 life, look at opp hand, draw 1
+    # Empty the Warrens: alternate storm win — creates 2 Goblin 1/1 tokens per storm copy
     for _ in range(2):
-        d.append(instant('Gitaxian Probe', 0, {}, set(), tag='probe',
-                         life_cost=2, is_cantrip=True))
+        d.append(sorcery('Empty the Warrens', 4, {'R':1,'generic':3}, {'R'},
+                         tag='empty', win_condition=True))
 
     assert len(d) == 60, f"TES deck: {len(d)} cards (expected 60)"
     return d
@@ -144,7 +147,7 @@ def make_tes_sideboard():
     for _ in range(2):
         sb.append(instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos'))
     for _ in range(2):
-        sb.append(sorcery('Grapeshot', 2, {'R':1,'generic':1}, {'R'}, tag='grape'))
+        sb.append(sorcery('Grapeshot', 2, {'R':1,'generic':1}, {'R'}, tag='grape', win_condition=True))
     for _ in range(6):
         sb.append(instant('Galvanic Relay', 2, {'R':1,'generic':1}, {'R'}, tag='relay'))
     return sb
@@ -269,7 +272,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Also go off if we have Ad Nauseam + 5 mana
     # On later turns, be even more aggressive — go off with less
-    if gs.turn >= 2 and (has_tutor or has_tendrils) and proj_mana >= 3:
+    if (has_tutor or has_tendrils) and proj_mana >= 3:
         can_go_off = True
 
     # If we have Veil + tutor/tendrils, always go off (protected combo)
@@ -612,7 +615,12 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         lethal = damage >= opponent.life
         good_storm = effective_storm >= 5 and damage >= 12
         protected_ok = veil_up and effective_storm >= 3
-        desperate = player.life <= 6 or gs.turn >= 4
+        life_lost = 20 - player.life
+        opp_has_counters = any(c.tag in ('fow', 'fon', 'daze', 'fluster', 'counter')
+                               for c in opponent.hand)
+        desperate = (player.life <= 6 or gs.turn >= 4 or
+                     player.life <= 10 or
+                     (life_lost >= 5 and not opp_has_counters))
 
         if mana >= 4 and (lethal or good_storm or protected_ok or desperate):
             if not _try_counter_any(player, opponent, gs, tendrils, log_entries):
@@ -723,5 +731,5 @@ DECK_META = {
     'keep':       _keep_tes,
     'categories': {'combo', 'fast_combo'},
     'interaction': {'speed': 2, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
-    'meta_share': 0.02,
+    'meta_share': 0.01,
 }

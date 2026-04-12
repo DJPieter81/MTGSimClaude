@@ -1,0 +1,477 @@
+══════════════════════════════════════════════════════════════════════
+  ELVES vs BUG
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BUG wins the die roll, goes FIRST
+
+  ELVES (P1):
+  Draw 7:
+    1. Natural Order (sorcery, CMC 2, combo)
+    2. Elvish Visionary (creature 1/1, CMC 1)
+    3. Forest (basic)
+    4. Elvish Spirit Guide (creature 3/2, CMC 1)
+    5. Allosaurus Shepherd (creature 1/1, CMC 1)
+    6. Elvish Visionary (creature 1/1, CMC 1)
+    7. Forest (basic)
+    [Lands: 2  Creatures: 4  Combo: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 4 threat(s) for a clock
+
+  BUG (P2):
+  Draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Underground Sea (dual)
+    5. Island (basic)
+    6. Kaito, Bane of Nightmares (creature 3/4, CMC 3)
+    7. Flooded Strand (fetch)
+    [Lands: 3  Creatures: 2  Cantrips: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+━━ TURN 1 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+  ── Main ──
+    Hand (6): Brainstorm, Thoughtseize, Tamiyo, Inquisitive Student, Island, Kaito, Bane of Nightmares, Flooded Strand
+    Mana available: 1
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to ELVES
+      → ELVES has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 5  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Underground Sea         │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Brainstorm               │
+  │         Elvish Visionary         │         Thoughtseize, Island     │
+  │         Forest                   │         Kaito                    │
+  │         Elvish Spirit Guide      │         Bane of Nightmares       │
+  │         Allosaurus Shepherd      │         Flooded Strand           │
+  │         Elvish Visionary, Forest │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Misty Rainforest
+  Land: Forest (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Natural Order, Elvish Visionary, Elvish Spirit Guide, Allosaurus Shepherd, Elvish Visionary, Forest, Misty Rainforest
+  ★ Allosaurus Shepherd — always resolves (can't be countered)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 5  Lib: 53  GY: 0        │
+  │   Lands: Forest                  │   Lands: Underground Sea         │
+  │   Creatures: Allosaurus Shepherd (1/1) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Brainstorm               │
+  │         Elvish Visionary         │         Thoughtseize, Island     │
+  │         Elvish Spirit Guide      │         Kaito                    │
+  │         Elvish Visionary         │         Bane of Nightmares       │
+  │         Forest, Misty Rainforest │         Flooded Strand           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | bug 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Polluted Delta
+  Land: Island (2 lands)
+  ── Main ──
+    Hand (5): Brainstorm, Thoughtseize, Kaito, Bane of Nightmares, Flooded Strand, Polluted Delta
+    Mana available: 2
+  Brainstorm (3 draws)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 7  Lib: 49  GY: 1        │
+  │   Lands: Forest                  │   Lands: Underground Sea, Island │
+  │   Creatures: Allosaurus Shepherd (1/1) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize, Kaito      │
+  │         Elvish Visionary         │         Bane of Nightmares       │
+  │         Elvish Spirit Guide      │         Flooded Strand           │
+  │         Elvish Visionary         │         Polluted Delta           │
+  │         Forest, Misty Rainforest │         Force of Will            │
+  │                                  │         Brainstorm, Thoughtseize │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | bug 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Glimpse of Nature
+  Land: Forest (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Natural Order, Elvish Visionary, Elvish Spirit Guide, Elvish Visionary, Misty Rainforest, Glimpse of Nature
+      → Elvish Visionary goes on the STACK
+      → Priority passes to BUG
+      → Allosaurus Shepherd — green spells uncounterable
+      → Elvish Visionary RESOLVES
+  Elvish Visionary (1/1)
+  Attack: Allosaurus Shepherd — 1 unblocked → o at 19
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 20                       │   Life: 19                       │
+  │   Hand: 6  Lib: 50  GY: 0        │   Hand: 7  Lib: 49  GY: 1        │
+  │   Lands: Forest, Forest          │   Lands: Underground Sea, Island │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize, Kaito      │
+  │         Elvish Spirit Guide      │         Bane of Nightmares       │
+  │         Elvish Visionary         │         Flooded Strand           │
+  │         Misty Rainforest         │         Polluted Delta           │
+  │         Glimpse of Nature        │         Force of Will            │
+  │         Allosaurus Shepherd      │         Brainstorm, Thoughtseize │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | bug 19
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  Play+crack Flooded Strand (−1 life, 18) → Underground Sea
+  ── Main ──
+    Hand (7): Thoughtseize, Kaito, Bane of Nightmares, Polluted Delta, Force of Will, Brainstorm, Thoughtseize, Orcish Bowmasters
+    Mana available: 3
+      → Kaito, Bane of Nightmares goes on the STACK
+      → Priority passes to ELVES
+      → ELVES has no counters — passes priority
+      → Kaito, Bane of Nightmares RESOLVES
+  Kaito, Bane of Nightmares (3/4)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 20                       │   Life: 18                       │
+  │   Hand: 6  Lib: 50  GY: 0        │   Hand: 6  Lib: 47  GY: 3        │
+  │   Lands: Forest, Forest          │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Polluted Delta           │
+  │         Elvish Visionary         │         Force of Will            │
+  │         Misty Rainforest         │         Brainstorm               │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Allosaurus Shepherd      │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | bug 18
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Heritage Druid
+  Play+crack Misty Rainforest (−1 life, 19) → Bayou
+  ── Main ── Mana: 3
+    Hand (6): Natural Order, Elvish Spirit Guide, Elvish Visionary, Glimpse of Nature, Allosaurus Shepherd, Heritage Druid
+      → Heritage Druid goes on the STACK
+      → Priority passes to BUG
+      → Allosaurus Shepherd — green spells uncounterable
+      → Heritage Druid RESOLVES
+  Heritage Druid (1/1)
+      → Allosaurus Shepherd goes on the STACK
+      → Priority passes to BUG
+      → Allosaurus Shepherd — green spells uncounterable
+      → Allosaurus Shepherd RESOLVES
+  Allosaurus Shepherd (1/1)
+      → Elvish Visionary goes on the STACK
+      → Priority passes to BUG
+      → Allosaurus Shepherd — green spells uncounterable
+      → Elvish Visionary RESOLVES
+  Elvish Visionary (1/1)
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 19                       │   Life: 18                       │
+  │   Hand: 4  Lib: 47  GY: 2        │   Hand: 6  Lib: 47  GY: 3        │
+  │   Lands: Forest, Forest, Bayou   │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Polluted Delta           │
+  │         Glimpse of Nature        │         Force of Will            │
+  │         Green Sun's Zenith       │         Brainstorm               │
+  │                                  │         Thoughtseize             │
+  │                                  │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 19 | bug 18
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Orcish Bowmasters
+  Play+crack Polluted Delta (−1 life, 17) → Underground Sea
+  ── Main ──
+    Hand (6): Thoughtseize, Force of Will, Brainstorm, Thoughtseize, Orcish Bowmasters, Orcish Bowmasters
+    Mana available: 4
+  Brainstorm (3 draws)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to ELVES
+      → ELVES has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+      → Orcish Bowmasters goes on the STACK
+      → Priority passes to ELVES
+      → ELVES has no counters — passes priority
+      → Orcish Bowmasters RESOLVES
+  Orcish Bowmasters (1/1, flash)
+    Bowmasters ETB: pings Allosaurus Shepherd (dies)
+  Fatal Push [revolt CMC≤4] → kills Elvish Visionary
+  Attack: Kaito, Bane of Nightmares — Heritage Druid blocks Kaito, Bane of Nightmares. Kaito, Bane of Nightmares deals 3, Heritage Druid deals 1 back. 0 unblocked damage to player (b at 19)
+      Heritage Druid dies.
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 19                       │   Life: 17                       │
+  │   Hand: 4  Lib: 47  GY: 5        │   Hand: 5  Lib: 42  GY: 8        │
+  │   Lands: Forest, Forest, Bayou   │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Green Sun's Zenith       │         Orcish Bowmasters        │
+  │                                  │         Misty Rainforest         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 19 | bug 17
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Glimpse of Nature
+    Bowmasters T1/1: b -1 life → 18, Orc Army 1/1
+  ── Main ── Mana: 3
+    Hand (5): Natural Order, Elvish Spirit Guide, Glimpse of Nature, Green Sun's Zenith, Glimpse of Nature
+  GSZ → Heritage Druid
+  ── Combat ── (2 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 18                       │   Life: 17                       │
+  │   Hand: 4  Lib: 46  GY: 5        │   Hand: 5  Lib: 42  GY: 8        │
+  │   Lands: Forest, Forest, Bayou   │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Glimpse of Nature        │         Orcish Bowmasters        │
+  │                                  │         Misty Rainforest         │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 9 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 18 | bug 17
+
+  ── Untap ── (4 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  Play+crack Misty Rainforest (−1 life, 16) → Underground Sea
+  ── Main ──
+    Hand (5): Thoughtseize, Force of Will, Thoughtseize, Orcish Bowmasters, Fatal Push
+    Mana available: 5
+  Fatal Push [revolt CMC≤4] → kills Allosaurus Shepherd
+  Attack: Kaito, Bane of Nightmares, Orc Army, Orc Army — Elvish Visionary blocks Kaito, Bane of Nightmares. Kaito, Bane of Nightmares deals 3, Elvish Visionary deals 1 back. 0 unblocked damage to player (b at 18)
+      Elvish Visionary dies.
+    Heritage Druid blocks Orc Army. Orc Army deals 1, Heritage Druid deals 1 back. 0 unblocked damage to player (b at 18)
+      Heritage Druid dies.
+      Orc Army dies.
+    1 unblocked → b at 17
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 17                       │   Life: 16                       │
+  │   Hand: 4  Lib: 46  GY: 8        │   Hand: 4  Lib: 40  GY: 13       │
+  │   Lands: Forest, Forest, Bayou   │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Glimpse of Nature        │         Orcish Bowmasters        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 10 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 17 | bug 16
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Glimpse of Nature
+    Bowmasters T1/1: b -1 life → 16, Orc Army 2/2
+  ── Main ── Mana: 3
+    Hand (5): Natural Order, Elvish Spirit Guide, Glimpse of Nature, Glimpse of Nature, Glimpse of Nature
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 16                       │   Life: 16                       │
+  │   Hand: 5  Lib: 45  GY: 8        │   Hand: 4  Lib: 40  GY: 13       │
+  │   Lands: Forest, Forest, Bayou   │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Glimpse of Nature        │         Orcish Bowmasters        │
+  │         Glimpse of Nature        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 11 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 16 | bug 16
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Daze
+  ── Main ──
+    Hand (5): Thoughtseize, Force of Will, Thoughtseize, Orcish Bowmasters, Daze
+    Mana available: 5
+  Attack: Kaito, Bane of Nightmares, Orcish Bowmasters, Orc Army — 6 unblocked → b at 10
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 10                       │   Life: 16                       │
+  │   Hand: 5  Lib: 45  GY: 8        │   Hand: 5  Lib: 39  GY: 13       │
+  │   Lands: Forest, Forest, Bayou   │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Glimpse of Nature        │         Orcish Bowmasters, Daze  │
+  │         Glimpse of Nature        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 12 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 10 | bug 16
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Nettle Sentinel
+    Bowmasters T1/1: b -1 life → 9, Orc Army 3/3
+  ── Main ── Mana: 3
+    Hand (6): Natural Order, Elvish Spirit Guide, Glimpse of Nature, Glimpse of Nature, Glimpse of Nature, Nettle Sentinel
+      → Nettle Sentinel goes on the STACK
+      → Priority passes to BUG
+      → BUG has [Force of Will, Daze] but PASSES (low-priority target)
+      → Nettle Sentinel RESOLVES
+  Nettle Sentinel (2/2)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 9                        │   Life: 16                       │
+  │   Hand: 5  Lib: 44  GY: 8        │   Hand: 5  Lib: 39  GY: 13       │
+  │   Lands: Forest, Forest, Bayou   │   Lands: Underground Sea, Island, ... │
+  │   Creatures: Nettle Sentinel (2/2) │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Glimpse of Nature        │         Orcish Bowmasters, Daze  │
+  │         Glimpse of Nature        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 13 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 9 | bug 16
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Fatal Push
+  ── Main ──
+    Hand (6): Thoughtseize, Force of Will, Thoughtseize, Orcish Bowmasters, Daze, Fatal Push
+    Mana available: 5
+  Fatal Push [CMC≤2] → kills Nettle Sentinel
+  Attack: Kaito, Bane of Nightmares, Orcish Bowmasters, Orc Army — 7 unblocked → b at 2
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 2                        │   Life: 16                       │
+  │   Hand: 5  Lib: 44  GY: 9        │   Hand: 5  Lib: 38  GY: 14       │
+  │   Lands: Forest, Forest, Bayou   │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Glimpse of Nature        │         Orcish Bowmasters, Daze  │
+  │         Glimpse of Nature        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 14 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 2 | bug 16
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Gaea's Cradle
+    Bowmasters T1/1: b -1 life → 1, Orc Army 4/4
+  Land: Gaea's Cradle (4 lands)
+  ── Main ── Mana: 4
+    Hand (5): Natural Order, Elvish Spirit Guide, Glimpse of Nature, Glimpse of Nature, Glimpse of Nature
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: 1                        │   Life: 16                       │
+  │   Hand: 5  Lib: 43  GY: 9        │   Hand: 5  Lib: 38  GY: 14       │
+  │   Lands: Forest, Forest, Bayou, Ga... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Glimpse of Nature        │         Orcish Bowmasters, Daze  │
+  │         Glimpse of Nature        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 15 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 1 | bug 16
+
+  ── Untap ── (5 lands)
+  ── Draw ──
+  Draw: Ponder
+  ── Main ──
+    Hand (6): Thoughtseize, Force of Will, Thoughtseize, Orcish Bowmasters, Daze, Ponder
+    Mana available: 5
+  Ponder (1 draw)
+      → Tamiyo, Inquisitive Student goes on the STACK
+      → Priority passes to ELVES
+      → ELVES has no counters — passes priority
+      → Tamiyo, Inquisitive Student RESOLVES
+  Tamiyo, Inquisitive Student (0/3)
+  Attack: Kaito, Bane of Nightmares, Orcish Bowmasters, Orc Army — 8 unblocked → b at -7
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ BUG                              │
+  │   Life: -7                       │   Life: 16                       │
+  │   Hand: 5  Lib: 43  GY: 9        │   Hand: 5  Lib: 36  GY: 16       │
+  │   Lands: Forest, Forest, Bayou, Ga... │   Lands: Underground Sea, Island, ... │
+  │   Creatures: (none)              │   Creatures: Tamiyo, Inquisitive Stude... │
+  │   Hand: Natural Order            │   Hand: Thoughtseize             │
+  │         Elvish Spirit Guide      │         Force of Will            │
+  │         Glimpse of Nature        │         Thoughtseize             │
+  │         Glimpse of Nature        │         Orcish Bowmasters, Daze  │
+  │         Glimpse of Nature        │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BUG — BUG life reaches -7 on turn 8
+  Final life: elves -7 | bug 16
+══════════════════════════════════════════════════════════════════════

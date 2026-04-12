@@ -1,0 +1,295 @@
+══════════════════════════════════════════════════════════════════════
+  ELVES vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  ELVES (P1):
+  Draw 7:
+    1. Elvish Visionary (creature 1/1, CMC 1)
+    2. Heritage Druid (creature 1/1, CMC 1)
+    3. Llanowar Elves (creature 1/1, CMC 1)
+    4. Gaea's Cradle (land)
+    5. Forest (basic)
+    6. Heritage Druid (creature 1/1, CMC 1)
+    7. Allosaurus Shepherd (creature 1/1, CMC 1)
+    [Lands: 2  Creatures: 5]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 5 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Rishadan Port (land)
+    2. Plains (basic)
+    3. Recruiter of the Guard (creature 1/1, CMC 3)
+    4. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    5. Recruiter of the Guard (creature 1/1, CMC 3)
+    6. Rishadan Port (land)
+    7. Stoneforge Mystic (creature 1/2, CMC 2)
+    [Lands: 3  Creatures: 4]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 4 threat(s) for a clock
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Rishadan Port (1 lands)
+  ── Main ──
+    Hand (6): Plains, Recruiter of the Guard, Thalia, Guardian of Thraben, Recruiter of the Guard, Rishadan Port, Stoneforge Mystic
+    Mana available: 1
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 7  Lib: 53  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: (none)                  │   Lands: Rishadan Port           │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Elvish Visionary         │   Hand: Plains                   │
+  │         Heritage Druid           │         Recruiter of the Guard   │
+  │         Llanowar Elves           │         Thalia                   │
+  │         Gaea's Cradle, Forest    │         Guardian of Thraben      │
+  │         Heritage Druid           │         Recruiter of the Guard   │
+  │         Allosaurus Shepherd      │         Rishadan Port            │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Gaea's Cradle
+  Land: Forest (1 lands)
+  ── Main ── Mana: 1
+    Hand (7): Elvish Visionary, Heritage Druid, Llanowar Elves, Gaea's Cradle, Heritage Druid, Allosaurus Shepherd, Gaea's Cradle
+  ★ Allosaurus Shepherd — always resolves (can't be countered)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 53  GY: 0        │
+  │   Lands: Forest                  │   Lands: Rishadan Port           │
+  │   Creatures: Allosaurus Shepherd (1/1) │   Creatures: (none)              │
+  │   Hand: Elvish Visionary         │   Hand: Plains                   │
+  │         Heritage Druid           │         Recruiter of the Guard   │
+  │         Llanowar Elves           │         Thalia                   │
+  │         Gaea's Cradle            │         Guardian of Thraben      │
+  │         Heritage Druid           │         Recruiter of the Guard   │
+  │         Gaea's Cradle            │         Rishadan Port            │
+  │                                  │         Stoneforge Mystic        │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | dnt 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Plains
+  Land: Plains (2 lands)
+  ── Main ──
+    Hand (6): Recruiter of the Guard, Thalia, Guardian of Thraben, Recruiter of the Guard, Rishadan Port, Stoneforge Mystic, Plains
+    Mana available: 2
+  Rishadan Port taps Forest (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ DNT                              │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Forest                  │   Lands: Rishadan Port, Plains   │
+  │   Creatures: Allosaurus Shepherd (1/1) │   Creatures: (none)              │
+  │   Hand: Elvish Visionary         │   Hand: Recruiter of the Guard   │
+  │         Heritage Druid           │         Thalia                   │
+  │         Llanowar Elves           │         Guardian of Thraben      │
+  │         Gaea's Cradle            │         Recruiter of the Guard   │
+  │         Heritage Druid           │         Rishadan Port            │
+  │         Gaea's Cradle            │         Stoneforge Mystic        │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | dnt 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Verdant Catacombs
+  Play+crack Verdant Catacombs (−1 life, 19) → Bayou
+  ── Main ── Mana: 2
+    Hand (6): Elvish Visionary, Heritage Druid, Llanowar Elves, Gaea's Cradle, Heritage Druid, Gaea's Cradle
+      → Llanowar Elves goes on the STACK
+      → Priority passes to DNT
+      → Allosaurus Shepherd — green spells uncounterable
+      → Llanowar Elves RESOLVES
+  Llanowar Elves (1/1)
+      → Heritage Druid goes on the STACK
+      → Priority passes to DNT
+      → Allosaurus Shepherd — green spells uncounterable
+      → Heritage Druid RESOLVES
+  Heritage Druid (1/1)
+  Attack: Allosaurus Shepherd — 1 unblocked → o at 19
+  ── Combat ── (1 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ DNT                              │
+  │   Life: 19                       │   Life: 19                       │
+  │   Hand: 4  Lib: 50  GY: 2        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Forest, Bayou           │   Lands: Rishadan Port, Plains   │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: (none)              │
+  │   Hand: Elvish Visionary         │   Hand: Recruiter of the Guard   │
+  │         Gaea's Cradle            │         Thalia                   │
+  │         Heritage Druid           │         Guardian of Thraben      │
+  │         Gaea's Cradle            │         Recruiter of the Guard   │
+  │                                  │         Rishadan Port            │
+  │                                  │         Stoneforge Mystic        │
+  │                                  │         Plains                   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 19 | dnt 19
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Rishadan Port
+  Land: Rishadan Port (3 lands)
+  ── Main ──
+    Hand (6): Recruiter of the Guard, Thalia, Guardian of Thraben, Recruiter of the Guard, Stoneforge Mystic, Plains, Rishadan Port
+    Mana available: 3
+  Rishadan Port taps Bayou (BUG loses 1 mana)
+  Rishadan Port taps Forest (BUG loses 1 mana)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ DNT                              │
+  │   Life: 19                       │   Life: 19                       │
+  │   Hand: 4  Lib: 50  GY: 2        │   Hand: 6  Lib: 51  GY: 0        │
+  │   Lands: Forest, Bayou           │   Lands: Rishadan Port, Plains, Ri... │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: (none)              │
+  │   Hand: Elvish Visionary         │   Hand: Recruiter of the Guard   │
+  │         Gaea's Cradle            │         Thalia                   │
+  │         Heritage Druid           │         Guardian of Thraben      │
+  │         Gaea's Cradle            │         Recruiter of the Guard   │
+  │                                  │         Stoneforge Mystic        │
+  │                                  │         Plains, Rishadan Port    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 19 | dnt 19
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Elvish Mystic
+  Land: Gaea's Cradle (3 lands)
+  ── Main ── Mana: 6
+    Hand (4): Elvish Visionary, Heritage Druid, Gaea's Cradle, Elvish Mystic
+      → Elvish Mystic goes on the STACK
+      → Priority passes to DNT
+      → Allosaurus Shepherd — green spells uncounterable
+      → Elvish Mystic RESOLVES
+  Elvish Mystic (1/1)
+      → Heritage Druid goes on the STACK
+      → Priority passes to DNT
+      → Allosaurus Shepherd — green spells uncounterable
+      → Heritage Druid RESOLVES
+  Heritage Druid (1/1)
+      → Elvish Visionary goes on the STACK
+      → Priority passes to DNT
+      → Allosaurus Shepherd — green spells uncounterable
+      → Elvish Visionary RESOLVES
+  Elvish Visionary (1/1)
+  Attack: Allosaurus Shepherd, Llanowar Elves, Heritage Druid — 3 unblocked → o at 16
+  ── Combat ── (3 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ DNT                              │
+  │   Life: 19                       │   Life: 16                       │
+  │   Hand: 2  Lib: 48  GY: 2        │   Hand: 6  Lib: 51  GY: 0        │
+  │   Lands: Forest, Bayou, Gaea's Cradle │   Lands: Rishadan Port, Plains, Ri... │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: (none)              │
+  │   Hand: Gaea's Cradle            │   Hand: Recruiter of the Guard   │
+  │         Natural Order            │         Thalia                   │
+  │                                  │         Guardian of Thraben      │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Stoneforge Mystic        │
+  │                                  │         Plains, Rishadan Port    │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 7 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 19 | dnt 16
+
+  ── Untap ── (3 lands)
+  ── Draw ──
+  Draw: Arid Mesa
+  Land: Plains (4 lands)
+  ── Main ──
+    Hand (6): Recruiter of the Guard, Thalia, Guardian of Thraben, Recruiter of the Guard, Stoneforge Mystic, Rishadan Port, Arid Mesa
+    Mana available: 4
+  Rishadan Port taps Bayou (BUG loses 1 mana)
+  Rishadan Port taps Forest (BUG loses 1 mana)
+      → Thalia, Guardian of Thraben goes on the STACK
+      → Priority passes to ELVES
+      → ELVES has no counters — passes priority
+      → Thalia, Guardian of Thraben RESOLVES
+  Thalia, Guardian of Thraben (2/1)
+      → Stoneforge Mystic goes on the STACK
+      → Priority passes to ELVES
+      → ELVES has no counters — passes priority
+      → Stoneforge Mystic RESOLVES
+  Stoneforge Mystic (1/2)
+    Stoneforge Mystic tutors Batterskull
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ DNT                              │
+  │   Life: 19                       │   Life: 16                       │
+  │   Hand: 2  Lib: 48  GY: 2        │   Hand: 5  Lib: 49  GY: 0        │
+  │   Lands: Forest, Bayou, Gaea's Cradle │   Lands: Rishadan Port, Plains, Ri... │
+  │   Creatures: Allosaurus Shepherd (1/1)... │   Creatures: Thalia, Guardian of Thrab... │
+  │   Hand: Gaea's Cradle            │   Hand: Recruiter of the Guard   │
+  │         Natural Order            │         Recruiter of the Guard   │
+  │                                  │         Rishadan Port            │
+  │                                  │         Arid Mesa, Batterskull   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 8 — ELVES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 19 | dnt 16
+
+  ── Untap ── (3 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Wirewood Symbiote
+  Land: Gaea's Cradle (4 lands)
+  ── Main ── Mana: 16
+    Hand (2): Natural Order, Wirewood Symbiote
+  Thalia tax — 1 noncreature spells cost +1
+  ★ Natural Order → Craterhoof ETB: 6 creatures +6/+6 trample
+      → Wirewood Symbiote goes on the STACK
+      → Priority passes to DNT
+      → DNT has no counters — passes priority
+      → Wirewood Symbiote RESOLVES
+  Wirewood Symbiote (1/1)
+  Attack: Llanowar Elves, Heritage Druid, Elvish Mystic, Heritage Druid, Elvish Visionary — Stoneforge Mystic blocks Llanowar Elves. Llanowar Elves deals 7, Stoneforge Mystic deals 1 back. 0 unblocked damage to player (o at 16)
+      Stoneforge Mystic dies.
+    28 unblocked → o at -12
+  ── Combat ── (5 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ ELVES                            │ DNT                              │
+  │   Life: 19                       │   Life: -12                      │
+  │   Hand: 0  Lib: 46  GY: 5        │   Hand: 5  Lib: 49  GY: 1        │
+  │   Lands: Forest, Bayou, Gaea's Cra... │   Lands: Rishadan Port, Plains, Ri... │
+  │   Creatures: Llanowar Elves (7/7), Her... │   Creatures: Thalia, Guardian of Thrab... │
+  │   Hand: (empty)                  │   Hand: Recruiter of the Guard   │
+  │                                  │         Recruiter of the Guard   │
+  │                                  │         Rishadan Port            │
+  │                                  │         Arid Mesa, Batterskull   │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: ELVES — Opp life reaches -12 on turn 4
+  Final life: elves 19 | dnt -12
+══════════════════════════════════════════════════════════════════════

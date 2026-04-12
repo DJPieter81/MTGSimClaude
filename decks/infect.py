@@ -31,11 +31,11 @@ def make_infect_deck():
     # ── Creatures (12) ───────────────────────────────────────────────────────
     # Glistener Elf: 1/1 infect for {G}
     d += [creature('Glistener Elf', 1, {'G': 1}, {'G'}, power=1, toughness=1,
-                   tag='glistener')] * 4
+                   tag='glistener', infect=True)] * 4
 
     # Blighted Agent: 1/1 infect unblockable for {1U}
     d += [creature('Blighted Agent', 2, {'U': 1, 'generic': 1}, {'U'}, power=1,
-                   toughness=1, tag='blighted')] * 4
+                   toughness=1, tag='blighted', infect=True)] * 4
 
     # Noble Hierarch: 0/1 exalted for {G}
     d += [creature('Noble Hierarch', 1, {'G': 1}, {'G'}, power=0, toughness=1,
@@ -43,15 +43,23 @@ def make_infect_deck():
 
     # ── Pump Spells (14) ─────────────────────────────────────────────────────
     # Invigorate: {2G} but free (alt cost: opp gains 3 life), +4/+4
-    d += [instant('Invigorate', 3, {'G': 1, 'generic': 2}, {'G'},
-                  tag='invigorate')] * 4
+    # Combo piece: free +4/+4 is the primary kill enabler for infect
+    _inv = [instant('Invigorate', 3, {'G': 1, 'generic': 2}, {'G'},
+                    tag='invigorate') for _ in range(4)]
+    for c in _inv:
+        c.is_combo_piece = True
+    d += _inv
 
     # Mutagenic Growth: {G/P} — pay 2 life instead of {G}, +2/+2
     d += [instant('Mutagenic Growth', 1, {'G': 1}, {'G'},
                   tag='mutagenic', life_cost=2)] * 4
 
     # Berserk: {G}, double power, creature dies EOT
-    d += [instant('Berserk', 1, {'G': 1}, {'G'}, tag='berserk')] * 4
+    # Combo piece: doubles total power, enabling one-shot kills
+    _bsk = [instant('Berserk', 1, {'G': 1}, {'G'}, tag='berserk') for _ in range(4)]
+    for c in _bsk:
+        c.is_combo_piece = True
+    d += _bsk
 
     # Vines of Vastwood: {G} kicked {G}, +4/+4 and hexproof
     d += [instant('Vines of Vastwood', 1, {'G': 1}, {'G'}, tag='vines')] * 2
@@ -77,7 +85,7 @@ def make_infect_deck():
 
     # ── Lands (16) ───────────────────────────────────────────────────────────
     # Inkmoth Nexus: utility land, becomes 1/1 infect flyer
-    d += [utility_land('Inkmoth Nexus', {'C'}, tag='inkmoth')] * 4
+    d += [utility_land('Inkmoth Nexus', ['C'], tag='inkmoth')] * 4
 
     # Tropical Island: U/G dual
     d += [dual_land('Tropical Island', ['U', 'G'], ['Island', 'Forest'])] * 4
@@ -95,7 +103,7 @@ def make_infect_deck():
     d += [basic_land('Forest', 'G', 'Forest')] * 2
 
     # Pendelhaven: utility land, {T}: target 1/1 gets +1/+2
-    d += [utility_land('Pendelhaven', {'G'}, tag='pendel')] * 2
+    d += [utility_land('Pendelhaven', ['G'], tag='pendel')] * 2
 
     assert len(d) == 60, f"Infect deck has {len(d)} cards (expected 60)"
     return d
@@ -122,9 +130,11 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
 
     mana = total_mana
 
-    # ── Initialize poison tracking ───────────────────────────────────────────
+    # ── Initialize poison tracking (use per-player fields on GameState) ─────
+    # Use p1_poison/p2_poison from GameState; keep opp_poison as alias for compat
+    opp_poison_key = 'p2_poison' if player is gs.p1 else 'p1_poison'
     if not hasattr(gs, 'opp_poison'):
-        gs.opp_poison = 0
+        gs.opp_poison = getattr(gs, opp_poison_key, 0)
 
     if gs.game_over:
         return
@@ -148,19 +158,13 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── Phase 3: Deploy infect creature ─────────────────────────────────────
-    # Prefer Glistener Elf (1 mana) over Blighted Agent (2 mana)
+    # Prefer Blighted Agent (unblockable) over Glistener Elf when mana allows.
+    # Blighted Agent cannot be blocked, making it the superior attacker in
+    # every matchup — Glistener Elf is only deployed when we can't afford 2 mana.
     glistener = player.find_tag('glistener')
     blighted = player.find_tag('blighted')
 
-    if glistener and mana >= 1:
-        player.remove_from_hand(glistener)
-        if not _try_counter_any(player, opponent, gs, glistener, log_entries):
-            player.put_creature_in_play(glistener)
-            log_fn("Glistener Elf (infect)")
-        else:
-            player.add_to_grave(glistener)
-        mana -= 1
-    elif blighted and mana >= 2:
+    if blighted and mana >= 2:
         player.remove_from_hand(blighted)
         if not _try_counter_any(player, opponent, gs, blighted, log_entries):
             player.put_creature_in_play(blighted)
@@ -168,6 +172,14 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(blighted)
         mana -= 2
+    elif glistener and mana >= 1:
+        player.remove_from_hand(glistener)
+        if not _try_counter_any(player, opponent, gs, glistener, log_entries):
+            player.put_creature_in_play(glistener)
+            log_fn("Glistener Elf (infect)")
+        else:
+            player.add_to_grave(glistener)
+        mana -= 1
 
     if gs.game_over:
         return
@@ -289,6 +301,59 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         pump_bonus += 1  # +1 power (+2 toughness not tracked for damage)
         log_fn("Pendelhaven — target 1/1 gets +1/+2")
 
+    # ── Defensive protection: grant hexproof before pumping ────────────────
+    # Real Infect holds Vines of Vastwood / Blossoming Defense to protect
+    # against removal (Fatal Push, Lightning Bolt, Snuff Out, STP).
+    # If opponent has untapped mana or free removal (Snuff Out, Solitude),
+    # cast protection FIRST to make the creature hexproof, then pump.
+    opp_has_mana = opponent.available_mana_count() >= 1
+    opp_has_free_removal = any(c.tag in ('snuffout', 'solitude')
+                               for c in opponent.hand)
+    opp_removal_threat = opp_has_mana or opp_has_free_removal
+    has_hexproof = False
+
+    # If removal is likely, cast Vines of Vastwood (unkicked: {G}, hexproof
+    # only, no pump; kicked: {GG}, hexproof + pump). Or Blossoming Defense
+    # ({G}, hexproof + pump). Priority: protect the creature first.
+    if opp_removal_threat:
+        # Try Vines of Vastwood first — kicked if we can afford it (2 mana)
+        vines = player.find_tag('vines')
+        if vines and mana >= 1:
+            kicked = (mana >= 2)
+            player.remove_from_hand(vines)
+            cost = 2 if kicked else 1
+            if not _try_counter_any(player, opponent, gs, vines, log_entries):
+                has_hexproof = True
+                attacker.hexproof = True
+                if kicked:
+                    pump_bonus += 4
+                    log_fn("Vines of Vastwood (kicked) — hexproof + +4/+4 [protection]")
+                else:
+                    log_fn("Vines of Vastwood (unkicked) — hexproof [protection]")
+            else:
+                player.add_to_grave(vines)
+            mana -= cost
+
+        if gs.game_over:
+            return
+
+        # If still no hexproof, try Blossoming Defense
+        if not has_hexproof:
+            defense = player.find_tag('defense')
+            if defense and mana >= 1:
+                player.remove_from_hand(defense)
+                if not _try_counter_any(player, opponent, gs, defense, log_entries):
+                    has_hexproof = True
+                    attacker.hexproof = True
+                    pump_bonus += 2
+                    log_fn("Blossoming Defense — hexproof + +2/+2 [protection]")
+                else:
+                    player.add_to_grave(defense)
+                mana -= 1
+
+        if gs.game_over:
+            return
+
     # ── Cast free pump spells ────────────────────────────────────────────────
     # Invigorate: free (alt cost: opp gains 3 life), +4/+4
     for _ in range(4):
@@ -326,13 +391,15 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     if gs.game_over:
         return
 
-    # Vines of Vastwood (kicked): +4/+4 + hexproof — costs {G}{G} (2 mana)
+    # Remaining Vines of Vastwood: cast kicked for +4/+4 + hexproof
     for _ in range(2):
         vines = player.find_tag('vines')
         if vines and mana >= 2:
             player.remove_from_hand(vines)
             if not _try_counter_any(player, opponent, gs, vines, log_entries):
                 pump_bonus += 4
+                has_hexproof = True
+                attacker.hexproof = True
                 log_fn("Vines of Vastwood (kicked) — +4/+4, hexproof")
             else:
                 player.add_to_grave(vines)
@@ -343,13 +410,15 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     if gs.game_over:
         return
 
-    # Blossoming Defense: +2/+2 + hexproof — costs {G} (1 mana)
+    # Remaining Blossoming Defense: +2/+2 + hexproof
     for _ in range(2):
         defense = player.find_tag('defense')
         if defense and mana >= 1:
             player.remove_from_hand(defense)
             if not _try_counter_any(player, opponent, gs, defense, log_entries):
                 pump_bonus += 2
+                has_hexproof = True
+                attacker.hexproof = True
                 log_fn("Blossoming Defense — +2/+2, hexproof")
             else:
                 player.add_to_grave(defense)
@@ -404,6 +473,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         poison = getattr(gs, 'opp_poison', 0)
         poison += total_power
         gs.opp_poison = poison
+        setattr(gs, opp_poison_key, poison)  # sync per-player field
         log_fn(f"★ {attacker.card.name} deals {total_power} poison "
                f"({poison}/10)", True)
 
@@ -426,8 +496,30 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.kill_turn = gs.turn
             log_fn(f"★★★ LETHAL — {poison} poison counters on turn {gs.turn}!", True)
     elif blocked:
-        log_fn(f"  {attacker.card.name} blocked — no poison damage")
-        # Berserk still kills the creature
+        # Blocker deals damage to attacker — infect creature likely dies
+        blocker = next((c for c in opponent.creatures if not c.tapped), None)
+        blocker_power = blocker.power if blocker else 0
+        attacker_toughness = getattr(attacker, 'toughness',
+                                     getattr(attacker.card, 'base_toughness', 1))
+        # Attacker with pumps has higher toughness
+        attacker_toughness += pump_bonus
+        for _ in range(berserk_count):
+            pass  # berserk doesn't boost toughness
+
+        if blocker and blocker_power >= attacker_toughness:
+            log_fn(f"  {attacker.card.name} blocked by {blocker.card.name} — dies in combat")
+            if attacker in player.creatures:
+                player.creatures.remove(attacker)
+                player.graveyard.append(attacker.card)
+        else:
+            log_fn(f"  {attacker.card.name} blocked — no poison damage")
+
+        # Infect damage to blocker kills it (poison counters on creatures = -1/-1)
+        if blocker and total_power >= blocker.toughness:
+            opponent.remove_creature(blocker)
+            log_fn(f"  {blocker.card.name} dies to infect damage")
+
+        # Berserk still kills the creature at EOT
         if berserk_count > 0:
             if attacker in player.creatures:
                 player.creatures.remove(attacker)
@@ -440,6 +532,8 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     else:
         log_fn(f"  {attacker.card.name} — no damage (0 power)")
 
+    # Mark combat as done — prevents fallback combat from firing a second attack
+    gs.combat_this_turn = True
     gs.state_based_actions()
 
 
@@ -513,5 +607,5 @@ DECK_META = {
     'keep':       _keep_infect,
     'categories': {'combo', 'fast_combo'},
     'interaction': {'speed': 1, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'bug_answers': 6},
-    'meta_share': 0.03,
+    'meta_share': 0.02,
 }

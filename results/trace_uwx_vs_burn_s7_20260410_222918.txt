@@ -1,0 +1,226 @@
+══════════════════════════════════════════════════════════════════════
+  UWX vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UWX wins the die roll, goes FIRST
+
+  UWX (P1):
+  Draw 7:
+    1. Force of Negation (instant, CMC 3, free counter)
+    2. Tundra (dual)
+    3. Force of Will (instant, CMC 5, free counter)
+    4. Flooded Strand (fetch)
+    5. Island (basic)
+    6. Island (basic)
+    7. Snapcaster Mage (creature 2/1, CMC 2)
+    [Lands: 4  Creatures: 1  Counters: 2]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 1 threat(s) for a clock; 2 counter(s) for protection/disruption
+
+  BURN (P2):
+  Draw 7:
+    1. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    2. Lightning Bolt (instant, CMC 1)
+    3. Fireblast (instant, CMC 6, win-con)
+    4. Monastery Swiftspear (creature 1/2, CMC 1)
+    5. Goblin Guide (creature 2/1, CMC 1)
+    6. Barbarian Ring (land)
+    7. Lava Spike (sorcery, CMC 1)
+    [Lands: 1  Creatures: 3  Combo: 1  Other: 2]
+  → KEEP (opening 7)
+    Reason: 4 threat(s) for a clock
+
+━━ TURN 1 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Tundra (1 lands)
+  ── Main ── Mana: 1
+    Hand (6): Force of Negation, Force of Will, Flooded Strand, Island, Island, Snapcaster Mage
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 20                       │   Life: 20                       │
+  │   Hand: 6  Lib: 53  GY: 0        │   Hand: 7  Lib: 53  GY: 0        │
+  │   Lands: Tundra                  │   Lands: (none)                  │
+  │   Creatures: (none)              │   Creatures: (none)              │
+  │   Hand: Force of Negation        │   Hand: Eidolon of the Great Rev │
+  │         Force of Will            │         el, Lightning Bolt       │
+  │         Flooded Strand, Island   │         Fireblast                │
+  │         Island, Snapcaster Mage  │         Monastery Swiftspear     │
+  │                                  │         Goblin Guide             │
+  │                                  │         Barbarian Ring           │
+  │                                  │         Lava Spike               │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 2 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ──
+  Draw: Lightning Bolt
+  Land: Barbarian Ring (1 lands)
+  ── Main ──
+    Hand (7): Eidolon of the Great Revel, Lightning Bolt, Fireblast, Monastery Swiftspear, Goblin Guide, Lava Spike, Lightning Bolt
+    Mana available: 1
+      → Goblin Guide goes on the STACK
+      → Priority passes to UWX
+      → UWX has [Force of Negation, Force of Will] but PASSES (low-priority target)
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+  Attack: Goblin Guide — 2 unblocked → b at 18
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 6  Lib: 53  GY: 0        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Tundra                  │   Lands: Barbarian Ring          │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Force of Negation        │   Hand: Eidolon of the Great Rev │
+  │         Force of Will            │         el, Lightning Bolt       │
+  │         Flooded Strand, Island   │         Fireblast                │
+  │         Island, Snapcaster Mage  │         Monastery Swiftspear     │
+  │                                  │         Lava Spike               │
+  │                                  │         Lightning Bolt           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 3 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 18 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Counterspell
+  Land: Island (2 lands)
+  ── Main ── Mana: 2
+    Hand (6): Force of Negation, Force of Will, Flooded Strand, Island, Snapcaster Mage, Counterspell
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 18                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 6  Lib: 52  GY: 0        │
+  │   Lands: Tundra, Island          │   Lands: Barbarian Ring          │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1)  │
+  │   Hand: Force of Negation        │   Hand: Eidolon of the Great Rev │
+  │         Force of Will            │         el, Lightning Bolt       │
+  │         Flooded Strand, Island   │         Fireblast                │
+  │         Snapcaster Mage          │         Monastery Swiftspear     │
+  │         Counterspell             │         Lava Spike               │
+  │                                  │         Lightning Bolt           │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 4 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 18 | burn 20
+
+  ── Untap ── (1 lands)
+  ── Draw ──
+  Draw: Mountain
+  Land: Mountain (2 lands)
+  ── Main ──
+    Hand (6): Eidolon of the Great Revel, Lightning Bolt, Fireblast, Monastery Swiftspear, Lava Spike, Lightning Bolt
+    Mana available: 2
+      → Monastery Swiftspear goes on the STACK
+      → Priority passes to UWX
+      → UWX has [Force of Negation, Force of Will, Counterspell] but PASSES (low-priority target)
+      → Monastery Swiftspear RESOLVES
+  Monastery Swiftspear enters the battlefield
+      → Lava Spike goes on the STACK
+      → Priority passes to UWX
+      → UWX has [Force of Negation, Force of Will, Counterspell] but PASSES (low-priority target)
+      → Lava Spike RESOLVES
+  ★ Lava Spike (pre-combat) → 3 damage (opp at 15)
+    Prowess: Swiftspear +2/+0 → 3/2
+  Attack: Goblin Guide, Monastery Swiftspear — 5 unblocked → b at 10
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 6  Lib: 52  GY: 0        │   Hand: 4  Lib: 51  GY: 1        │
+  │   Lands: Tundra, Island          │   Lands: Barbarian Ring, Mountain │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1), Monas... │
+  │   Hand: Force of Negation        │   Hand: Eidolon of the Great Rev │
+  │         Force of Will            │         el, Lightning Bolt       │
+  │         Flooded Strand, Island   │         Fireblast                │
+  │         Snapcaster Mage          │         Lightning Bolt           │
+  │         Counterspell             │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 5 — UWX ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 10 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Upkeep ──
+  ── Draw ──
+  Draw: Brainstorm
+  Land: Island (3 lands)
+  ── Main ── Mana: 3
+    Hand (6): Force of Negation, Force of Will, Flooded Strand, Snapcaster Mage, Counterspell, Brainstorm
+  Brainstorm (3 draws)
+  ── Combat ── (0 eligible attackers)
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 10                       │   Life: 20                       │
+  │   Hand: 8  Lib: 48  GY: 1        │   Hand: 4  Lib: 51  GY: 1        │
+  │   Lands: Tundra, Island, Island  │   Lands: Barbarian Ring, Mountain │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1), Monas... │
+  │   Hand: Force of Negation        │   Hand: Eidolon of the Great Rev │
+  │         Force of Will            │         el, Lightning Bolt       │
+  │         Flooded Strand           │         Fireblast                │
+  │         Snapcaster Mage          │         Lightning Bolt           │
+  │         Counterspell             │                                  │
+  │         Swords to Plowshares     │                                  │
+  │         Narset                   │                                  │
+  │         Parter of Veils          │                                  │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+━━ TURN 6 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: uwx 10 | burn 20
+
+  ── Untap ── (2 lands)
+  ── Draw ──
+  Draw: Goblin Guide
+  ── Main ──
+    Hand (5): Eidolon of the Great Revel, Lightning Bolt, Fireblast, Lightning Bolt, Goblin Guide
+    Mana available: 2
+      → Goblin Guide goes on the STACK
+      → Priority passes to UWX
+      → UWX has [Force of Negation, Force of Will, Counterspell] but PASSES (CMC 1 creature — better answered by removal later)
+      → Goblin Guide RESOLVES
+  Goblin Guide enters the battlefield
+      → Lightning Bolt goes on the STACK
+      → Priority passes to UWX
+      → UWX has [Force of Negation, Force of Will, Counterspell] but PASSES (CMC 1 creature — better answered by removal later)
+      → Lightning Bolt RESOLVES
+  ★ Lightning Bolt (pre-combat) → 3 damage (opp at 7)
+    Prowess: Swiftspear +2/+0 → 3/2
+  Attack: Goblin Guide, Monastery Swiftspear, Goblin Guide — 7 unblocked → b at 0
+  ── End ──
+
+  ┌──────────────────────────────────┬──────────────────────────────────┐
+  │ UWX                              │ BURN                             │
+  │   Life: 0                        │   Life: 20                       │
+  │   Hand: 8  Lib: 48  GY: 1        │   Hand: 3  Lib: 50  GY: 2        │
+  │   Lands: Tundra, Island, Island  │   Lands: Barbarian Ring, Mountain │
+  │   Creatures: (none)              │   Creatures: Goblin Guide (2/1), Monas... │
+  │   Hand: Force of Negation        │   Hand: Eidolon of the Great Rev │
+  │         Force of Will            │         el, Fireblast            │
+  │         Flooded Strand           │         Lightning Bolt           │
+  │         Snapcaster Mage          │                                  │
+  │         Counterspell             │                                  │
+  │         Swords to Plowshares     │                                  │
+  │         Narset                   │                                  │
+  │         Parter of Veils          │                                  │
+  │         Force of Will            │                                  │
+  └──────────────────────────────────┴──────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+  WINNER: BURN — BUG life reaches 0 on turn 3
+  Final life: uwx 0 | burn 20
+══════════════════════════════════════════════════════════════════════
