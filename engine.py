@@ -2452,6 +2452,11 @@ def combat_declare(player, opponent, gs, log_entries, attackers):
 
 def _strategy_elves(player, opponent, gs, total_mana, log_fn, log_entries):
     """Elves strategy — delegates to _elves_strategy (the shared implementation)."""
+    gs.strat_log.log_decision(
+        gs.turn, 'elves',
+        candidates=['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, creatures={len(player.creatures)}, hand={len(player.hand)}")
     _elves_strategy(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
@@ -2777,6 +2782,11 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
     """Boros Aggro/Initiative: fast white/red creatures, Vial, Thalia."""
+    gs.strat_log.log_decision(
+        gs.turn, 'boros',
+        candidates=['vial', 'thalia', 'initiative', 'threat', 'removal', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, creatures={len(player.creatures)}, vial_counters={gs.vial_counters}")
 
     # Aether Vial — highest priority, cast T1-T3
     vial = player.find_tag('vial')
@@ -4083,6 +4093,11 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     - WST has flash+flying+vigilance — can block AND attack same gs.turn if cast on BUG's EOT
     Strategy: cantrip, hold up WST at X=2-3 (3-4 mana), cast on BUG's EOT for maximum value
     """
+    gs.strat_log.log_decision(
+        gs.turn, 'dimir_flash',
+        candidates=['cantrip', 'thoughtseize', 'wst', 'counter', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, hand={len(player.hand)}")
 
     # ── Cantrips ──
     # Cantrips: find any CMC1 noncreature spell opp can cast
@@ -4210,6 +4225,12 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     Mana tracked via mana_ref to avoid phantom multi-casting.
     Reactive hook: FoW/Daze/STP used against opponent threats.
     """
+    gs.strat_log.log_decision(
+        gs.turn, 'uwx',
+        candidates=['removal', 'mentor', 'lock_piece', 'cantrip', 'counter', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, opp_creatures={len(opponent.creatures)}")
+
     mana_ref = [total_mana]
 
     def can_cast(card):
@@ -4358,6 +4379,11 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
     Plan: fast mana → Karn wishes for combo pieces → assemble and win.
     The One Ring provides card draw + protection. Tezzeret recurs artifacts.
     """
+    gs.strat_log.log_decision(
+        gs.turn, 'painter',
+        candidates=['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, hand={len(player.hand)}, artifacts={len(player.artifacts)}")
 
     # ── 0. Fast mana: Lotus Petal, Mox Opal, Grim Monolith ──
     for _ in range(6):
@@ -4877,6 +4903,11 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
 def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
     """UR Delver/Aggro: Delver of Secrets, Ragavan, Dragon's Rage Channeler, Murktide.
     Strategy: deploy cheap threats T1-2, protect with Daze/FoW, Bolt face to close."""
+    gs.strat_log.log_decision(
+        gs.turn, 'ur_aggro',
+        candidates=['cantrip', 'ragavan', 'drc', 'delver', 'murktide', 'bolt', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, creatures={len(player.creatures)}, opp_life={opponent.life}")
 
     # Cantrips — dig for threats early
     can = next((c for c in player.hand if c.is_cantrip and total_mana >= 1), None)
@@ -4959,6 +4990,11 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     """Mardu Initiative/Grief: Grief+Ephemerate T1 strip engine, Ragavan, Bowmasters, Fury."""
+    gs.strat_log.log_decision(
+        gs.turn, 'mardu',
+        candidates=['grief_ephemerate', 'ragavan', 'bowmasters', 'fury', 'initiative', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, creatures={len(player.creatures)}")
 
     grief = player.find_tag('grief')
     ephemerate = player.find_tag('ephemerate')
