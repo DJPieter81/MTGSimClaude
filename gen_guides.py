@@ -1,14 +1,53 @@
 #!/usr/bin/env python3
-"""Generate full-featured deck guides for all decks in MTGSimClaude."""
+"""Generate full-featured deck guides for all decks in MTGSimClaude.
+
+Env overrides:
+    MTGSIM_META       path to meta_fresh.json  (default: ./meta_fresh.json,
+                      fallback: /home/claude/meta_fresh.json for legacy)
+    MTGSIM_AGG        path to deck_agg.json    (default: ./deck_agg.json,
+                      fallback: /home/claude/deck_agg.json for legacy)
+    MTGSIM_OUT_DIR    directory to write guide_*.html
+                      (default: ./guides, fallback: /mnt/user-data/outputs)
+
+Regenerate the meta inputs from a fresh matrix with:
+    python3 build_meta_inputs.py
+"""
 import json, random, os, sys
 from collections import Counter, defaultdict
 
-sys.path.insert(0, '/home/claude/MTGSimClaude')
+# Support both the original /home/claude/... env and local checkouts.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if os.path.exists('/home/claude/MTGSimClaude') and _HERE != '/home/claude/MTGSimClaude':
+    sys.path.insert(0, '/home/claude/MTGSimClaude')
+sys.path.insert(0, _HERE)
+
 from sim import run_game
 from cards import DECKS
 
-with open('/home/claude/meta_fresh.json') as f: meta = json.load(f)
-with open('/home/claude/deck_agg.json') as f: agg = json.load(f)
+
+def _resolve(path_candidates):
+    for p in path_candidates:
+        if p and os.path.exists(p):
+            return p
+    raise FileNotFoundError(
+        f"None of the candidate paths exist: {path_candidates}")
+
+
+META_PATH = os.environ.get('MTGSIM_META') or _resolve([
+    os.path.join(_HERE, 'meta_fresh.json'),
+    '/home/claude/meta_fresh.json',
+])
+AGG_PATH = os.environ.get('MTGSIM_AGG') or _resolve([
+    os.path.join(_HERE, 'deck_agg.json'),
+    '/home/claude/deck_agg.json',
+])
+OUT_DIR = os.environ.get('MTGSIM_OUT_DIR') or (
+    '/mnt/user-data/outputs' if os.path.isdir('/mnt/user-data/outputs')
+    else os.path.join(_HERE, 'guides'))
+os.makedirs(OUT_DIR, exist_ok=True)
+
+with open(META_PATH) as f: meta = json.load(f)
+with open(AGG_PATH) as f: agg = json.load(f)
 A=meta['a'];W=meta['w'];M=meta['m'];decks=meta['d']
 
 def muc(w): return '#1f7040' if w>=65 else '#854f0b' if w>=45 else '#b02020'
@@ -211,7 +250,7 @@ for dk in sorted(DECKS.keys()):
         mu+='<div class="mu-row"><span class="mu-name">'+d2+'</span><span class="mu-type">'+ar+'</span><div class="mu-bar"><div class="mu-fill" style="width:'+str(wr)+'%;background:'+col+'"></div></div><span class="mu-val" style="color:'+col+'">'+str(wr)+'%</span></div>\n'
     
     # Write using string concatenation (no f-strings for JS)
-    with open('/mnt/user-data/outputs/guide_'+dk+'.html','w') as f:
+    with open(os.path.join(OUT_DIR, 'guide_'+dk+'.html'),'w') as f:
         f.write('<!DOCTYPE html>\n<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">\n')
         f.write('<title>'+d.replace('_',' ').title()+' — Legacy Deck Guide</title>\n')
         f.write('<style>\n')
@@ -329,7 +368,12 @@ for dk in sorted(DECKS.keys()):
 # Summary
 print("\nAll guides:")
 for dk in sorted(DECKS.keys()):
-    fn = '/mnt/user-data/outputs/guide_'+dk+'.html'
+    fn = os.path.join(OUT_DIR, 'guide_'+dk+'.html')
+    if not os.path.exists(fn):
+        # Burn is hand-crafted and skipped by the generator; other misses
+        # would indicate a real error.
+        print('  '+dk.ljust(15)+'SKIP (hand-crafted or not generated)')
+        continue
     sz = os.path.getsize(fn)//1024
     c = open(fn).read()
     flags = ('✓' if 'two-col' in c else '✗') + ('✓' if 'kt-col' in c else '✗') + ('✓' if 'arch-row' in c else '✗') + ('✓' if 'hand-box' in c else '✗') + ('✓' if 'finding' in c else '✗') + ('✓' if 'card-tip' in c else '✗') + ('✓' if 'Tournament' in c else '✗')
