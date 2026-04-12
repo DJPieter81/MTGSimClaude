@@ -197,3 +197,21 @@ Individual steps (chained by refresh_all.py):
 ```
 python3 -c "from sim import run_game; r=run_game('burn','dimir',verbose=True); [print(l) for l in r.log_lines if 'Fireblast' in l or 'Mountain' in l]"
 ```
+
+## P0: Storm vs D&T — Storm casts avg 1.1 spells/game (2026-04-12 audit)
+
+**Root cause:** Storm strategy doesn't cast cantrips under Thalia tax. Ponder costs 2 (1+1), with 1-2 lands and Port locking, can't afford. Storm passes every turn waiting for a combo window that never opens.
+
+**Expected behavior:** Real Storm pilots cast cantrips aggressively even under Thalia (+1 tax is acceptable on Ponder). They chain rituals through the tax (Dark Ritual: pay 2, get BBB = net +1 under Thalia).
+
+**Fix plan:**
+1. Strategy should try cantrips even when taxed (+1) — they still find pieces
+2. Ritual chain should attempt with lower net-mana threshold under Thalia
+3. Add bounce (Chain of Vapor) or removal for Thalia as priority play
+4. Storm should combo at lower thresholds when Thalia is out (already partially done with `thalia_desperate`)
+
+**Trace:** `python3 -c "import random; random.seed(42); from sim import run_game; r=run_game('storm','dnt',verbose=True); [print(l.strip()) for l in r.log_lines if 'STORM' in l]"`
+
+## Downgraded: Oops vs Burn — NOT a strategy bug
+
+Oops T1 kill rate = 38% (correct). G1 WR = 44% (reasonable). Bo3 WR = 30% is a sideboard issue — Oops lacks SB hate vs Burn (needs Leyline of Sanctity). Not a P0 strategy bug.

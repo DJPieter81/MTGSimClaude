@@ -4711,10 +4711,17 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
 
-    # Cantrips: find any CMC1 noncreature spell opp can cast
-    can = next((c for c in player.hand
-                if c.is_cantrip and opp_can_cast(c, total_mana, gs, caster=player)), None)
-    if can:
+    # Cantrips: cast ALL affordable cantrips to dig for pieces.
+    # Under Thalia, cantrips cost 2 instead of 1 — still worth casting to find rituals/kill.
+    while not gs.game_over:
+        can = next((c for c in player.hand
+                    if c.is_cantrip and opp_can_cast(c, total_mana, gs, caster=player)), None)
+        if not can:
+            break
+        cost = max(sum(can.mana_cost.values()), can.cmc)
+        if cost > total_mana:
+            break
+        total_mana -= cost
         player.remove_from_hand(can); player.add_to_grave(can)
         draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
         log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
