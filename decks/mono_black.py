@@ -18,15 +18,13 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
 # ─── Mulligan ────────────────────────────────────────────────────────────────
 
 def _keep_mono_black(hand, matchup=''):
+    """Mono Black: keep 2-4 lands with at least 1 creature OR 2+ disruption spells."""
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
     threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
-    threats = sum(1 for c in nonlands if c.is_creature())
-    return 2 <= lc <= 4 and threats >= 1
+    disruption = sum(1 for c in nonlands if c.tag in ('ts', 'hymn', 'push', 'snuffout'))
+    return 2 <= lc <= 4 and (threats >= 1 or disruption >= 2)
 
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
