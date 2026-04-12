@@ -454,6 +454,13 @@ def _execute_turn(gs, turn, b, o, who, matchup):
             if fast:
                 return fast
         is_artifact_deck = active_deck in ('affinity', 'eight_cast')
+        is_lands_deck = active_deck == 'lands'
+        # For Lands: check if we already have one combo piece on board
+        needs_combo = False
+        if is_lands_deck:
+            has_d = any(l.card.tag == 'depths' for l in b.lands)
+            has_s = any(l.card.tag == 'stage' for l in b.lands)
+            needs_combo = (has_d and not has_s) or (has_s and not has_d) or (not has_d and not has_s)
         def land_priority(c):
             if getattr(c, 'is_fetch', False): return 2
             tag = getattr(c, 'tag', '')
@@ -462,6 +469,8 @@ def _execute_turn(gs, turn, b, o, who, matchup):
             if tag in ('ancient_tomb', 'city'): return 0
             if is_artifact_deck and tag == 'saga': return 0
             if is_artifact_deck and tag == 'seat': return 0
+            # Lands: prioritize the missing combo piece
+            if is_lands_deck and needs_combo and tag in ('depths', 'stage'): return 0
             if c.is_basic: return 1
             if tag == 'wl': return 5
             return 3
