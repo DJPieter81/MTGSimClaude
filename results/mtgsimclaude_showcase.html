@@ -316,6 +316,9 @@ a.product-link{text-decoration:none;color:inherit;display:block}
 
 <script>
 const G='#b8941e',T='#0f6e56',A='#d4850b',R='#a32d2d',B='#185fa5',P='#534ab7';
+const hD=['Burn','Dimir','Infect','UR Del','Eldrazi','Storm','Oops','Reanim'];
+const hK=['burn','dimir','infect','ur_delver','eldrazi','storm','oops','reanimator'];
+const hV=[[50,71,58,70,35,65,64,74],[21,50,51,59,34,73,71,42],[40,47,50,52,31,81,62,62],[29,39,55,50,50,66,81,71],[53,52,57,40,50,79,62,62],[27,37,25,26,26,50,75,57],[31,27,35,26,40,36,50,48],[20,50,35,29,47,38,47,50]];
 
 // Scroll reveal + counters
 const obs=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&(e.target.classList.add('visible'),obs.unobserve(e.target))})},{threshold:.1});
@@ -447,9 +450,6 @@ function showAcc(i){
 new IntersectionObserver(([e])=>{if(e.isIntersecting)document.querySelectorAll('.acc-fill').forEach(b=>setTimeout(()=>b.style.width=b.dataset.w+'%',200))},{threshold:.3}).observe(accEl);
 
 // Interactive heatmap with click detail
-const hD=['Burn','Dimir','Infect','UR Del','Eldrazi','Storm','Oops','Reanim'];
-const hK=['burn','dimir','infect','ur_delver','eldrazi','storm','oops','reanimator'];
-const hV=[[50,71,58,70,35,65,64,74],[21,50,51,59,34,73,71,42],[40,47,50,52,31,81,62,62],[29,39,55,50,50,66,81,71],[53,52,57,40,50,79,62,62],[27,37,25,26,26,50,75,57],[31,27,35,26,40,36,50,48],[20,50,35,29,47,38,47,50]];
 function wrC(v){if(v>=60)return`rgba(15,110,86,${.12+v/250})`;if(v>=50)return`rgba(15,110,86,${.06+v/500})`;if(v>=40)return'rgba(200,180,140,.1)';return`rgba(163,45,45,${.08+(100-v)/300})`}
 const hm=document.getElementById('heatmap'),tip=document.getElementById('hmTip'),hmDet=document.getElementById('hmDet');
 let html='<table><tr><th></th>';hD.forEach(d=>{html+=`<th style="transform:rotate(-45deg);height:50px;vertical-align:bottom">${d}</th>`});html+='</tr>';
