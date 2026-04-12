@@ -69,6 +69,57 @@ def save_matrix(matrix, decks=None, n_games=None, tag='matrix'):
     return filepath
 
 
+def save_matrix_bo3(matrix, decks=None, n_matches=None, tag='matrix_bo3'):
+    """Save a Bo3 meta matrix to JSON.
+
+    matrix: dict of {(d1, d2): {'match_wr': float, 'game_wr': float}}
+
+    Stores both match_wr (primary) and game_wr (Bo1 baseline) so the HTML
+    can render either. Meta-weighted EV is computed from match_wr, which
+    is the tournament-relevant figure.
+    """
+    _ensure_dir()
+    if decks is None:
+        decks = sorted(set(d for pair in matrix for d in pair))
+
+    from deck_registry import get_meta_share
+    t1t2 = {d for d in decks if get_meta_share(d) >= 0.04}
+    evs_match, evs_game = {}, {}
+    for d in decks:
+        opps = [(d2, get_meta_share(d2)) for d2 in t1t2
+                if d2 != d and (d, d2) in matrix]
+        if not opps:
+            evs_match[d] = 0; evs_game[d] = 0
+            continue
+        total_share = sum(s for _, s in opps)
+        evs_match[d] = sum(matrix[(d, d2)]['match_wr'] * s for d2, s in opps) / total_share
+        evs_game[d]  = sum(matrix[(d, d2)]['game_wr']  * s for d2, s in opps) / total_share
+
+    data = {
+        'type': 'matrix_bo3',
+        'tag': tag,
+        'timestamp': datetime.now().isoformat(),
+        'n_matches': n_matches,
+        'decks': decks,
+        # Matchups store [match_wr, game_wr] pairs — template M[k] indexable
+        'matchups': {
+            f"{d1}_vs_{d2}": [v['match_wr'], v['game_wr']]
+            for (d1, d2), v in matrix.items()
+        },
+        'meta_ev_match': evs_match,
+        'meta_ev_game':  evs_game,
+        'rankings_match': [d for d, _ in sorted(evs_match.items(), key=lambda x: -x[1])],
+        'rankings_game':  [d for d, _ in sorted(evs_game.items(), key=lambda x: -x[1])],
+    }
+
+    filename = f"{tag}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    filepath = os.path.join(RESULTS_DIR, filename)
+    with open(filepath, 'w') as f:
+        json.dump(data, f, indent=2)
+    print(f"Saved: {filepath}")
+    return filepath
+
+
 def load_matrix(tag='matrix'):
     """Load the latest matrix result with the given tag.
     Returns dict with keys: decks, matchups, meta_ev, rankings, etc.
@@ -147,14 +198,21 @@ def list_results():
 
 
 def print_matrix(data):
-    """Pretty-print a loaded matrix result."""
+    """Pretty-print a loaded matrix result (Bo1 or Bo3)."""
     if data is None:
         return
     decks = data['decks']
     matchups = data['matchups']
+    is_bo3 = data.get('type') == 'matrix_bo3'
 
     def s(d):
         return d[:8] if len(d) > 8 else d
+
+    def _wr(key):
+        v = matchups.get(key, 0)
+        if isinstance(v, list):
+            return v[0]  # match_wr for Bo3
+        return v
 
     hdr = f"{'':13s}" + ''.join(f'{s(d):>9s}' for d in decks)
     print(hdr)
@@ -166,20 +224,31 @@ def print_matrix(data):
             if d1 == d2:
                 row += f"{'---':>9s}"
             else:
-                key = f"{d1}_vs_{d2}"
-                wr = matchups.get(key, 0)
+                wr = _wr(f"{d1}_vs_{d2}")
                 row += f'{wr:>8.0%} '
         print(row)
 
-    print('\nMeta-Weighted WR (T1+T2):')
-    rankings = data.get('rankings', [])
-    evs = data.get('meta_ev', {})
     from deck_registry import get_meta_share
-    for i, d in enumerate(rankings):
-        ev = evs.get(d, 0)
-        tier = 'T1' if get_meta_share(d) >= 0.05 else 'T2' if get_meta_share(d) >= 0.04 else '  '
-        bar = '#' * int(ev * 40)
-        print(f'  {i+1:2d}. {d:15s} {ev:5.1%}  {tier}  {bar}')
+    if is_bo3:
+        print('\nMeta-Weighted Match WR (T1+T2, Bo3):')
+        rankings = data.get('rankings_match', [])
+        m_evs = data.get('meta_ev_match', {})
+        g_evs = data.get('meta_ev_game',  {})
+        for i, d in enumerate(rankings):
+            m = m_evs.get(d, 0); g = g_evs.get(d, 0)
+            tier = 'T1' if get_meta_share(d) >= 0.05 else 'T2' if get_meta_share(d) >= 0.04 else '  '
+            bar = '#' * int(m * 40)
+            print(f'  {i+1:2d}. {d:15s} match {m:5.1%}  game {g:5.1%}  '
+                  f'Δ {g-m:+5.1%}  {tier}  {bar}')
+    else:
+        print('\nMeta-Weighted WR (T1+T2):')
+        rankings = data.get('rankings', [])
+        evs = data.get('meta_ev', {})
+        for i, d in enumerate(rankings):
+            ev = evs.get(d, 0)
+            tier = 'T1' if get_meta_share(d) >= 0.05 else 'T2' if get_meta_share(d) >= 0.04 else '  '
+            bar = '#' * int(ev * 40)
+            print(f'  {i+1:2d}. {d:15s} {ev:5.1%}  {tier}  {bar}')
 
 
 # ── Symmetry averaging (PLANNING_REFERENCE §9 #3) ────────────────────────────

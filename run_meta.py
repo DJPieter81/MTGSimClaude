@@ -316,6 +316,80 @@ def cmd_matrix(decks, n_games, top_tier, seed=None, decks_arg=None):
     save_matrix(matrix, decks=all_decks, n_games=n_games, tag=tag)
 
 
+def cmd_bo3_matrix(decks, n_matches, top_tier, seed=None, decks_arg=None):
+    """Run NxN Bo3 meta matrix (sideboard-aware, parallelized).
+
+    Produces both match_wr (primary, Bo3) and game_wr (Bo1 baseline).
+    Saved as type='matrix_bo3' via save_matrix_bo3.
+    """
+    from cards import DECKS, MATCHUP_META
+    if seed is not None:
+        random.seed(seed)
+
+    if not decks:
+        if top_tier > 0:
+            def _get_share(k):
+                meta = MATCHUP_META.get(k, {})
+                if isinstance(meta, dict) and 'share' in meta:
+                    return meta['share']
+                return 0.0
+            ranked = sorted(
+                ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
+                key=lambda x: (-x[1], x[0]))
+            decks = sorted(k for k, _ in ranked[:top_tier])
+            print(f"Top-{top_tier} by meta share: {', '.join(decks)}")
+        else:
+            decks = sorted(DECKS.keys())
+
+    from parallel import parallel_meta_matrix_bo3
+    matrix = parallel_meta_matrix_bo3(decks, n_matches)
+
+    print()
+    all_decks = sorted(set(d for pair in matrix for d in pair))
+
+    def s(d):
+        return d[:8] if len(d) > 8 else d
+
+    hdr = f"{'':13s}" + ''.join(f'{s(d):>9s}' for d in all_decks)
+    print(hdr)
+    print('-' * len(hdr))
+    for d1 in all_decks:
+        row = f'{s(d1):13s}'
+        for d2 in all_decks:
+            if d1 == d2:
+                row += f"{'---':>9s}"
+            else:
+                v = matrix.get((d1, d2), {'match_wr': 0, 'game_wr': 0})
+                row += f'{v["match_wr"]:>8.0%} '
+        print(row)
+
+    from deck_registry import get_meta_share
+    t1t2 = {d for d in all_decks if get_meta_share(d) >= 0.04}
+    print(f'\nMeta-Weighted Match WR (T1+T2: {len(t1t2)} decks):')
+    evs = []
+    for d in all_decks:
+        opps = [(d2, get_meta_share(d2)) for d2 in t1t2
+                if d2 != d and (d, d2) in matrix]
+        if not opps:
+            evs.append((0.0, 0.0, d))
+            continue
+        total_share = sum(share for _, share in opps)
+        m_ev = sum(matrix[(d, d2)]['match_wr'] * share for d2, share in opps) / total_share
+        g_ev = sum(matrix[(d, d2)]['game_wr']  * share for d2, share in opps) / total_share
+        evs.append((m_ev, g_ev, d))
+    evs.sort(reverse=True)
+    for i, (m_ev, g_ev, d) in enumerate(evs):
+        tier = 'T1' if get_meta_share(d) >= 0.05 else 'T2' if get_meta_share(d) >= 0.04 else '  '
+        bar = '#' * int(m_ev * 40)
+        delta = g_ev - m_ev
+        print(f'  {i+1:2d}. {d:15s} match {m_ev:5.1%}  game {g_ev:5.1%}  '
+              f'Δ {delta:+5.1%}  {tier}  {bar}')
+
+    from meta_results import save_matrix_bo3
+    tag = 'matrix_bo3' if not decks_arg else 'custom_matrix_bo3'
+    save_matrix_bo3(matrix, decks=all_decks, n_matches=n_matches, tag=tag)
+
+
 def _save_trace(r, deck1, deck2, seed=None):
     """Auto-save trace log to results/ directory."""
     import os, datetime
@@ -409,7 +483,11 @@ Import a new deck:
     parser.add_argument('--field', metavar='DECK',
                         help='Run one deck vs all others')
     parser.add_argument('--matrix', action='store_true',
-                        help='Run NxN meta matrix')
+                        help='Run NxN meta matrix (Bo1 game WR)')
+    parser.add_argument('--bo3-matrix', action='store_true',
+                        help='Run NxN Bo3 meta matrix (sideboard-aware). '
+                             'Reports match_wr and game_wr. Use -n N matches, '
+                             '--decks N for top-tier, positional for explicit list.')
     parser.add_argument('--verbose', nargs=2, metavar=('D1', 'D2'),
                         help='Single game with full log')
     parser.add_argument('--trace', nargs=2, metavar=('D1', 'D2'),
@@ -451,6 +529,9 @@ Import a new deck:
     elif args.matrix:
         decks = args.deck_list if args.deck_list else None
         cmd_matrix(decks, args.n, args.decks or 8, args.seed, decks_arg=decks)
+    elif args.bo3_matrix:
+        decks = args.deck_list if args.deck_list else None
+        cmd_bo3_matrix(decks, args.n, args.decks or 8, args.seed, decks_arg=decks)
     elif args.verbose:
         cmd_verbose(args.verbose[0], args.verbose[1], args.seed)
     elif args.trace:

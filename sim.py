@@ -1601,8 +1601,22 @@ def make_postboard_any_deck(protagonist: str, antagonist: str) -> List[Card]:
     except Exception:
         return main
     deck = _apply_sb_swaps(main, remove_plan, add_plan, sb_pool)
-    # Pad/trim to 60
-    while len(deck) > 60: deck.pop()
+    # Pad/trim to exactly 60 cards. A sideboard plan can produce an uneven
+    # count when requested tags are not all present in the maindeck (e.g.
+    # removing 3 'push' when only 2 exist) or when a swap pool runs short.
+    # Trim overflow; pad shortfall by repeating a stable maindeck card.
+    while len(deck) > 60:
+        deck.pop()
+    if len(deck) < 60:
+        # Pad with the most common nonland tag from the original maindeck
+        # (deterministic — no randomness, no magic score). Fall back to a
+        # basic land if the deck is all lands (should never happen).
+        from collections import Counter
+        nonland_counts = Counter(c.tag for c in main if not c.is_land())
+        pad_tag = nonland_counts.most_common(1)[0][0] if nonland_counts else None
+        pad_card = next((c for c in main if c.tag == pad_tag), main[0])
+        while len(deck) < 60:
+            deck.append(pad_card)
     return deck
 
 
@@ -2186,6 +2200,40 @@ def run_rules_tests():
              _occ(_bolt, 1, _gs, _p2), False)
     except Exception as _e:
         test(f"Static lock persistence setup (error: {_e})", False, True)
+
+    # ── Sideboard plans: every registered plan produces a 60-card deck ─
+    # Each entry in PROTAGONIST_SB_SWAPS declares a (remove, add) plan per
+    # matchup. make_postboard_any_deck must return exactly 60 cards for
+    # every (protagonist, antagonist) pair, even when the plan asks to
+    # remove tags not present in the maindeck or the SB pool runs short.
+    try:
+        from cards import DECKS as _DECKS_SB
+        _sb_pairs_checked = 0
+        _sb_errors = []
+        for _p in PROTAGONIST_SB_SWAPS:
+            if _p not in _DECKS_SB:
+                continue
+            for _a in PROTAGONIST_SB_SWAPS[_p]:
+                if _a not in _DECKS_SB:
+                    continue
+                _d = make_postboard_any_deck(_p, _a)
+                _sb_pairs_checked += 1
+                if len(_d) != 60:
+                    _sb_errors.append((_p, _a, len(_d)))
+        test(f"Sideboard plans produce 60-card decks "
+             f"({_sb_pairs_checked} pairs checked)", len(_sb_errors), 0,
+             detail=f"bad: {_sb_errors[:5]}")
+    except Exception as _e:
+        test(f"Sideboard plan check (error: {_e})", False, True)
+
+    # Spot-check a Bo3 round-trip smoke test — run_any_bo3 against a small
+    # sample doesn't crash and returns both match_wr and game_wr.
+    try:
+        _r = run_any_bo3('bug', 'dimir', 1)
+        test("run_any_bo3 returns match_wr", 'match_wr' in _r, True)
+        test("run_any_bo3 returns game_wr",  'game_wr'  in _r, True)
+    except Exception as _e:
+        test(f"run_any_bo3 smoke (error: {_e})", False, True)
 
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")
