@@ -2582,6 +2582,11 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             crea = player.find_tag(tag)
             if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
                 continue
+            gs.strat_log.log_decision(
+                gs.turn, 'dnt',
+                candidates=deploy_priority,
+                chosen=tag,
+                reason=f"mana={total_mana}, hand={[c.tag for c in player.hand]}")
             player.remove_from_hand(crea)
             if not _try_counter_any(player, opponent, gs, crea, log_entries):
                 player.put_creature_in_play(crea)
@@ -3556,6 +3561,13 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         combo_card = spy; combo_cost = 4
     elif informer and total_mana >= 4:  # 3 to cast + 1 to activate
         combo_card = informer; combo_cost = 4
+
+    gs.strat_log.log_decision(
+        gs.turn, 'oops',
+        candidates=['cast_spy', 'cast_informer', 'pass'],
+        chosen=('cast_' + combo_card.tag) if combo_card else 'pass',
+        reason=(f"mana={total_mana}, spy={spy is not None}, "
+                f"informer={informer is not None}, leyline={gs.leyline_active}"))
 
     if combo_card:
         # Try Veil protection first
@@ -4544,6 +4556,16 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     kill_F = bool(itutor_proxy and len(rituals) >= 2 and sim_mana >= 3 and est_storm >= lethal_storm)
     self_assembles = kill_C or kill_D  # these generate their own storm count
     can_kill = kill_A or kill_B or kill_C or kill_D or kill_E or kill_F
+
+    # Strategic trace (no-op unless --trace)
+    _fired_kill = next((n for n, k in (('A', kill_A), ('B', kill_B), ('C', kill_C),
+                                       ('D', kill_D), ('E', kill_E), ('F', kill_F)) if k), 'pass')
+    gs.strat_log.log_decision(
+        gs.turn, 'storm',
+        candidates=['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'],
+        chosen=('kill_' + _fired_kill) if can_kill else 'pass',
+        reason=(f"storm={est_storm}/{lethal_storm}, rituals={len(rituals)}, "
+                f"safe={safe_to_combo}, thalia={thalia_on_table}, life={player.life}"))
 
     if can_kill and safe_to_combo:
         # ── Try to protect with Veil of Summer first ────────────────────────

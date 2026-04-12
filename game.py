@@ -14,6 +14,12 @@ from config import GameRules as GR
 from typing import List, Dict, Optional
 from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
                    StackObject, StackType, MTGRules)
+from strategic_logger import StrategicLogger
+
+
+def _make_strat_log() -> StrategicLogger:
+    """Factory so GameState dataclass gets a fresh StrategicLogger per instance."""
+    return StrategicLogger(enabled=False)
 
 
 @dataclass
@@ -255,6 +261,8 @@ class GameState:
     pending_bauble_draws: int = 0
     # Trace mode: when True, turn functions emit phase markers and state snapshots
     trace: bool = False
+    # Strategic decision log (empty unless --trace / trace=True is set)
+    strat_log: 'StrategicLogger' = field(default_factory=lambda: _make_strat_log())
 
     # ── Computed properties — always derived from board state, never manually synced ──
 

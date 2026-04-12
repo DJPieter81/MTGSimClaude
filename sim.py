@@ -136,6 +136,8 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
     gs.p2_deck = deck2
     gs.matchup = deck2  # backward compat: matchup = antagonist deck
     gs.trace = trace
+    # Strategic logger follows the same trace flag
+    gs.strat_log.enabled = trace
 
     all_log = []
     display_turn = 0
@@ -221,6 +223,12 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
         all_log.append(f"  WINNER: {winner_label} — {gs.win_reason}")
         all_log.append(f"  Final life: {deck1} {gs.p1.life} | {deck2} {gs.p2.life}")
         all_log.append(f"{'═' * 70}")
+        # Append strategic decision log (empty unless strategies called log_decision)
+        strat_entries = gs.strat_log.dump()
+        if strat_entries:
+            all_log.append("")
+            all_log.append(f"── STRATEGIC DECISIONS {'─' * 47}")
+            all_log.extend(strat_entries)
 
     return GameResult(
         winner=gs.winner,
