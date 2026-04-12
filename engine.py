@@ -2957,6 +2957,15 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     7. Null Rod (shuts off fetch lands)
     """
 
+    # Trace: snapshot Prison's entry state
+    gs.strat_log.log_decision(
+        gs.turn, 'prison',
+        candidates=['fast_mana', 'chalice', 'trini', 'karn', 'bridge', 'painter_combo',
+                    'tks', 'nullrod'],
+        chosen='entry',
+        reason=(f"mana={total_mana}, chalice_active={gs.chalice_x is not None}, "
+                f"trini={gs.trinisphere_active}, hand={len(player.hand)}"))
+
     # ── 0. Fast mana: Lotus Petal and Grim Monolith ──
     petal = player.find_tag('petal')
     if petal and petal.cmc <= total_mana:
@@ -3142,6 +3151,11 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
+    gs.strat_log.log_decision(
+        gs.turn, 'eldrazi',
+        candidates=['chalice', 'tks', 'eldrazi_temple', 'skittering', 'emrakul'],
+        chosen='entry',
+        reason=f"mana={total_mana}, chalice_active={gs.chalice_x is not None}")
 
     # FoV reactive: destroy opp's Chalice if BUG has Force of Vigor
     if gs.chalice_x is not None:
