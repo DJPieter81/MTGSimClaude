@@ -322,33 +322,84 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
 # No manual STRATEGIES dict needed — get_strategy(matchup) handles dispatch.
 
 
-def protagonist_turn(gs, turn, matchup):
+def run_meta_matrix_bo3(decks: list = None, n_matches: int = 100, top_tier: int = 0) -> dict:
     """
-    P1's turn function — used by ALL decks (including BUG).
-    Full turn structure: cleanup → untap → upkeep → draw → land → mana →
-    lock enforcement → strategy dispatch → Eidolon damage → combat → EOT.
-    gs.p1 = active player, gs.p2 = opposing player.
+    Run every deck vs every deck as Bo3 matches (sideboard-aware) and return
+    a matrix of match WRs + game WRs.
+
+    Returns dict of {(deck1, deck2): {'match_wr': float, 'game_wr': float}}.
+
+    Args:
+        decks: explicit list of deck keys. Overrides top_tier.
+        n_matches: Bo3 matches per matchup pair.
+        top_tier: if > 0 and decks is None, pick this many top-meta decks.
+    """
+    if decks is None:
+        if top_tier > 0:
+            def _get_share(k):
+                meta = MATCHUP_META.get(k, {})
+                if isinstance(meta, dict) and 'share' in meta:
+                    return meta['share']
+                return 0.0
+            ranked = sorted(
+                ((k, _get_share(k)) for k in DECKS if _get_share(k) > 0),
+                key=lambda x: (-x[1], x[0])
+            )
+            decks = sorted(k for k, _ in ranked[:top_tier])
+            print(f"Top-{top_tier} by meta share: {', '.join(decks)}")
+        else:
+            decks = sorted(DECKS.keys())
+
+    from parallel import parallel_meta_matrix_bo3
+    return parallel_meta_matrix_bo3(decks, n_matches)
+
+
+def _execute_turn(gs, turn, b, o, who, matchup):
+    """
+    Unified turn function — single code path for BOTH P1 and P2.
+
+    Args:
+        gs: GameState
+        turn: turn number
+        b: active player (PlayerState)
+        o: opposing player (PlayerState)
+        who: 'p1' or 'p2' — which slot is the active player
+        matchup: deck key for strategy dispatch
+
+    Full turn structure: cleanup → untap → upkeep → draw → bauble draws →
+    land (with priority) → mana → Rishadan Port → Wasteland → Thoughtseize →
+    removal → gameplan → lock enforcement → strategy dispatch → Tamiyo →
+    combat → opponent instant-speed responses → EOT.
     """
     from engine import (bowmasters_triggers, update_goyf, opp_can_cast,
-                        _try_counter_any, _select_attackers, combat_declare)
+                        _try_counter_any, _select_attackers, combat_declare,
+                        apply_lock_effects, restore_lock_effects, _check_tamiyo_flip)
     from rules import LandPermanent, MTGRules
+    from config import MatchupCategory as _MC
 
-    player = gs.p1          # active player this turn
-    opponent = gs.p2        # opposing player
-    b, o = player, opponent  # short aliases (legacy, used throughout)
     log_entries = []
 
     def log(msg, key=False):
-        gs.log_event('p1', 'main', msg, key)
+        gs.log_event(who, 'main', msg, key)
         log_entries.append(msg)
 
+    # Determine if active player is on the play and skips T1 draw
+    active_on_play = (gs.p1_goes_first and who == 'p1') or (not gs.p1_goes_first and who == 'p2')
+
+    # Treasure key: slot-specific
+    treasure_attr = 'p1_treasure' if who == 'p1' else 'p2_treasure'
+
+    # Deck key for active player (for artifact deck land priority etc.)
+    active_deck = gs.p1_deck if who == 'p1' else gs.p2_deck
+    opp_deck = gs.p2_deck if who == 'p1' else gs.p1_deck
+
+    # Bowmasters controller: when active player draws, opponent's Bowmasters fires
+    bowm_ctrl = 'o' if who == 'p1' else 'b'
+
     # ── Cleanup — CR 510.2 ──
-    for player in [b, o]:
-        for c in player.creatures:
+    for p in [b, o]:
+        for c in p.creatures:
             c.damage_marked = 0
-            # Clear hexproof granted by until-EOT effects (Vines of Vastwood,
-            # Blossoming Defense). Permanent hexproof (e.g. Kaito) is on the
-            # card object, not the permanent, so this only clears temporary grants.
             if hasattr(c, 'hexproof'):
                 del c.hexproof
 
@@ -359,6 +410,7 @@ def protagonist_turn(gs, turn, matchup):
     gs.combat_this_turn = False
     gs.p2_spells_cast_this_turn = 0
     gs.veil_active = False
+    gs.teferi_active = False
     b.spells_cast_this_turn = 0
     if gs.trace:
         log(f"── Untap ── ({len(b.lands)} lands)")
@@ -370,16 +422,14 @@ def protagonist_turn(gs, turn, matchup):
 
     # ── Draw (first player on play skips T1 draw) ──
     if gs.trace:
-        if turn == 1 and gs.p1_goes_first:
+        if turn == 1 and active_on_play:
             log("── Draw ── (skipped — on the play, T1)")
         else:
             log("── Draw ──")
-    if not (turn == 1 and gs.p1_goes_first):
+    if not (turn == 1 and active_on_play):
         drawn = b.draw(1, is_draw_step=True)
         if drawn:
             log(f"Draw: {drawn[0].name}")
-            # Per Oracle: Bowmasters does NOT trigger on the first draw-step
-            # draw. Only triggers on extra draws (cantrips, etc.).
 
     # ── Pending Bauble draws from previous turn ──
     pending = gs.pending_bauble_draws
@@ -387,16 +437,14 @@ def protagonist_turn(gs, turn, matchup):
         drawn = b.draw(pending)
         for d in drawn:
             log(f"Bauble (upkeep draw) → {d.name}")
-        bowmasters_triggers(pending, gs, log_entries, controller='o')
+        bowmasters_triggers(pending, gs, log_entries, controller=bowm_ctrl)
         gs.pending_bauble_draws = 0
 
-    # ── Land drop ──
-    # Prioritise mana-producing lands (duals, basics) over utility lands (Wasteland)
+    # ── Land drop (with priority picking) ──
     def _pick_land():
         lands_in_hand = [c for c in b.hand if c.is_land()]
         if not lands_in_hand:
             return None
-        # Prefer fast lands (Tomb/City) when a 2-mana play is in hand
         has_2drop = any(c.tag in ('chalice', 'trini', 'null_rod') or
                         (not c.is_land() and sum(c.mana_cost.values()) == 2)
                         for c in b.hand)
@@ -405,18 +453,15 @@ def protagonist_turn(gs, turn, matchup):
                          if c.tag in ('ancient_tomb', 'tomb', 'city')), None)
             if fast:
                 return fast
-        # Priority: fetch > dual > basic > utility (Wasteland etc)
-        # For artifact decks (Affinity, 8-Cast): prefer artifact lands and Saga
-        # over basics because they contribute to artifact count / affinity.
-        is_artifact_deck = gs.p1_deck in ('affinity', 'eight_cast')
+        is_artifact_deck = active_deck in ('affinity', 'eight_cast')
         def land_priority(c):
             if getattr(c, 'is_fetch', False): return 2
             tag = getattr(c, 'tag', '')
             if tag == 'dual': return 1
             if tag in ('sewers',): return 1
             if tag in ('ancient_tomb', 'city'): return 0
-            if is_artifact_deck and tag == 'saga': return 0  # Saga is highest priority
-            if is_artifact_deck and tag == 'seat': return 0  # artifact land > basic
+            if is_artifact_deck and tag == 'saga': return 0
+            if is_artifact_deck and tag == 'seat': return 0
             if c.is_basic: return 1
             if tag == 'wl': return 5
             return 3
@@ -440,21 +485,19 @@ def protagonist_turn(gs, turn, matchup):
         else:
             log(f"Land: {land.name} ({len(b.lands)} lands)")
 
-    # ── Mana calculation (mirrors opp_turn) ──
+    # ── Mana calculation ──
     total_mana = b.available_mana_count()
-    # Lotus Petal in hand
     total_mana += sum(1 for c in b.hand if c.tag == 'petal')
-    # Treasure tokens
-    p1_treasure = getattr(gs, 'p1_treasure', 0)
-    if p1_treasure > 0:
-        total_mana += p1_treasure
-        gs.p1_treasure = 0
-    # Ancient Tomb: produces 2C (1 already counted, add 1 bonus), costs 2 life
+    treasure = getattr(gs, treasure_attr, 0)
+    if treasure > 0:
+        total_mana += treasure
+        if gs.trace:
+            log(f"Treasure ({treasure}) → +{treasure} mana")
+        setattr(gs, treasure_attr, 0)
     tomb_count = sum(1 for l in b.lands if l.card.tag == 'tomb' and not l.tapped)
     if tomb_count > 0:
         total_mana += tomb_count
         b.life -= tomb_count * 2
-    # Gaea's Cradle: tap for G equal to creature count
     for l in b.lands:
         if l.card.tag == 'cradle' and not l.tapped:
             total_mana += len(b.creatures)
@@ -464,12 +507,27 @@ def protagonist_turn(gs, turn, matchup):
         log(f"── Main ── Mana: {total_mana}")
         log(f"  Hand ({len(b.hand)}): {', '.join(c.name for c in b.hand)}")
 
+    # ── Rishadan Port: tap opponent's best land (Vial decks only) ──
+    if matchup in _MC.VIAL_DECKS:
+        def land_value(lp):
+            if lp.card.tag == 'dual': return 3
+            if lp.card.is_fetch: return 2
+            if lp.card.is_basic: return 1
+            return 0
+        for port in [l for l in b.lands if l.card.tag == 'port' and not l.tapped]:
+            untapped_opp = [l for l in o.lands if not l.tapped]
+            if not untapped_opp:
+                break
+            target = max(untapped_opp, key=land_value)
+            target.tapped = True
+            port.tapped = True
+            log(f"Rishadan Port taps {target.name} (opp loses 1 mana)", True)
+
     # ── Wasteland: destroy opponent's best nonbasic land ──
     wl_land = next((l for l in b.lands if l.card.tag in ('wl', 'wasteland') and not l.tapped), None)
     if wl_land and o.lands:
         eligible = [l for l in o.lands if not l.card.is_basic and l.card.tag != 'wl']
         if eligible:
-            # Prioritise combo lands (Dark Depths / Thespian's Stage) above all else
             def _wl_prio(land):
                 if land.card.tag in ('depths', 'stage'): return 50
                 if getattr(land.card, 'mana_ritual', False): return 5
@@ -515,7 +573,6 @@ def protagonist_turn(gs, turn, matchup):
                 b.add_to_grave(ts)
 
     # ── Removal: kill opponent's biggest threat ──
-    # Mother of Runes: if opponent has MoR protecting a creature, skip that target
     _mom_protected = getattr(gs, '_mom_protected_tag', None)
 
     if o.creatures and total_mana >= 1:
@@ -542,11 +599,7 @@ def protagonist_turn(gs, turn, matchup):
         if stp and o.creatures and total_mana >= 1 and not gs.spell_blocked_by_chalice(stp.cmc):
             valid_stp = [c for c in o.creatures if c.card.tag != _mom_protected]
             target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
-            # Exile any creature with power >= 2, OR any creature vs aggro/burn
-            # (Swiftspear/Guide at 1 power deal 2-3 per turn with prowess/haste)
-            p2_deck = getattr(gs, 'p2_deck', '')
-            from config import MatchupCategory as _MC
-            opp_is_aggro = p2_deck in _MC.AGGRO or p2_deck == 'burn'
+            opp_is_aggro = opp_deck in _MC.AGGRO or opp_deck == 'burn'
             stp_threshold = CT.STP_THRESHOLD_AGGRO if opp_is_aggro else CT.STP_THRESHOLD_FAIR
             if target and target.power >= stp_threshold:
                 b.remove_from_hand(stp)
@@ -570,7 +623,6 @@ def protagonist_turn(gs, turn, matchup):
         gs.p2_goal = None
 
     # ── Lock piece enforcement (shared helpers — single source of truth) ──
-    from engine import apply_lock_effects, restore_lock_effects
     _adjustments = apply_lock_effects(gs, b, log)
 
     # ── Strategy dispatch ──
@@ -588,8 +640,6 @@ def protagonist_turn(gs, turn, matchup):
     restore_lock_effects(b, _adjustments)
 
     # ── Tamiyo flip check — oracle: flip when you draw your 3rd card in a turn ──
-    # Centralized here so it works for ALL decks, not just BUG.
-    from engine import _check_tamiyo_flip
     _check_tamiyo_flip(gs, b, log)
 
     # ── Fallback combat: attack with eligible creatures if strategy didn't ──
@@ -601,10 +651,14 @@ def protagonist_turn(gs, turn, matchup):
         if attackers:
             combat_declare(b, o, gs, log_entries, attackers)
 
-    # ── P2 instant-speed responses during P1's turn (after combat) ──
+    # ── Opponent instant-speed responses (after combat) ──
     if not gs.game_over:
-        from engine import _p2_respond_on_pro_turn
-        _p2_respond_on_pro_turn(gs, log, log_entries)
+        if who == 'p1':
+            from engine import _p2_respond_on_pro_turn
+            _p2_respond_on_pro_turn(gs, log, log_entries)
+        else:
+            from engine import _p1_respond_on_opp_turn
+            _p1_respond_on_opp_turn(gs, log, log_entries)
 
     update_goyf(gs)
     b.land_played_this_turn = False
@@ -614,6 +668,16 @@ def protagonist_turn(gs, turn, matchup):
         log("── End ──")
 
     return log_entries
+
+
+def protagonist_turn(gs, turn, matchup):
+    """P1's turn — thin wrapper around _execute_turn."""
+    return _execute_turn(gs, turn, gs.p1, gs.p2, 'p1', matchup)
+
+
+def opp_turn_unified(gs, turn, matchup):
+    """P2's turn — thin wrapper around _execute_turn."""
+    return _execute_turn(gs, turn, gs.p2, gs.p1, 'p2', matchup)
 
 
 def run_any_match(protagonist: str, antagonist: str, verbose: bool = False):
@@ -769,6 +833,16 @@ def _make_sb_cards():
     pool['leyline']   = [enchantment('Leyline of Sanctity', 4, {'W':2,'generic':2}, {'W'},
                                       tag='leyline')] * 2 if 'enchantment' in dir() else []
     pool['surgical']  = [instant('Surgical Extraction', 0, {'B':1}, {'B'}, tag='surgical')] * 2
+    pool['sblood']    = [instant('Searing Blood', 2, {'R':2}, {'R'}, tag='sblood',
+                                  is_removal=True)] * 4
+    pool['eidolon']   = [creature('Eidolon of the Great Revel', 2, {'R':2}, {'R'}, 2, 2,
+                                   tag='eidolon')] * 4
+    pool['smash']     = [instant('Smash to Smithereens', 2, {'R':1,'generic':1}, {'R'},
+                                  tag='smash')] * 4
+    pool['heat']      = [instant('Searing Blaze', 2, {'R':2}, {'R'}, tag='heat',
+                                  is_removal=True)] * 4
+    pool['abrupt']    = [instant('Abrupt Decay', 2, {'B':1,'G':1}, {'B','G'}, tag='abrupt',
+                                  is_removal=True)] * 2
     # UWx SB additions
     pool['flusterwx'] = [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 2
     pool['pyruwx']    = [instant('Pyroblast', 1, {'R':1}, {'R'}, tag='pyro')] * 2
@@ -785,7 +859,7 @@ def _make_sb_cards():
 PROTAGONIST_SB_SWAPS = {
     'dimir': {
         'uwx':        ([('push',2),('ts',1)],         [('fon',2),('pyro',1)]),
-        'show':       ([('push',3),('daze',2)],        [('fon',2),('nihil',1),('snuffout',1)]),
+        'show':       ([('push',3),('daze',2)],        [('fon',3),('nihil',1),('snuffout',1)]),
         'storm':      ([('push',3),('daze',1)],        [('fon',2),('fluster',1),('mindbreak',1)]),
         'prison':     ([('push',2),('daze',1)],        [('fon',2),('pyro',1)]),
         'reanimator': ([('push',2),('daze',1)],        [('fon',2),('nihil',1)]),
@@ -798,6 +872,13 @@ PROTAGONIST_SB_SWAPS = {
         'doomsday':   ([('push',3)],                   [('fon',2),('nihil',1)]),
         'oops':       ([('push',3)],                   [('fon',3)]),
         'lands':      ([('push',1),('ts',1)],          [('fon',1),('nihil',1)]),
+        'bug':        ([('push',1)],                     [('pyro',1)]),
+        'burn':       ([('ts',1)],                       [('sblood',1)]),
+        'elves':      ([('push',1)],                     [('massacre',1)]),
+        'infect':     ([('push',1)],                     [('snuffout',1)]),
+        'painter':    ([('push',1)],                     [('pyro',1)]),
+        'ur_delver':  ([('push',1)],                     [('pyro',1)]),
+        'ur_tempo':   ([('push',1)],                     [('pyro',1)]),
     },
     'uwx': {
         'dimir':      ([('b2b',1)],                    [('pyro',1)]),
@@ -810,12 +891,40 @@ PROTAGONIST_SB_SWAPS = {
         'oops':       ([('snap',2)],                   [('fon',2)]),
         'doomsday':   ([('snap',2)],                   [('fon',2)]),
         'lands':      ([('narset',1)],                 [('pyro',1)]),
+        'boros':      ([('snap',1)],                   [('mindbreak',1)]),
+        'bug':        ([('snap',1)],                   [('pyro',1)]),
+        'burn':       ([('snap',1)],                   [('nihil',1)]),
+        'eldrazi':    ([('snap',1)],                   [('mindbreak',1)]),
+        'elves':      ([('snap',1)],                   [('massacre',1)]),
+        'infect':     ([('snap',1)],                   [('snuffout',1)]),
+        'mono_black': ([('snap',1)],                   [('snuffout',1)]),
+        'painter':    ([('snap',1)],                   [('pyro',1)]),
+        'ur_aggro':   ([('snap',1)],                   [('pyro',1)]),
+        'ur_delver':  ([('snap',1)],                   [('pyro',1)]),
+        'ur_tempo':   ([('snap',1)],                   [('pyro',1)]),
     },
     'show': {
         'dimir':      ([('daze',2)],                   [('vos',2)]),
         'uwx':        ([('daze',2)],                   [('vos',2)]),
         'storm':      ([('daze',1)],                   [('fon',1)]),
         'dnt':        ([('daze',2)],                   [('vos',2)]),
+        'boros':      ([('daze',1)],                   [('vos',1)]),
+        'bug':        ([('daze',2)],                   [('vos',2)]),
+        'burn':       ([('daze',1)],                   [('vos',1)]),
+        'doomsday':   ([('daze',1)],                   [('fon',1)]),
+        'eldrazi':    ([('daze',1)],                   [('vos',1)]),
+        'elves':      ([('daze',1)],                   [('vos',1)]),
+        'infect':     ([('daze',1)],                   [('vos',1)]),
+        'lands':      ([('daze',1)],                   [('fon',1)]),
+        'mardu':      ([('daze',1)],                   [('vos',1)]),
+        'mono_black': ([('daze',1)],                   [('vos',1)]),
+        'oops':       ([('daze',1)],                   [('fon',1)]),
+        'painter':    ([('daze',1)],                   [('vos',1)]),
+        'prison':     ([('daze',1)],                   [('fon',1)]),
+        'reanimator': ([('daze',1)],                   [('surgical',1)]),
+        'ur_aggro':   ([('daze',1)],                   [('vos',1)]),
+        'ur_delver':  ([('daze',1)],                   [('vos',1)]),
+        'ur_tempo':   ([('daze',1)],                   [('vos',1)]),
     },
     'elves': {
         'dimir':      ([('qranger',1),('symbiote',1)],  [('endurance',2)]),
@@ -828,6 +937,17 @@ PROTAGONIST_SB_SWAPS = {
         'painter':    ([('recsage',1),('espirit',1)],   [('collector',2)]),
         'oops':       ([('qranger',1)],                  [('mindbreak',1)]),
         'doomsday':   ([('qranger',1)],                  [('mindbreak',1)]),
+        'boros':      ([('qranger',1)],                  [('endurance',1)]),
+        'bug':        ([('qranger',1),('symbiote',1)],  [('endurance',2)]),
+        'burn':       ([('qranger',1)],                  [('endurance',1)]),
+        'dnt':        ([('qranger',1)],                  [('endurance',1)]),
+        'eldrazi':    ([('qranger',1)],                  [('mindbreak',1)]),
+        'infect':     ([('qranger',1)],                  [('endurance',1)]),
+        'lands':      ([('qranger',1)],                  [('fon',1)]),
+        'show':       ([('qranger',1)],                  [('fon',1)]),
+        'ur_delver':  ([('qranger',1)],                  [('endurance',1)]),
+        'ur_tempo':   ([('qranger',1)],                  [('endurance',1)]),
+        'uwx':        ([('qranger',1)],                  [('endurance',1)]),
     },
 
     # ── Storm (ANT) protagonist SB ───────────────────────────────────────────
@@ -843,17 +963,43 @@ PROTAGONIST_SB_SWAPS = {
         'boros':      ([('bs',1)],                       [('vos',1)]),
         'mono_black': ([('bs',1)],                       [('vos',1)]),
         'prison':     ([('bs',2)],                       [('vos',1),('fon',1)]),
+        'burn':       ([('bs',1)],                       [('vos',1)]),
+        'doomsday':   ([('bs',1)],                       [('fon',1)]),
+        'elves':      ([('bs',1)],                       [('vos',1)]),
+        'infect':     ([('bs',1)],                       [('vos',1)]),
+        'lands':      ([('bs',1)],                       [('fon',1)]),
+        'oops':       ([('bs',1)],                       [('fon',1)]),
+        'painter':    ([('bs',1)],                       [('mindbreak',1)]),
+        'show':       ([('bs',1)],                       [('fon',1)]),
+        'ur_aggro':   ([('bs',1)],                       [('vos',1)]),
+        'ur_delver':  ([('bs',1)],                       [('vos',1)]),
+        'ur_tempo':   ([('bs',1)],                       [('vos',1)]),
     },
 
     # ── Oops All Spells protagonist SB ───────────────────────────────────────
     # Oops boards nothing useful — the deck is all-in combo. Nominal swaps.
     'oops': {
-        'dimir':      ([('bs',1)],                       [('nihil',1)]),
-        'uwx':        ([('bs',1)],                       [('nihil',1)]),
-        'bug':        ([('bs',1)],                       [('nihil',1)]),
-        'reanimator': ([('bs',1)],                       [('nihil',1)]),
-        'storm':      ([('bs',1)],                       [('nihil',1)]),
-        'doomsday':   ([('bs',1)],                       [('nihil',1)]),
+        'dimir':      ([('therapy',1)],                  [('nihil',1)]),
+        'uwx':        ([('therapy',1)],                  [('nihil',1)]),
+        'bug':        ([('therapy',1)],                  [('nihil',1)]),
+        'reanimator': ([('therapy',1)],                  [('nihil',1)]),
+        'storm':      ([('therapy',1)],                  [('nihil',1)]),
+        'doomsday':   ([('therapy',1)],                  [('nihil',1)]),
+        'boros':      ([('therapy',1)],                  [('mindbreak',1)]),
+        'burn':       ([('therapy',1)],                  [('mindbreak',1)]),
+        'dnt':        ([('therapy',1)],                  [('mindbreak',1)]),
+        'eldrazi':    ([('therapy',1)],                  [('mindbreak',1)]),
+        'elves':      ([('therapy',1)],                  [('mindbreak',1)]),
+        'infect':     ([('therapy',1)],                  [('vos',1)]),
+        'lands':      ([('therapy',1)],                  [('fon',1)]),
+        'mardu':      ([('therapy',1)],                  [('mindbreak',1)]),
+        'mono_black': ([('therapy',1)],                  [('mindbreak',1)]),
+        'painter':    ([('therapy',1)],                  [('mindbreak',1)]),
+        'prison':     ([('therapy',1)],                  [('fon',1)]),
+        'show':       ([('therapy',1)],                  [('fon',1)]),
+        'ur_aggro':   ([('therapy',1)],                  [('vos',1)]),
+        'ur_delver':  ([('therapy',1)],                  [('vos',1)]),
+        'ur_tempo':   ([('therapy',1)],                  [('vos',1)]),
     },
 
     # ── Doomsday protagonist SB ───────────────────────────────────────────────
@@ -865,6 +1011,21 @@ PROTAGONIST_SB_SWAPS = {
         'bug':        ([('bs',1)],                       [('fon',1)]),
         'oops':       ([('bs',1)],                       [('nihil',1)]),
         'reanimator': ([('bs',1)],                       [('nihil',1)]),
+        'boros':      ([('bs',1)],                       [('mindbreak',1)]),
+        'burn':       ([('bs',1)],                       [('vos',1)]),
+        'dnt':        ([('bs',1)],                       [('mindbreak',1)]),
+        'eldrazi':    ([('bs',1)],                       [('mindbreak',1)]),
+        'elves':      ([('bs',1)],                       [('mindbreak',1)]),
+        'infect':     ([('bs',1)],                       [('vos',1)]),
+        'lands':      ([('bs',1)],                       [('fon',1)]),
+        'mardu':      ([('bs',1)],                       [('mindbreak',1)]),
+        'mono_black': ([('bs',1)],                       [('mindbreak',1)]),
+        'painter':    ([('bs',1)],                       [('mindbreak',1)]),
+        'prison':     ([('bs',1)],                       [('fon',1)]),
+        'show':       ([('bs',1)],                       [('fon',1)]),
+        'ur_aggro':   ([('bs',1)],                       [('vos',1)]),
+        'ur_delver':  ([('bs',1)],                       [('vos',1)]),
+        'ur_tempo':   ([('bs',1)],                       [('vos',1)]),
     },
 
     # ── Reanimator protagonist SB ─────────────────────────────────────────────
@@ -877,6 +1038,20 @@ PROTAGONIST_SB_SWAPS = {
         'oops':       ([('animate',1)],                  [('nihil',1)]),
         'mono_black': ([('animate',1)],                  [('unmask',1)]),
         'mardu':      ([('animate',1)],                  [('unmask',1)]),
+        'boros':      ([('animate',1)],                  [('unmask',1)]),
+        'burn':       ([('animate',1)],                  [('unmask',1)]),
+        'dnt':        ([('animate',1)],                  [('unmask',1)]),
+        'doomsday':   ([('animate',1)],                  [('nihil',1)]),
+        'eldrazi':    ([('animate',1)],                  [('unmask',1)]),
+        'elves':      ([('animate',1)],                  [('unmask',1)]),
+        'infect':     ([('animate',1)],                  [('unmask',1)]),
+        'lands':      ([('animate',1)],                  [('fon',1)]),
+        'painter':    ([('animate',1)],                  [('unmask',1)]),
+        'prison':     ([('animate',1)],                  [('fon',1)]),
+        'show':       ([('animate',1)],                  [('fon',1)]),
+        'ur_aggro':   ([('animate',1)],                  [('unmask',1)]),
+        'ur_delver':  ([('animate',1)],                  [('unmask',1)]),
+        'ur_tempo':   ([('animate',1)],                  [('unmask',1)]),
     },
 
     # ── Mardu Aggro protagonist SB ────────────────────────────────────────────
@@ -892,6 +1067,17 @@ PROTAGONIST_SB_SWAPS = {
         'dimir':      ([('ts',1)],                       [('mindbreak',1)]),
         'uwx':        ([('ts',1)],                       [('mindbreak',1)]),
         'bug':        ([('ts',1)],                       [('mindbreak',1)]),
+        'boros':      ([('ts',1)],                       [('massacre',1)]),
+        'burn':       ([('ts',1)],                       [('sblood',1)]),
+        'eldrazi':    ([('ts',1)],                       [('massacre',1)]),
+        'infect':     ([('ts',1)],                       [('snuffout',1)]),
+        'lands':      ([('ts',1)],                       [('fon',1)]),
+        'mono_black': ([('ts',1)],                       [('snuffout',1)]),
+        'painter':    ([('ts',1)],                       [('mindbreak',1)]),
+        'prison':     ([('ts',1)],                       [('fon',1)]),
+        'ur_aggro':   ([('ts',1)],                       [('heat',1)]),
+        'ur_delver':  ([('ts',1)],                       [('heat',1)]),
+        'ur_tempo':   ([('ts',1)],                       [('heat',1)]),
     },
 
     # ── Boros Initiative protagonist SB ──────────────────────────────────────
@@ -906,6 +1092,18 @@ PROTAGONIST_SB_SWAPS = {
         'uwx':        ([('stp',1)],                      [('mindbreak',1)]),
         'bug':        ([('stp',1)],                      [('mindbreak',1)]),
         'elves':      ([('wl',1)],                       [('massacre',1)]),
+        'burn':       ([('stp',1)],                      [('sblood',1)]),
+        'dnt':        ([('stp',1)],                      [('massacre',1)]),
+        'eldrazi':    ([('stp',1)],                      [('massacre',1)]),
+        'infect':     ([('stp',1)],                      [('snuffout',1)]),
+        'lands':      ([('stp',1)],                      [('fon',1)]),
+        'mardu':      ([('stp',1)],                      [('massacre',1)]),
+        'mono_black': ([('stp',1)],                      [('snuffout',1)]),
+        'painter':    ([('stp',1)],                      [('mindbreak',1)]),
+        'prison':     ([('stp',1)],                      [('fon',1)]),
+        'ur_aggro':   ([('stp',1)],                      [('heat',1)]),
+        'ur_delver':  ([('stp',1)],                      [('heat',1)]),
+        'ur_tempo':   ([('stp',1)],                      [('heat',1)]),
     },
 
     # ── Death and Taxes protagonist SB ────────────────────────────────────────
@@ -922,6 +1120,16 @@ PROTAGONIST_SB_SWAPS = {
         'bug':        ([('stp',1)],                      [('mindbreak',1)]),
         'mardu':      ([('stp',1)],                      [('massacre',1)]),
         'boros':      ([('stp',1)],                      [('massacre',1)]),
+        'burn':       ([('stp',1)],                      [('sblood',1)]),
+        'eldrazi':    ([('stp',1)],                      [('massacre',1)]),
+        'infect':     ([('stp',1)],                      [('snuffout',1)]),
+        'lands':      ([('stp',1)],                      [('fon',1)]),
+        'mono_black': ([('stp',1)],                      [('snuffout',1)]),
+        'painter':    ([('stp',1)],                      [('mindbreak',1)]),
+        'prison':     ([('stp',1)],                      [('fon',1)]),
+        'ur_aggro':   ([('stp',1)],                      [('heat',1)]),
+        'ur_delver':  ([('stp',1)],                      [('heat',1)]),
+        'ur_tempo':   ([('stp',1)],                      [('heat',1)]),
     },
 
     # ── Mono Black protagonist SB ─────────────────────────────────────────────
@@ -938,6 +1146,16 @@ PROTAGONIST_SB_SWAPS = {
         'dimir':      ([('ts',1)],                       [('nihil',1)]),
         'uwx':        ([('ts',1)],                       [('nihil',1)]),
         'bug':        ([('ts',1)],                       [('nihil',1)]),
+        'burn':       ([('ts',1)],                       [('sblood',1)]),
+        'eldrazi':    ([('ts',1)],                       [('massacre',1)]),
+        'infect':     ([('ts',1)],                       [('snuffout',1)]),
+        'lands':      ([('ts',1)],                       [('fon',1)]),
+        'mardu':      ([('ts',1)],                       [('massacre',1)]),
+        'painter':    ([('ts',1)],                       [('mindbreak',1)]),
+        'prison':     ([('ts',1)],                       [('fon',1)]),
+        'ur_aggro':   ([('ts',1)],                       [('heat',1)]),
+        'ur_delver':  ([('ts',1)],                       [('heat',1)]),
+        'ur_tempo':   ([('ts',1)],                       [('heat',1)]),
     },
 
     # ── Eldrazi Aggro protagonist SB ──────────────────────────────────────────
@@ -952,6 +1170,18 @@ PROTAGONIST_SB_SWAPS = {
         'bug':        ([('petal',1)],                    [('mindbreak',1)]),
         'uwx':        ([('petal',1)],                    [('mindbreak',1)]),
         'elves':      ([('petal',1)],                    [('mindbreak',1)]),
+        'boros':      ([('ssg',1)],                      [('massacre',1)]),
+        'burn':       ([('ssg',1)],                      [('nihil',1)]),
+        'dnt':        ([('ssg',1)],                      [('massacre',1)]),
+        'infect':     ([('ssg',1)],                      [('nihil',1)]),
+        'lands':      ([('petal',1)],                    [('fon',1)]),
+        'mardu':      ([('ssg',1)],                      [('massacre',1)]),
+        'mono_black': ([('ssg',1)],                      [('snuffout',1)]),
+        'painter':    ([('petal',1)],                    [('mindbreak',1)]),
+        'prison':     ([('petal',1)],                    [('fon',1)]),
+        'ur_aggro':   ([('ssg',1)],                      [('heat',1)]),
+        'ur_delver':  ([('ssg',1)],                      [('heat',1)]),
+        'ur_tempo':   ([('ssg',1)],                      [('heat',1)]),
     },
 
     # ── Imperial Painter protagonist SB ───────────────────────────────────────
@@ -966,6 +1196,18 @@ PROTAGONIST_SB_SWAPS = {
         'reanimator': ([('needle',1)],                   [('nihil',1)]),
         'show':       ([('needle',1)],                   [('fon',1)]),
         'elves':      ([('needle',1)],                   [('pyro',1)]),
+        'boros':      ([('needle',1)],                   [('mindbreak',1)]),
+        'burn':       ([('needle',1)],                   [('nihil',1)]),
+        'dnt':        ([('needle',1)],                   [('massacre',1)]),
+        'eldrazi':    ([('needle',1)],                   [('mindbreak',1)]),
+        'infect':     ([('needle',1)],                   [('pyro',1)]),
+        'lands':      ([('needle',1)],                   [('fon',1)]),
+        'mardu':      ([('needle',1)],                   [('massacre',1)]),
+        'mono_black': ([('needle',1)],                   [('snuffout',1)]),
+        'prison':     ([('needle',1)],                   [('fon',1)]),
+        'ur_aggro':   ([('needle',1)],                   [('pyro',1)]),
+        'ur_delver':  ([('needle',1)],                   [('pyro',1)]),
+        'ur_tempo':   ([('needle',1)],                   [('pyro',1)]),
     },
 
     # ── Artifacts Prison protagonist SB ───────────────────────────────────────
@@ -980,6 +1222,18 @@ PROTAGONIST_SB_SWAPS = {
         'bug':        ([('grind',1)],                    [('fon',1)]),
         'uwx':        ([('grind',1)],                    [('fon',1)]),
         'elves':      ([('grind',1)],                    [('fon',1)]),
+        'boros':      ([('grind',1)],                    [('massacre',1)]),
+        'burn':       ([('grind',1)],                    [('nihil',1)]),
+        'dnt':        ([('grind',1)],                    [('massacre',1)]),
+        'eldrazi':    ([('grind',1)],                    [('mindbreak',1)]),
+        'infect':     ([('grind',1)],                    [('fon',1)]),
+        'lands':      ([('grind',1)],                    [('fon',1)]),
+        'mardu':      ([('grind',1)],                    [('massacre',1)]),
+        'mono_black': ([('grind',1)],                    [('snuffout',1)]),
+        'painter':    ([('grind',1)],                    [('mindbreak',1)]),
+        'ur_aggro':   ([('grind',1)],                    [('fon',1)]),
+        'ur_delver':  ([('grind',1)],                    [('fon',1)]),
+        'ur_tempo':   ([('grind',1)],                    [('fon',1)]),
     },
 
     # ── Lands protagonist SB ──────────────────────────────────────────────────
@@ -994,6 +1248,18 @@ PROTAGONIST_SB_SWAPS = {
         'bug':        ([('pfire',1)],                    [('nihil',1)]),
         'uwx':        ([('pfire',1)],                    [('nihil',1)]),
         'mardu':      ([('pfire',1)],                    [('nihil',1)]),
+        'boros':      ([('loam',1)],                     [('massacre',1)]),
+        'burn':       ([('loam',1)],                     [('nihil',1)]),
+        'dnt':        ([('loam',1)],                     [('massacre',1)]),
+        'eldrazi':    ([('loam',1)],                     [('mindbreak',1)]),
+        'elves':      ([('loam',1)],                     [('mindbreak',1)]),
+        'infect':     ([('loam',1)],                     [('nihil',1)]),
+        'mono_black': ([('loam',1)],                     [('snuffout',1)]),
+        'painter':    ([('loam',1)],                     [('mindbreak',1)]),
+        'prison':     ([('loam',1)],                     [('fon',1)]),
+        'ur_aggro':   ([('pfire',1)],                    [('nihil',1)]),
+        'ur_delver':  ([('pfire',1)],                    [('nihil',1)]),
+        'ur_tempo':   ([('pfire',1)],                    [('nihil',1)]),
     },
 
     # ── 8-Cast protagonist SB ─────────────────────────────────────────────────
@@ -1030,6 +1296,15 @@ PROTAGONIST_SB_SWAPS = {
         'lands':      ([('heat',1)],                      [('pyro',1)]),
         'sneak_a':    ([('bolt',1)],                      [('fon',1)]),
         'tes':        ([('bolt',1)],                      [('fon',1)]),
+        'boros':      ([('pierce',1)],                    [('heat',1)]),
+        'burn':       ([('bolt',1)],                      [('sblood',1)]),
+        'infect':     ([('bolt',1)],                      [('snuffout',1)]),
+        'mardu':      ([('pierce',1)],                    [('heat',1)]),
+        'mono_black': ([('pierce',1)],                    [('snuffout',1)]),
+        'painter':    ([('pierce',1)],                    [('pyro',1)]),
+        'prison':     ([('ei',1)],                        [('fon',1)]),
+        'ur_aggro':   ([('bolt',1)],                      [('pyro',1)]),
+        'ur_tempo':   ([('bolt',1)],                      [('pyro',1)]),
     },
 
     # ── Burn protagonist SB ──────────────────────────────────────────────────
@@ -1049,6 +1324,16 @@ PROTAGONIST_SB_SWAPS = {
         'prison':     ([('spike',1)],                     [('smash',1)]),
         'eight_cast': ([('spike',1)],                     [('smash',1)]),
         'affinity':   ([('spike',1)],                     [('smash',1)]),
+        'boros':      ([('spike',1)],                     [('sblood',1)]),
+        'elves':      ([('spike',1)],                     [('sblood',1)]),
+        'infect':     ([('spike',1)],                     [('sblood',1)]),
+        'lands':      ([('spike',1)],                     [('eidolon',1)]),
+        'mardu':      ([('spike',1)],                     [('sblood',1)]),
+        'mono_black': ([('spike',1)],                     [('sblood',1)]),
+        'painter':    ([('spike',1)],                     [('smash',1)]),
+        'ur_aggro':   ([('spike',1)],                     [('sblood',1)]),
+        'ur_delver':  ([('spike',1)],                     [('sblood',1)]),
+        'ur_tempo':   ([('spike',1)],                     [('sblood',1)]),
     },
 
     # ── Sneak & Show A protagonist SB ────────────────────────────────────────
@@ -1096,6 +1381,18 @@ PROTAGONIST_SB_SWAPS = {
         'reanimator': ([('become',1)],                    [('surgical',1)]),
         'dnt':        ([('become',1)],                    [('vos',1)]),
         'eldrazi':    ([('become',1)],                    [('vos',1)]),
+        'boros':      ([('become',1)],                    [('vos',1)]),
+        'burn':       ([('become',1)],                    [('vos',1)]),
+        'elves':      ([('become',1)],                    [('vos',1)]),
+        'lands':      ([('become',1)],                    [('fon',1)]),
+        'mardu':      ([('become',1)],                    [('vos',1)]),
+        'mono_black': ([('become',1)],                    [('vos',1)]),
+        'painter':    ([('become',1)],                    [('fon',1)]),
+        'prison':     ([('become',1)],                    [('fon',1)]),
+        'show':       ([('become',1)],                    [('fon',1)]),
+        'ur_aggro':   ([('become',1)],                    [('vos',1)]),
+        'ur_delver':  ([('become',1)],                    [('vos',1)]),
+        'ur_tempo':   ([('become',1)],                    [('vos',1)]),
     },
 
     # ── Dark Depths protagonist SB ───────────────────────────────────────────
@@ -1127,6 +1424,15 @@ PROTAGONIST_SB_SWAPS = {
         'uwx':        ([('push',1)],                      [('pyro',1)]),
         'lands':      ([('push',1)],                      [('fon',1)]),
         'prison':     ([('push',1)],                      [('fon',1)]),
+        'burn':       ([('push',1)],                      [('sblood',1)]),
+        'elves':      ([('push',1)],                      [('massacre',1)]),
+        'infect':     ([('push',1)],                      [('snuffout',1)]),
+        'mardu':      ([('push',1)],                      [('massacre',1)]),
+        'mono_black': ([('push',1)],                      [('snuffout',1)]),
+        'painter':    ([('push',1)],                      [('pyro',1)]),
+        'ur_aggro':   ([('push',1)],                      [('pyro',1)]),
+        'ur_delver':  ([('push',1)],                      [('pyro',1)]),
+        'ur_tempo':   ([('push',1)],                      [('pyro',1)]),
     },
 
     # ── UR Aggro protagonist SB ──────────────────────────────────────────────
@@ -1139,16 +1445,44 @@ PROTAGONIST_SB_SWAPS = {
         'doomsday':   ([('bolt',1)],                      [('fon',1)]),
         'reanimator': ([('bolt',1)],                      [('surgical',1)]),
         'dnt':        ([('pierce',1)],                    [('heat',1)]),
+        'boros':      ([('pierce',1)],                    [('heat',1)]),
+        'burn':       ([('bolt',1)],                      [('sblood',1)]),
+        'eldrazi':    ([('pierce',1)],                    [('heat',1)]),
+        'elves':      ([('pierce',1)],                    [('heat',1)]),
+        'infect':     ([('bolt',1)],                      [('snuffout',1)]),
+        'lands':      ([('pierce',1)],                    [('fon',1)]),
+        'mardu':      ([('pierce',1)],                    [('heat',1)]),
+        'mono_black': ([('pierce',1)],                    [('snuffout',1)]),
+        'painter':    ([('pierce',1)],                    [('pyro',1)]),
+        'prison':     ([('pierce',1)],                    [('fon',1)]),
+        'show':       ([('daze',1)],                      [('fon',1)]),
+        'ur_delver':  ([('bolt',1)],                      [('pyro',1)]),
+        'ur_tempo':   ([('bolt',1)],                      [('pyro',1)]),
     },
 
     # ── UR Tempo protagonist SB ──────────────────────────────────────────────
     'ur_tempo': {
-        'dimir':      ([('pierce',1)],                    [('pyro',1)]),
-        'bug':        ([('pierce',1)],                    [('pyro',1)]),
-        'uwx':        ([('pierce',1)],                    [('pyro',1)]),
+        'dimir':      ([('cutter',1)],                    [('pyro',1)]),
+        'bug':        ([('cutter',1)],                    [('pyro',1)]),
+        'uwx':        ([('cutter',1)],                    [('pyro',1)]),
         'storm':      ([('bolt',1)],                      [('fon',1)]),
         'oops':       ([('bolt',1)],                      [('fon',1)]),
         'reanimator': ([('bolt',1)],                      [('surgical',1)]),
+        'boros':      ([('cutter',1)],                    [('heat',1)]),
+        'burn':       ([('bolt',1)],                      [('sblood',1)]),
+        'dnt':        ([('cutter',1)],                    [('heat',1)]),
+        'doomsday':   ([('bolt',1)],                      [('fon',1)]),
+        'eldrazi':    ([('cutter',1)],                    [('heat',1)]),
+        'elves':      ([('cutter',1)],                    [('heat',1)]),
+        'infect':     ([('bolt',1)],                      [('snuffout',1)]),
+        'lands':      ([('cutter',1)],                    [('fon',1)]),
+        'mardu':      ([('cutter',1)],                    [('heat',1)]),
+        'mono_black': ([('cutter',1)],                    [('snuffout',1)]),
+        'painter':    ([('cutter',1)],                    [('pyro',1)]),
+        'prison':     ([('cutter',1)],                    [('fon',1)]),
+        'show':       ([('daze',1)],                      [('fon',1)]),
+        'ur_aggro':   ([('bolt',1)],                      [('pyro',1)]),
+        'ur_delver':  ([('bolt',1)],                      [('pyro',1)]),
     },
 
     # ── Dimir variants — inherit from dimir with minor tweaks ────────────────

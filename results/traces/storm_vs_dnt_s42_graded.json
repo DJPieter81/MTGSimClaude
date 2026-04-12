@@ -1,0 +1,31 @@
+{
+  "matchup": "storm_vs_dnt",
+  "seed": 42,
+  "winner": "p2",
+  "kill_turn": null,
+  "game_length": 7,
+  "deck1": "storm",
+  "deck2": "dnt",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "C",
+    "combat": "B",
+    "combo": "C+",
+    "interaction": "B+",
+    "meta": "B",
+    "overall": "B"
+  },
+  "justifications": {
+    "mulligan": "Kept a reasonable 7 with LED + Infernal Tutor + lands, though the double Infernal Tutor is awkward without threshold enablers",
+    "mana": "Failed to deploy LED on T1 when it would have enabled a faster kill window; poor sequencing under Thalia tax on T3+",
+    "combat": "N/A for storm in this matchup — no combat-relevant decisions made",
+    "combo": "Passed multiple turns with storm count 3/9 and 0 rituals — never found the window before D&T locked the board",
+    "interaction": "Good Veil of Summer in hand but never needed to deploy it; correct threat assessment throughout",
+    "meta": "Recognized Thalia as the key threat but failed to sequence around it proactively — should have gone for T2 kill attempt",
+    "overall": "Solid fundamentals but mana sequencing and combo timing need work against hatebear strategies"
+  },
+  "raw_response": "mulligan: B+ — Kept a reasonable 7 with LED + Infernal Tutor + lands, though the double Infernal Tutor is awkward without threshold enablers\nmana: C — Failed to deploy LED on T1 when it would have enabled a faster kill window; poor sequencing under Thalia tax on T3+\ncombat: B — N/A for storm in this matchup — no combat-relevant decisions made\ncombo: C+ — Passed multiple turns with storm count 3/9 and 0 rituals — never found the window before D&T locked the board\ninteraction: B+ — Good Veil of Summer in hand but never needed to deploy it; correct threat assessment throughout\nmeta: B — Recognized Thalia as the key threat but failed to sequence around it proactively — should have gone for T2 kill attempt\noverall: B — Solid fundamentals but mana sequencing and combo timing need work against hatebear strategies",
+  "model": "claude-sonnet-4-5-20250514",
+  "graded_at": "2026-04-12T13:30:00+00:00",
+  "_note": "Sample grading — generated without live API call (no ANTHROPIC_API_KEY). Re-run with key to get real grades."
+}

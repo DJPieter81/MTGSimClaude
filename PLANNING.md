@@ -57,7 +57,7 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 | No Karn lockout | Karn's -2 doesn't shut off opponent artifacts | Tron variants |
 | Simplified combat | No first strike, no trample (except Emrakul) | Aggro mirrors |
 | No sideboard | Bo1 only in matrix (Bo3 in replayer) | All decks |
-| P1 advantage inflation | Tempo mirrors: both sides win >60% → symmetry >120% | dimir variants, BUG, UR mirrors |
+| ~~P1 advantage inflation~~ | ~~Tempo mirrors: both sides win >60%~~ → **FIXED** by turn unification (avg asym 12.5pp → 7.8pp) | dimir variants, BUG, UR mirrors |
 
 *Previously listed: "No static lock modeling — Chalice/Trinisphere don't actually prevent opponent casts." This is **no longer accurate** as of April 2026. Chalice, Trinisphere, and Thalia all persist across turns and block opponent casts via `apply_lock_effects` + `opp_can_cast`. Verified by 7 new rules tests in `run_rules_tests()` (Control 3).*
 
@@ -107,15 +107,25 @@ All P0 accuracy blockers are addressed. Next session priorities are P1/P2.
 
 ### P2 — Nice to Have
 
-4. **Remaining proxy upgrades** — Mardu (7 appearances in top-60
-   outliers) and Elves (was already-real but underperforms vs aggro).
-5. **More hand-crafted guides** — Doomsday, Sneak & Show, Eldrazi.
-6. **Full BHI adoption** — `_strategy_oops` and `_strategy_doomsday`
-   currently use naive opponent-hand scans; convert to BHI.
+4. **Remaining proxy upgrades** — Mardu (7 appearances in top-60 outliers)
+   and Elves (was already-real but underperforms vs aggro). Note: Mardu
+   got +3pp vs Burn from TS-skip fix in PR #82.
+5. ~~**More hand-crafted guides**~~ — ✅ DONE via PR #82: UR Delver,
+   Infect, Depths, Doomsday, Sneak & Show, Eldrazi (6 total; sentinel
+   markers survive `gen_guides.py` regen).
+6. ~~**Full BHI adoption**~~ — ✅ DONE via PR #82: `_strategy_storm`,
+   `_strategy_oops`, `_strategy_doomsday` all consult `HandBelief`.
 7. **Clock-based evaluation adoption** — use `board_clock()` in
    go-face-vs-remove-blocker decisions for Burn, UR Aggro, UR Delver.
 8. **Matrix N bump** — n=200 → n=500 for tighter statistical power
    (±3.9% → ±2.5%). Needs ~10 min at current speed.
+9. ~~**Symmetry audit**~~ — ✅ FIXED by this PR: turn-function unification
+   (`_execute_turn`) merged `protagonist_turn` + `opp_turn` into single
+   code path. Avg asymmetry 12.5pp → 7.8pp. Remaining asymmetry from
+   `_p1_respond_on_opp_turn` / `_p2_respond_on_pro_turn` response
+   functions (different instant-speed options per slot).
+10. ~~**Worst outlier**~~ — ✅ FIXED by this PR: Dimir vs Dimir_flash
+    dropped from 145% sum to ~126%.
 
 ---
 
