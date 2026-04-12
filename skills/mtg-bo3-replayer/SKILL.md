@@ -179,3 +179,26 @@ mtg-bo3-replayer/
     ├── data_model.md     — Turn data structure, mulligan history format
     └── design_system.md  — CSS classes, color system, component patterns
 ```
+
+## classify_play() — 17 Categories
+
+The function handles abbreviated card names from the sim's log output:
+
+| Abbreviation | Full Name | Category |
+|---|---|---|
+| SSG | Simian Spirit Guide | mana |
+| KozCmd | Kozilek's Command | cantrip (when "draw" in line) |
+| TKS | Thought-Knot Seer | discard (when "exiles") |
+| FoW | Force of Will | counter |
+| Waste | Wasteland | interact |
+
+**Fallback rule**: Any non-empty line that doesn't match a pattern defaults to `spell`
+(creature/spell deployment), never `other`. Zero `other` is the quality bar.
+
+## Audit Checklist
+
+After generating any replay:
+1. Count categories: `grep -o 'cat-[a-z]*' replay.html | sort | uniq -c`
+2. Verify zero `other`: if any exist, classify_play needs a new pattern
+3. Check double-land: no turn should have >1 LAND + FETCH combined
+4. Check negative life: game should end when any player hits 0
