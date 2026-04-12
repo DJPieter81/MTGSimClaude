@@ -396,7 +396,19 @@ def generate_html(matchup, seeds, protagonist='bug'):
     if isinstance(seeds, (int, type(None))):
         seeds = [seeds]
 
-    games = [run_one_game(matchup, s, protagonist=protagonist) for s in seeds]
+    # Bo3: stop when either player reaches 2 wins
+    games = []
+    p1_wins = 0
+    p2_wins = 0
+    for s in seeds:
+        g = run_one_game(matchup, s, protagonist=protagonist)
+        games.append(g)
+        if g.get('winner') == 'p1' or g.get('winner') == protagonist:
+            p1_wins += 1
+        else:
+            p2_wins += 1
+        if p1_wins >= 2 or p2_wins >= 2:
+            break
     meta_name = games[0]['meta_name']
     pro_label = games[0].get('pro_label', 'BUG')
     is_bo3 = len(games) > 1
@@ -407,7 +419,7 @@ def generate_html(matchup, seeds, protagonist='bug'):
 
     # Build HTML
     h = []
-    title = f'Bo{len(games)} Replay: {pro_label} vs {html.escape(meta_name)}' if is_bo3 else f'Game Replay: {pro_label} vs {html.escape(meta_name)}'
+    title = f'Bo3 Replay: {pro_label} vs {html.escape(meta_name)}' if is_bo3 else f'Game Replay: {pro_label} vs {html.escape(meta_name)}'
     h.append(f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title>
