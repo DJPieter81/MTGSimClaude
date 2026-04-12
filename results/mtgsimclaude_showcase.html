@@ -363,32 +363,32 @@ function selectDeck(name){
   wrChart.data.datasets[0].backgroundColor=wrLabels.map((_,i)=>i===wrIdx?'rgba(184,148,30,.2)':wrBgDef[i].replace(/[\d.]+\)$/,'.05)'));
   wrChart.update();
 
-  // 2. Spread chart: show selected deck's matchup WRs
+  // 2. Spread chart: highlight selected deck bar, dim others (not filter)
   const hmIdx2=hD.findIndex(d=>_matchName(d,name));
-  if(hmIdx2>=0){
-    const row=hV[hmIdx2].map((v,j)=>hmIdx2===j?null:v);
-    const labels=hD.filter((_,j)=>j!==hmIdx2);
-    const vals=row.filter(v=>v!==null);
-    spreadChart.data.labels=labels;
-    spreadChart.data.datasets[0].data=vals;
-    spreadChart.data.datasets[0].backgroundColor=vals.map(v=>v>=50?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)');
-    spreadChart.data.datasets[0].borderColor=vals.map(v=>v>=50?T:R);
-    document.getElementById('spreadTitle').textContent='Matchup spread — '+name;
-  } else {
-    spreadChart.data.labels=hD;spreadChart.data.datasets[0].data=[...spreadAvg];
-    spreadChart.data.datasets[0].backgroundColor=spreadAvg.map(v=>v>=50?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)');
-    spreadChart.data.datasets[0].borderColor=spreadAvg.map(v=>v>=50?T:R);
-    document.getElementById('spreadTitle').textContent='Matchup spread — avg';
-  }
+  spreadChart.data.datasets[0].backgroundColor=hD.map((_,i)=>{
+    if(hmIdx2>=0&&i===hmIdx2)return'rgba(184,148,30,.2)';
+    if(hmIdx2>=0)return spreadAvg[i]>=50?'rgba(15,110,86,.06)':'rgba(163,45,45,.06)';
+    return spreadAvg[i]>=50?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)';
+  });
+  spreadChart.data.datasets[0].borderColor=hD.map((_,i)=>hmIdx2>=0&&i===hmIdx2?G:(spreadAvg[i]>=50?T:R));
+  spreadChart.data.datasets[0].borderWidth=hD.map((_,i)=>hmIdx2>=0&&i===hmIdx2?3:1.5);
+  document.getElementById('spreadTitle').textContent=hmIdx2>=0?'Matchup spread — '+name+' highlighted':'Matchup spread';
   spreadChart.update();
 
-  // 3. Doughnut: swap to per-deck win resolution
+  // 3. Doughnut: highlight deck's primary win type segment, dim others
   const dr=deckRes[hmName];
-  if(dr){resChart.data.datasets[0].data=[dr.d,dr.c,dr.t]}else{resChart.data.datasets[0].data=[...allRes]}
-  document.querySelector('#resChart').closest('.chart-card').querySelector('h4').textContent=dr?'Win resolution — '+name:'Win resolution';
+  const priIdx=dr?[dr.d,dr.c,dr.t].indexOf(Math.max(dr.d,dr.c,dr.t)):-1;
+  resChart.data.datasets[0].backgroundColor=['Combat damage','Combo kill','Timeout (T15)'].map((_,i)=>{
+    if(priIdx<0)return[T,P,A][i];
+    return i===priIdx?[T,P,A][i]:([T,P,A][i]+'30');
+  });
+  resChart.data.datasets[0].borderWidth=['Combat damage','Combo kill','Timeout (T15)'].map((_,i)=>i===priIdx?3:0);
+  resChart.data.datasets[0].borderColor=['Combat damage','Combo kill','Timeout (T15)'].map((_,i)=>i===priIdx?G:'transparent');
+  const resLabel=dr?`Win resolution — ${name}: ${dr.d}% dmg / ${dr.c}% combo / ${dr.t}% timeout`:'Win resolution';
+  document.querySelector('#resChart').closest('.chart-card').querySelector('h4').textContent=resLabel;
   resChart.update();
 
-  // 3. Turn length: highlight matching archetype, dim others
+  // 4. Turn length: highlight matching archetype, dim others
   turnChart.data.datasets[0].backgroundColor=archTypes.map((at,i)=>{const a=archMatch[at]||[];return a.includes(arch)||a.includes('combo-aggro'&&arch==='combo-aggro')?turnBg[i]:(turnBg[i]+'18')});
   turnChart.data.datasets[0].borderWidth=archTypes.map((at)=>{const a=archMatch[at]||[];return a.includes(arch)?2:0});
   turnChart.data.datasets[0].borderColor=archTypes.map((at)=>{const a=archMatch[at]||[];return a.includes(arch)?G:'transparent'});
@@ -416,8 +416,8 @@ function selectDeck(name){
 function clearSelection(){
   selectedDeck=null;
   wrChart.data.datasets[0].borderWidth=1.5;wrChart.data.datasets[0].borderColor=[...wrBrDef];wrChart.data.datasets[0].backgroundColor=[...wrBgDef];wrChart.update();
-  spreadChart.data.labels=hD;spreadChart.data.datasets[0].data=[...spreadAvg];spreadChart.data.datasets[0].backgroundColor=spreadAvg.map(v=>v>=50?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)');spreadChart.data.datasets[0].borderColor=spreadAvg.map(v=>v>=50?T:R);document.getElementById('spreadTitle').textContent='Matchup spread — select a deck';spreadChart.update();
-  resChart.data.datasets[0].data=[...allRes];document.querySelector('#resChart').closest('.chart-card').querySelector('h4').textContent='Win resolution';resChart.update();
+  spreadChart.data.datasets[0].backgroundColor=spreadAvg.map(v=>v>=50?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)');spreadChart.data.datasets[0].borderColor=spreadAvg.map(v=>v>=50?T:R);spreadChart.data.datasets[0].borderWidth=1.5;document.getElementById('spreadTitle').textContent='Matchup spread — select a deck';spreadChart.update();
+  resChart.data.datasets[0].data=[...allRes];resChart.data.datasets[0].backgroundColor=[T,P,A];resChart.data.datasets[0].borderWidth=0;resChart.data.datasets[0].borderColor='transparent';document.querySelector('#resChart').closest('.chart-card').querySelector('h4').textContent='Win resolution';resChart.update();
   turnChart.data.datasets[0].backgroundColor=[...turnBg];turnChart.data.datasets[0].borderWidth=0;turnChart.data.datasets[0].borderColor='transparent';document.querySelector('#turnChart').closest('.chart-card').querySelector('h4').textContent='Avg game length by matchup type';turnChart.update();
   document.querySelectorAll('.heatmap td,.heatmap th,.heatmap .dl').forEach(el=>{el.classList.remove('hl-row','hl-col','hl-label')});
   document.querySelectorAll('.deck-chip').forEach(c=>c.classList.remove('selected'));
