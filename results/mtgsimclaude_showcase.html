@@ -497,7 +497,6 @@ function showDeck(i){
   const dp=document.getElementById('deckProfile');
   dp.innerHTML=`<div class="dp-head"><div class="dp-name">${d.n}</div><div class="dp-tier" style="${tColor}">${tier}</div></div><div class="dp-stats"><div class="dp-stat"><b>${d.wr}%</b>Flat WR</div><div class="dp-stat"><b>${d.type}</b>Archetype</div><div class="dp-stat"><b>${d.strat}</b>Strategy</div><div class="dp-stat"><b>${d.best}</b>Best vs</div><div class="dp-stat"><b>${d.worst}</b>Worst vs</div></div>`;
   dp.className='deck-profile show';
-  dp.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 // Architecture layer detail
