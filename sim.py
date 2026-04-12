@@ -639,6 +639,10 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     # ── Lock piece enforcement (shared helpers — single source of truth) ──
     _adjustments = apply_lock_effects(gs, b, log)
 
+    # ── Snapshot for Eidolon post-strategy check ──
+    _hand_before = len(b.hand)
+    _gy_nonland_before = sum(1 for c in b.graveyard if not c.is_land())
+
     # ── Strategy dispatch ──
     from deck_registry import get_strategy
     strategy_fn = get_strategy(matchup)
@@ -652,6 +656,25 @@ def _execute_turn(gs, turn, b, o, who, matchup):
 
     # ── Post-strategy: restore lock adjustments ──
     restore_lock_effects(b, _adjustments)
+
+    # ── Eidolon post-strategy: apply damage for spells cast this turn ──
+    # Strategies that bypass cast_spell() don't fire _eidolon_trigger.
+    # Estimate spells cast: count nonland cards that moved from hand to graveyard.
+    # This fires Eidolon on the ACTIVE player (b) for their own spells.
+    # Eidolon already triggers on cast_spell() users (don't double-count).
+    if gs.eidolon_active and not gs.game_over:
+        _gy_nonland_after = sum(1 for c in b.graveyard if not c.is_land())
+        _spells_via_cast_spell = getattr(b, 'spells_cast_this_turn', 0)
+        _gy_growth = max(0, _gy_nonland_after - _gy_nonland_before)
+        # Spells that went through cast_spell already triggered Eidolon.
+        # Spells that bypassed it = gy_growth - spells_via_cast_spell (approx).
+        _missed_spells = max(0, _gy_growth - _spells_via_cast_spell)
+        if _missed_spells > 0:
+            _eid_dmg = _missed_spells * 2
+            b.life -= _eid_dmg
+            _p_label = 'P1' if b is gs.p1 else 'P2'
+            log(f"Eidolon trigger (post-strategy) — {_missed_spells} spell(s), {_eid_dmg} damage to {_p_label} ({b.life})")
+            gs.check_life_totals()
 
     # ── Tamiyo flip check — oracle: flip when you draw your 3rd card in a turn ──
     _check_tamiyo_flip(gs, b, log)
