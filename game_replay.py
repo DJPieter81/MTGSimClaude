@@ -403,7 +403,9 @@ def generate_html(matchup, seeds, protagonist='bug'):
     for s in seeds:
         g = run_one_game(matchup, s, protagonist=protagonist)
         games.append(g)
-        if g.get('winner') == 'p1' or g.get('winner') == protagonist:
+        winner = (g.get('winner') or '').upper()
+        pro = protagonist.upper()
+        if winner == 'P1' or winner == pro:
             p1_wins += 1
         else:
             p2_wins += 1
