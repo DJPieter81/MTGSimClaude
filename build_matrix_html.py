@@ -67,9 +67,45 @@ def _build_ARCH(agg):
     return {d: info.get('type', 'other') for d, info in agg.items()}
 
 
+def _bo3_to_template(bo3):
+    """Convert a Bo3 matrix JSON (type='matrix_bo3') into the template's
+    D shape ({'d', 'm', 'a', 'w'}).
+
+    M[key] becomes [match_wr_pct, game_wr_pct] so the template — which
+    indexes M[k][0] for the primary WR — shows match WR by default. The
+    second entry carries the G1 baseline for future toggles and audits.
+    """
+    decks = bo3['decks']
+    m_out = {}
+    for k, v in bo3['matchups'].items():
+        d1, d2 = k.split('_vs_', 1)
+        key = f"{d1}|{d2}"
+        if isinstance(v, list) and len(v) >= 2:
+            m_out[key] = [round(v[0] * 100, 1), round(v[1] * 100, 1)]
+        else:
+            # Legacy Bo1 number; treat match==game
+            pct = round(float(v) * 100, 1)
+            m_out[key] = [pct, pct]
+    # Flat avg match WR across opponents (excluding mirror)
+    a_out = {}
+    for d in decks:
+        vals = [m_out[f"{d}|{d2}"][0] for d2 in decks
+                if d2 != d and f"{d}|{d2}" in m_out]
+        a_out[d] = round(sum(vals) / len(vals), 1) if vals else 0.0
+    # Weighted = meta_ev_match (T1+T2 only), already stored
+    w_src = bo3.get('meta_ev_match', {})
+    w_out = {d: round(w_src.get(d, 0) * 100, 1) for d in decks}
+    return {'d': decks, 'm': m_out, 'a': a_out, 'w': w_out}
+
+
 def rebuild(meta_path, agg_path, out_path):
     meta = _load(meta_path)
     agg = _load(agg_path)
+
+    # Accept either a Bo1 matrix in the template shape, or a Bo3 matrix JSON
+    # (type='matrix_bo3') produced by save_matrix_bo3.
+    if meta.get('type') == 'matrix_bo3':
+        meta = _bo3_to_template(meta)
 
     # D = the matchup data shape already matching template
     D = {'d': meta['d'], 'm': meta['m'], 'a': meta['a'], 'w': meta['w']}

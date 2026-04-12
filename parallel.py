@@ -97,6 +97,57 @@ def parallel_meta_matrix(decks, n_games=100, n_workers=None):
     return matrix
 
 
+def _run_bo3_worker(args):
+    """Worker: run N Bo3 matches for one protagonist/antagonist pair.
+    Returns (proto, ant, match_wins, total_matches, game_wins, total_games)."""
+    proto, ant, n_matches, seed = args
+    if seed is not None:
+        random.seed(seed)
+
+    from sim import run_any_match
+    match_wins = 0
+    game_wins = 0
+    total_games = 0
+    for _ in range(n_matches):
+        pw, aw, gp, grs = run_any_match(proto, ant)
+        if pw > aw:
+            match_wins += 1
+        total_games += len(grs)
+        game_wins += sum(1 for r in grs if r.winner == 'p1')
+    return (proto, ant, match_wins, n_matches, game_wins, total_games)
+
+
+def parallel_meta_matrix_bo3(decks, n_matches=100, n_workers=None):
+    """Run NxN Bo3 meta matrix using multiprocessing.
+    Each matchup pair is an independent task; returns dict of
+        {(d1, d2): {'match_wr': float, 'game_wr': float}}.
+    """
+    if n_workers is None:
+        n_workers = min(mp.cpu_count(), 8)
+
+    tasks = []
+    for d1 in decks:
+        for d2 in decks:
+            if d1 == d2:
+                continue
+            tasks.append((d1, d2, n_matches, random.randint(0, 2**31)))
+
+    total = len(tasks)
+    print(f"  Running {total} Bo3 matchups across {n_workers} workers "
+          f"({n_matches} matches each)...")
+
+    with mp.Pool(n_workers) as pool:
+        results = pool.map(_run_bo3_worker, tasks)
+
+    matrix = {}
+    for proto, ant, mw, m_total, gw, g_total in results:
+        matrix[(proto, ant)] = {
+            'match_wr': mw / m_total if m_total else 0,
+            'game_wr':  gw / g_total if g_total else 0,
+        }
+    return matrix
+
+
 def parallel_field(deck, opponents, n_games=100, n_workers=None):
     """Run one deck vs all opponents using multiprocessing."""
     if n_workers is None:
