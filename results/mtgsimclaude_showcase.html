@@ -308,6 +308,63 @@ a.product-link{text-decoration:none;color:inherit;display:block}
   </div>
 </section>
 
+<!-- LLM AUDIT -->
+<section class="section" style="background:var(--paper)">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> LLM Audit</div>
+  <div class="sec-title reveal">6-Domain AI Quality Grades</div>
+  <div class="sec-desc reveal">41 traces across 11 matchups graded on mulligan, mana, combat, combo, interaction, and meta domains. Threshold: B-.</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:960px;margin:24px auto 0" class="reveal">
+    <!-- Radar chart -->
+    <div class="card" style="padding:24px;text-align:center">
+      <div style="font-family:var(--font-m);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink3);margin-bottom:12px">Domain Radar</div>
+      <canvas id="auditRadar" width="320" height="320"></canvas>
+    </div>
+
+    <!-- Grade table -->
+    <div class="card" style="padding:24px">
+      <div style="font-family:var(--font-m);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink3);margin-bottom:12px">Domain Averages (N=41)</div>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;font-family:var(--font-b)">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:8px 4px;color:var(--ink2)">Domain</th>
+          <th style="text-align:center;padding:8px 4px;color:var(--ink2)">Grade</th>
+          <th style="text-align:center;padding:8px 4px;color:var(--ink2)">Status</th>
+        </tr></thead>
+        <tbody id="auditRows"></tbody>
+      </table>
+      <div style="margin-top:16px;padding:12px;border-radius:8px;background:#fde8e8;border:1px solid #f5ccc4;font-size:13px;color:var(--red)">
+        <strong>FAIL</strong> — combo (C+) and interaction (C+) below B- threshold
+      </div>
+    </div>
+  </div>
+
+  <!-- Flagged weaknesses -->
+  <div style="max-width:960px;margin:24px auto 0" class="reveal">
+    <div style="font-family:var(--font-m);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink3);margin-bottom:12px">Flagged Weaknesses (2+ C/D/F grades)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px" id="auditFlags"></div>
+  </div>
+
+  <!-- Coverage -->
+  <div style="max-width:960px;margin:20px auto 0;display:flex;gap:16px;flex-wrap:wrap" class="reveal">
+    <div class="card" style="padding:12px 16px;flex:1;min-width:200px;text-align:center">
+      <div style="font-family:var(--font-d);font-size:28px;font-weight:700;color:var(--ink)">41</div>
+      <div style="font-size:12px;color:var(--ink3)">Traces Graded</div>
+    </div>
+    <div class="card" style="padding:12px 16px;flex:1;min-width:200px;text-align:center">
+      <div style="font-family:var(--font-d);font-size:28px;font-weight:700;color:var(--ink)">11</div>
+      <div style="font-size:12px;color:var(--ink3)">Matchups Covered</div>
+    </div>
+    <div class="card" style="padding:12px 16px;flex:1;min-width:200px;text-align:center">
+      <div style="font-family:var(--font-d);font-size:28px;font-weight:700;color:var(--ink)">6</div>
+      <div style="font-size:12px;color:var(--ink3)">Grading Domains</div>
+    </div>
+    <div class="card" style="padding:12px 16px;flex:1;min-width:200px;text-align:center">
+      <div style="font-family:var(--font-d);font-size:28px;font-weight:700;color:var(--red)">FAIL</div>
+      <div style="font-size:12px;color:var(--ink3)">Threshold Check (B-)</div>
+    </div>
+  </div>
+</section>
+
 <div class="footer">
   <p style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:8px">MTGSim<span style="color:var(--gold)">Claude</span></p>
   <p>Built by <a href="https://github.com/DJPieter81">DJPieter81</a> · <a href="https://github.com/DJPieter81/MTGSimClaude">Legacy repo</a> · <a href="https://github.com/DJPieter81/MTGSimManu">Modern repo</a></p>
@@ -559,6 +616,46 @@ const aiFlow=document.getElementById('aiFlow');
 aiD.forEach((d,i)=>{aiFlow.innerHTML+=`<div class="ai-step${i===0?' active':''}" onclick="showAI(${i})"><div class="sn">${d.n}</div><div class="st">${d.t}</div><div style="font-family:var(--font-m);font-size:9px;color:var(--ink4);margin-top:3px">${d.src}</div></div>`});
 function showAI(i){document.querySelectorAll('.ai-step').forEach((s,j)=>s.classList.toggle('active',j===i));const d=aiD[i],det=document.getElementById('aiDet');det.className='ai-detail show';det.innerHTML=`<h4>${d.h}</h4><div style="font-family:var(--font-m);font-size:10px;color:var(--ink3);margin-bottom:8px">${d.src}</div><p>${d.d}</p><div class="formula">${d.f}</div>`}
 showAI(0);
+
+// === LLM AUDIT SECTION ===
+const auditDomains=[
+  {name:'Mulligan',grade:'B',num:2.71,pass:true},
+  {name:'Mana',grade:'B',num:3.29,pass:true},
+  {name:'Combat',grade:'B',num:3.22,pass:true},
+  {name:'Combo',grade:'C+',num:3.90,pass:false},
+  {name:'Interaction',grade:'C+',num:3.95,pass:false},
+  {name:'Meta',grade:'B',num:3.49,pass:true}
+];
+const auditFlags=[
+  {deck:'Doomsday',domains:['combo (4x D)','interaction (4x C)','mana (4x C+)','meta (4x C/C+)']},
+  {deck:'Depths',domains:['combo (3x D)','interaction (3x C)','mana (3x C+)','meta (3x C)']},
+  {deck:'Sneak A',domains:['combo (D+3C)','interaction (4x C)','mana (C++3C)','meta (C+3C+)']},
+  {deck:'Reanimator',domains:['combo (3x D)','interaction (3x C)','mana (3x C+)','meta (3x C)']},
+  {deck:'Oops',domains:['combo (3x C)','interaction (3x C)','mana (3x C)']},
+  {deck:'Storm',domains:['combo (2x C)','interaction (2x C)','mana (C++C)']},
+  {deck:'Goblins',domains:['combat (2x C)','meta (2x C)']},
+  {deck:'Painter',domains:['combat (2x C)','interaction (2x C+)','mana (2x C+)']}
+];
+
+// Audit table
+const auditTB=document.getElementById('auditRows');
+auditDomains.forEach(d=>{
+  const bg=d.pass?'rgba(15,110,86,.08)':'rgba(163,45,45,.08)';
+  const col=d.pass?'var(--teal)':'var(--red)';
+  const icon=d.pass?'&#10003;':'&#10007;';
+  auditTB.innerHTML+=`<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 4px;font-weight:500">${d.name}</td><td style="text-align:center;padding:10px 4px"><span style="display:inline-block;padding:2px 10px;border-radius:12px;background:${bg};color:${col};font-family:var(--font-m);font-size:13px;font-weight:600">${d.grade}</span></td><td style="text-align:center;padding:10px 4px;color:${col};font-size:16px">${icon}</td></tr>`;
+});
+
+// Audit flags
+const auditFlagEl=document.getElementById('auditFlags');
+auditFlags.forEach(f=>{
+  auditFlagEl.innerHTML+=`<div class="card" style="padding:10px 14px;cursor:default;flex:0 0 auto" onclick="this.querySelector('.af-d').classList.toggle('show')"><div style="font-family:var(--font-m);font-size:12px;font-weight:600;color:var(--red)">${f.deck}</div><div class="af-d" style="display:none;margin-top:6px;font-size:11px;color:var(--ink2)">${f.domains.join('<br>')}</div></div>`;
+});
+// Toggle helper
+document.querySelectorAll('#auditFlags .card').forEach(c=>c.addEventListener('click',()=>{const d=c.querySelector('.af-d');d.style.display=d.style.display==='none'?'block':'none'}));
+
+// Audit radar chart
+const auditRadar=new Chart(document.getElementById('auditRadar'),{type:'radar',data:{labels:auditDomains.map(d=>d.name),datasets:[{label:'Avg Grade',data:auditDomains.map(d=>7-d.num),backgroundColor:'rgba(184,148,30,.15)',borderColor:'var(--gold)',borderWidth:2,pointBackgroundColor:auditDomains.map(d=>d.pass?T:R),pointBorderColor:auditDomains.map(d=>d.pass?T:R),pointRadius:5},{label:'B- Threshold',data:Array(6).fill(7-3),backgroundColor:'rgba(163,45,45,.05)',borderColor:'rgba(163,45,45,.3)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{font:{family:'Outfit',size:11},usePointStyle:true,pointStyleWidth:8}}},scales:{r:{min:0,max:7,ticks:{stepSize:1,callback:v=>{const g=['F','D','C','C+','B','B+','A','A+'];return g[v]||''},font:{family:'JetBrains Mono',size:9},backdropColor:'transparent'},grid:{color:'rgba(0,0,0,.06)'},pointLabels:{font:{family:'Outfit',size:12,weight:500}}}}}});
 </script>
 </body>
 </html>
