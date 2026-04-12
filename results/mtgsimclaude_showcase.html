@@ -322,49 +322,81 @@ const obs=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&(e.target
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;document.querySelectorAll('.counter .num').forEach(el=>{const t=+el.dataset.target,s=performance.now();(function f(n){const p=Math.min((n-s)/1800,1);el.textContent=Math.round(t*(1-Math.pow(1-p,3))).toLocaleString();p<1&&requestAnimationFrame(f)})(s)})},{threshold:.5}).observe(document.querySelector('.counter-row'));
 
-// WR bar chart (stored for cross-interaction)
+// === PER-DECK DATA FOR CROSS-FILTERING ===
+const deckRes={Burn:{d:92.9,c:7.1,t:0},Dimir:{d:82.9,c:14.3,t:2.9},Infect:{d:91.4,c:8.6,t:0},'UR Del':{d:88.6,c:11.4,t:0},Eldrazi:{d:92.9,c:7.1,t:0},Storm:{d:58.6,c:41.4,t:0},Oops:{d:64.3,c:31.4,t:4.3},Reanim:{d:84.3,c:10,t:5.7}};
+const deckArch={Burn:'aggro',Dimir:'tempo',Infect:'combo-aggro','UR Del':'tempo',Eldrazi:'aggro',Storm:'combo',Oops:'combo',Reanim:'combo','Dimir B':'tempo','Dimir Flash':'tempo','UR Tempo':'tempo','Sneak B':'combo','8-Cast':'aggro',Painter:'combo',WST:'tempo',Doomsday:'combo'};
+const archTypes=['Combo v Aggro','Aggro v Aggro','Combo v Tempo','Aggro v Tempo','Tempo mirror','Control v Tempo'];
+const archMatch={'Combo v Aggro':['combo','aggro'],'Aggro v Aggro':['aggro'],'Combo v Tempo':['combo','tempo'],'Aggro v Tempo':['aggro','tempo'],'Tempo mirror':['tempo'],'Control v Tempo':['control','tempo']};
+const allRes=[46.2,18.0,35.8], allLen=[3.8,4.2,6.7,6.4,9.3,9.6], turnBg=[P,'#5dcaa5',P,T,G,A];
+
+// === CHARTS (all stored for cross-update) ===
 const wrLabels=['Burn','Infect','UR Tempo','Dimir B','Dimir','Dimir Flash','Eldrazi','Sneak B','8-Cast','Oops','Painter','WST','Doomsday'];
 const wrData=[71,66,63,62,60,60,60,59,38,38,37,36,33];
-const wrChart=new Chart(document.getElementById('wrChart'),{type:'bar',data:{labels:wrLabels,datasets:[{data:wrData,backgroundColor:wrLabels.map((_,i)=>wrData[i]>=59?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)'),borderColor:wrLabels.map((_,i)=>wrData[i]>=59?T:R),borderWidth:1.5,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',onClick:(e,els)=>{if(els.length){selectDeck(wrLabels[els[0].index])}},plugins:{legend:{display:false}},scales:{x:{max:85,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},y:{grid:{display:false},ticks:{font:{family:'Outfit',size:11}}}}}});
+const wrBgDef=wrLabels.map((_,i)=>wrData[i]>=59?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)');
+const wrBrDef=wrLabels.map((_,i)=>wrData[i]>=59?T:R);
+const wrChart=new Chart(document.getElementById('wrChart'),{type:'bar',data:{labels:wrLabels,datasets:[{data:wrData,backgroundColor:[...wrBgDef],borderColor:[...wrBrDef],borderWidth:1.5,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',onClick:(e,els)=>{if(els.length)selectDeck(wrLabels[els[0].index]);else clearSelection()},plugins:{legend:{display:false}},scales:{x:{max:85,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},y:{grid:{display:false},ticks:{font:{family:'Outfit',size:11}}}}}});
 
-// Global deck selection — cross-links all views
-let selectedDeck=null;
-function selectDeck(name){
-  selectedDeck=name;
-  // 1. Highlight WR chart bar
-  const wrIdx=wrLabels.findIndex(l=>l===name||name.startsWith(l)||l.startsWith(name));
-  wrChart.data.datasets[0].borderWidth=wrLabels.map((_,i)=>i===wrIdx?3:1.5);
-  wrChart.data.datasets[0].borderColor=wrLabels.map((_,i)=>i===wrIdx?'#b8941e':(wrData[i]>=59?T:R));
-  wrChart.update();
-  // 2. Highlight deck chip
-  document.querySelectorAll('.deck-chip').forEach(c=>{c.classList.remove('selected');if(c.textContent.includes(name))c.classList.add('selected')});
-  // 3. Show deck profile
-  const di=deckInfo.findIndex(d=>d.n===name||name.startsWith(d.n)||d.n.startsWith(name));
-  if(di>=0)showDeck(di);
-  // 4. Highlight heatmap row/column
-  const hmIdx=hD.findIndex(d=>d===name||name.startsWith(d)||d.startsWith(name));
-  document.querySelectorAll('.heatmap td,.heatmap th,.heatmap .dl').forEach(el=>{el.classList.remove('hl-row','hl-col','hl-label')});
-  if(hmIdx>=0){
-    const rows=document.querySelectorAll('.heatmap tr');
-    rows.forEach((row,r)=>{
-      if(r===0){row.querySelectorAll('th').forEach((th,c)=>{if(c===hmIdx+1)th.classList.add('hl-label')});return}
-      const cells=row.querySelectorAll('td');
-      cells.forEach((td,c)=>{
-        if(c===0&&r-1===hmIdx)td.classList.add('hl-label');
-        if(c>0){if(r-1===hmIdx)td.classList.add('hl-row');if(c-1===hmIdx)td.classList.add('hl-col')}
-      });
-    });
-  }
-}
-
-// Convergence line chart
 new Chart(document.getElementById('convChart'),{type:'line',data:{labels:['n=30','n=50','n=100','n=200','n=300','n=500'],datasets:[{data:[83.3,81,80,76.5,75.8,75.2],borderColor:G,backgroundColor:'rgba(184,148,30,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:G,pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5},{data:[75.2,75.2,75.2,75.2,75.2,75.2],borderColor:T,borderDash:[5,5],borderWidth:1.5,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:70,max:88,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},x:{grid:{display:false},ticks:{font:{family:'JetBrains Mono',size:10}}}}}});
 
-// Win resolution doughnut
-new Chart(document.getElementById('resChart'),{type:'doughnut',data:{labels:['Combat damage','Combo kill','Timeout (T15)'],datasets:[{data:[46.2,18.0,35.8],backgroundColor:[T,P,A],borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{family:'Outfit',size:11},padding:14,usePointStyle:true,pointStyleWidth:8}}}}});
+const resChart=new Chart(document.getElementById('resChart'),{type:'doughnut',data:{labels:['Combat damage','Combo kill','Timeout (T15)'],datasets:[{data:[...allRes],backgroundColor:[T,P,A],borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',onClick:(e,els)=>{if(!els.length)clearSelection()},plugins:{legend:{position:'bottom',labels:{font:{family:'Outfit',size:11},padding:14,usePointStyle:true,pointStyleWidth:8}}}}});
 
-// Turn length by archetype
-new Chart(document.getElementById('turnChart'),{type:'bar',data:{labels:['Combo v Aggro','Aggro v Aggro','Combo v Tempo','Aggro v Tempo','Tempo mirror','Control v Tempo'],datasets:[{data:[3.8,4.2,6.7,6.4,9.3,9.6],backgroundColor:[P,'#5dcaa5',P,T,G,A],borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'t',font:{family:'JetBrains Mono',size:10}}},x:{grid:{display:false},ticks:{font:{family:'Outfit',size:10},maxRotation:35}}}}});
+const turnChart=new Chart(document.getElementById('turnChart'),{type:'bar',data:{labels:archTypes,datasets:[{data:[...allLen],backgroundColor:[...turnBg],borderRadius:5,borderSkipped:false,borderWidth:0,borderColor:'transparent'}]},options:{responsive:true,maintainAspectRatio:false,onClick:(e,els)=>{if(!els.length){clearSelection();return}const archs=archMatch[archTypes[els[0].index]]||[];const m=Object.keys(deckArch).find(d=>archs.includes(deckArch[d]));if(m)selectDeck(m)},plugins:{legend:{display:false}},scales:{y:{grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'t',font:{family:'JetBrains Mono',size:10}}},x:{grid:{display:false},ticks:{font:{family:'Outfit',size:10},maxRotation:35}}}}});
+
+// === CROSS-FILTER ENGINE ===
+let selectedDeck=null;
+function _matchName(a,b){return a===b||a.startsWith(b)||b.startsWith(a)}
+function selectDeck(name){
+  selectedDeck=name;
+  const wrIdx=wrLabels.findIndex(l=>_matchName(l,name));
+  const hmName=hD.find(d=>_matchName(d,name));
+  const arch=deckArch[name]||deckArch[hmName]||'';
+
+  // 1. WR chart: gold selected bar, dim others
+  wrChart.data.datasets[0].borderWidth=wrLabels.map((_,i)=>i===wrIdx?3:1.5);
+  wrChart.data.datasets[0].borderColor=wrLabels.map((_,i)=>i===wrIdx?G:wrBrDef[i]);
+  wrChart.data.datasets[0].backgroundColor=wrLabels.map((_,i)=>i===wrIdx?'rgba(184,148,30,.2)':wrBgDef[i].replace(/[\d.]+\)$/,'.05)'));
+  wrChart.update();
+
+  // 2. Doughnut: swap to per-deck win resolution
+  const dr=deckRes[hmName];
+  if(dr){resChart.data.datasets[0].data=[dr.d,dr.c,dr.t]}else{resChart.data.datasets[0].data=[...allRes]}
+  document.querySelector('#resChart').closest('.chart-card').querySelector('h4').textContent=dr?'Win resolution — '+name:'Win resolution';
+  resChart.update();
+
+  // 3. Turn length: highlight matching archetype, dim others
+  turnChart.data.datasets[0].backgroundColor=archTypes.map((at,i)=>{const a=archMatch[at]||[];return a.includes(arch)||a.includes('combo-aggro'&&arch==='combo-aggro')?turnBg[i]:(turnBg[i]+'18')});
+  turnChart.data.datasets[0].borderWidth=archTypes.map((at)=>{const a=archMatch[at]||[];return a.includes(arch)?2:0});
+  turnChart.data.datasets[0].borderColor=archTypes.map((at)=>{const a=archMatch[at]||[];return a.includes(arch)?G:'transparent'});
+  document.querySelector('#turnChart').closest('.chart-card').querySelector('h4').textContent='Avg game length — '+arch;
+  turnChart.update();
+
+  // 4. Deck chip
+  document.querySelectorAll('.deck-chip').forEach(c=>{c.classList.remove('selected');if(c.textContent.includes(name))c.classList.add('selected')});
+
+  // 5. Deck profile
+  const di=deckInfo.findIndex(d=>_matchName(d.n,name));
+  if(di>=0)showDeck(di);
+
+  // 6. Heatmap row/col gold highlight
+  const hmIdx=hD.findIndex(d=>_matchName(d,name));
+  document.querySelectorAll('.heatmap td,.heatmap th,.heatmap .dl').forEach(el=>{el.classList.remove('hl-row','hl-col','hl-label')});
+  if(hmIdx>=0){document.querySelectorAll('.heatmap tr').forEach((row,r)=>{
+    if(r===0){row.querySelectorAll('th').forEach((th,c)=>{if(c===hmIdx+1)th.classList.add('hl-label')});return}
+    row.querySelectorAll('td').forEach((td,c)=>{
+      if(c===0&&r-1===hmIdx)td.classList.add('hl-label');
+      if(c>0){if(r-1===hmIdx)td.classList.add('hl-row');if(c-1===hmIdx)td.classList.add('hl-col')}
+    });
+  })}
+}
+function clearSelection(){
+  selectedDeck=null;
+  wrChart.data.datasets[0].borderWidth=1.5;wrChart.data.datasets[0].borderColor=[...wrBrDef];wrChart.data.datasets[0].backgroundColor=[...wrBgDef];wrChart.update();
+  resChart.data.datasets[0].data=[...allRes];document.querySelector('#resChart').closest('.chart-card').querySelector('h4').textContent='Win resolution';resChart.update();
+  turnChart.data.datasets[0].backgroundColor=[...turnBg];turnChart.data.datasets[0].borderWidth=0;turnChart.data.datasets[0].borderColor='transparent';document.querySelector('#turnChart').closest('.chart-card').querySelector('h4').textContent='Avg game length by matchup type';turnChart.update();
+  document.querySelectorAll('.heatmap td,.heatmap th,.heatmap .dl').forEach(el=>{el.classList.remove('hl-row','hl-col','hl-label')});
+  document.querySelectorAll('.deck-chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('deckProfile').className='deck-profile';
+}
 
 // Interactive accuracy rows
 const accData=[
