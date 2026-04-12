@@ -329,6 +329,30 @@ def _save_trace(r, deck1, deck2, seed=None):
     return fname
 
 
+def cmd_bo3(deck1, deck2, n_matches, seed=None):
+    """Run N best-of-3 matches between two decks (sideboard-aware).
+
+    This is the §9 #5 prototype — wires run_any_bo3 into the CLI. A full
+    Bo3 matrix across all 36 decks would require sideboard plans for every
+    deck (see PLANNING_REFERENCE for the 22 full-strategy vs proxy split);
+    for now we expose single matchups so the sideboard math can be spot-
+    checked against G1 sweeps.
+    """
+    from sim import run_any_bo3
+    if seed is not None:
+        random.seed(seed)
+
+    print(f"\n{'=' * 60}")
+    print(f"  {deck1.upper()} vs {deck2.upper()} — Bo3 × {n_matches} matches")
+    print(f"{'=' * 60}")
+
+    r = run_any_bo3(deck1, deck2, n_matches)
+    print(f"\n  Match WR ({deck1} wins a match): {r['match_wr']:.1%}  "
+          f"({r['wins']}/{r['n']})")
+    print(f"  Game WR ({deck1} wins any game):  {r['game_wr']:.1%}")
+    print(f"\n  Compare to Bo1 sweep: run_meta.py --matchup {deck1} {deck2} -n {n_matches}")
+
+
 def cmd_verbose(deck1, deck2, seed=None):
     """Run one game with full play-by-play trace (trace is now the default)."""
     from sim import run_game
@@ -379,6 +403,9 @@ Import a new deck:
                         help='Show deck details (cards, strategy, tags)')
     parser.add_argument('--matchup', nargs=2, metavar=('D1', 'D2'),
                         help='Run D1 vs D2 sweep')
+    parser.add_argument('--bo3', nargs=2, metavar=('D1', 'D2'),
+                        help='Run D1 vs D2 as a best-of-3 (sideboard-aware) sweep. '
+                             'Uses run_any_bo3(). N via -n (default 100 matches).')
     parser.add_argument('--field', metavar='DECK',
                         help='Run one deck vs all others')
     parser.add_argument('--matrix', action='store_true',
@@ -417,6 +444,8 @@ Import a new deck:
         cmd_deck(args.deck)
     elif args.matchup:
         cmd_matchup(args.matchup[0], args.matchup[1], args.n, args.seed)
+    elif args.bo3:
+        cmd_bo3(args.bo3[0], args.bo3[1], args.n, args.seed)
     elif args.field:
         cmd_field(args.field, args.n, args.seed)
     elif args.matrix:
