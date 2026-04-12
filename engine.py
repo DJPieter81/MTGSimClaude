@@ -2957,6 +2957,15 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     7. Null Rod (shuts off fetch lands)
     """
 
+    # Trace: snapshot Prison's entry state
+    gs.strat_log.log_decision(
+        gs.turn, 'prison',
+        candidates=['fast_mana', 'chalice', 'trini', 'karn', 'bridge', 'painter_combo',
+                    'tks', 'nullrod'],
+        chosen='entry',
+        reason=(f"mana={total_mana}, chalice_active={gs.chalice_x is not None}, "
+                f"trini={gs.trinisphere_active}, hand={len(player.hand)}"))
+
     # ── 0. Fast mana: Lotus Petal and Grim Monolith ──
     petal = player.find_tag('petal')
     if petal and petal.cmc <= total_mana:
@@ -3142,6 +3151,11 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
+    gs.strat_log.log_decision(
+        gs.turn, 'eldrazi',
+        candidates=['chalice', 'tks', 'eldrazi_temple', 'skittering', 'emrakul'],
+        chosen='entry',
+        reason=f"mana={total_mana}, chalice_active={gs.chalice_x is not None}")
 
     # FoV reactive: destroy opp's Chalice if BUG has Force of Vigor
     if gs.chalice_x is not None:
@@ -3645,6 +3659,12 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
 
     dd_already_resolved = getattr(gs, '_doomsday_pile_built', False)
     mana = total_mana  # track remaining mana
+
+    gs.strat_log.log_decision(
+        gs.turn, 'doomsday',
+        candidates=['cast_doomsday', 'cycle_and_oracle', 'pass'],
+        chosen='cast_doomsday' if not dd_already_resolved and mana >= 3 else 'cycle_and_oracle' if dd_already_resolved else 'pass',
+        reason=f"mana={mana}, dd_resolved={dd_already_resolved}, life={player.life}")
 
     # ── Helper: cycle cards from hand (activated abilities — uncounterable) ──
     # Repeatedly cycle: each Wraith/Edge drawn from the pile can itself be cycled,
@@ -4642,6 +4662,16 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
     Reanimate oracle: pay life equal to creature's CMC. Griselbrand=8 → lose 8 life.
     """
     mana = total_mana  # start with land mana (Swamp or fetchable dual = {B})
+
+    # Trace: entry-state snapshot
+    has_entomb = player.find_tag('entomb') is not None
+    has_reanimate = any(c.tag in ('reanimate','exhume','animate_dead') for c in player.hand)
+    has_target = any(c.tag in ('griselbrand','archon','atraxa','emrakul') for c in player.hand + player.graveyard)
+    gs.strat_log.log_decision(
+        gs.turn, 'reanimator',
+        candidates=['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'],
+        chosen='entomb_reanimate' if has_entomb and has_reanimate else 'pass',
+        reason=f"mana={mana}, entomb={has_entomb}, reanimate={has_reanimate}, target={has_target}")
 
     # ── Step 1: Lotus Petal — free mana, always first ────────────────────────
     petals = [c for c in player.hand if c.tag == 'petal']

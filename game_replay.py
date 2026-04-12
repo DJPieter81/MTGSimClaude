@@ -10,7 +10,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cards import DECKS
 from game import PlayerState, GameState, london_mulligan, bug_keep, opp_keep
-from engine import bug_turn, opp_turn
+from engine import play_turn, opp_turn
+# Legacy compat: game_replay.py predates the symmetric engine; alias old
+# BUG-specific turn entry point to the symmetric play_turn.
+def bug_turn(gs, turn, matchup=''):
+    # Legacy signature allowed optional matchup; just pass it through via gs.
+    if matchup and not getattr(gs, 'matchup', None):
+        gs.matchup = matchup
+    return play_turn(gs, turn, who='p1')
 
 ABBREV = {
     'Tamiyo, Inquisitive Student': 'Tamiyo', 'Orcish Bowmasters': 'Bowmasters',
@@ -456,7 +463,13 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 .play .action{{font-family:'Fira Code','Consolas',monospace;font-size:0.85em;color:#c9d1d9;flex:1}}
 .play .action.key{{color:#e3b341;font-weight:600}}
 .play .action.counter{{color:#f85149;text-decoration:line-through;opacity:0.7}}
-.play .reasoning{{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px}}
+.play .reasoning{{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px;display:none}}
+body.show-reasoning .play .reasoning{{display:inline}}
+.reasoning-toggle{{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#21262d;border:1px solid #30363d;border-radius:4px;cursor:pointer;font-size:0.8em;color:#8b949e;user-select:none;margin-left:8px}}
+.reasoning-toggle:hover{{background:#2d333b;color:#c9d1d9}}
+body.show-reasoning .reasoning-toggle{{background:#1f6feb30;color:#58a6ff;border-color:#58a6ff60}}
+.reasoning-toggle::before{{content:"·";font-size:1.4em;line-height:0}}
+body.show-reasoning .reasoning-toggle::before{{content:"✓"}}
 .play .cat-badge{{font-size:0.65em;text-transform:uppercase;letter-spacing:0.5px;padding:1px 5px;border-radius:3px;font-weight:600;margin-right:4px;font-family:'Segoe UI',system-ui,sans-serif;min-width:50px;text-align:center;display:inline-block}}
 .cat-draw{{background:#1a1a2e;color:#8b8bb8}}.cat-land{{background:#0d2611;color:#7ee787}}.cat-combat{{background:#3d1418;color:#f85149}}.cat-interact{{background:#2d1b4e;color:#d2a8ff}}
 .cat-discard{{background:#3d2e14;color:#e3b341}}.cat-removal{{background:#3d1418;color:#ff7b72}}.cat-combo{{background:#4a1942;color:#f778ba}}.cat-spell{{background:#0d2847;color:#58a6ff}}
@@ -585,7 +598,8 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
         h.append(f'<div class="controls">')
         h.append(f'<button onclick="expandAll()">Expand All</button>')
         h.append(f'<button onclick="collapseAll()">Collapse All</button>')
-        h.append(f'<span class="kbd">↑↓ navigate &nbsp; Enter: toggle</span>')
+        h.append(f'<span class="reasoning-toggle" onclick="toggleReasoning()" title="Toggle AI reasoning annotations">AI reasoning</span>')
+        h.append(f'<span class="kbd">↑↓ navigate &nbsp; Enter: toggle &nbsp; R: reasoning</span>')
         h.append(f'</div>')
 
         # Turns
@@ -749,6 +763,12 @@ body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-ser
 function toggle(el) { el.classList.toggle('open'); }
 function expandAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.add('open')); }
 function collapseAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.remove('open')); }
+function toggleReasoning() {
+  document.body.classList.toggle('show-reasoning');
+  try { localStorage.setItem('mtg_show_reasoning', document.body.classList.contains('show-reasoning') ? '1' : '0'); } catch(e) {}
+}
+// Restore reasoning-toggle state from last session
+try { if (localStorage.getItem('mtg_show_reasoning') === '1') document.body.classList.add('show-reasoning'); } catch(e) {}
 function showGame(idx) {
   document.querySelectorAll('.game-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
   document.querySelectorAll('.game-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
@@ -761,6 +781,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowDown') { e.preventDefault(); if(cur<turns.length-1){turns.forEach(t=>t.classList.remove('active'));turns[cur+1].classList.add('active');turns[cur+1].scrollIntoView({behavior:'smooth',block:'center'});} }
   else if (e.key === 'ArrowUp') { e.preventDefault(); if(cur>0){turns.forEach(t=>t.classList.remove('active'));turns[cur-1].classList.add('active');turns[cur-1].scrollIntoView({behavior:'smooth',block:'center'});} }
   else if (e.key === 'Enter' && cur>=0) { e.preventDefault(); toggle(turns[cur]); }
+  else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); toggleReasoning(); }
 });
 </script>
 </body></html>""")
