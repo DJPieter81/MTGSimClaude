@@ -29,6 +29,26 @@ class ThreatLevel:
     LOW             = 1   # cantrip / ritual / minor spell
 
 
+def threat_level_to_clock_delta(level: int) -> float:
+    """Convert the existing categorical ThreatLevel to a clock-delta float.
+
+    Bridge to clock.py-style scoring (PLANNING_REFERENCE §9 #4). Use this
+    where a strategy needs a numeric threat weight instead of a category —
+    letting it compose with other clock deltas (burn damage, new creature,
+    removal) without refactoring the existing classify_threat() callers.
+
+    Mapping mirrors clock.py:
+        MUST_ANSWER_NOW → +3.5    HIGH → +1.2
+        MEDIUM          → +0.3    LOW  → -0.1
+    """
+    return {
+        ThreatLevel.MUST_ANSWER_NOW: 3.5,
+        ThreatLevel.HIGH:            1.2,
+        ThreatLevel.MEDIUM:          0.3,
+        ThreatLevel.LOW:            -0.1,
+    }.get(level, 0.0)
+
+
 def classify_threat(spell_card, gs) -> int:
     """
     Property-based threat classification.
