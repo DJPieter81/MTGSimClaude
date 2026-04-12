@@ -1147,6 +1147,12 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     budget = [total_mana]
     turn = gs.turn
 
+    gs.strat_log.log_decision(
+        gs.turn, 'bug',
+        candidates=['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, hand={len(player.hand)}, threats_in_play={len(player.creatures)}")
+
     # Trinisphere CR 601.2f: all spells cost at least {3}
     trini_min = 3 if gs.trinisphere_active else 0
     thalia_tax = 1 if gs.thalia_on_board else 0
@@ -3239,6 +3245,12 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
 
+    gs.strat_log.log_decision(
+        gs.turn, 'show',
+        candidates=['show_and_tell', 'sneak_attack', 'emrakul', 'griselbrand', 'cantrip', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, hand={len(player.hand)}")
+
     # ── Mana: Ancient Tomb gives {CC} generic; City of Traitors gives {CC} ──
     # Lotus Petal sacs for any mana
     tomb_untapped = sum(1 for l in player.lands if l.card.tag == 'tomb' and not l.tapped)
@@ -3374,6 +3386,13 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
+    gs.strat_log.log_decision(
+        gs.turn, 'lands',
+        candidates=['crop_rotation', 'depths', 'stage', 'marit_lage', 'exploration', 'pass'],
+        chosen='entry',
+        reason=(f"mana={total_mana}, lands={len(player.lands)}, "
+                f"depths_out={any(l.card.tag=='depths' for l in player.lands)}"))
+
     crop = player.find_tag('crop')
     if crop and opp_can_cast(crop, total_mana, gs, caster=player):
         player.remove_from_hand(crop)
@@ -3866,6 +3885,12 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     rem = total_mana  # remaining mana this gs.turn — deduct after each spell cast
+
+    gs.strat_log.log_decision(
+        gs.turn, 'dimir',
+        candidates=['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'],
+        chosen='entry',
+        reason=f"mana={rem}, hand={len(player.hand)}, threats_in_play={len(player.creatures)}")
 
     # ── 0a. Thoughtseize — proactive disruption (early turns) ──
     from config import MatchupCategory as MC
