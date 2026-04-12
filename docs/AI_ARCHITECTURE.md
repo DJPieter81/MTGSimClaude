@@ -1,252 +1,215 @@
 # MTGSimClaude — AI Architecture & Structure Guide
 
+> **Last updated:** 2026-04-12 | **See also:** `PLANNING_REFERENCE.md` for benchmarks, backlog, and cross-pollination roadmap.
+
 ## File Structure
 
 ```
 MTGSimClaude/
-├── sim.py          # Entry point: run_game(), run_match(), CLI, rules tests
-├── engine.py       # Turn execution: bug_turn(), opp_turn(), all strategy functions
-├── game.py         # State: GameState, PlayerState, get_attackers(), mulligan
-├── rules.py        # Immutable rules: Card, Permanent, MTGRules static methods
-├── cards.py        # Card database: make_*_deck() functions, DECKS dict, meta shares
-├── config.py       # Constants: CardRoles, MatchupCategory, InteractionParams
-├── interaction.py  # Threat classification, counter selection, Thoughtseize targeting
-├── gameplan.py     # Stub (GAMEPLANS dict, assess(), active_goal())
-├── full_sweep.py   # Batch runner for all matchups
-└── decks/          # Plugin decks (eight_cast, tes, elves)
+├── sim.py                 # Game loop: run_game(), run_sweep(), run_meta_matrix(), Bo3
+├── engine.py              # Turn execution: play_turn(), 19 strategy fns, counters, combat
+├── game.py                # State: GameState, PlayerState, get_attackers(), mulligan
+├── rules.py               # Immutable: Card, Permanent, LandPermanent, ManaPool, MTGRules
+├── cards.py               # Card builders: make_*_deck(), DECKS dict, MATCHUP_META
+├── config.py              # Constants: CardRoles, MatchupCategory, InteractionParams
+├── interaction.py         # classify_threat(), best_proactive_target(), answer selection
+├── interaction_model.py   # Hypergeometric FoW priors, save rates, P(at_least_one)
+├── gameplan.py            # Stub: GAMEPLANS dict, assess(), active_goal()
+├── deck_registry.py       # Auto-discovery of deck modules in decks/
+├── import_deck.py         # Paste MTGGoldfish decklist → auto-generate deck module
+├── parallel.py            # Multiprocessing ~3x speedup for matrix/field runs
+├── meta_results.py        # Save/load matrix JSON, timestamped persistence
+├── meta_audit.py          # Post-sim outlier detection + strategy audit
+├── game_replay.py         # HTML Bo3 replayer generator (17 play categories)
+├── verbose_table.py       # Card-level data extraction from verbose logs
+├── run_meta.py            # CLI: --list, --deck, --matchup, --matrix, --verbose, --trace
+├── hypothesis_testing.py  # Statistical analysis tools
+├── decks/                 # 38 deck modules (22 full + 17 proxy), auto-discovered
+├── skills/                # 4 reusable Claude skills
+├── templates/             # reference_meta_matrix.html, reference_deck_guide.html
+├── results/               # Matrix JSON, trace logs, replay HTML
+├── CLAUDE.md              # Quick-start for Claude Code
+└── PLANNING_REFERENCE.md  # Planning-mode context (benchmarks, backlog, proposals)
 ```
+
+**Line counts (core):**
+
+| File | Lines | Role |
+|------|-------|------|
+| engine.py | 5,038 | Turn execution, all AI strategy |
+| cards.py | 2,068 | Card database, deck builders |
+| sim.py | 1,804 | Game loop, sweeps, matrix, Bo3 |
+| game.py | 1,064 | State management, mulligan, attackers |
+| rules.py | 678 | MTG rules, Card/Permanent types |
+| config.py | 380 | Constants, matchup categories |
+| interaction.py | 249 | Threat classification, counter selection |
+| interaction_model.py | 213 | Hypergeometric priors, save rates |
+| **Total core** | **11,494** | |
+| decks/ (38 modules) | ~14,000 | Strategy code |
 
 ## Simulation Flow
 
 ```
-sim.py: run_game(matchup)
+sim.py: run_game(deck1, deck2)
   ├── london_mulligan() both players
-  ├── coin flip: who goes first
+  ├── coin flip → who goes first
   └── for turn 1..15:
-        ├── bug_turn(gs, turn)      ← BUG's turn (engine.py)
-        │     ├── untap, clear damage
+        ├── play_turn(gs, turn, 'p1')    ← SYMMETRIC — same function for both
+        │     ├── untap, clear summoning sickness
         │     ├── draw (+ Bowmasters trigger check)
-        │     ├── land drop (fetch crack → WST trigger)
-        │     ├── tap lands → build mana budget
-        │     ├── cast spells (priority order)
-        │     │     └── each spell → _opp_reactive_counter() check
-        │     ├── combat → gs.get_attackers() → resolve_combat()
-        │     └── EOT: Vial deploy, Tamiyo flip check
+        │     ├── land drop
+        │     ├── ManaManager.refresh(player) → build mana budget
+        │     ├── apply_lock_effects() → Trinisphere/Thalia CMC adjustment
+        │     ├── dispatch to _strategy_XXX() based on deck key
+        │     │     └── each spell → try_reactive_counter() check
+        │     ├── combat_declare() → get_attackers() → resolve_combat()
+        │     ├── restore_lock_effects()
+        │     └── EOT: Vial deploy, Tamiyo flip, Eidolon damage
         │
-        └── opp_turn(gs, turn)      ← Opponent's turn
-              ├── untap, clear sickness
-              ├── draw
-              ├── land drop
-              ├── tap lands → om (opponent mana)
-              ├── Port taps BUG lands
-              ├── gameplan assessment
-              └── _strategy_XXX()    ← matchup-specific AI
-                    └── each spell → _try_counter_any() check
+        └── play_turn(gs, turn, 'p2')    ← SAME function, other player slot
 ```
 
-## Key AI Decision Points
+**Key principle:** play_turn() is symmetric. Both p1 and p2 use the same turn function. Strategy dispatch is by deck key, not player slot.
 
-### 1. BUG Spell Casting (engine.py: bug_turn)
+## AI Decision Model: Rule-Tree Dispatch
 
-Priority order inside bug_turn():
+19 hand-coded strategy functions with 787 if/elif branches (avg 41 per strategy). Decisions are binary — first match wins, no comparison between alternatives.
+
+| Metric | Value |
+|--------|-------|
+| Strategy functions | 19 |
+| Total if/elif branches | 787 |
+| Unique card tags | 73 |
+| Property-based checks | 76 |
+| Tag-based checks | 184 |
+
+### Storm example (how a strategy function works)
+
 ```
-1. Wasteland (activated ability, uncounterable)
-2. Thoughtseize (T1-3, strip best card via interaction.py)
-3. Fatal Push (kill opponent creatures, priority: haste > deathtouch > biggest)
-4. Snuff Out (free kill if Swamp in play)
-5. Deploy creatures:
-   - Tamiyo (CMC 1, flip walker)
-   - Nethergoyf (CMC 2, grows)
-   - Bowmasters (CMC 2, flash, ping engine)
-   - Murktide (CMC 7 delve, needs GY fuel)
-   - Kaito (CMC 3, hexproof engine)
-   Each creature → _opp_reactive_counter() fires
-6. Cantrips: Brainstorm (only with fetch available), Ponder
-7. Combat: get_attackers() evaluates each creature's EV
-```
-
-### 2. Opponent Reactive Counter (engine.py: _opp_reactive_counter)
-
-Called when BUG casts a spell. Opponent tries to counter it.
-```python
-def _opp_reactive_counter(gs, spell_card, log_list):
-    # Single-pass scan of opponent hand
-    counters_by_tag = {c.tag: c for c in o.hand if c.tag in _COUNTER_TAGS}
-    
-    # Skip cantrips (not worth countering)
-    # Skip Thoughtseize (only counter if protecting key cards)
-    
-    # Classify threat level:
-    is_major = win_condition OR combo_piece OR tag in (murk, kaito) OR cmc >= 4
-    # Mirror: Bowmasters + Nethergoyf are major (army + GY growth)
-    # Control with STP: don't FoW cheap creatures (card disadvantage)
-    
-    # Counter priority chain:
-    FoN (free on BUG's turn) → FoW (free, pitch blue) → Counterspell (UU) 
-    → Flusterstorm (U, instants/sorceries) → Pyroblast (R, blue spells)
-    → Consign (3 mana) → Daze (return Island)
-    
-    # Hand-size gates: Counterspell needs 4+ cards, Flusterstorm needs 3+
-    # Trinisphere: blocks FoW/FoN alternate costs (can't pitch for free)
+_strategy_storm():
+  1. Cast cantrips if affordable
+  2. Simulate ritual chain mana (Trinisphere tax, Chalice blocks, LED)
+  3. Test 6 kill conditions (kill_A..kill_F) — first match wins
+  4. Safety check: Veil active? No FoW? Desperate?
+  5. Execute: Veil → kill spell → Flusterstorm backup
 ```
 
-### 3. BUG Countering Opponent Spells (engine.py: _opp_try_counter)
+### Rule tree vs EV scoring (Modern project comparison)
 
-Called when opponent casts a spell during opp_turn().
-```python
-def _opp_try_counter(gs, spell_card, log_list):
-    # Uses BUG's hand (gs.bug)
-    # Trinisphere active → FoW/FoN disabled (can't free-cast)
-    # Veil of Summer active → all counters disabled
-    
-    # is_major: win_condition, combo_piece, bowm/murk/kaito, cmc >= 3
-    # Skip cantrips and Thoughtseize
-    
-    # Priority: FoN → FoW → Daze (with pay-through probability)
+| Dimension | Legacy (rule tree) | Modern (EV scoring) |
+|-----------|-------------------|---------------------|
+| Speed | **2.5ms/game** (91x faster) | 227ms/game |
+| Scaling | O(decks) — new fn per deck | O(1) — new weights only |
+| Combo modeling | **Excellent** (explicit kill lines) | Weak (calibration bugs) |
+| Fair-deck play | Weak (first match wins) | **Strong** (all options compete) |
+
+## Counter Logic (Unified)
+
+`try_reactive_counter()` — symmetric, works for either player:
+
+```
+1. Protection: Veil of Summer? Allosaurus Shepherd? → can't counter
+2. Scan defender hand for counters (O(1) tag lookup)
+3. Trinisphere → disable FoW/FoN/Daze alternate costs
+4. Skip cantrips (not worth countering)
+5. classify_threat() → MUST (4) / HIGH (3) / MEDIUM (2) / LOW (1)
+6. Priority: FoN → FoW → Counterspell → Flusterstorm → Pyroblast → Daze
+7. Hand-size gates: CS needs 4+ cards, Flusterstorm needs 3+
 ```
 
-### 4. Combat Resolution (engine.py: resolve_combat)
+## Threat Classification (interaction.py)
 
-```python
-def resolve_combat(gs, attacker_player, defender_player, log_list):
-    attackers = gs.get_attackers(attacker_player)  # EV-based selection
-    
-    # C2: tap all attackers
-    # Bridge check: defender hand size blocks power > hand_size
-    # Vial combat ambush: flash in blocker (DnT/Boros)
-    
-    # Blocker assignment (greedy, largest attacker first):
-    #   1. Favorable trade (blocker kills attacker, survives)
-    #   2. Even trade (both die)
-    #   3. Chump (attacker power >= 3, spare blockers available)
-    
-    # Damage resolution: mutual damage, deathtouch, lifelink, flying
+Property-based, not tag-based:
+```
+MUST_ANSWER_NOW (4): is_combo_piece, win_condition
+HIGH (3):            lock_piece, engine, haste, is_mass_removal, cmc >= 5
+MEDIUM (2):          is_removal, is_creature (mirror or CMC1)
+LOW (1):             cantrips, rituals
 ```
 
-### 5. get_attackers() EV Assessment (game.py)
+## Thoughtseize Targeting (interaction.py)
 
-```python
-def get_attackers(self, player):
-    # Bridge: defender's hand size blocks creatures
-    # For each creature:
-    #   - Skip summoning sick, skip 0-power
-    #   - Evaluate best_blocker_for(attacker):
-    #     - No blocker → free damage, always attack
-    #     - Flying vs no flyers → unblocked, attack
-    #     - Favorable trade → attack
-    #     - Even trade + board lead → attack
-    #     - Losing trade → don't attack
-    #     - Deathtouch blocker → don't attack
-    #   - Near lethal → attack regardless
+```
+win_condition: 100   combo_piece:  90   lock_piece: 80
+FoW/FoN:        65   engine:       50   creature3+: 40
+removal:        35   ritual:       25   cantrip:    10
 ```
 
-### 6. Threat Classification (interaction.py: classify_threat)
+## Combat System
 
-```python
-def classify_threat(spell_card, gs):
-    # Property-based (not tag-based):
-    MUST (4): combo pieces, win conditions
-    HIGH (3): lock pieces, engines, haste, mass removal, cmc >= 5
-    MEDIUM (2): removal spells, cmc2+ creatures
-    LOW (1): cantrips, rituals
-```
+**get_attackers()** — per-creature EV assessment:
+- No blocker → free damage, always attack
+- Flying vs no flyers → unblocked
+- Favorable/even trade → attack
+- Losing trade or deathtouch blocker → don't attack
+- Near lethal → attack regardless
 
-### 7. Thoughtseize Targeting (interaction.py: best_proactive_target)
+**resolve_combat()** — blocker assignment:
+- Greedy, largest attacker first
+- Favorable trade > even trade > chump (power >= 3 + spare blockers)
+- Vial combat ambush for DnT/Boros
 
-```python
-def best_proactive_target(gs):
-    # Score each card in opponent's hand:
-    win_condition:  100
-    combo_piece:     90
-    lock_piece:      80
-    FoW/FoN:         65
-    engine:          50
-    creature cmc3+:  40
-    removal:         35
-    ritual:          25
-    cantrip:         10
-```
+## Strategy Functions (all 19)
 
-## Opponent Strategy Architecture
+| Strategy | Archetype | Key mechanics |
+|----------|-----------|---------------|
+| `_strategy_storm` | Combo | Ritual chain, LED, 6 kill conditions |
+| `_strategy_dimir` | Tempo | Creature deployment, counter conservation |
+| `_strategy_eldrazi` | Aggro | Chalice, TKS hand disruption |
+| `_strategy_show` | Combo | Show and Tell + Emrakul/Omniscience |
+| `_strategy_prison` | Lock | Karn wishes, Trinisphere, Bridge |
+| `_strategy_lands` | Control | Dark Depths, Wasteland lock |
+| `_strategy_oops` | Combo | T1 kill attempts |
+| `_strategy_doomsday` | Combo | Doomsday pile |
+| `_strategy_reanimator` | Combo | Entomb + Reanimate |
+| `_strategy_dnt` | Tax-Aggro | Thalia, Vial, Karakas |
+| `_strategy_uwx` | Control | Wrath, Mentor tokens |
+| `_strategy_painter` | Combo | Painter + Grindstone |
+| `_strategy_bug` | Tempo | Wasteland, Thoughtseize |
+| `_strategy_dimir_flash` | Tempo | Flash threats, WST |
+| `_strategy_boros` | Aggro | Initiative, Vial |
+| `_strategy_mardu` | Aggro | Energy, creature curve |
+| `_strategy_mono_black` | Aggro | Dark Rit, Hymn |
+| `_strategy_ur_aggro` | Aggro | Bolt, Delver |
+| `_strategy_elves` | Combo | Natural Order, Craterhoof |
 
-Each opponent deck has a strategy function:
-```python
-def _strategy_XXX(player, opponent, gs, total_mana, log_fn, log_entries):
-    # 1. Deploy lock pieces / rituals / setup
-    # 2. Cast creatures (via Vial or hard-cast)
-    # 3. Use removal (STP, Bolt, Push)
-    # 4. Wasteland / Karakas (if available)
-    # 5. Combat: _select_attackers() or custom logic
-    # 6. Special mechanics (Initiative, Karn wish, Bridge hand-dump)
-```
+## Key Mechanics
 
-Strategy dispatch in opp_turn():
-```python
-if   matchup == 'prison':    _opp_prison(gs, om, log, log_entries)
-elif matchup == 'eldrazi':   _opp_eldrazi(gs, om, log, log_entries)
-elif matchup == 'show':      _opp_show(gs, om, log, log_entries)
-# ... 18 matchup strategies total
-```
-
-## Key Mechanics Implemented
-
-| Mechanic | Where | How |
-|----------|-------|-----|
-| Mana system | rules.py ManaPool | Color-indexed, pay_cost with delve |
-| FoW/FoN | _opp_reactive_counter | Pitch blue card, _select_fow_pitch() |
-| Daze | counter functions | Return Island, pay-through probability |
+| Mechanic | Location | Implementation |
+|----------|----------|----------------|
+| Trinisphere | apply_lock_effects() | Pre-dispatch max(cmc, 3). Blocks FoW alternate costs. |
+| Thalia tax | ManaManager.effective_cmc() | Noncreature spells +1 |
 | Chalice | opp_can_cast() | spell_blocked_by_chalice(cmc) |
-| Trinisphere | effective_cmc() | max(cmc, 3), blocks FoW alternate cost |
-| Bridge | get_attackers() | defender's hand size blocks power > N |
-| Wasteland | strategy functions | Destroy nonbasic, priority: dual > fetch |
-| Karakas | DnT/Boros strategy | Bounce legendary (Murktide priority) |
-| Eidolon tax | _eidolon_trigger() | 2 damage per BUG spell CMC >= 2 |
-| Thalia tax | effective_cmc() | Noncreature spells cost +1 |
-| Initiative | Boros strategy | Escalating damage 1/2/3 per turn |
-| Mentor tokens | UWx strategy | _MONK_TOKEN prototype, trigger on noncreature |
-| Bowmasters | bowmasters_triggers() | 1 ping per draw event, grow Orc Army |
-| Narset lock | game.py draw() | Only 1 draw per turn when active |
-| Blood Moon | LandPermanent | Nonbasics produce only R |
-| Back to Basics | LandPermanent | Nonbasics don't untap |
-| Karn recurring | Prison strategy | +1 wish each turn (Bridge > Trini > Chalice) |
-| WST triggers | bug_turn fetch | +1/+1 and draw on BUG library search |
-| Vial EOT | bug_turn end step | Deploy creature at counter CMC, uncounterable |
+| Bridge | get_attackers() | Hand size blocks power > N |
+| FoW/FoN | try_reactive_counter() | Pitch blue, _select_fow_pitch() |
+| Daze | try_reactive_counter() | Return Island, pay-through probability |
+| Veil | try_reactive_counter() | Blanks all counters for the turn |
+| Wasteland | strategy functions | Priority: dual > fetch > utility |
+| Bowmasters | bowmasters_triggers() | 1 ping per draw, grow Orc Army |
+| Narset | game.py draw() | 1 draw per turn when active |
 
-## Shared Helpers
+## Deck Plugin System
 
-```python
-# Token prototypes (avoid repeated allocation)
-_MONK_TOKEN = Card(name='Monk Token', ...)
-_ORC_ARMY_PROTO = Card(name='Orc Army', ...)
-
-# Counter tag set for O(1) lookup
-_COUNTER_TAGS = {'fow','fon','daze','consign','counter','fluster','pyro','reb'}
-
-# Shared attacker selection
-def _select_attackers(player, opponent, hold_tags=('bowm','tamiyo'), desperate_life=8):
-    # Skip summoning sick, 0-power, held-back value engines
-
-# Shared helpers
-opp_can_cast()         # mana + color + Chalice + Trinisphere gate
-_opp_reactive_counter() # opponent counters BUG's spells
-_opp_try_counter()     # BUG counters opponent's spells  
-_try_counter_any()     # dispatch to the right counter function
-_bug_force_of_vigor()  # free artifact/enchantment destruction
-combat_declare()       # wrap attackers + resolve_combat
-```
-
-## Testing
+Zero engine edits to add a deck:
 
 ```bash
-python sim.py --test                        # 102 rules unit tests
-python sim.py --matchup dimir --games 1 -v  # single verbose game
-python sim.py --matchup all --games 500 --bo3  # full metagame sweep
+echo "4 Delver of Secrets..." | python3 import_deck.py "My Deck" aggro,tempo
+# deck_registry.py auto-discovers at import
 ```
 
-## Adding a New Deck
+## Performance
 
-1. `cards.py`: Add `make_XXX_deck()` returning 60 cards
-2. `cards.py`: Add to `DECKS` dict and `MATCHUP_META`
-3. `engine.py`: Add `_strategy_XXX()` function
-4. `engine.py`: Add dispatch in `opp_turn()` elif chain
-5. `cards.py`: Add postboard swap plan in `make_postboard_opp_deck()`
+| Metric | Value |
+|--------|-------|
+| Per game | 2.5ms |
+| Full matrix (n=30) | 94s |
+| Tests | 137/137 |
+| Avg game | 5.7 turns |
+
+## Evolution Roadmap
+
+See PLANNING_REFERENCE.md §8-9. Key adoptions from Modern:
+1. Strategic logger — --trace with decision reasoning
+2. Clock-based evaluation — clock.py (328 lines)
+3. Bayesian hand inference — bhi.py (275 lines)
+4. Declarative gameplans — JSON-driven phase tracking

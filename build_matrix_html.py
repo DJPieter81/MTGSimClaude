@@ -31,6 +31,7 @@ import os
 import re
 import sys
 from datetime import datetime
+from pathlib import Path
 
 
 REQUIRED_JS_FNS = [
@@ -73,11 +74,13 @@ def rebuild(meta_path, agg_path, out_path):
     # D = the matchup data shape already matching template
     D = {'d': meta['d'], 'm': meta['m'], 'a': meta['a'], 'w': meta['w']}
     DA = _build_DA(agg, meta)
-    # Interaction / card layers require the extract_cards.py pipeline which
-    # isn't present in this env. Stubbed as empty maps; the template renders
-    # "no data" gracefully when these are missing.
-    I = {}
-    C = {}
+    # Interaction / card layers — load from repo data files if present,
+    # otherwise stub as empty (template renders "no data" gracefully).
+    _repo = Path(__file__).parent
+    _card_path = _repo / 'card_trimmed.json'
+    _interact_path = _repo / 'interact.json'
+    C = _load(str(_card_path)) if _card_path.exists() else {}
+    I = _load(str(_interact_path)) if _interact_path.exists() else {}
     ARCH = _build_ARCH(agg)
 
     with open(TEMPLATE_PATH) as f:
@@ -121,8 +124,8 @@ def rebuild(meta_path, agg_path, out_path):
     print(f"  D:    {n_decks} decks, {n_matchups} matchups")
     print(f"  DA:   {len(DA)} deck profiles")
     print(f"  ARCH: {len(ARCH)} archetype labels")
-    print(f"  C:    {len(C)} (stub — extract_cards.py pipeline needed)")
-    print(f"  I:    {len(I)} (stub — extract_interactions pipeline needed)")
+    print(f"  C:    {len(C)} matchups with card data{' (loaded card_trimmed.json)' if C else ' (stub — add card_trimmed.json)'}")
+    print(f"  I:    {len(I)} matchups with interaction data{' (loaded interact.json)' if I else ' (stub — add interact.json)'}")
     print(f"  JS:   all 9 required functions present")
     return True
 

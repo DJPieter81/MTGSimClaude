@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTGSimClaude — Legacy Metagame Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ink:#1a1714;--ink2:#4a4640;--ink3:#8a8680;--ink4:#bab5ae;--cream:#faf8f4;--paper:#f3f0ea;--card:#fff;--border:#e8e4dd;--gold:#b8941e;--gold-light:#e8d48a;--gold-bg:#fdf8e8;--teal:#0f6e56;--blue:#185fa5;--red:#a32d2d;--amber:#d4850b;--purple:#534ab7;--font-d:'Playfair Display',serif;--font-b:'Outfit',sans-serif;--font-m:'JetBrains Mono',monospace}
+html{scroll-behavior:smooth}body{background:var(--cream);color:var(--ink);font-family:var(--font-b);line-height:1.65;overflow-x:hidden}
+h1,h2,h3{font-family:var(--font-d);font-weight:600;letter-spacing:-.02em}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s ease}.reveal.visible{opacity:1;transform:translateY(0)}
+.section{max-width:1100px;margin:0 auto;padding:5rem 2rem}
+.sec-label{font-family:var(--font-m);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-weight:500;display:flex;align-items:center;gap:8px}
+.sec-label svg{width:14px;height:14px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sec-title{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:10px;line-height:1.15}
+.sec-desc{font-size:1rem;color:var(--ink2);max-width:560px;margin-bottom:2.5rem;font-weight:300}
+.warm-bg{background:var(--paper);max-width:100%;padding:5rem calc(max(2rem,(100% - 1100px)/2 + 2rem))}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;transition:transform .25s,box-shadow .25s}.card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(26,22,18,.07)}
+
+/* Hero */
+.hero{padding:100px 24px 80px;text-align:center;position:relative;overflow:hidden;background:linear-gradient(180deg,#fff 0%,var(--cream) 100%)}
+.hero::before{content:'';position:absolute;top:-60%;left:-20%;width:140%;height:140%;background:radial-gradient(ellipse at 30% 20%,rgba(184,148,30,.06),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(15,110,86,.04),transparent 50%);pointer-events:none}
+.hero-eyebrow{font-family:var(--font-m);font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:20px;font-weight:500}
+.hero h1{font-size:clamp(42px,7vw,76px);font-weight:800;line-height:1.05;margin-bottom:18px}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{font-size:clamp(15px,2vw,19px);font-weight:300;color:var(--ink2);max-width:560px;margin:0 auto 48px}
+.counter-row{display:flex;justify-content:center;gap:48px;flex-wrap:wrap}
+.counter{text-align:center}.counter .num{font-family:var(--font-d);font-size:42px;font-weight:700;line-height:1}.counter .unit{font-family:var(--font-m);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-top:6px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Charts */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px}
+.chart-card h4{font-family:var(--font-b);font-size:13px;font-weight:600;margin-bottom:2px}
+.chart-card .chart-sub{font-size:11px;color:var(--ink3);margin-bottom:14px}
+.chart-wrap{position:relative;height:220px}
+
+/* Architecture bars */
+.arch-bar{display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:12px;margin-bottom:5px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.arch-bar::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
+.arch-bar:hover{transform:translateX(4px)}
+.arch-bar.active{transform:translateX(4px);box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.arch-bar.active::after{content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:14px}
+.arch-bar .bi{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.arch-bar .bi svg{width:18px;height:18px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.arch-bar .bn{font-weight:600;font-size:13px}.arch-bar .bd{font-size:11px;color:var(--ink3)}
+.arch-bar .bs{font-family:var(--font-m);font-size:11px;color:var(--ink3);flex-shrink:0;margin-left:auto}
+.ab-sim{background:#fdf8e8;border:1px solid var(--gold-light)}.ab-sim::before{background:var(--gold)}.ab-sim .bi{background:var(--gold-light)}
+.ab-eng{background:#e6f5ee;border:1px solid #bfe5d2}.ab-eng::before{background:var(--teal)}.ab-eng .bi{background:#bfe5d2}
+.ab-ai{background:#eeedfb;border:1px solid #cfcbf2}.ab-ai::before{background:var(--purple)}.ab-ai .bi{background:#cfcbf2}
+.ab-deck{background:#eef5ff;border:1px solid #d0e2f7}.ab-deck::before{background:var(--blue)}.ab-deck .bi{background:#d0e2f7}
+.arch-det{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-top:10px;display:none;animation:fadeIn .3s ease}
+.arch-det.show{display:block}
+.arch-det h4{font-family:var(--font-d);font-size:17px;margin-bottom:6px}
+.arch-det p{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:8px}
+.arch-det .astat{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.arch-det .astat div{background:var(--paper);border-radius:8px;padding:8px 14px;font-size:12px}
+.arch-det .astat .an{font-family:var(--font-d);font-size:20px;font-weight:700;line-height:1}
+.arch-det .astat .al{font-size:10px;color:var(--ink3);margin-top:2px}
+.arch-det .acode{font-family:var(--font-m);font-size:11px;background:var(--paper);padding:10px 16px;border-radius:8px;margin-top:10px;color:var(--ink2);line-height:1.5}
+.ab-out{background:#fdf0ee;border:1px solid #f5ccc4}.ab-out::before{background:var(--red)}.ab-out .bi{background:#f5ccc4}
+
+/* AI stepper */
+.ai-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.ai-step{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;position:relative;text-align:center}
+.ai-step:hover,.ai-step.active{border-color:var(--gold);box-shadow:0 4px 16px rgba(184,148,30,.1)}
+.ai-step.active::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--gold)}
+.ai-step .sn{width:24px;height:24px;border-radius:50%;background:var(--gold-bg);border:1.5px solid var(--gold-light);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:10px;font-weight:600;color:var(--gold);margin-bottom:6px}
+.ai-step .st{font-weight:600;font-size:12px}
+.ai-detail{background:var(--card);border:1px solid var(--gold-light);border-radius:14px;padding:20px 24px;display:none}
+.ai-detail.show{display:block;animation:fadeIn .3s ease}
+.ai-detail h4{font-family:var(--font-d);font-size:17px;margin-bottom:6px}
+.ai-detail p{font-size:13px;color:var(--ink2);line-height:1.6}
+.ai-detail .formula{font-family:var(--font-m);font-size:12px;background:var(--paper);padding:10px 16px;border-radius:8px;margin-top:10px;color:var(--ink2);line-height:1.5}
+
+/* Heatmap */
+.heatmap table{border-collapse:separate;border-spacing:3px;width:100%;max-width:600px;font-size:10px}
+.heatmap th{font-family:var(--font-m);font-size:9px;color:var(--ink3);padding:4px 2px;font-weight:500}
+.heatmap .dl{text-align:right;padding-right:6px;font-weight:500;color:var(--ink2);white-space:nowrap;font-size:10px}
+.heatmap td{width:28px;height:28px;text-align:center;border-radius:4px;font-family:var(--font-m);font-size:9px;font-weight:500;cursor:pointer;transition:transform .15s}
+.heatmap td:hover{transform:scale(1.35);box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:10}
+.heatmap td.mirror{background:var(--paper)!important;color:var(--ink4)!important}
+.hm-tip{position:fixed;background:var(--ink);color:#fff;font-family:var(--font-m);font-size:11px;padding:5px 10px;border-radius:5px;pointer-events:none;z-index:100;display:none;white-space:nowrap}
+
+/* Timeline */
+.timeline{position:relative;padding-left:32px}.timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;padding:10px 0 20px;cursor:pointer;transition:background .2s;border-radius:8px;padding-right:8px}
+.tl-item:hover{background:rgba(0,0,0,.015)}
+.tl-dot{position:absolute;left:-26px;top:14px;width:14px;height:14px;border-radius:50%;border:2.5px solid var(--card)}
+.tl-dot.ok{background:var(--teal)}.tl-dot.p0{background:var(--red)}.tl-dot.p1{background:var(--amber)}
+.tl-title{font-weight:600;font-size:13px;margin-bottom:2px}
+.tl-desc{font-size:12px;color:var(--ink3)}
+.tl-expand{display:none;margin-top:8px;padding:10px 14px;background:var(--paper);border-radius:8px;font-size:11px;color:var(--ink2);line-height:1.6;font-family:var(--font-m)}
+.tl-item.open .tl-expand{display:block;animation:fadeIn .2s ease}
+.tl-tag{display:inline-block;font-family:var(--font-m);font-size:9px;font-weight:600;padding:2px 8px;border-radius:4px;margin-right:6px}
+.tag-ok{background:#e6f5ee;color:var(--teal)}.tag-p0{background:#fde8e8;color:var(--red)}.tag-p1{background:#fdf5e6;color:var(--amber)}
+
+/* Interactive accuracy rows */
+.acc-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .2s;border-bottom:1px solid rgba(0,0,0,.03)}
+.acc-row:hover{background:rgba(0,0,0,.02)}
+.acc-row.active{background:var(--gold-bg);border-color:transparent}
+.acc-label{font-size:12px;font-weight:500;width:120px;flex-shrink:0}
+.acc-track{flex:1;height:22px;background:var(--paper);border-radius:11px;overflow:hidden;position:relative}
+.acc-fill{height:100%;border-radius:11px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.acc-range-bg{position:absolute;top:0;height:100%;opacity:.2;border-radius:11px}
+.acc-wr{font-family:var(--font-m);font-size:12px;width:36px;text-align:right;font-weight:500}
+.acc-icon{width:18px;text-align:center;font-size:13px}
+.acc-det{display:none;margin-top:10px;padding:12px 16px;background:var(--paper);border-radius:10px;font-size:12px;color:var(--ink2);line-height:1.6;animation:fadeIn .2s ease}
+.acc-det.show{display:block}
+.acc-det strong{color:var(--ink);font-weight:600}
+
+/* Heatmap detail */
+.hm-det{display:none;margin-top:10px;padding:12px 16px;background:var(--paper);border-radius:10px;font-size:12px;line-height:1.6;animation:fadeIn .2s ease}
+.hm-det.show{display:block}
+.hm-det .hmd-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.hm-det .hmd-wr{font-family:var(--font-d);font-size:28px;font-weight:700}
+.hm-det .hmd-name{font-weight:600;font-size:14px}
+.hm-det .hmd-row{display:flex;gap:16px;flex-wrap:wrap}
+.hm-det .hmd-stat{font-size:11px;color:var(--ink3)}
+.hm-det .hmd-stat b{color:var(--ink);font-weight:600}
+
+/* Deck profile popup */
+.deck-profile{display:none;margin:16px auto 0;max-width:500px;padding:16px 20px;background:var(--card);border:1px solid var(--border);border-radius:14px;animation:fadeIn .2s ease;text-align:left}
+.deck-profile.show{display:block}
+.deck-profile .dp-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.deck-profile .dp-name{font-family:var(--font-d);font-size:18px;font-weight:600}
+.deck-profile .dp-tier{font-family:var(--font-m);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+.deck-profile .dp-stats{display:flex;gap:12px;flex-wrap:wrap}
+.deck-profile .dp-stat{background:var(--paper);border-radius:8px;padding:6px 12px;font-size:11px}
+.deck-profile .dp-stat b{font-family:var(--font-d);font-size:16px;font-weight:700;display:block}
+
+/* XP cards */
+.xp-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.xp-card{border-radius:16px;padding:28px;border:1px solid var(--border)}
+.xp-card .xp-num{font-family:var(--font-d);font-size:48px;font-weight:700;line-height:1}
+.xp-card h4{font-family:var(--font-d);font-size:18px;margin:6px 0}
+.xp-card p{font-size:12px;color:var(--ink2);line-height:1.5}
+.xp-legacy{background:linear-gradient(135deg,#eef5ff,#e6f0fd)}.xp-modern{background:linear-gradient(135deg,#fdf8e8,#faf0d4)}
+
+/* Products */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.product-card{overflow:hidden}
+.pc-visual{height:140px;display:flex;align-items:center;justify-content:center}
+.pc-body{padding:16px 20px}.pc-body h3{font-size:1.15rem;margin-bottom:4px}.pc-body p{font-size:12px;color:var(--ink2)}
+a.product-link{text-decoration:none;color:inherit;display:block}
+.pc-cta{display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:11px;font-weight:600;color:var(--gold);transition:gap .2s}
+.product-card:hover .pc-cta{gap:8px}
+.fpills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.fpills span{font-size:10px;padding:3px 9px;border-radius:100px;font-weight:500}
+
+/* Deck cloud */
+.deck-cloud{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:1.5rem 0}
+.deck-chip{font-family:var(--font-m);font-size:11px;padding:5px 12px;border-radius:100px;border:1px solid rgba(0,0,0,.08);background:var(--card);color:var(--ink2);transition:all .25s}
+.deck-chip:hover{border-color:var(--gold);color:var(--ink);box-shadow:0 4px 12px rgba(184,148,30,.1);transform:translateY(-2px)}
+.deck-chip .meta{color:var(--gold);font-weight:600;margin-left:3px}
+.deck-chip.t1{border-color:rgba(184,148,30,.25);background:var(--gold-bg)}.deck-chip.t2{border-color:rgba(24,95,165,.15);background:#eef5ff}
+
+/* Roadmap */
+.road-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.road-card{cursor:pointer}.road-card .rd{display:none;margin-top:10px;padding:10px 14px;background:var(--paper);border-radius:8px;font-family:var(--font-m);font-size:10px;color:var(--ink2);line-height:1.6}
+.road-card .rd.show{display:block}
+.road-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.road-head .ri{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.road-head .ri svg{width:16px;height:16px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.road-head .rn{font-weight:600;font-size:13px}.road-head .re{font-size:10px;color:var(--ink3)}
+
+/* Footer */
+.footer{text-align:center;padding:4rem 2rem;background:var(--paper);margin-top:3rem}
+.footer p{font-size:13px;color:var(--ink3)}.footer a{color:var(--gold);text-decoration:none;font-weight:500}
+
+@media(max-width:700px){.ai-flow{grid-template-columns:1fr 1fr}.chart-grid{grid-template-columns:1fr}.xp-cards{grid-template-columns:1fr}.counter-row{gap:24px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">Monte Carlo · Legacy · 38 Decks · Pure Python</div>
+  <h1>MTGSim<em>Claude</em></h1>
+  <p class="hero-sub">AI-driven metagame simulation for Legacy. 787 decision branches across 19 strategy engines. Three production outputs. 2.5ms per game.</p>
+  <div class="counter-row">
+    <div class="counter"><div class="num" data-target="38">0</div><div class="unit">Decks</div></div>
+    <div class="counter"><div class="num" data-target="1260">0</div><div class="unit">Matchups</div></div>
+    <div class="counter"><div class="num" data-target="137">0</div><div class="unit">Tests Pass</div></div>
+    <div class="counter"><div class="num" data-target="25842">0</div><div class="unit">Lines of Code</div></div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<section class="section">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Performance</div>
+  <div class="sec-title reveal">Built for speed & scale</div>
+  <div class="sec-desc reveal">2.5ms per game. Full 36-deck matrix in 94 seconds. Zero external dependencies.</div>
+  <div class="chart-grid reveal">
+    <div class="chart-card"><h4>Flat win rate by deck</h4><div class="chart-sub">Top 8 and bottom 5 · 30 games/pair</div><div class="chart-wrap"><canvas id="wrChart"></canvas></div></div>
+    <div class="chart-card"><h4>Convergence (Burn vs Dimir)</h4><div class="chart-sub">WR stabilises at ~500 games</div><div class="chart-wrap"><canvas id="convChart"></canvas></div></div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<div class="warm-bg">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Architecture</div>
+  <div class="sec-title reveal">Five layers, one pipeline</div>
+  <div class="sec-desc reveal">Symmetric engine — p1/p2 are neutral slots. Plugin deck architecture — zero engine edits to add a deck.</div>
+  <div class="reveal" style="max-width:1100px">
+    <div class="arch-bar ab-out" onclick="showArch(this,0)"><div class="bi"><svg stroke="#a32d2d" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div style="flex:1"><div class="bn">Output products</div><div class="bd">Meta matrix heatmap · deck guides · Bo3 replayer</div></div><div class="bs">3 HTML products</div></div>
+    <div class="arch-bar ab-sim" onclick="showArch(this,1)"><div class="bi"><svg stroke="#b8941e" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div style="flex:1"><div class="bn">Simulation core</div><div class="bd">run_game, run_sweep, run_meta_matrix · 19 strategy functions</div></div><div class="bs">sim.py 91K + engine.py 249K</div></div>
+    <div class="arch-bar ab-eng" onclick="showArch(this,2)"><div class="bi"><svg stroke="#0f6e56" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div style="flex:1"><div class="bn">State & rules engine</div><div class="bd">GameState, Card, Permanent, ManaPool · Chalice, Trinisphere, Thalia</div></div><div class="bs">game.py 49K + rules.py 29K</div></div>
+    <div class="arch-bar ab-ai" onclick="showArch(this,3)"><div class="bi"><svg stroke="#534ab7" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div><div style="flex:1"><div class="bn">Interaction AI</div><div class="bd">classify_threat · best_proactive_target · try_reactive_counter</div></div><div class="bs">interaction.py 249 ln</div></div>
+    <div class="arch-bar ab-deck" onclick="showArch(this,4)"><div class="bi"><svg stroke="#185fa5" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div><div style="flex:1"><div class="bn">38 deck modules</div><div class="bd">22 full strategy + 17 proxy · auto-discovered by deck_registry.py</div></div><div class="bs">decks/ 594K total</div></div>
+    <div class="arch-det" id="archDet"></div>
+  </div>
+</div>
+
+<!-- AI ENGINE -->
+<section class="section">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> AI engine</div>
+  <div class="sec-title reveal">How the AI plays Magic</div>
+  <div class="sec-desc reveal">19 strategy functions, 787 decision branches, 73 card tags. Click each stage.</div>
+  <div class="reveal">
+    <div class="ai-flow" id="aiFlow"></div>
+    <div class="ai-detail" id="aiDet"></div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<div class="warm-bg">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Output</div>
+  <div class="sec-title reveal">Three production products</div>
+  <div class="sec-desc reveal">Standalone HTML. No server, no build step. Open in any browser.</div>
+  <div class="product-grid reveal">
+    <a href="./mtg_meta_matrix.html" class="product-link"><div class="card product-card"><div class="pc-visual" style="background:linear-gradient(135deg,#eef5ff,#dbeafe)"><svg width="200" height="110" viewBox="0 0 200 110"><rect x="10" y="8" width="22" height="22" rx="3" fill="#93c5fd" opacity=".7"/><rect x="35" y="8" width="22" height="22" rx="3" fill="#3b82f6"/><rect x="60" y="8" width="22" height="22" rx="3" fill="#2563eb"/><rect x="85" y="8" width="22" height="22" rx="3" fill="#16a34a" opacity=".6"/><rect x="110" y="8" width="22" height="22" rx="3" fill="#dc2626" opacity=".5"/><rect x="135" y="8" width="22" height="22" rx="3" fill="#ef4444"/><rect x="160" y="8" width="22" height="22" rx="3" fill="#f59e0b" opacity=".5"/><rect x="10" y="33" width="22" height="22" rx="3" fill="#22c55e" opacity=".5"/><rect x="35" y="33" width="22" height="22" rx="3" fill="#86efac" opacity=".3"/><rect x="60" y="33" width="22" height="22" rx="3" fill="#f59e0b" opacity=".6"/><rect x="85" y="33" width="22" height="22" rx="3" fill="#ef4444" opacity=".4"/><rect x="110" y="33" width="22" height="22" rx="3" fill="#22c55e"/><rect x="135" y="33" width="22" height="22" rx="3" fill="#3b82f6" opacity=".5"/><rect x="160" y="33" width="22" height="22" rx="3" fill="#22c55e" opacity=".7"/><rect x="10" y="58" width="22" height="22" rx="3" fill="#ef4444" opacity=".3"/><rect x="35" y="58" width="22" height="22" rx="3" fill="#22c55e" opacity=".7"/><rect x="60" y="58" width="22" height="22" rx="3" fill="#86efac" opacity=".4"/><rect x="85" y="58" width="22" height="22" rx="3" fill="#3b82f6" opacity=".6"/><rect x="110" y="58" width="22" height="22" rx="3" fill="#f59e0b"/><rect x="135" y="58" width="22" height="22" rx="3" fill="#22c55e" opacity=".5"/><rect x="160" y="58" width="22" height="22" rx="3" fill="#dc2626" opacity=".6"/></svg></div><div class="pc-body"><h3>Meta matrix</h3><p>38×38 interactive heatmap. 5 data layers. Tier chips. Weighted WR.</p><div class="fpills"><span style="background:#eef5ff;color:#185fa5">Card stats</span><span style="background:var(--gold-bg);color:var(--gold)">S/A/B/C tiers</span></div><div class="pc-cta">Open matrix →</div></div></div></a>
+    <a href="./reference_deck_guide.html" class="product-link"><div class="card product-card"><div class="pc-visual" style="background:linear-gradient(135deg,#e6f5ee,#dcfce7)"><svg width="200" height="110" viewBox="0 0 200 110"><rect x="15" y="10" width="80" height="90" rx="6" fill="#fff" stroke="#86efac" stroke-width="1.5"/><line x1="25" y1="26" x2="85" y2="26" stroke="#16a34a" stroke-width="2" opacity=".5"/><rect x="25" y="34" width="50" height="3" rx="1.5" fill="#86efac" opacity=".4"/><rect x="25" y="41" width="35" height="3" rx="1.5" fill="#86efac" opacity=".3"/><rect x="25" y="48" width="55" height="3" rx="1.5" fill="#86efac" opacity=".4"/><rect x="25" y="62" width="12" height="28" rx="2" fill="#22c55e" opacity=".7"/><rect x="40" y="70" width="12" height="20" rx="2" fill="#22c55e" opacity=".5"/><rect x="55" y="58" width="12" height="32" rx="2" fill="#22c55e" opacity=".8"/><rect x="70" y="66" width="12" height="24" rx="2" fill="#22c55e" opacity=".6"/><rect x="110" y="10" width="75" height="90" rx="6" fill="#fff" stroke="#86efac" stroke-width="1.5"/><circle cx="147" cy="48" r="22" fill="none" stroke="#22c55e" stroke-width="2" opacity=".3"/><text x="147" y="52" text-anchor="middle" font-size="11" font-weight="600" fill="#16a34a">71%</text></svg></div><div class="pc-body"><h3>Deck guide</h3><p>Kill-turn charts. Hand archetypes. Scryfall hovers. 7 visual components.</p><div class="fpills"><span style="background:#e6f5ee;color:#0f6e56">10K sims</span><span style="background:var(--gold-bg);color:var(--gold)">Tournament prep</span></div><div class="pc-cta">Open guide →</div></div></div></a>
+    <a href="./game_replay.html" class="product-link"><div class="card product-card"><div class="pc-visual" style="background:linear-gradient(135deg,#fffbeb,#fef3c7)"><svg width="200" height="110" viewBox="0 0 200 110"><rect x="15" y="8" width="170" height="20" rx="4" fill="#fff" stroke="#f59e0b" stroke-width="1" opacity=".8"/><text x="25" y="22" font-size="8" fill="#92400e" font-family="monospace">T3 Storm casts Dark Ritual</text><rect x="15" y="32" width="170" height="20" rx="4" fill="#fff" stroke="#f59e0b" stroke-width="1" opacity=".6"/><text x="25" y="46" font-size="8" fill="#92400e" font-family="monospace">T3 Dimir counters with FoW</text><rect x="15" y="56" width="170" height="20" rx="4" fill="#fff" stroke="#f59e0b" stroke-width="1" opacity=".5"/><text x="25" y="70" font-size="8" fill="#92400e" font-family="monospace">T3 Storm: Flusterstorm backup</text><polyline points="30,92 70,88 110,82 150,74 170,56" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round"/><polyline points="30,92 70,92 110,90 150,86 170,82" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/></svg></div><div class="pc-body"><h3>Bo3 replayer</h3><p>17 play categories. 6 board zones. AI reasoning toggle. Life chart.</p><div class="fpills"><span style="background:#fffbeb;color:#d4850b">17 categories</span><span style="background:#fde8e8;color:#a32d2d">Seed control</span></div><div class="pc-cta">Open replay →</div></div></div></a>
+  </div>
+</div>
+
+<!-- ACCURACY + HEATMAP -->
+<section class="section">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Validation</div>
+  <div class="sec-title reveal">Sim vs tournament consensus</div>
+  <div class="sec-desc reveal">7 matchups spot-checked. 5 pass. 2 traced to specific strategy bugs.</div>
+  <div class="chart-grid reveal">
+    <div class="chart-card"><h4>Matchup validation</h4><div class="chart-sub">Click any row for detail</div><div id="accRows"></div><div class="acc-det" id="accDet"></div></div>
+    <div class="chart-card"><h4>8-deck heatmap</h4><div class="chart-sub">Click any cell for matchup breakdown</div><div class="heatmap" id="heatmap"></div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:var(--ink3)"><div style="width:50px;height:8px;border-radius:4px;background:linear-gradient(90deg,#a32d2d,#d4850b,#0f6e56)"></div>20% → 50% → 80%</div><div class="hm-det" id="hmDet"></div></div>
+  </div>
+  <div class="hm-tip" id="hmTip"></div>
+</section>
+
+<!-- BUG TIMELINE -->
+<section class="section">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg> Status</div>
+  <div class="sec-title reveal">Development timeline</div>
+  <div class="timeline reveal">
+    <div class="tl-item" onclick="this.classList.toggle('open')"><div class="tl-dot ok"></div><span class="tl-tag tag-ok">Verified</span><div class="tl-title">Trinisphere pre-dispatch CMC pattern</div><div class="tl-desc">max(cmc, 3) before strategy dispatch. All strategies auto-pay tax. CR 601.2f compliant.</div><div class="tl-expand">In play_turn() and protagonist_turn(), all cheap spells get cmc raised to max(cmc, 3) before strategy dispatch. Every strategy automatically pays the Trinisphere tax. Also blocks FoW/FoN alternate costs. LED costs 3 under Trinisphere (artifact, CMC 0 → taxed to 3).</div></div>
+    <div class="tl-item" onclick="this.classList.toggle('open')"><div class="tl-dot ok"></div><span class="tl-tag tag-ok">Verified</span><div class="tl-title">Symmetric counter logic</div><div class="tl-desc">try_reactive_counter() works for either player slot.</div><div class="tl-expand">Single function handles both directions. Scans defender hand for counter tags, classifies threat, checks Trinisphere/Veil, then walks FoN→FoW→CS→Fluster→Pyro→Daze. Hand-size gates: CS needs 4+ cards. Veil of Summer and Allosaurus Shepherd bypass entirely.</div></div>
+    <div class="tl-item" onclick="this.classList.toggle('open')"><div class="tl-dot ok"></div><span class="tl-tag tag-ok">Verified</span><div class="tl-title">Plugin deck architecture</div><div class="tl-desc">deck_registry.py auto-discovers modules. 38 decks, zero engine edits.</div><div class="tl-expand">Each file in decks/ exports DECK_META. deck_registry.py scans at import. Adding deck #39 = one .py file in decks/. No changes to engine.py, sim.py, or cards.py. import_deck.py auto-generates skeleton from pasted MTGGoldfish decklist.</div></div>
+    <div class="tl-item" onclick="this.classList.toggle('open')"><div class="tl-dot ok"></div><span class="tl-tag tag-ok">5/7 pass</span><div class="tl-title">Known matchup validation</div><div class="tl-desc">5 matchups within expected ranges. Convergence stable ±3.9% at n=200.</div><div class="tl-expand">Pass: Burn vs Storm (65%), Burn vs Dimir (71%), Eldrazi vs Storm (79%), Reanimator vs Dimir (50%), Infect vs Burn (40%). All within tournament consensus ranges. Validated against MTGO Challenge + Showcase data (April 2026).</div></div>
+    <div class="tl-item" onclick="this.classList.toggle('open')"><div class="tl-dot p0"></div><span class="tl-tag tag-p0">P0</span><div class="tl-title">Storm vs D&T: 32% (expected 55-80%)</div><div class="tl-desc">Ritual chain doesn't account for Thalia +1 tax correctly.</div><div class="tl-expand">_ritual_cost() respects Trinisphere via raised cmc but Thalia's +1 noncreature tax may not apply to rituals the same way. Fix: add Thalia tax to _ritual_cost() or ensure effective_cmc accounts for it.<br>Trace: python3 run_meta.py --verbose storm dnt -s 42</div></div>
+    <div class="tl-item" onclick="this.classList.toggle('open')"><div class="tl-dot p0"></div><span class="tl-tag tag-p0">P0</span><div class="tl-title">Oops vs Burn: 31% (expected 55-80%)</div><div class="tl-desc">Combo deployment rate too low. T1 kill rate should be ~40%.</div><div class="tl-expand">Oops should win pre-board via T1 kills faster than Burn can race. Strategy not recognizing keepable combo hands.<br>Trace: python3 run_meta.py --verbose oops burn -s 42</div></div>
+    <div class="tl-item" onclick="this.classList.toggle('open')"><div class="tl-dot p1"></div><span class="tl-tag tag-p1">P1</span><div class="tl-title">60 symmetry outlier pairs (&gt;15%)</div><div class="tl-desc">Proxy decks with asymmetric dispatch. Worst: mardu vs ocelot (41%).</div><div class="tl-expand">d1_vs_d2 + d2_vs_d1 should ≈ 100%. Main offenders: Mono Black (5 of top 8), Mardu, Ocelot. All proxy-strategy decks. Fix: run both orderings and average, or upgrade to full strategy modules.</div></div>
+    <div class="tl-item" onclick="this.classList.toggle('open')"><div class="tl-dot p1"></div><span class="tl-tag tag-p1">P1</span><div class="tl-title">No static lock persistence</div><div class="tl-desc">Karn lockout / Chalice CMC don't carry across turns.</div><div class="tl-expand">Trinisphere works (pre-dispatch CMC adjustment), but Karn's "can't activate artifacts" and Chalice's CMC blocking need persistent game state flags. Lock-based decks sim below real-world performance.</div></div>
+  </div>
+</section>
+
+<!-- DECKS -->
+<div class="warm-bg" style="text-align:center">
+  <div class="sec-label reveal" style="justify-content:center"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg> Metagame</div>
+  <div class="sec-title reveal">38 tournament-sourced decks</div>
+  <div class="sec-desc reveal" style="margin-left:auto;margin-right:auto">MTGO Challenges, Showcases, League results. April 2026 meta shares.</div>
+  <div class="deck-cloud reveal" id="deckCloud"></div>
+  <div class="deck-profile" id="deckProfile"></div>
+</div>
+
+<!-- CROSS-PROJECT -->
+<section class="section">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg> Ecosystem</div>
+  <div class="sec-title reveal">Two simulators, cross-pollinating</div>
+  <div class="xp-cards reveal">
+    <div class="xp-card xp-legacy"><div class="xp-num" style="color:var(--blue)">38</div><h4>Legacy — MTGSimClaude</h4><p>2.5ms/game. 19 per-deck strategy functions. Card-level interaction knowledge. Force of Will priority tables. 137/137 rules tests. Plugin deck architecture.</p></div>
+    <div class="xp-card xp-modern"><div class="xp-num" style="color:var(--gold)">15</div><h4>Modern — MTGSimManu</h4><p>Full Bo3 with sideboarding. Clock-based EV scoring. Bayesian hand inference. Combat simulation. LLM-audited strategy. GoalEngine phase tracking.</p></div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="section">
+  <div class="sec-label reveal"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Roadmap</div>
+  <div class="sec-title reveal">8 merged proposals, prioritised</div>
+  <div class="sec-desc reveal">Cross-pollination from both projects. Source tagged [L] Legacy / [M] Modern.</div>
+  <div class="road-grid reveal">
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:var(--gold-bg)"><svg stroke="#b8941e" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="rn">[M] Strategic logger</div><div class="re">LOW effort · HIGH impact · #1 priority</div></div></div><div style="font-size:12px;color:var(--ink2)">--trace mode capturing why every AI decision was made. Prerequisite for LLM judge audit.</div><div class="rd">log_decision(candidates, chosen, reason)<br>Port strategic_logger.py pattern (279 lines)<br>Enables 6-expert LLM audit methodology</div></div>
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#e6f5ee"><svg stroke="#0f6e56" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="rn">[L+M] Symmetry averaging</div><div class="re">LOW effort · HIGH value · #3 priority</div></div></div><div style="font-size:12px;color:var(--ink2)">Run both orderings, average. Eliminates 60 outlier pairs without fixing proxy strategies.</div><div class="rd">final_wr = (wr_as_p1 + (1 - wr_as_p2)) / 2<br>Flag |d1+d2-100| > 10% as BUG<br>Post-matrix auto-validation step</div></div>
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#eeedfb"><svg stroke="#534ab7" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="rn">[M] Clock-based evaluation</div><div class="re">MEDIUM effort · HIGH impact · #4 priority</div></div></div><div style="font-size:12px;color:var(--ink2)">Port clock.py (328 lines). All values in turns-of-clock-advantage. Shared unit for all strategies.</div><div class="rd">combat_clock() = ceil(opp_life / effective_power)<br>classify_threat() returns clock-delta, not categories<br>Keep per-deck functions — clock is shared language</div></div>
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#fde8e8"><svg stroke="#a32d2d" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div><div><div class="rn">[M] Bayesian hand inference</div><div class="re">HIGH effort · HIGH impact · depends on clock</div></div></div><div style="font-size:12px;color:var(--ink2)">Track P(counter), P(removal) during game. Seed with Legacy's hypergeometric priors from interaction_model.py.</div><div class="rd">P(free_counter) = 0.68 on T1 (4 FoW in 60)<br>Updates on priority passes: didn't counter → lower P<br>Legacy priors + Modern BHI = best of both</div></div>
+  </div>
+</section>
+
+<div class="footer">
+  <p style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:8px">MTGSim<span style="color:var(--gold)">Claude</span></p>
+  <p>Built by <a href="https://github.com/DJPieter81">DJPieter81</a> · <a href="https://github.com/DJPieter81/MTGSimClaude">Legacy repo</a> · <a href="https://github.com/DJPieter81/MTGSimManu">Modern repo</a></p>
+  <p style="margin-top:4px">Python 3.11 · Zero Dependencies · April 2026</p>
+</div>
+
+<script>
+const G='#b8941e',T='#0f6e56',A='#d4850b',R='#a32d2d',B='#185fa5',P='#534ab7';
+
+// Scroll reveal + counters
+const obs=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&(e.target.classList.add('visible'),obs.unobserve(e.target))})},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;document.querySelectorAll('.counter .num').forEach(el=>{const t=+el.dataset.target,s=performance.now();(function f(n){const p=Math.min((n-s)/1800,1);el.textContent=Math.round(t*(1-Math.pow(1-p,3))).toLocaleString();p<1&&requestAnimationFrame(f)})(s)})},{threshold:.5}).observe(document.querySelector('.counter-row'));
+
+// WR bar chart
+new Chart(document.getElementById('wrChart'),{type:'bar',data:{labels:['Burn','Infect','UR Tempo','Dimir B','Dimir','Dimir Flash','Eldrazi','Sneak B','8-Cast','Oops','Painter','WST','Doomsday'],datasets:[{data:[71,66,63,62,60,60,60,59,38,38,37,36,33],backgroundColor:d=>[71,66,63,62,60,60,60,59].includes(d.raw)?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)',borderColor:d=>[71,66,63,62,60,60,60,59].includes(d.raw)?T:R,borderWidth:1.5,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{max:85,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},y:{grid:{display:false},ticks:{font:{family:'Outfit',size:11}}}}}});
+
+// Convergence line chart
+new Chart(document.getElementById('convChart'),{type:'line',data:{labels:['n=30','n=50','n=100','n=200','n=300','n=500'],datasets:[{data:[83.3,81,80,76.5,75.8,75.2],borderColor:G,backgroundColor:'rgba(184,148,30,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:G,pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5},{data:[75.2,75.2,75.2,75.2,75.2,75.2],borderColor:T,borderDash:[5,5],borderWidth:1.5,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:70,max:88,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},x:{grid:{display:false},ticks:{font:{family:'JetBrains Mono',size:10}}}}}});
+
+// Interactive accuracy rows
+const accData=[
+  {name:'Burn v Storm',wr:65,lo:55,hi:75,pass:1,detail:'<strong>Burn favored</strong> — fast clock with direct damage outpaces Storm combo assembly. Eidolon of the Great Revel punishes ritual chains. Sim confirms: Burn kills T4-5, Storm needs T5-6.'},
+  {name:'Burn v Dimir',wr:71,lo:55,hi:80,pass:1,detail:'<strong>Burn favored</strong> — Dimir\'s countermagic doesn\'t stop topdecked burn spells. Price of Progress punishes the dual-heavy manabase. 71% aligns with tournament data.'},
+  {name:'Eldrazi v Storm',wr:79,lo:55,hi:80,pass:1,detail:'<strong>Eldrazi favored</strong> — Chalice on 1 shuts off rituals and cantrips. Thought-Knot Seer strips combo pieces. 79% is at the top of expected range — Chalice might be slightly overperforming.'},
+  {name:'Reanim v Dimir',wr:50,lo:35,hi:65,pass:1,detail:'<strong>Even matchup</strong> — Reanimator can power through counters with discard + fast combo, but Dimir has Surgical Extraction and FoW. 50% = dead even, well within range.'},
+  {name:'Infect v Burn',wr:40,lo:35,hi:55,pass:1,detail:'<strong>Close, Burn slight edge</strong> — Infect\'s creatures die to Bolt, but a protected Glistener Elf can T2 kill. 40% means Burn\'s removal density is just enough.'},
+  {name:'Storm v D&T',wr:32,lo:55,hi:80,pass:0,detail:'<strong>P0 BUG: Should be Storm favored.</strong> Real Storm beats D&T ~60-70% because rituals outpace Thalia tax. Sim\'s _ritual_cost() doesn\'t account for Thalia +1 on noncreature spells. The chain simulation underestimates available mana.'},
+  {name:'Oops v Burn',wr:31,lo:55,hi:80,pass:0,detail:'<strong>P0 BUG: Should be Oops favored.</strong> Oops All Spells should T1 kill ~40% of the time, faster than Burn can deal 20. Strategy function doesn\'t recognize keepable combo hands — mulligans too aggressively.'}
+];
+const accEl=document.getElementById('accRows');
+accData.forEach((d,i)=>{
+  const c=d.pass?T:R, bg=d.pass?'rgba(15,110,86,.12)':'rgba(163,45,45,.12)', rbg=d.pass?'rgba(15,110,86,.08)':'rgba(163,45,45,.08)';
+  accEl.innerHTML+=`<div class="acc-row" onclick="showAcc(${i})" data-i="${i}"><div class="acc-label">${d.name}</div><div class="acc-track"><div class="acc-range-bg" style="left:${d.lo}%;width:${d.hi-d.lo}%;background:${rbg}"></div><div class="acc-fill" style="width:0%;background:${bg};border:1.5px solid ${c}" data-w="${d.wr}"></div></div><div class="acc-wr" style="color:${c}">${d.wr}%</div><div class="acc-icon">${d.pass?'✓':'✗'}</div></div>`;
+});
+function showAcc(i){
+  document.querySelectorAll('.acc-row').forEach((r,j)=>r.classList.toggle('active',j===i));
+  const d=accData[i],det=document.getElementById('accDet');
+  det.innerHTML=`<div style="margin-bottom:4px"><span style="font-family:var(--font-m);font-size:11px;color:var(--ink3)">Expected: ${d.lo}–${d.hi}% · Sim: ${d.wr}% · ${d.pass?'✓ PASS':'✗ FAIL'}</span></div>${d.detail}`;
+  det.className='acc-det show';
+}
+new IntersectionObserver(([e])=>{if(e.isIntersecting)document.querySelectorAll('.acc-fill').forEach(b=>setTimeout(()=>b.style.width=b.dataset.w+'%',200))},{threshold:.3}).observe(accEl);
+
+// Interactive heatmap with click detail
+const hD=['Burn','Dimir','Infect','UR Del','Eldrazi','Storm','Oops','Reanim'];
+const hK=['burn','dimir','infect','ur_delver','eldrazi','storm','oops','reanimator'];
+const hV=[[50,71,58,70,35,65,64,74],[21,50,51,59,34,73,71,42],[40,47,50,52,31,81,62,62],[29,39,55,50,50,66,81,71],[53,52,57,40,50,79,62,62],[27,37,25,26,26,50,75,57],[31,27,35,26,40,36,50,48],[20,50,35,29,47,38,47,50]];
+function wrC(v){if(v>=60)return`rgba(15,110,86,${.12+v/250})`;if(v>=50)return`rgba(15,110,86,${.06+v/500})`;if(v>=40)return'rgba(200,180,140,.1)';return`rgba(163,45,45,${.08+(100-v)/300})`}
+const hm=document.getElementById('heatmap'),tip=document.getElementById('hmTip'),hmDet=document.getElementById('hmDet');
+let html='<table><tr><th></th>';hD.forEach(d=>{html+=`<th style="transform:rotate(-45deg);height:50px;vertical-align:bottom">${d}</th>`});html+='</tr>';
+hV.forEach((row,r)=>{html+=`<tr><td class="dl">${hD[r]}</td>`;row.forEach((w,c)=>{if(r===c){html+=`<td class="mirror">—</td>`;return}html+=`<td style="background:${wrC(w)};color:${w>=55?'#064a34':w<=45?'#6b1c1c':'#5a5040'}" data-r="${r}" data-c="${c}" data-w="${w}" onclick="showHmDet(${r},${c})">${w}</td>`});html+='</tr>'});
+html+='</table>';hm.innerHTML=html;
+hm.querySelectorAll('td[data-w]').forEach(td=>{td.addEventListener('mouseenter',e=>{tip.style.display='block';tip.textContent=`${hD[td.dataset.r]} vs ${hD[td.dataset.c]}: ${td.dataset.w}%`;tip.style.left=e.clientX+12+'px';tip.style.top=e.clientY-30+'px'});td.addEventListener('mousemove',e=>{tip.style.left=e.clientX+12+'px';tip.style.top=e.clientY-30+'px'});td.addEventListener('mouseleave',()=>{tip.style.display='none'})});
+function showHmDet(r,c){
+  const w=hV[r][c],rev=hV[c][r],sym=w+(100-rev),symOk=Math.abs(sym-100)<10;
+  const fav=w>55?hD[r]:w<45?hD[c]:'Neither';
+  const verdict=w>=65?'Heavily favored':w>=55?'Favored':w>=45?'Even':w>=35?'Unfavored':'Heavily unfavored';
+  hmDet.innerHTML=`<div class="hmd-head"><div class="hmd-wr" style="color:${w>=50?T:R}">${w}%</div><div><div class="hmd-name">${hD[r]} vs ${hD[c]}</div><div style="font-size:11px;color:var(--ink3)">${verdict} for ${hD[r]}</div></div></div><div class="hmd-row"><div class="hmd-stat">Reverse: <b>${rev}%</b> (${hD[c]} vs ${hD[r]})</div><div class="hmd-stat">Symmetry: <b>${sym}%</b> ${symOk?'✓':'⚠ >10% off'}</div><div class="hmd-stat">Favored: <b>${fav}</b></div></div>`;
+  hmDet.className='hm-det show';
+}
+
+// Deck cloud with clickable profiles
+const deckInfo=[
+  {n:'Ocelot',k:'ocelot',t:'t1',m:'12%',wr:58,type:'Tempo',best:'Doomsday',worst:'Burn',strat:'Full'},
+  {n:'Dimir',k:'dimir',t:'t1',m:'6%',wr:60,type:'Tempo',best:'Storm',worst:'Burn',strat:'Full'},
+  {n:'Dimir B',k:'dimir_b',t:'t1',m:'5%',wr:62,type:'Tempo',best:'Oops',worst:'Burn',strat:'Full'},
+  {n:'Lands',k:'lands',t:'t1',m:'6%',wr:52,type:'Control',best:'D&T',worst:'Combo',strat:'Proxy'},
+  {n:'Oops',k:'oops',t:'t1',m:'6%',wr:38,type:'Combo',best:'Storm',worst:'Burn',strat:'Proxy'},
+  {n:'Doomsday',k:'doomsday',t:'t1',m:'6%',wr:33,type:'Combo',best:'Reanimator',worst:'Eldrazi',strat:'Proxy'},
+  {n:'Prison',k:'prison',t:'t1',m:'6%',wr:52,type:'Prison',best:'Storm',worst:'Burn',strat:'Proxy'},
+  {n:'UR Delver',k:'ur_delver',t:'t1',m:'6%',wr:55,type:'Tempo',best:'Oops',worst:'Burn',strat:'Full'},
+  {n:'Sneak A',k:'sneak_a',t:'t2',wr:53,type:'Combo',best:'Dimir',worst:'Burn',strat:'Full'},
+  {n:'Sneak B',k:'sneak_b',t:'t2',wr:59,type:'Combo',best:'Dimir',worst:'Burn',strat:'Full'},
+  {n:'Show',k:'show',t:'t2',wr:50,type:'Combo',best:'Reanimator',worst:'Eldrazi',strat:'Proxy'},
+  {n:'Painter',k:'painter',t:'t2',wr:37,type:'Combo',best:'Storm',worst:'Burn',strat:'Proxy'},
+  {n:'8-Cast',k:'eight_cast',t:'t2',wr:38,type:'Aggro',best:'Dimir',worst:'Burn',strat:'Full'},
+  {n:'UWx',k:'uwx',t:'t2',wr:48,type:'Control',best:'Storm',worst:'Burn',strat:'Full'},
+  {n:'Burn',k:'burn',t:'',wr:71,type:'Aggro',best:'Dimir (71%)',worst:'Reanimator (20%)',strat:'Full'},
+  {n:'Infect',k:'infect',t:'',wr:66,type:'Combo-Aggro',best:'Storm (81%)',worst:'Eldrazi (31%)',strat:'Full'},
+  {n:'Storm',k:'storm',t:'',wr:42,type:'Combo',best:'Oops (75%)',worst:'Eldrazi (26%)',strat:'Proxy'},
+  {n:'Reanimator',k:'reanimator',t:'',wr:44,type:'Combo',best:'Eldrazi (62%)',worst:'Burn (20%)',strat:'Proxy'},
+  {n:'Eldrazi',k:'eldrazi',t:'',wr:60,type:'Aggro',best:'Storm (79%)',worst:'Burn (35%)',strat:'Full'},
+  {n:'Depths',k:'depths',t:'',wr:52,type:'Combo',best:'Storm',worst:'Burn',strat:'Full'},
+  {n:'D&T',k:'dnt',t:'',wr:50,type:'Aggro-Tax',best:'Storm',worst:'Combo',strat:'Proxy'},
+  {n:'UR Tempo',k:'ur_tempo',t:'',wr:63,type:'Tempo',best:'Oops',worst:'Burn',strat:'Full'},
+  {n:'Elves',k:'elves',t:'',wr:45,type:'Combo',best:'Midrange',worst:'Combo',strat:'Proxy'},
+  {n:'Goblins',k:'goblins',t:'',wr:48,type:'Aggro',best:'Midrange',worst:'Combo',strat:'Full'},
+  {n:'Affinity',k:'affinity',t:'',wr:50,type:'Aggro',best:'Fair decks',worst:'Combo',strat:'Full'},
+  {n:'TES',k:'tes',t:'',wr:45,type:'Combo',best:'Midrange',worst:'Hate',strat:'Full'},
+  {n:'Belcher',k:'belcher',t:'',wr:44,type:'Combo',best:'Slow decks',worst:'FoW decks',strat:'Full'},
+  {n:'Cephalid',k:'cephalid',t:'',wr:42,type:'Combo',best:'Non-blue',worst:'FoW decks',strat:'Full'},
+  {n:'Cloudpost',k:'cloudpost',t:'',wr:47,type:'Ramp',best:'Fair decks',worst:'Combo',strat:'Full'},
+  {n:'BUG',k:'bug',t:'',wr:48,type:'Tempo',best:'Fair decks',worst:'Combo',strat:'Proxy'},
+  {n:'Dimir C',k:'dimir_c',t:'',wr:55,type:'Tempo',best:'Storm',worst:'Burn',strat:'Full'},
+  {n:'Dimir D',k:'dimir_d',t:'',wr:54,type:'Tempo',best:'Storm',worst:'Burn',strat:'Full'},
+  {n:'Dimir Flash',k:'dimir_flash',t:'',wr:60,type:'Tempo',best:'Storm',worst:'Burn',strat:'Full'},
+  {n:'Boros',k:'boros',t:'',wr:48,type:'Aggro',best:'Fair decks',worst:'Combo',strat:'Proxy'},
+  {n:'Mardu',k:'mardu',t:'',wr:47,type:'Aggro',best:'Fair decks',worst:'Combo',strat:'Proxy'},
+  {n:'Mono B',k:'mono_black',t:'',wr:40,type:'Aggro',best:'Fair decks',worst:'Combo',strat:'Proxy'},
+  {n:'UR Aggro',k:'ur_aggro',t:'',wr:48,type:'Aggro',best:'Midrange',worst:'Combo',strat:'Proxy'},
+  {n:'WST',k:'wan_shi_tong',t:'',wr:36,type:'Tempo',best:'Fair decks',worst:'Fast combo',strat:'Full'}
+];
+const dc=document.getElementById('deckCloud');
+deckInfo.forEach((d,i)=>{
+  const cls=d.t?` ${d.t}`:'';
+  const meta=d.m?`<span class="meta">${d.m}</span>`:'';
+  dc.innerHTML+=`<div class="deck-chip${cls}" onclick="showDeck(${i})" style="cursor:pointer">${d.n}${meta}</div>`;
+});
+function showDeck(i){
+  const d=deckInfo[i];
+  const tier=d.t==='t1'?'Tier 1':d.t==='t2'?'Tier 2':'Field';
+  const tColor=d.t==='t1'?'background:var(--gold-bg);color:var(--gold)':d.t==='t2'?'background:#eef5ff;color:var(--blue)':'background:var(--paper);color:var(--ink3)';
+  const dp=document.getElementById('deckProfile');
+  dp.innerHTML=`<div class="dp-head"><div class="dp-name">${d.n}</div><div class="dp-tier" style="${tColor}">${tier}</div></div><div class="dp-stats"><div class="dp-stat"><b>${d.wr}%</b>Flat WR</div><div class="dp-stat"><b>${d.type}</b>Archetype</div><div class="dp-stat"><b>${d.strat}</b>Strategy</div><div class="dp-stat"><b>${d.best}</b>Best vs</div><div class="dp-stat"><b>${d.worst}</b>Worst vs</div></div>`;
+  dp.className='deck-profile show';
+  dp.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// Architecture layer detail
+const archL=[
+  {t:'Output products',p:'Three standalone HTML files — no server, no build step. Template-driven: swap 5 data constants (D, DA, C, I, ARCH), design stays fixed.',
+   code:'templates/reference_meta_matrix.html  ← 750K template\nD  = matchup WRs       DA = deck profiles\nC  = card-level stats  I  = interaction events\nARCH = archetype map   → grep "function pills" to verify',
+   stats:[{n:'3',l:'HTML products'},{n:'5',l:'data layers'},{n:'750K',l:'template size'},{n:'9',l:'required JS fns'}]},
+  {t:'Simulation core — 340K',p:'sim.py orchestrates: run_game() handles coin flip + london_mulligan + 15-turn loop. engine.py executes turns: 19 strategy functions with 787 if/elif branches. Symmetric p1/p2 slots — both sides get equal AI quality.',
+   code:'run_game(d1, d2)     → GameResult\nrun_sweep(d1, d2, n) → {p1_wr, p1_wins, avg_kill}\nrun_meta_matrix()    → {(d1,d2): wr}\nrun_any_bo3()        → Bo3 with sideboarding',
+   stats:[{n:'2.5ms',l:'per game'},{n:'19',l:'strategy fns'},{n:'787',l:'if/elif branches'},{n:'94s',l:'full matrix'}]},
+  {t:'State & rules — 78K',p:'GameState holds p1/p2 PlayerState slots (hand, library, graveyard, battlefield zones, life, mana pool). Rules enforced at infrastructure level — Chalice, Trinisphere, Thalia, Bridge, Narset, Blood Moon all checked before strategy dispatch, not inside strategies.',
+   code:'Card(name, cmc, mana_cost, colors, tags)\nPermanent(tapped, summoning_sick, counters)\nLandPermanent(produces, blood_moon_override)\nMTGRules.effective_cmc() → max(cmc, 3) for Trinisphere',
+   stats:[{n:'137',l:'rules tests'},{n:'7',l:'lock effects'},{n:'60',l:'card types'},{n:'15',l:'turn max'}]},
+  {t:'Interaction AI',p:'Property-based threat classification (not tag-based). 4-level threat scoring: MUST (combo/win-con) → HIGH (lock/engine/haste) → MEDIUM (removal/creatures) → LOW (cantrips). Symmetric counter logic works for either player. Thoughtseize targeting with card-value scoring.',
+   code:'classify_threat(spell, gs) → 4 levels\nbest_proactive_target(gs) → card with max score\n  win_condition: 100  combo_piece: 90\n  lock_piece: 80      FoW/FoN: 65\ntry_reactive_counter() → FoN→FoW→CS→Fluster→Pyro→Daze',
+   stats:[{n:'73',l:'card tags'},{n:'6',l:'counter types'},{n:'4',l:'threat levels'},{n:'213',l:'lines'}]},
+  {t:'38 deck modules — 594K',p:'Plugin architecture: drop a .py file in decks/, deck_registry.py auto-discovers it. Zero engine edits. 22 full strategy modules (up to 46K each) with deep card-level knowledge. 17 proxy skeletons for less common decks. Paste-to-play importer from MTGGoldfish format.',
+   code:'decks/storm.py → DECK_META dict\ndeck_registry.py → auto-scan at import\nimport_deck.py → paste decklist → register\n\nT1 (≥5%): ocelot 12%, dimir 6%, lands 6%,\n           doomsday 6%, prison 6%, ur_delver 6%',
+   stats:[{n:'22',l:'full strategy'},{n:'17',l:'proxy'},{n:'46K',l:'largest module'},{n:'12%',l:'top meta share'}]}
+];
+function showArch(el,i){
+  document.querySelectorAll('.arch-bar').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const d=archL[i],det=document.getElementById('archDet');
+  let s='';d.stats.forEach(x=>{s+=`<div><div class="an">${x.n}</div><div class="al">${x.l}</div></div>`});
+  det.innerHTML=`<h4>${d.t}</h4><p>${d.p}</p><div class="astat">${s}</div><div class="acode">${d.code}</div>`;
+  det.className='arch-det show';
+}
+
+// AI pipeline stepper
+const aiD=[
+  {n:'1',t:'Spell casting',h:'Strategy dispatch + priority chain',d:'Match deck name → dispatch to _strategy_storm() (one of 19 functions). Scan hand for 73 unique card tags. Walk if/elif tree (41 branches avg). Priority: Wasteland → Thoughtseize → Removal → Creatures → Cantrips.',f:'_strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries)'},
+  {n:'2',t:'Counter logic',h:'4-level threat → priority chain',d:'classify_threat() returns MUST / HIGH / MEDIUM / LOW. Skip cantrips. Check Trinisphere (blocks FoW/FoN alternate costs per CR 601.2f). Priority chain: FoN → FoW → Counterspell → Flusterstorm → Pyroblast → Daze. Hand-size gates: CS needs 4+ cards.',f:'threat = classify_threat(spell, gs) → MUST_ANSWER_NOW (4)\ncounter_chain = [FoN, FoW, CS, Fluster, Pyro, Daze]'},
+  {n:'3',t:'Combat EV',h:'Per-creature evaluation',d:'get_attackers() evaluates each creature independently. best_blocker_for(attacker) models favorable/even/losing trades. Flying vs no flyers = unblocked. Near lethal = attack regardless. Blocker assignment: greedy largest-first.',f:'attack_ev = damage_if_unblocked × P(unblocked)\n           + trade_value × P(blocked)\nnear_lethal → attack_ev = +∞'},
+  {n:'4',t:'Combo kill',h:'Explicit kill conditions',d:'Storm: simulate ritual chain mana (Trinisphere tax, Chalice blocks). Test 6 kill conditions (kill_A..kill_F). Estimate storm count. Safety check: Veil active? No FoW? Desperate? Veil first → execute → Flusterstorm backup.',f:'est_storm = len(rituals) + LED + tutor + cantrips\nlethal_storm = ceil(opp_life / 2) - 1\ncan_kill = kill_A || kill_B || ... || kill_F'}
+];
+const aiFlow=document.getElementById('aiFlow');
+aiD.forEach((d,i)=>{aiFlow.innerHTML+=`<div class="ai-step${i===0?' active':''}" onclick="showAI(${i})"><div class="sn">${d.n}</div><div class="st">${d.t}</div></div>`});
+function showAI(i){document.querySelectorAll('.ai-step').forEach((s,j)=>s.classList.toggle('active',j===i));const d=aiD[i],det=document.getElementById('aiDet');det.className='ai-detail show';det.innerHTML=`<h4>${d.h}</h4><p>${d.d}</p><div class="formula">${d.f}</div>`}
+showAI(0);
+</script>
+</body>
+</html>

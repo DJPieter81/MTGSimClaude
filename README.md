@@ -17,6 +17,12 @@ Python Monte Carlo simulator for Legacy MTG metagame analysis.
 # Verify
 python3 -c "from sim import run_game; r = run_game('burn','ur_delver'); print(r.winner)"
 
+# Full refresh — rebuild matrix HTML + all guides + verify (~62s)
+python3 refresh_all.py
+
+# Full refresh with matrix re-run (~7 min)
+python3 refresh_all.py --resim 200
+
 # Run matrix (50 games/pair, ~130s)
 python3 -c "from sim import run_meta_matrix; run_meta_matrix(n_games=50)"
 
@@ -35,6 +41,7 @@ python3 game_replay.py ur_delver --pro burn --bo3 42 99 7
 | `cards.py` | Card definitions, all 38 deck functions, DECKS dict |
 | `game_replay.py` | Bo3 HTML replayer with 17 play categories |
 | `gen_guides.py` | Generates all 37 deck guides from sim data |
+| `refresh_all.py` | Single command: rebuild matrix HTML + guides + verify |
 | `CLAUDE.md` | Session instructions — read this first every session |
 | `PLANNING.md` | Known issues, stale data warnings, next session priorities |
 | `templates/` | Reference HTML templates (matrix + Burn guide) |

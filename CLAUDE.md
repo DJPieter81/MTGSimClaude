@@ -9,6 +9,12 @@ python3 -c "from sim import run_rules_tests; run_rules_tests()"
 
 # Run a game
 python3 -c "from sim import run_game; r = run_game('ur_delver', 'dimir'); print(r.winner, r.win_reason)"
+
+# Full refresh (matrix HTML + all guides + verify) — ~62s
+python3 refresh_all.py
+
+# Full refresh with matrix re-run — ~7 min
+python3 refresh_all.py --resim 200
 ```
 
 **Always read `PLANNING.md` first** — it has known issues, stale data warnings, and session priorities.
