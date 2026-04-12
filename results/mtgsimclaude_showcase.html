@@ -156,7 +156,13 @@ a.product-link{text-decoration:none;color:inherit;display:block}
 .deck-cloud{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:1.5rem 0}
 .deck-chip{font-family:var(--font-m);font-size:11px;padding:5px 12px;border-radius:100px;border:1px solid rgba(0,0,0,.08);background:var(--card);color:var(--ink2);transition:all .25s}
 .deck-chip:hover{border-color:var(--gold);color:var(--ink);box-shadow:0 4px 12px rgba(184,148,30,.1);transform:translateY(-2px)}
+.deck-chip.selected{border-color:var(--gold);color:var(--ink);box-shadow:0 4px 16px rgba(184,148,30,.15);transform:translateY(-2px);background:var(--gold-bg)!important}
 .deck-chip .meta{color:var(--gold);font-weight:600;margin-left:3px}
+.heatmap td.hl-row{box-shadow:inset 0 2px 0 var(--gold),inset 0 -2px 0 var(--gold)}
+.heatmap td.hl-col{box-shadow:inset 2px 0 0 var(--gold),inset -2px 0 0 var(--gold)}
+.heatmap td.hl-row.hl-col{box-shadow:inset 0 0 0 2px var(--gold)}
+.heatmap .dl.hl-label{color:var(--gold);font-weight:700}
+.heatmap th.hl-label{color:var(--gold)!important;font-weight:700!important}
 .deck-chip.t1{border-color:rgba(184,148,30,.25);background:var(--gold-bg)}.deck-chip.t2{border-color:rgba(24,95,165,.15);background:#eef5ff}
 
 /* Roadmap */
@@ -316,8 +322,40 @@ const obs=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&(e.target
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;document.querySelectorAll('.counter .num').forEach(el=>{const t=+el.dataset.target,s=performance.now();(function f(n){const p=Math.min((n-s)/1800,1);el.textContent=Math.round(t*(1-Math.pow(1-p,3))).toLocaleString();p<1&&requestAnimationFrame(f)})(s)})},{threshold:.5}).observe(document.querySelector('.counter-row'));
 
-// WR bar chart
-new Chart(document.getElementById('wrChart'),{type:'bar',data:{labels:['Burn','Infect','UR Tempo','Dimir B','Dimir','Dimir Flash','Eldrazi','Sneak B','8-Cast','Oops','Painter','WST','Doomsday'],datasets:[{data:[71,66,63,62,60,60,60,59,38,38,37,36,33],backgroundColor:d=>[71,66,63,62,60,60,60,59].includes(d.raw)?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)',borderColor:d=>[71,66,63,62,60,60,60,59].includes(d.raw)?T:R,borderWidth:1.5,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{max:85,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},y:{grid:{display:false},ticks:{font:{family:'Outfit',size:11}}}}}});
+// WR bar chart (stored for cross-interaction)
+const wrLabels=['Burn','Infect','UR Tempo','Dimir B','Dimir','Dimir Flash','Eldrazi','Sneak B','8-Cast','Oops','Painter','WST','Doomsday'];
+const wrData=[71,66,63,62,60,60,60,59,38,38,37,36,33];
+const wrChart=new Chart(document.getElementById('wrChart'),{type:'bar',data:{labels:wrLabels,datasets:[{data:wrData,backgroundColor:wrLabels.map((_,i)=>wrData[i]>=59?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)'),borderColor:wrLabels.map((_,i)=>wrData[i]>=59?T:R),borderWidth:1.5,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',onClick:(e,els)=>{if(els.length){selectDeck(wrLabels[els[0].index])}},plugins:{legend:{display:false}},scales:{x:{max:85,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},y:{grid:{display:false},ticks:{font:{family:'Outfit',size:11}}}}}});
+
+// Global deck selection — cross-links all views
+let selectedDeck=null;
+function selectDeck(name){
+  selectedDeck=name;
+  // 1. Highlight WR chart bar
+  const wrIdx=wrLabels.findIndex(l=>l===name||name.startsWith(l)||l.startsWith(name));
+  wrChart.data.datasets[0].borderWidth=wrLabels.map((_,i)=>i===wrIdx?3:1.5);
+  wrChart.data.datasets[0].borderColor=wrLabels.map((_,i)=>i===wrIdx?'#b8941e':(wrData[i]>=59?T:R));
+  wrChart.update();
+  // 2. Highlight deck chip
+  document.querySelectorAll('.deck-chip').forEach(c=>{c.classList.remove('selected');if(c.textContent.includes(name))c.classList.add('selected')});
+  // 3. Show deck profile
+  const di=deckInfo.findIndex(d=>d.n===name||name.startsWith(d.n)||d.n.startsWith(name));
+  if(di>=0)showDeck(di);
+  // 4. Highlight heatmap row/column
+  const hmIdx=hD.findIndex(d=>d===name||name.startsWith(d)||d.startsWith(name));
+  document.querySelectorAll('.heatmap td,.heatmap th,.heatmap .dl').forEach(el=>{el.classList.remove('hl-row','hl-col','hl-label')});
+  if(hmIdx>=0){
+    const rows=document.querySelectorAll('.heatmap tr');
+    rows.forEach((row,r)=>{
+      if(r===0){row.querySelectorAll('th').forEach((th,c)=>{if(c===hmIdx+1)th.classList.add('hl-label')});return}
+      const cells=row.querySelectorAll('td');
+      cells.forEach((td,c)=>{
+        if(c===0&&r-1===hmIdx)td.classList.add('hl-label');
+        if(c>0){if(r-1===hmIdx)td.classList.add('hl-row');if(c-1===hmIdx)td.classList.add('hl-col')}
+      });
+    });
+  }
+}
 
 // Convergence line chart
 new Chart(document.getElementById('convChart'),{type:'line',data:{labels:['n=30','n=50','n=100','n=200','n=300','n=500'],datasets:[{data:[83.3,81,80,76.5,75.8,75.2],borderColor:G,backgroundColor:'rgba(184,148,30,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:G,pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5},{data:[75.2,75.2,75.2,75.2,75.2,75.2],borderColor:T,borderDash:[5,5],borderWidth:1.5,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:70,max:88,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},x:{grid:{display:false},ticks:{font:{family:'JetBrains Mono',size:10}}}}}});
@@ -348,6 +386,9 @@ function showAcc(i){
   const d=accData[i],det=document.getElementById('accDet');
   det.innerHTML=`<div style="margin-bottom:4px"><span style="font-family:var(--font-m);font-size:11px;color:var(--ink3)">Expected: ${d.lo}–${d.hi}% · Sim: ${d.wr}% · ${d.pass?'✓ PASS':'✗ FAIL'}</span></div>${d.detail}`;
   det.className='acc-det show';
+  // Cross-highlight: extract first deck name from matchup label
+  const parts=d.name.split(' v ');
+  if(parts.length===2) selectDeck(parts[0]);
 }
 new IntersectionObserver(([e])=>{if(e.isIntersecting)document.querySelectorAll('.acc-fill').forEach(b=>setTimeout(()=>b.style.width=b.dataset.w+'%',200))},{threshold:.3}).observe(accEl);
 
@@ -367,6 +408,7 @@ function showHmDet(r,c){
   const verdict=w>=65?'Heavily favored':w>=55?'Favored':w>=45?'Even':w>=35?'Unfavored':'Heavily unfavored';
   hmDet.innerHTML=`<div class="hmd-head"><div class="hmd-wr" style="color:${w>=50?T:R}">${w}%</div><div><div class="hmd-name">${hD[r]} vs ${hD[c]}</div><div style="font-size:11px;color:var(--ink3)">${verdict} for ${hD[r]}</div></div></div><div class="hmd-row"><div class="hmd-stat">Reverse: <b>${rev}%</b> (${hD[c]} vs ${hD[r]})</div><div class="hmd-stat">Symmetry: <b>${sym}%</b> ${symOk?'✓':'⚠ >10% off'}</div><div class="hmd-stat">Favored: <b>${fav}</b></div></div>`;
   hmDet.className='hm-det show';
+  selectDeck(hD[r]);
 }
 
 // Deck cloud with clickable profiles
@@ -414,7 +456,7 @@ const dc=document.getElementById('deckCloud');
 deckInfo.forEach((d,i)=>{
   const cls=d.t?` ${d.t}`:'';
   const meta=d.m?`<span class="meta">${d.m}</span>`:'';
-  dc.innerHTML+=`<div class="deck-chip${cls}" onclick="showDeck(${i})" style="cursor:pointer">${d.n}${meta}</div>`;
+  dc.innerHTML+=`<div class="deck-chip${cls}" onclick="selectDeck('${d.n}')" style="cursor:pointer">${d.n}${meta}</div>`;
 });
 function showDeck(i){
   const d=deckInfo[i];
