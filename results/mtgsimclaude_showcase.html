@@ -252,7 +252,7 @@ a.product-link{text-decoration:none;color:inherit;display:block}
 <section class="section">
   <div class="sec-label reveal"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Validation</div>
   <div class="sec-title reveal">Sim vs tournament consensus</div>
-  <div class="sec-desc reveal">7 matchups spot-checked. 5 pass. 2 traced to specific strategy bugs.</div>
+  <div class="sec-desc reveal">7 matchups spot-checked against Bo3 matrix. 2 pass. 2 borderline. 3 traced to strategy bugs.</div>
   <div class="chart-grid reveal">
     <div class="chart-card"><h4>Matchup validation</h4><div class="chart-sub">Click any row for detail</div><div id="accRows"></div><div class="acc-det" id="accDet"></div></div>
     <div class="chart-card"><h4>8-deck heatmap</h4><div class="chart-sub">Click any cell for matchup breakdown</div><div class="heatmap" id="heatmap"></div><div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:var(--ink3)"><div style="width:50px;height:8px;border-radius:4px;background:linear-gradient(90deg,#a32d2d,#d4850b,#0f6e56)"></div>20% → 50% → 80%</div><div class="hm-det" id="hmDet"></div></div>
@@ -298,13 +298,14 @@ a.product-link{text-decoration:none;color:inherit;display:block}
 <!-- ROADMAP -->
 <section class="section">
   <div class="sec-label reveal"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Roadmap</div>
-  <div class="sec-title reveal">8 merged proposals, prioritised</div>
-  <div class="sec-desc reveal">Cross-pollination from both projects. Source tagged [L] Legacy / [M] Modern.</div>
+  <div class="sec-title reveal">Cowork briefs — next 5 sessions</div>
+  <div class="sec-desc reveal">Self-contained handoffs. 3 PRs merged (#83/#84/#87). 5 active briefs.</div>
   <div class="road-grid reveal">
-    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:var(--gold-bg)"><svg stroke="#b8941e" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="rn">[M] Strategic logger</div><div class="re">LOW effort · HIGH impact · #1 priority</div></div></div><div style="font-size:12px;color:var(--ink2)">--trace mode capturing why every AI decision was made. Prerequisite for LLM judge audit.</div><div class="rd">log_decision(candidates, chosen, reason)<br>Port strategic_logger.py pattern (279 lines)<br>Enables 6-expert LLM audit methodology</div></div>
-    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#e6f5ee"><svg stroke="#0f6e56" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="rn">[L+M] Symmetry averaging</div><div class="re">LOW effort · HIGH value · #3 priority</div></div></div><div style="font-size:12px;color:var(--ink2)">Run both orderings, average. Eliminates 60 outlier pairs without fixing proxy strategies.</div><div class="rd">final_wr = (wr_as_p1 + (1 - wr_as_p2)) / 2<br>Flag |d1+d2-100| > 10% as BUG<br>Post-matrix auto-validation step</div></div>
-    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#eeedfb"><svg stroke="#534ab7" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="rn">[M] Clock-based evaluation</div><div class="re">MEDIUM effort · HIGH impact · #4 priority</div></div></div><div style="font-size:12px;color:var(--ink2)">Port clock.py (328 lines). All values in turns-of-clock-advantage. Shared unit for all strategies.</div><div class="rd">combat_clock() = ceil(opp_life / effective_power)<br>classify_threat() returns clock-delta, not categories<br>Keep per-deck functions — clock is shared language</div></div>
-    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#fde8e8"><svg stroke="#a32d2d" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div><div><div class="rn">[M] Bayesian hand inference</div><div class="re">HIGH effort · HIGH impact · depends on clock</div></div></div><div style="font-size:12px;color:var(--ink2)">Track P(counter), P(removal) during game. Seed with Legacy's hypergeometric priors from interaction_model.py.</div><div class="rd">P(free_counter) = 0.68 on T1 (4 FoW in 60)<br>Updates on priority passes: didn't counter → lower P<br>Legacy priors + Modern BHI = best of both</div></div>
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:var(--gold-bg)"><svg stroke="#b8941e" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="rn">[A] Clock + BHI + Decisional</div><div class="re">±3-5pp WR shifts · Parallel with B+D</div></div></div><div style="font-size:12px;color:var(--ink2)">Burn/UR go-face logic + Storm/Oops combo gates. Port clock.py (328 lines) + bhi.py (275 lines).</div><div class="rd">Burn: go-face when clock < opp clock<br>Storm/Oops: combo gates before kill attempt<br>Touches _strategy_* functions + config</div></div>
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#fde8e8"><svg stroke="#a32d2d" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div><div><div class="rn">[B] Karn lockout</div><div class="re">Prison +5-10pp · Parallel with A+D</div></div></div><div style="font-size:12px;color:var(--ink2)">Add Karn static ability enforcement. New game state field.</div><div class="rd">karn_lockout flag in GameState<br>opp_can_cast() blocks artifact activation<br>Painter/Prison WR jumps expected</div></div>
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#eeedfb"><svg stroke="#534ab7" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="rn">[D] LLM judge audit</div><div class="re">30-50 traces · Parallel with A+B</div></div></div><div style="font-size:12px;color:var(--ink2)">Run grade_traces.py with 6-expert panel. Flags systematic strategy weaknesses.</div><div class="rd">Needs ANTHROPIC_API_KEY<br>Read-only on sim code<br>Output: audit report + domain grades</div></div>
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#e6f5ee"><svg stroke="#0f6e56" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="rn">[C] Response fn unification</div><div class="re">Asymmetry 7.8pp → ~5pp · After A merge</div></div></div><div style="font-size:12px;color:var(--ink2)">Extract _respond_on_active_turn. Follow-up to PR #84 (turn unification).</div><div class="rd">Unify counter responses into single fn<br>Depends on merged A<br>Solo cowork session</div></div>
+    <div class="card road-card" onclick="this.querySelector('.rd').classList.toggle('show')"><div class="road-head"><div class="ri" style="background:#eef5ff"><svg stroke="#185fa5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div><div class="rn">[E] Matrix n=500</div><div class="re">σ ±3.9pp → ±2.5pp · Final step</div></div></div><div style="font-size:12px;color:var(--ink2)">Canonical reference dataset. Captures all A/B/C/D impact. Regenerates guides + HTML.</div><div class="rd">Run after A+B+C+D merged<br>~7 min runtime<br>Replaces current n=100 Bo3 matrix</div></div>
   </div>
 </section>
 
@@ -420,13 +421,13 @@ function clearSelection(){
 
 // Interactive accuracy rows
 const accData=[
-  {name:'Burn v Storm',wr:65,lo:55,hi:75,pass:1,detail:'<strong>Burn favored</strong> — fast clock with direct damage outpaces Storm combo assembly. Eidolon of the Great Revel punishes ritual chains. Sim confirms: Burn kills T4-5, Storm needs T5-6.'},
-  {name:'Burn v Dimir',wr:71,lo:55,hi:80,pass:1,detail:'<strong>Burn favored</strong> — Dimir\'s countermagic doesn\'t stop topdecked burn spells. Price of Progress punishes the dual-heavy manabase. 71% aligns with tournament data.'},
-  {name:'Eldrazi v Storm',wr:79,lo:55,hi:80,pass:1,detail:'<strong>Eldrazi favored</strong> — Chalice on 1 shuts off rituals and cantrips. Thought-Knot Seer strips combo pieces. 79% is at the top of expected range — Chalice might be slightly overperforming.'},
-  {name:'Reanim v Dimir',wr:50,lo:35,hi:65,pass:1,detail:'<strong>Even matchup</strong> — Reanimator can power through counters with discard + fast combo, but Dimir has Surgical Extraction and FoW. 50% = dead even, well within range.'},
-  {name:'Infect v Burn',wr:40,lo:35,hi:55,pass:1,detail:'<strong>Close, Burn slight edge</strong> — Infect\'s creatures die to Bolt, but a protected Glistener Elf can T2 kill. 40% means Burn\'s removal density is just enough.'},
-  {name:'Storm v D&T',wr:32,lo:55,hi:80,pass:0,detail:'<strong>P0 BUG: Should be Storm favored.</strong> Real Storm beats D&T ~60-70% because rituals outpace Thalia tax. Sim\'s _ritual_cost() doesn\'t account for Thalia +1 on noncreature spells. The chain simulation underestimates available mana.'},
-  {name:'Oops v Burn',wr:31,lo:55,hi:80,pass:0,detail:'<strong>P0 BUG: Should be Oops favored.</strong> Oops All Spells should T1 kill ~40% of the time, faster than Burn can deal 20. Strategy function doesn\'t recognize keepable combo hands — mulligans too aggressively.'}
+  {name:'Eldrazi v Storm',wr:75,lo:55,hi:80,pass:1,detail:'<strong>Eldrazi favored</strong> — Chalice on 1 + TKS disruption. 75% from 100 Bo3 matches. Within range.'},
+  {name:'Infect v Burn',wr:49,lo:35,hi:55,pass:1,detail:'<strong>Close matchup</strong> — Infect can race but Bolt kills creatures. 49% = nearly even, well within range.'},
+  {name:'Burn v Storm',wr:78,lo:55,hi:75,pass:0,detail:'<strong>Borderline fail (+3pp)</strong> — Burn slightly overperforming vs Storm in Bo3. Eidolon + sideboard hate pushes it above G1 range. May need SB tuning.'},
+  {name:'Burn v Dimir',wr:83,lo:55,hi:80,pass:0,detail:'<strong>Borderline fail (+3pp)</strong> — Burn dominates Dimir in Bo3. Price of Progress + topdecks outpace counters. 83% is aggressive but close to expected ceiling.'},
+  {name:'Reanim v Dimir',wr:72,lo:35,hi:65,pass:0,detail:'<strong>New fail (+7pp)</strong> — Reanimator 72% vs Dimir is above expected. Entomb+Reanimate may be too consistent through countermagic in Bo3 with sideboard Veil.'},
+  {name:'Storm v D&T',wr:33,lo:55,hi:80,pass:0,detail:'<strong>P0 BUG (unchanged)</strong> — Still 33%. Thalia +1 tax on rituals not applied correctly in _ritual_cost(). Cowork Brief A addresses this.'},
+  {name:'Oops v Burn',wr:30,lo:55,hi:80,pass:0,detail:'<strong>P0 BUG (unchanged)</strong> — Still 30%. T1 combo deployment rate too low. Strategy doesn\'t recognize keepable hands.'}
 ];
 const accEl=document.getElementById('accRows');
 accData.forEach((d,i)=>{
@@ -462,44 +463,42 @@ function showHmDet(r,c){
 
 // Deck cloud with clickable profiles
 const deckInfo=[
-  {n:'Ocelot',k:'ocelot',t:'t1',m:'12%',wr:58,type:'Tempo',best:'Doomsday',worst:'Burn',strat:'Full'},
-  {n:'Dimir',k:'dimir',t:'t1',m:'6%',wr:60,type:'Tempo',best:'Storm',worst:'Burn',strat:'Full'},
-  {n:'Dimir B',k:'dimir_b',t:'t1',m:'5%',wr:62,type:'Tempo',best:'Oops',worst:'Burn',strat:'Full'},
-  {n:'Lands',k:'lands',t:'t1',m:'6%',wr:52,type:'Control',best:'D&T',worst:'Combo',strat:'Proxy'},
-  {n:'Oops',k:'oops',t:'t1',m:'6%',wr:38,type:'Combo',best:'Storm',worst:'Burn',strat:'Proxy'},
-  {n:'Doomsday',k:'doomsday',t:'t1',m:'6%',wr:33,type:'Combo',best:'Reanimator',worst:'Eldrazi',strat:'Proxy'},
-  {n:'Prison',k:'prison',t:'t1',m:'6%',wr:52,type:'Prison',best:'Storm',worst:'Burn',strat:'Proxy'},
-  {n:'UR Delver',k:'ur_delver',t:'t1',m:'6%',wr:55,type:'Tempo',best:'Oops',worst:'Burn',strat:'Full'},
-  {n:'Sneak A',k:'sneak_a',t:'t2',wr:53,type:'Combo',best:'Dimir',worst:'Burn',strat:'Full'},
-  {n:'Sneak B',k:'sneak_b',t:'t2',wr:59,type:'Combo',best:'Dimir',worst:'Burn',strat:'Full'},
-  {n:'Show',k:'show',t:'t2',wr:50,type:'Combo',best:'Reanimator',worst:'Eldrazi',strat:'Proxy'},
-  {n:'Painter',k:'painter',t:'t2',wr:37,type:'Combo',best:'Storm',worst:'Burn',strat:'Proxy'},
-  {n:'8-Cast',k:'eight_cast',t:'t2',wr:38,type:'Aggro',best:'Dimir',worst:'Burn',strat:'Full'},
-  {n:'UWx',k:'uwx',t:'t2',wr:48,type:'Control',best:'Storm',worst:'Burn',strat:'Full'},
-  {n:'Burn',k:'burn',t:'',wr:71,type:'Aggro',best:'Dimir (71%)',worst:'Reanimator (20%)',strat:'Full'},
-  {n:'Infect',k:'infect',t:'',wr:66,type:'Combo-Aggro',best:'Storm (81%)',worst:'Eldrazi (31%)',strat:'Full'},
-  {n:'Storm',k:'storm',t:'',wr:42,type:'Combo',best:'Oops (75%)',worst:'Eldrazi (26%)',strat:'Proxy'},
-  {n:'Reanimator',k:'reanimator',t:'',wr:44,type:'Combo',best:'Eldrazi (62%)',worst:'Burn (20%)',strat:'Proxy'},
-  {n:'Eldrazi',k:'eldrazi',t:'',wr:60,type:'Aggro',best:'Storm (79%)',worst:'Burn (35%)',strat:'Full'},
-  {n:'Depths',k:'depths',t:'',wr:52,type:'Combo',best:'Storm',worst:'Burn',strat:'Full'},
-  {n:'D&T',k:'dnt',t:'',wr:50,type:'Aggro-Tax',best:'Storm',worst:'Combo',strat:'Proxy'},
-  {n:'UR Tempo',k:'ur_tempo',t:'',wr:63,type:'Tempo',best:'Oops',worst:'Burn',strat:'Full'},
-  {n:'Elves',k:'elves',t:'',wr:45,type:'Combo',best:'Midrange',worst:'Combo',strat:'Proxy'},
-  {n:'Goblins',k:'goblins',t:'',wr:48,type:'Aggro',best:'Midrange',worst:'Combo',strat:'Full'},
-  {n:'Affinity',k:'affinity',t:'',wr:50,type:'Aggro',best:'Fair decks',worst:'Combo',strat:'Full'},
-  {n:'TES',k:'tes',t:'',wr:45,type:'Combo',best:'Midrange',worst:'Hate',strat:'Full'},
-  {n:'Belcher',k:'belcher',t:'',wr:44,type:'Combo',best:'Slow decks',worst:'FoW decks',strat:'Full'},
-  {n:'Cephalid',k:'cephalid',t:'',wr:42,type:'Combo',best:'Non-blue',worst:'FoW decks',strat:'Full'},
-  {n:'Cloudpost',k:'cloudpost',t:'',wr:47,type:'Ramp',best:'Fair decks',worst:'Combo',strat:'Full'},
-  {n:'BUG',k:'bug',t:'',wr:48,type:'Tempo',best:'Fair decks',worst:'Combo',strat:'Proxy'},
-  {n:'Dimir C',k:'dimir_c',t:'',wr:55,type:'Tempo',best:'Storm',worst:'Burn',strat:'Full'},
-  {n:'Dimir D',k:'dimir_d',t:'',wr:54,type:'Tempo',best:'Storm',worst:'Burn',strat:'Full'},
-  {n:'Dimir Flash',k:'dimir_flash',t:'',wr:60,type:'Tempo',best:'Storm',worst:'Burn',strat:'Full'},
-  {n:'Boros',k:'boros',t:'',wr:48,type:'Aggro',best:'Fair decks',worst:'Combo',strat:'Proxy'},
-  {n:'Mardu',k:'mardu',t:'',wr:47,type:'Aggro',best:'Fair decks',worst:'Combo',strat:'Proxy'},
-  {n:'Mono B',k:'mono_black',t:'',wr:40,type:'Aggro',best:'Fair decks',worst:'Combo',strat:'Proxy'},
-  {n:'UR Aggro',k:'ur_aggro',t:'',wr:48,type:'Aggro',best:'Midrange',worst:'Combo',strat:'Proxy'},
-  {n:'WST',k:'wan_shi_tong',t:'',wr:36,type:'Tempo',best:'Fair decks',worst:'Fast combo',strat:'Full'}
+  {n:'Affinity',k:'affinity',t:'t1',wr:81,type:'Aggro',best:'Doomsday (99%)',worst:'Sneak A (59%)',strat:'Full'},
+  {n:'Burn',k:'burn',t:'t1',wr:77,type:'Aggro',best:'Doomsday (98%)',worst:'Eldrazi (31%)',strat:'Full'},
+  {n:'Dimir Flash',k:'dimir_flash',t:'t1',wr:76,type:'Tempo',best:'Doomsday (99%)',worst:'Burn (16%)',strat:'Full'},
+  {n:'Dimir B',k:'dimir_b',t:'t1',wr:74,type:'Tempo',best:'Doomsday (97%)',worst:'Burn (29%)',strat:'Full'},
+  {n:'Infect',k:'infect',t:'t1',wr:72,type:'Combo-Aggro',best:'Painter (90%)',worst:'Eldrazi (22%)',strat:'Full'},
+  {n:'Dimir',k:'dimir',t:'t1',wr:69,type:'Tempo',best:'Doomsday (97%)',worst:'Burn (14%)',strat:'Full'},
+  {n:'UR Tempo',k:'ur_tempo',t:'t1',wr:69,type:'Tempo',best:'Goblins (98%)',worst:'Burn (54%)',strat:'Full'},
+  {n:'UR Delver',k:'ur_delver',t:'t1',wr:67,type:'Tempo',best:'Doomsday (96%)',worst:'Affinity (13%)',strat:'Full'},
+  {n:'Sneak A',k:'sneak_a',t:'t2',wr:67,type:'Combo',best:'Painter (82%)',worst:'Affinity (39%)',strat:'Full'},
+  {n:'Eldrazi',k:'eldrazi',t:'t2',wr:67,type:'Aggro',best:'Doomsday (93%)',worst:'Affinity (15%)',strat:'Full'},
+  {n:'D&T',k:'dnt',t:'t2',wr:66,type:'Tax-Aggro',best:'WST (98%)',worst:'Infect (13%)',strat:'Proxy'},
+  {n:'Sneak B',k:'sneak_b',t:'t2',wr:65,type:'Combo',best:'Cloudpost (80%)',worst:'Affinity (41%)',strat:'Full'},
+  {n:'Ocelot',k:'ocelot',t:'t2',wr:58,type:'Tempo',best:'Doomsday (88%)',worst:'Burn (2%)',strat:'Full'},
+  {n:'Mono B',k:'mono_black',t:'t2',wr:58,type:'Aggro',best:'Doomsday (87%)',worst:'Burn (8%)',strat:'Proxy'},
+  {n:'BUG',k:'bug',t:'t2',wr:57,type:'Tempo',best:'Doomsday (91%)',worst:'Burn (7%)',strat:'Proxy'},
+  {n:'UWx',k:'uwx',t:'t2',wr:57,type:'Control',best:'Doomsday (98%)',worst:'Burn (7%)',strat:'Full'},
+  {n:'Boros',k:'boros',t:'',wr:53,type:'Aggro',best:'Mardu (90%)',worst:'Affinity (9%)',strat:'Proxy'},
+  {n:'Cloudpost',k:'cloudpost',t:'',wr:52,type:'Ramp',best:'WST (99%)',worst:'Infect (4%)',strat:'Full'},
+  {n:'Cephalid',k:'cephalid',t:'',wr:52,type:'Combo',best:'Reanimator (83%)',worst:'Eldrazi (10%)',strat:'Full'},
+  {n:'8-Cast',k:'eight_cast',t:'',wr:50,type:'Aggro',best:'Elves (83%)',worst:'Affinity (2%)',strat:'Full'},
+  {n:'TES',k:'tes',t:'',wr:50,type:'Combo',best:'Oops (70%)',worst:'Affinity (23%)',strat:'Full'},
+  {n:'Depths',k:'depths',t:'',wr:49,type:'Combo',best:'UR Aggro (80%)',worst:'Burn (9%)',strat:'Full'},
+  {n:'Elves',k:'elves',t:'',wr:48,type:'Combo',best:'Doomsday (86%)',worst:'Affinity (4%)',strat:'Proxy'},
+  {n:'Reanimator',k:'reanimator',t:'',wr:45,type:'Combo',best:'Mono B (74%)',worst:'Cephalid (6%)',strat:'Proxy'},
+  {n:'Goblins',k:'goblins',t:'',wr:44,type:'Aggro',best:'Mardu (83%)',worst:'Affinity (3%)',strat:'Full'},
+  {n:'Storm',k:'storm',t:'',wr:43,type:'Combo',best:'Doomsday (63%)',worst:'Eldrazi (19%)',strat:'Proxy'},
+  {n:'Prison',k:'prison',t:'',wr:43,type:'Lock',best:'Lands (62%)',worst:'Infect (13%)',strat:'Proxy'},
+  {n:'UR Aggro',k:'ur_aggro',t:'',wr:42,type:'Aggro',best:'Doomsday (95%)',worst:'UR Tempo (2%)',strat:'Proxy'},
+  {n:'Show',k:'show',t:'',wr:41,type:'Combo',best:'Painter (68%)',worst:'Affinity (19%)',strat:'Proxy'},
+  {n:'WST',k:'wan_shi_tong',t:'',wr:38,type:'Tempo',best:'Lands (79%)',worst:'D&T (1%)',strat:'Full'},
+  {n:'Lands',k:'lands',t:'',wr:36,type:'Control',best:'D&T (92%)',worst:'Infect (13%)',strat:'Proxy'},
+  {n:'Mardu',k:'mardu',t:'',wr:36,type:'Aggro',best:'Doomsday (77%)',worst:'Burn (2%)',strat:'Proxy'},
+  {n:'Belcher',k:'belcher',t:'',wr:33,type:'Combo',best:'Painter (53%)',worst:'Mardu (19%)',strat:'Full'},
+  {n:'Oops',k:'oops',t:'',wr:32,type:'Combo',best:'Storm (57%)',worst:'Dimir Flash (9%)',strat:'Proxy'},
+  {n:'Painter',k:'painter',t:'',wr:29,type:'Combo',best:'Belcher (48%)',worst:'Burn (11%)',strat:'Proxy'},
+  {n:'Doomsday',k:'doomsday',t:'',wr:28,type:'Combo',best:'Cloudpost (74%)',worst:'Burn (1%)',strat:'Proxy'}
 ];
 const dc=document.getElementById('deckCloud');
 deckInfo.forEach((d,i)=>{
