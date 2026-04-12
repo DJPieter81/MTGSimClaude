@@ -1,0 +1,32 @@
+{
+  "trace_file": "elves_vs_dnt_s99.json",
+  "matchup": "elves_vs_dnt",
+  "seed": 99,
+  "winner": "p1",
+  "win_reason": "Opp life reaches -2 on turn 11",
+  "kill_turn": 11,
+  "game_length": 11,
+  "deck1": "elves",
+  "deck2": "dnt",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "B+",
+    "combat": "B",
+    "combo": "B",
+    "interaction": "B",
+    "meta": "A",
+    "overall": "B+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Won but took 11 turns \u2014 mana was adequate",
+    "combat": "Combo deck \u2014 combat decisions minimal",
+    "combo": "Combo executed on T11 \u2014 delayed but successful",
+    "interaction": "Combo resolved without needing protection",
+    "meta": "Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness",
+    "overall": "Average across 6 domains \u2014 won in 11 turns"
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 11 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: B \u2014 Combo executed on T11 \u2014 delayed but successful\ninteraction: B \u2014 Combo resolved without needing protection\nmeta: A \u2014 Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 11 turns",
+  "model": "heuristic-v1",
+  "graded_at": "2026-04-12T13:09:10.596984Z"
+}

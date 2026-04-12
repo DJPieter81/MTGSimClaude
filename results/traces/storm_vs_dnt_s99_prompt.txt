@@ -1,0 +1,65 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: storm_vs_dnt
+Seed: 99
+Result: p1 (ANT combo (Past in Flames)) on turn 3 of 3
+
+Opening hands:
+  P1 (storm): Ponder, Past in Flames, Underground Sea, Thoughtseize, Infernal Tutor, Tendrils of Agony, Cabal Ritual
+  P2 (dnt): Recruiter of the Guard, Thalia, Guardian of Thraben, Skyclave Apparition, Wasteland
+
+Strategic decision trace (3 entries):
+  T1 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=1/9, rituals=0, safe=False, thalia=False, life=18
+  T2 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=1/9, rituals=0, safe=True, thalia=False, life=18
+  T3 [storm] [phase:combo] chose kill_D from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=4/9, rituals=2, safe=True, thalia=False, life=17
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  STORM vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  STORM (P1):
+  Draw 7:
+    1. Ponder (sorcery, CMC 1, cantrip)
+    2. Past in Flames (sorcery, CMC 5, combo)
+    3. Underground Sea (dual)
+    4. Thoughtseize (sorcery, CMC 1)
+    5. Infernal Tutor (sorcery, CMC 2, combo)
+    6. Tendrils of Agony (sorcery, CMC 4, combo, win-con)
+    7. Cabal Ritual (instant, CMC 2)
+    [Lands: 1  Cantrips: 1  Combo: 3  Other: 2]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; 1 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DNT (P2):
+  Draw 7:
+    1. Stoneforge Mystic (creature 1/2, CMC 2)
+    2. Rishadan Port (land)
+    3. Wasteland (land)
+    4. Rishadan Port (land)
+    5. Plains (basic)
+    6. Plains (basic)
+    7. Swords to Plowshares (instant, CMC 1, removal)
+    [Lands: 5  Creatures: 1  Removal: 1]
+  → MULLIGAN
+    Reason: 5 lands — too flooded, not enough spells
+  Mulligan #1 — draw 7:
+    1. Plains (basic)
+    2. Rishadan Port (land)
+    3. Solitude (creature 3/2, CMC 5, removal)
+    4. Plains (basic)
+    5. Karakas (land)
+    6. Rishadan Port (land)
+
+Grade the **storm** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

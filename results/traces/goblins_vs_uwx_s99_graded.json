@@ -1,0 +1,32 @@
+{
+  "trace_file": "goblins_vs_uwx_s99.json",
+  "matchup": "goblins_vs_uwx",
+  "seed": 99,
+  "winner": "p1",
+  "win_reason": "Goblins: Sling-Gang drain for 2",
+  "kill_turn": 12,
+  "game_length": 12,
+  "deck1": "goblins",
+  "deck2": "uwx",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "B",
+    "combat": "B+",
+    "combo": "B",
+    "interaction": "B",
+    "meta": "B",
+    "overall": "B"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Resource deployment supported a T12 win",
+    "combat": "Aggro plan executed in 12 turns \u2014 solid pressure",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "Adequate interaction for game plan",
+    "meta": "Eventually closed the matchup",
+    "overall": "Average across 6 domains \u2014 won in 12 turns"
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T12 win\ncombat: B+ \u2014 Aggro plan executed in 12 turns \u2014 solid pressure\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B \u2014 Adequate interaction for game plan\nmeta: B \u2014 Eventually closed the matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 12 turns",
+  "model": "heuristic-v1",
+  "graded_at": "2026-04-12T13:09:10.601236Z"
+}

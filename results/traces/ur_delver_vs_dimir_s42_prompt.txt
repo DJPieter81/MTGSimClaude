@@ -1,0 +1,68 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: ur_delver_vs_dimir
+Seed: 42
+Result: p1 (Opp life reaches 0 on turn 6) on turn 6 of 6
+
+Opening hands:
+  P1 (ur_delver): Spell Pierce, Brainstorm, Steam Vents, Murktide Regent, Lightning Bolt, Brainstorm, Steam Vents
+  P2 (dimir): Thoughtseize, Fatal Push, Tamiyo, Inquisitive Student, Underground Sea, Island, Brainstorm, Scalding Tarn
+
+Strategic decision trace (6 entries):
+  T1 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=6, threats_in_play=0
+  T2 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=2, hand=5, threats_in_play=0
+  T3 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=6, threats_in_play=0
+  T4 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=4, hand=5, threats_in_play=1
+  T5 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=5, hand=4, threats_in_play=2
+  T6 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=5, hand=5, threats_in_play=2
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  UR_DELVER vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  UR_DELVER (P1):
+  Draw 7:
+    1. Spell Pierce (instant, CMC 1)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Steam Vents (dual)
+    4. Murktide Regent (creature 5/5, CMC 7)
+    5. Lightning Bolt (instant, CMC 1)
+    6. Brainstorm (instant, CMC 1, cantrip)
+    7. Steam Vents (dual)
+    [Lands: 2  Creatures: 1  Cantrips: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Thoughtseize (sorcery, CMC 1)
+    2. Fatal Push (instant, CMC 1, removal)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Underground Sea (dual)
+    5. Island (basic)
+    6. Brainstorm (instant, CMC 1, cantrip)
+    7. Scalding Tarn (fetch)
+    [Lands: 3  Creatures: 1  Cantrips: 1  Removal: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+  ── Main ──
+
+Grade the **ur_delver** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

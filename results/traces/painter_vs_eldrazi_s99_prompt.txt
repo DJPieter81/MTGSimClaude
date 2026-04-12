@@ -1,0 +1,66 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: painter_vs_eldrazi
+Seed: 99
+Result: p1 (Painter + Grindstone combo) on turn 4 of 4
+
+Opening hands:
+  P1 (painter): Grim Monolith, Manifold Key, Urza's Tower, Planar Nexus, Lotus Petal, Mishra's Research Desk, Karn, the Great Creator
+  P2 (eldrazi): Thought-Knot Seer, Ancient Tomb, Ancient Tomb, Simian Spirit Guide, Wasteland, Wasteland, The One Ring
+
+Strategic decision trace (4 entries):
+  T1 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=2, hand=7, artifacts=0
+  T2 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=2, hand=3, artifacts=3
+  T3 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=2, hand=2, artifacts=4
+  T4 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=2, hand=2, artifacts=4
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  PAINTER vs ELDRAZI
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: ELDRAZI wins the die roll, goes FIRST
+
+  PAINTER (P1):
+  Draw 7:
+    1. Grim Monolith (artifact, CMC 2)
+    2. Manifold Key (artifact, CMC 1)
+    3. Urza's Tower (land)
+    4. Planar Nexus (land)
+    5. Lotus Petal (artifact, CMC 0)
+    6. Mishra's Research Desk (artifact, CMC 1)
+    7. Karn, the Great Creator (planeswalker, CMC 4)
+    [Lands: 2  Other: 5]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base
+
+  ELDRAZI (P2):
+  Draw 7:
+    1. Thought-Knot Seer (creature 4/4, CMC 4)
+    2. Ancient Tomb (land)
+    3. Ancient Tomb (land)
+    4. Simian Spirit Guide (creature 2/2, CMC 3)
+    5. Wasteland (land)
+    6. Wasteland (land)
+    7. The One Ring (artifact, CMC 4)
+    [Lands: 4  Creatures: 2  Other: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 2 threat(s) for a clock
+
+━━ TURN 1 — ELDRAZI ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: painter 20 | eldrazi 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Ancient Tomb (1 lands)
+  ── Main ──
+
+Grade the **painter** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

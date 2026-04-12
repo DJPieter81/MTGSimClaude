@@ -1,0 +1,32 @@
+{
+  "trace_file": "oops_vs_dimir_s42.json",
+  "matchup": "oops_vs_dimir",
+  "seed": 42,
+  "winner": "p2",
+  "win_reason": "BUG life reaches -1 on turn 9",
+  "kill_turn": null,
+  "game_length": 9,
+  "deck1": "oops",
+  "deck2": "dimir",
+  "grades": {
+    "mulligan": "C+",
+    "mana": "C",
+    "combat": "B",
+    "combo": "C",
+    "interaction": "C",
+    "meta": "C+",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Mulled to 6; card disadvantage contributed to loss",
+    "mana": "Lost in 9 turns \u2014 possible mana sequencing issues",
+    "combat": "Combo deck \u2014 combat decisions minimal",
+    "combo": "Failed to assemble combo \u2014 could not find pieces",
+    "interaction": "No protection deployed against disruption",
+    "meta": "Lost \u2014 played actively but could not overcome matchup",
+    "overall": "Average across 6 domains \u2014 lost in 9 turns"
+  },
+  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 9 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: C \u2014 Failed to assemble combo \u2014 could not find pieces\ninteraction: C \u2014 No protection deployed against disruption\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 9 turns",
+  "model": "heuristic-v1",
+  "graded_at": "2026-04-12T13:09:10.606477Z"
+}

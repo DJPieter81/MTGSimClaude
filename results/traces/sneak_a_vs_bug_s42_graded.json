@@ -1,0 +1,32 @@
+{
+  "trace_file": "sneak_a_vs_bug_s42.json",
+  "matchup": "sneak_a_vs_bug",
+  "seed": 42,
+  "winner": "p2",
+  "win_reason": "BUG life reaches -1 on turn 8",
+  "kill_turn": null,
+  "game_length": 8,
+  "deck1": "sneak_a",
+  "deck2": "bug",
+  "grades": {
+    "mulligan": "B",
+    "mana": "C",
+    "combat": "B",
+    "combo": "C",
+    "interaction": "C",
+    "meta": "C+",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
+    "mana": "Lost in 8 turns \u2014 possible mana sequencing issues",
+    "combat": "Combo deck \u2014 combat decisions minimal",
+    "combo": "Failed to assemble combo \u2014 could not find pieces",
+    "interaction": "No protection deployed against disruption",
+    "meta": "Lost \u2014 played actively but could not overcome matchup",
+    "overall": "Average across 6 domains \u2014 lost in 8 turns"
+  },
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C \u2014 Lost in 8 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: C \u2014 Failed to assemble combo \u2014 could not find pieces\ninteraction: C \u2014 No protection deployed against disruption\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 8 turns",
+  "model": "heuristic-v1",
+  "graded_at": "2026-04-12T13:09:10.629423Z"
+}

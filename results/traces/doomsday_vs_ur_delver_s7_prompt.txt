@@ -1,0 +1,66 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: doomsday_vs_ur_delver
+Seed: 7
+Result: p2 (BUG life reaches -6 on turn 4) on turn None of 4
+
+Opening hands:
+  P1 (doomsday): Force of Will, Underground Sea, Ponder, Polluted Delta, Island, Island, Street Wraith
+  P2 (ur_delver): Murktide Regent, Brazen Borrower, Daze, Dragon's Rage Channeler, Delver of Secrets, Volcanic Island, Brainstorm
+
+Strategic decision trace (4 entries):
+  T1 [doomsday] [phase:dig] chose pass from ['cast_doomsday', 'cycle_and_oracle', 'pass'] — mana=1, dd_resolved=False, life=20
+  T2 [doomsday] [phase:dig] chose pass from ['cast_doomsday', 'cycle_and_oracle', 'pass'] — mana=2, dd_resolved=False, life=18
+  T3 [doomsday] [phase:cast_dd] chose cast_doomsday from ['cast_doomsday', 'cycle_and_oracle', 'pass'] — mana=3, dd_resolved=False, life=17
+  T4 [doomsday] [phase:cast_dd] chose cycle_and_oracle from ['cast_doomsday', 'cycle_and_oracle', 'pass'] — mana=3, dd_resolved=True, life=3
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  DOOMSDAY vs UR_DELVER
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DOOMSDAY wins the die roll, goes FIRST
+
+  DOOMSDAY (P1):
+  Draw 7:
+    1. Force of Will (instant, CMC 5, free counter)
+    2. Underground Sea (dual)
+    3. Ponder (sorcery, CMC 1, cantrip)
+    4. Polluted Delta (fetch)
+    5. Island (basic)
+    6. Island (basic)
+    7. Street Wraith (creature 3/4, CMC 5)
+    [Lands: 4  Creatures: 1  Counters: 1  Cantrips: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 1 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+  UR_DELVER (P2):
+  Draw 7:
+    1. Murktide Regent (creature 5/5, CMC 7)
+    2. Brazen Borrower (creature 3/1, CMC 3)
+    3. Daze (instant, CMC 2, free counter)
+    4. Dragon's Rage Channeler (creature 1/1, CMC 1)
+    5. Delver of Secrets (creature 1/1, CMC 1)
+    6. Volcanic Island (dual)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 1  Creatures: 4  Counters: 1  Cantrips: 1]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; 4 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — DOOMSDAY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: doomsday 20 | ur_delver 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+
+Grade the **doomsday** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

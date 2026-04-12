@@ -1,0 +1,68 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: painter_vs_eldrazi
+Seed: 7
+Result: p2 (BUG life reaches -3 on turn 6) on turn None of 6
+
+Opening hands:
+  P1 (painter): The One Ring, Planar Nexus, Tezzeret, Cruel Captain, Ancient Tomb, Urza's Saga, Urza's Tower, Manifold Key
+  P2 (eldrazi): Eldrazi Linebreaker, Wastescape Battlemage, Simian Spirit Guide, Glaring Fleshraker, Thought-Knot Seer, Eye of Ugin, The One Ring
+
+Strategic decision trace (6 entries):
+  T1 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=1, hand=6, artifacts=0
+  T2 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=3, hand=6, artifacts=0
+  T3 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=4, hand=6, artifacts=2
+  T4 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=5, hand=4, artifacts=4
+  T5 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=5, hand=5, artifacts=4
+  T6 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=4, hand=6, artifacts=4
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  PAINTER vs ELDRAZI
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: PAINTER wins the die roll, goes FIRST
+
+  PAINTER (P1):
+  Draw 7:
+    1. The One Ring (artifact, CMC 4)
+    2. Planar Nexus (land)
+    3. Tezzeret, Cruel Captain (planeswalker, CMC 3)
+    4. Ancient Tomb (land)
+    5. Urza's Saga (land)
+    6. Urza's Tower (land)
+    7. Manifold Key (artifact, CMC 1)
+    [Lands: 4  Other: 3]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable
+
+  ELDRAZI (P2):
+  Draw 7:
+    1. Eldrazi Linebreaker (creature 4/3, CMC 3)
+    2. Wastescape Battlemage (creature 3/3, CMC 3)
+    3. Simian Spirit Guide (creature 2/2, CMC 3)
+    4. Glaring Fleshraker (creature 3/3, CMC 3)
+    5. Thought-Knot Seer (creature 4/4, CMC 4)
+    6. Eye of Ugin (land)
+    7. The One Ring (artifact, CMC 4)
+    [Lands: 1  Creatures: 5  Other: 1]
+  → KEEP (opening 7)
+    Reason: 5 threat(s) for a clock
+
+━━ TURN 1 — PAINTER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: painter 20 | eldrazi 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Planar Nexus (1 lands)
+
+Grade the **painter** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

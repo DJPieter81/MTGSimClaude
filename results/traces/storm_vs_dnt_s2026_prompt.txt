@@ -1,0 +1,72 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: storm_vs_dnt
+Seed: 2026
+Result: p2 (BUG life reaches -6 on turn 6) on turn None of 6
+
+Opening hands:
+  P1 (storm): Polluted Delta, Polluted Delta, Dark Ritual, Tendrils of Agony, Underground Sea, Dark Ritual, Force of Will
+  P2 (dnt): Recruiter of the Guard, Phelia, Exuberant Shepherd, Stoneforge Mystic, Aether Vial, Wasteland, Karakas, Plains
+
+Strategic decision trace (10 entries):
+  T1 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=3/9, rituals=2, safe=True, thalia=False, life=20
+  T2 [dnt] chose sfm from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=2, hand=['recruiter', 'phelia', 'sfm', 'basic', 'stp']
+  T2 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=3/9, rituals=2, safe=True, thalia=False, life=19
+  T3 [dnt] chose phelia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=2, hand=['recruiter', 'phelia', 'stp', 'kaldra', 'basic']
+  T3 [storm] [phase:combo] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=4/9, rituals=3, safe=True, thalia=False, life=17
+  T4 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'stp', 'kaldra', 'thalia']
+  T4 [storm] [phase:combo] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=1/8, rituals=0, safe=True, thalia=True, life=12
+  T5 [dnt] chose skyclave from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'stp', 'skyclave']
+  T5 [storm] [phase:desperate] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=2/8, rituals=0, safe=True, thalia=True, life=4
+  T6 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'stp', 'thalia']
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  STORM vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  STORM (P1):
+  Draw 7:
+    1. Polluted Delta (fetch)
+    2. Polluted Delta (fetch)
+    3. Dark Ritual (instant, CMC 1)
+    4. Tendrils of Agony (sorcery, CMC 4, combo, win-con)
+    5. Underground Sea (dual)
+    6. Dark Ritual (instant, CMC 1)
+    7. Force of Will (instant, CMC 5, free counter)
+    [Lands: 3  Counters: 1  Combo: 1  Other: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 1 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+  DNT (P2):
+  Draw 7:
+    1. Recruiter of the Guard (creature 1/1, CMC 3)
+    2. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    3. Stoneforge Mystic (creature 1/2, CMC 2)
+    4. Aether Vial (artifact, CMC 1)
+    5. Wasteland (land)
+    6. Karakas (land)
+    7. Plains (basic)
+    [Lands: 3  Creatures: 3  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 3 threat(s) for a clock
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Wasteland (1 lands)
+  ── Main ──
+
+Grade the **storm** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

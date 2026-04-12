@@ -1,0 +1,70 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: elves_vs_dnt
+Seed: 42
+Result: p1 (Opp life reaches -11 on turn 5) on turn 5 of 5
+
+Opening hands:
+  P1 (elves): Natural Order, Elvish Visionary, Forest, Elvish Spirit Guide, Allosaurus Shepherd, Elvish Visionary, Forest
+  P2 (dnt): Rishadan Port, Sanctum Prelate, Thalia, Guardian of Thraben, Plains, Plains, Phelia, Exuberant Shepherd, Plains
+
+Strategic decision trace (8 entries):
+  T1 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=1, creatures=0, hand=7
+  T2 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=2, creatures=1, hand=6
+  T3 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['prelate', 'thalia', 'phelia', 'basic', 'karakas', 'flickerwisp']
+  T3 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=3, creatures=2, hand=6
+  T4 [dnt] chose phelia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=4, hand=['prelate', 'phelia', 'karakas', 'flickerwisp', 'port']
+  T4 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=3, creatures=4, hand=5
+  T5 [dnt] chose flickerwisp from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=5, hand=['prelate', 'flickerwisp', 'port', 'equipment']
+  T5 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=4, creatures=5, hand=3
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  ELVES vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  ELVES (P1):
+  Draw 7:
+    1. Natural Order (sorcery, CMC 2, combo)
+    2. Elvish Visionary (creature 1/1, CMC 1)
+    3. Forest (basic)
+    4. Elvish Spirit Guide (creature 3/2, CMC 1)
+    5. Allosaurus Shepherd (creature 1/1, CMC 1)
+    6. Elvish Visionary (creature 1/1, CMC 1)
+    7. Forest (basic)
+    [Lands: 2  Creatures: 4  Combo: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 4 threat(s) for a clock
+
+  DNT (P2):
+  Draw 7:
+    1. Rishadan Port (land)
+    2. Sanctum Prelate (creature 2/2, CMC 3)
+    3. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    4. Plains (basic)
+    5. Plains (basic)
+    6. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    7. Plains (basic)
+    [Lands: 4  Creatures: 3]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 3 threat(s) for a clock
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Rishadan Port (1 lands)
+  ── Main ──
+
+Grade the **elves** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

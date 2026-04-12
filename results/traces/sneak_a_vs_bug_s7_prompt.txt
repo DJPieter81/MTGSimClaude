@@ -1,0 +1,69 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: sneak_a_vs_bug
+Seed: 7
+Result: p2 (BUG life reaches -5 on turn 7) on turn None of 7
+
+Opening hands:
+  P1 (sneak_a): Scalding Tarn, Emrakul, the Aeons Torn, Scalding Tarn, Sneak Attack, Atraxa, Grand Unifier, Force of Will, Ponder
+  P2 (bug): Orcish Bowmasters, Murktide Regent, Brainstorm, Nethergoyf, Tamiyo, Inquisitive Student, Underground Sea, Force of Will
+
+Strategic decision trace (7 entries):
+  T1 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=1, hand=7, threats_in_play=0
+  T2 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=1, hand=8, threats_in_play=0
+  T3 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=2, hand=7, threats_in_play=1
+  T4 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=6, threats_in_play=3
+  T5 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=5, threats_in_play=4
+  T6 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=6, threats_in_play=4
+  T7 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=7, threats_in_play=4
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  SNEAK_A vs BUG
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: SNEAK_A wins the die roll, goes FIRST
+
+  SNEAK_A (P1):
+  Draw 7:
+    1. Scalding Tarn (fetch)
+    2. Emrakul, the Aeons Torn (creature 15/15, CMC 15, win-con)
+    3. Scalding Tarn (fetch)
+    4. Sneak Attack (CMC 4, combo, win-con)
+    5. Atraxa, Grand Unifier (creature 7/7, CMC 7, win-con)
+    6. Force of Will (instant, CMC 5, free counter)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 2  Creatures: 2  Counters: 1  Cantrips: 1  Combo: 3]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 3 threat(s) for a clock; 1 counter(s) for protection/disruption; combo pieces present — can threaten early kill
+
+  BUG (P2):
+  Draw 7:
+    1. Orcish Bowmasters (creature 1/1, CMC 2)
+    2. Murktide Regent (creature 3/3, CMC 7)
+    3. Brainstorm (instant, CMC 1, cantrip)
+    4. Nethergoyf (creature 0/1, CMC 2)
+    5. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    6. Underground Sea (dual)
+    7. Force of Will (instant, CMC 5, free counter)
+    [Lands: 1  Creatures: 4  Counters: 1  Cantrips: 1]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; 4 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — SNEAK_A ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: sneak_a 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Scalding Tarn (−1 life, 19) → Volcanic Island
+
+Grade the **sneak_a** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

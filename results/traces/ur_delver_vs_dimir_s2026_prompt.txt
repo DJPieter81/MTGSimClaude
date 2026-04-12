@@ -1,0 +1,70 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: ur_delver_vs_dimir
+Seed: 2026
+Result: p1 (Opp life reaches -2 on turn 8) on turn 8 of 8
+
+Opening hands:
+  P1 (ur_delver): Misty Rainforest, Misty Rainforest, Delver of Secrets, Preordain, Volcanic Island, Delver of Secrets, Force of Will
+  P2 (dimir): Nethergoyf, Brainstorm, Orcish Bowmasters, Daze, Kaito, Bane of Nightmares, Polluted Delta, Wasteland
+
+Strategic decision trace (8 entries):
+  T1 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=6, threats_in_play=0
+  T2 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=2, hand=8, threats_in_play=0
+  T3 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=7, threats_in_play=1
+  T4 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=8, threats_in_play=1
+  T5 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=2, hand=8, threats_in_play=1
+  T6 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=6, threats_in_play=2
+  T7 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=3, threats_in_play=2
+  T8 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=3, threats_in_play=0
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  UR_DELVER vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  UR_DELVER (P1):
+  Draw 7:
+    1. Misty Rainforest (fetch)
+    2. Misty Rainforest (fetch)
+    3. Delver of Secrets (creature 1/1, CMC 1)
+    4. Preordain (sorcery, CMC 1)
+    5. Volcanic Island (dual)
+    6. Delver of Secrets (creature 1/1, CMC 1)
+    7. Force of Will (instant, CMC 5, free counter)
+    [Lands: 3  Creatures: 2  Counters: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+  DIMIR (P2):
+  Draw 7:
+    1. Nethergoyf (creature 0/1, CMC 2)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Orcish Bowmasters (creature 1/1, CMC 2)
+    4. Daze (instant, CMC 2, free counter)
+    5. Kaito, Bane of Nightmares (planeswalker, CMC 3)
+    6. Polluted Delta (fetch)
+    7. Wasteland (land)
+    [Lands: 2  Creatures: 2  Counters: 1  Cantrips: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock; 1 counter(s) for protection/disruption
+
+━━ TURN 1 — DIMIR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: ur_delver 20 | dimir 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Polluted Delta (−1 life, 19) → Underground Sea
+  ── Main ──
+
+Grade the **ur_delver** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

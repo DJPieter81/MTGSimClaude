@@ -1,0 +1,69 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: storm_vs_dnt
+Seed: 7
+Result: p1 (ANT combo (Ad Nauseam)) on turn 5 of 5
+
+Opening hands:
+  P1 (storm): Brainstorm, Thoughtseize, Lion's Eye Diamond, Veil of Summer, Misty Rainforest, Underground Sea, Tendrils of Agony
+  P2 (dnt): Recruiter of the Guard, Skyclave Apparition, Rishadan Port, Stoneforge Mystic, Stoneforge Mystic, Plains, Flickerwisp
+
+Strategic decision trace (7 entries):
+  T1 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=2/9, rituals=0, safe=False, thalia=False, life=18
+  T2 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=2/9, rituals=0, safe=True, thalia=False, life=17
+  T3 [storm] [phase:combo] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=3/9, rituals=1, safe=True, thalia=False, life=17
+  T3 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'skyclave', 'sfm', 'sfm', 'skyclave', 'thalia']
+  T4 [storm] [phase:combo] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=3/8, rituals=1, safe=True, thalia=True, life=17
+  T4 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'skyclave', 'sfm', 'sfm', 'skyclave', 'thalia']
+  T5 [storm] [phase:desperate] chose kill_C from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=3/8, rituals=1, safe=True, thalia=True, life=15
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  STORM vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: STORM wins the die roll, goes FIRST
+
+  STORM (P1):
+  Draw 7:
+    1. Brainstorm (instant, CMC 1, cantrip)
+    2. Thoughtseize (sorcery, CMC 1)
+    3. Lion's Eye Diamond (artifact, CMC 0, combo)
+    4. Veil of Summer (instant, CMC 1)
+    5. Misty Rainforest (fetch)
+    6. Underground Sea (dual)
+    7. Tendrils of Agony (sorcery, CMC 4, combo, win-con)
+    [Lands: 2  Cantrips: 1  Combo: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 1 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DNT (P2):
+  Draw 7:
+    1. Recruiter of the Guard (creature 1/1, CMC 3)
+    2. Skyclave Apparition (creature 2/2, CMC 3, removal)
+    3. Rishadan Port (land)
+    4. Stoneforge Mystic (creature 1/2, CMC 2)
+    5. Stoneforge Mystic (creature 1/2, CMC 2)
+    6. Plains (basic)
+    7. Flickerwisp (creature 3/1, CMC 3)
+    [Lands: 2  Creatures: 5  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 5 threat(s) for a clock; removal for opponent's threats
+
+━━ TURN 1 — STORM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+
+Grade the **storm** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

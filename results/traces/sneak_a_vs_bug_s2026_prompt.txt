@@ -1,0 +1,66 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: sneak_a_vs_bug
+Seed: 2026
+Result: p2 (BUG life reaches 0 on turn 4) on turn None of 4
+
+Opening hands:
+  P1 (sneak_a): Atraxa, Grand Unifier, Atraxa, Grand Unifier, Ancient Tomb, Ponder, Force of Will, Ancient Tomb, Stock Up
+  P2 (bug): Orcish Bowmasters, Force of Will, Nethergoyf, Fatal Push, Ponder, Polluted Delta, Undercity Sewers
+
+Strategic decision trace (4 entries):
+  T1 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=1, hand=6, threats_in_play=0
+  T2 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=1, hand=6, threats_in_play=0
+  T3 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=2, hand=6, threats_in_play=1
+  T4 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=2, hand=6, threats_in_play=3
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  SNEAK_A vs BUG
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BUG wins the die roll, goes FIRST
+
+  SNEAK_A (P1):
+  Draw 7:
+    1. Atraxa, Grand Unifier (creature 7/7, CMC 7, win-con)
+    2. Atraxa, Grand Unifier (creature 7/7, CMC 7, win-con)
+    3. Ancient Tomb (land)
+    4. Ponder (sorcery, CMC 1, cantrip)
+    5. Force of Will (instant, CMC 5, free counter)
+    6. Ancient Tomb (land)
+    7. Stock Up (instant, CMC 2)
+    [Lands: 2  Creatures: 2  Counters: 1  Cantrips: 1  Combo: 2]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock; 1 counter(s) for protection/disruption; combo pieces present — can threaten early kill
+
+  BUG (P2):
+  Draw 7:
+    1. Orcish Bowmasters (creature 1/1, CMC 2)
+    2. Force of Will (instant, CMC 5, free counter)
+    3. Nethergoyf (creature 0/1, CMC 2)
+    4. Fatal Push (instant, CMC 1, removal)
+    5. Ponder (sorcery, CMC 1, cantrip)
+    6. Polluted Delta (fetch)
+    7. Undercity Sewers (land)
+    [Lands: 2  Creatures: 2  Counters: 1  Cantrips: 1  Removal: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 2 threat(s) for a clock; 1 counter(s) for protection/disruption; removal for opponent's threats
+
+━━ TURN 1 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: sneak_a 20 | bug 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Play+crack Polluted Delta (−1 life, 19) → Underground Sea
+  ── Main ──
+
+Grade the **sneak_a** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.
