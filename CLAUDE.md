@@ -292,18 +292,19 @@ I (interaction events), ARCH (archetype map).
 
 ### 2. Deck Guides (HTML)
 
-**Design**: Light theme, white bg, system sans-serif, max-width 960px.
-**Reference**: `templates/reference_deck_guide.html`
+**Generator**: `python3 gen_guides.py` produces all 37 guides in ~30s (500 games/deck).
+Burn is hand-crafted (51KB) and skipped by the generator. Reference: `templates/reference_deck_guide.html`
 
-Components:
+**Design**: Light theme, white bg, system sans-serif, max-width 960px.
+
+**All 7 required features** (generator produces all of these):
 - **Hero**: 4-col grid (Format, WR flat+weighted, Rank/Tier, Best/Worst)
-- **Decklist**: Two-column. Mainboard + card role badges left, sideboard + findings right
+- **Two-column**: Decklist + role badges left, findings right
 - **Card role badges**: threat, burn, engine, reach, finisher, removal, draw, tutor, hate, flex
 - **Scryfall hovers**: `class="card-tip" data-card="Card Name"` + JS tooltip from api.scryfall.com
-- **Game plan**: Vertical timeline with 3 phase boxes
-- **Kill turn chart**: CSS flex bars
-- **Hand archetype WR**: Horizontal bars with baseline marker (2,000 games)
-- **Real sim hands**: Keep (green) / Mull (red) boxes with T-by-T logs
+- **Kill turn chart**: CSS flex bars from real sim data
+- **Hand archetype WR**: Horizontal bars with baseline marker (500 games)
+- **Real sim hands**: 2 winning + 1 losing with game logs
 - **Provenance footer**: sim params, deck count, game count, date
 
 **Metagame strategy** (7 visual components — NO text walls):
@@ -313,7 +314,13 @@ Components:
 4. Tournament arc segmented bar (R1-3 bank → R4-6 gauntlet → R7-8 top)
 5. Delta proof chart (flat→weighted drop)
 6. Danger matchup cards (red header + ✗/⚡/★ bullets)
-7. Game plan as vertical timeline
+7. Game plan from deck_agg.json
+
+**Key API note**: `run_game()` returns `p1_opening_hand` as list of **strings** (not Card objects).
+Do NOT call `.name` on them — use directly.
+
+**Do NOT inject decklists into Burn** — it already has a hand-crafted two-column layout.
+The generator skips Burn (`if dk == 'burn': continue`).
 
 ### 3. Bo3 Replayer (HTML)
 
@@ -339,3 +346,6 @@ Design:
 - Never skip the provenance footer
 - Never rebuild matrix HTML from scratch — use template + swap data constants
 - Never forget pills() function in matrix HTML
+- Never inject a decklist into Burn — it has a hand-crafted two-column layout already
+- Never call .name on p1_opening_hand items — they're already strings
+- Never generate guides without all 7 features (two-col, kt, arch, hands, findings, hover, meta)
