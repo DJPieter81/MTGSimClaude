@@ -412,6 +412,9 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     gs.veil_active = False
     gs.teferi_active = False
     b.spells_cast_this_turn = 0
+    # Resync eidolon_active — must check BOTH players each turn (fixes ghost trigger after death)
+    gs.eidolon_active = (any(c.card.tag == 'eidolon' for c in gs.p1.creatures)
+                         or any(c.card.tag == 'eidolon' for c in gs.p2.creatures))
     if gs.trace:
         log(f"── Untap ── ({len(b.lands)} lands)")
 

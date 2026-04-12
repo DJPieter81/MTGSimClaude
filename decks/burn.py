@@ -608,7 +608,9 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                                 for c in player.hand)
         if not has_castable_burn and player.life >= 2:
             islet_lands = [l for l in player.lands if l.card.tag == 'islet']
-            if islet_lands:
+            # Don't sacrifice your only land if you need 2+ mana next turn (Eidolon, PoP)
+            has_2drop = any(c.tag in ('eidolon', 'pop', 'blaze', 'skullcrack') for c in player.hand)
+            if islet_lands and not (len(player.lands) <= 1 and has_2drop):
                 islet = islet_lands[0]
                 player.lands.remove(islet)
                 player.add_to_grave(islet.card)
