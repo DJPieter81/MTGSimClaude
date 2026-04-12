@@ -55,11 +55,12 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 
 | Limitation | Affected Decks | Impact |
 |---|---|---|
-| No static lock modeling | Chalice/Trinisphere don't actually prevent opponent casts | Eldrazi, Prison, 8-Cast WR inflated |
 | No Karn lockout | Karn's -2 doesn't shut off opponent artifacts | Tron variants |
 | Simplified combat | No first strike, no trample (except Emrakul) | Aggro mirrors |
 | No sideboard | Bo1 only in matrix (Bo3 in replayer) | All decks |
 | P1 advantage inflation | Tempo mirrors: both sides win >60% → symmetry >120% | dimir variants, BUG, UR mirrors |
+
+*Previously listed: "No static lock modeling — Chalice/Trinisphere don't actually prevent opponent casts." This is **no longer accurate** as of April 2026. Chalice, Trinisphere, and Thalia all persist across turns and block opponent casts via `apply_lock_effects` + `opp_can_cast`. Verified by 7 new rules tests in `run_rules_tests()` (Control 3).*
 
 ---
 

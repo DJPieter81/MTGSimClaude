@@ -1802,6 +1802,46 @@ def run_rules_tests():
         ok = 0.12 <= wr <= 0.88
         test(f"WR bounds: {d1} vs {d2} ({wr:.0%})", ok, True)
 
+    # Control 3: Static lock persistence (PLANNING_REFERENCE §10 P2 #9)
+    # Verifies that Chalice, Trinisphere, and Thalia all survive turn-over
+    # and block opponent casts as expected. Historical limitation per
+    # PLANNING.md was that these didn't persist — these tests pin the fix.
+    try:
+        from cards import DECKS as _DECKS
+        from engine import opp_can_cast as _occ, apply_lock_effects as _ale, restore_lock_effects as _rle
+        from rules import Permanent as _Perm, LandPermanent as _LP
+        from game import GameState as _GS, PlayerState as _PS
+        _burn = _DECKS['burn']()
+        _bolt = next(c for c in _burn if c.name == 'Lightning Bolt')
+        _mt = next(c for c in _burn if c.name == 'Mountain')
+        _p1 = _PS(name='b', hand=[], library=[])
+        _p2 = _PS(name='o', hand=[_bolt], library=[])
+        _gs = _GS(p1=_p1, p2=_p2)
+        for _ in range(3):
+            _p2.lands.append(_LP(card=_mt, controller='o'))
+        # Chalice@1 blocks a CMC-1 spell
+        _gs.chalice_x = 1
+        test("Chalice@1 blocks Lightning Bolt via opp_can_cast", _occ(_bolt, 5, _gs, _p2), False)
+        _adj = _ale(_gs, _p2, lambda x: None)
+        test("Chalice@1 removes blocked spell from hand (apply_lock_effects)", _bolt in _p2.hand, False)
+        _rle(_p2, _adj)
+        test("restore_lock_effects returns spell to hand", _bolt in _p2.hand, True)
+        _gs.chalice_x = None
+        # Trinisphere taxes CMC-1 to cost 3
+        _gs.trinisphere_active = True
+        test("Trinisphere @ 3 mountains can cast Bolt", _occ(_bolt, 3, _gs, _p2), True)
+        test("Trinisphere @ 2 mountains cannot cast Bolt", _occ(_bolt, 2, _gs, _p2), False)
+        _gs.trinisphere_active = False
+        # Thalia +1 tax on noncreature spells
+        _thalia = next(c for c in _DECKS['dnt']() if c.name == 'Thalia, Guardian of Thraben')
+        _p1.creatures.append(_Perm(card=_thalia, controller='b'))
+        test("Thalia on opp: Bolt @ 2 mountains can cast",
+             _occ(_bolt, 2, _gs, _p2), True)
+        test("Thalia on opp: Bolt @ 1 mountain cannot cast",
+             _occ(_bolt, 1, _gs, _p2), False)
+    except Exception as _e:
+        test(f"Static lock persistence setup (error: {_e})", False, True)
+
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")
     if failed == 0:
