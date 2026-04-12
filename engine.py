@@ -2909,13 +2909,39 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(vial)
 
-    # Eidolon of the Great Revel — CMC2 creature; deploy early to tax BUG's spells
+    # Assess opponent profile: noncreature-heavy decks (combo/control) reward Thalia first,
+    # while creature-heavy aggro mirrors want Eidolon's ETB-damage tax + a 2/2 body sooner.
+    opp_noncreature_heavy = (
+        len(opponent.creatures) == 0 and
+        sum(1 for c in opponent.hand if not c.is_creature() and not c.is_land()) >= 2
+    ) or opponent.__class__.__name__ and any(
+        # Heuristic: if opponent has cast noncreature spells recently (gy), tax matters
+        c.is_creature() is False and c.is_land() is False
+        for c in getattr(opponent, 'graveyard', [])[-4:]
+    )
+
+    # Thalia — priority deploy vs noncreature-heavy opponents (dimir, storm, uwx, burn-bolts).
+    # A turn-2 Thalia taxing FoW/Bolt/Ponder is the single biggest WR swing Boros offers.
+    thalia = player.find_tag('thalia')
+    thalia_on_board_own = any(c.card.tag == 'thalia' for c in player.creatures)
+    if thalia and not thalia_on_board_own and opp_noncreature_heavy and opp_can_cast(thalia, total_mana, gs, caster=player):
+        player.remove_from_hand(thalia)
+        if not _try_counter_any(player, opponent, gs, thalia, log_entries):
+            player.put_creature_in_play(thalia)
+            total_mana -= thalia.cmc
+            log_fn("★ Thalia, Guardian of Thraben — noncreature spells cost +1", True)
+        else:
+            player.add_to_grave(thalia)
+
+    # Eidolon of the Great Revel — CMC2 creature; taxes BUG's spells via ETB damage.
+    # Cast after Thalia (vs noncreature decks) so the lower-CMC tax lands first.
     eidolon = player.find_tag('eidolon')
     eidolon_on_board = any(c.card.tag == 'eidolon' for c in player.creatures)
     if eidolon and not eidolon_on_board and total_mana >= 2:
         player.remove_from_hand(eidolon)
         if not _try_counter_any(player, opponent, gs, eidolon, log_entries):
             player.put_creature_in_play(eidolon)
+            total_mana -= eidolon.cmc
             gs.eidolon_active = True
             log_fn("★ Eidolon of the Great Revel — BUG pays 2 life per CMC≥2 spell", True)
         else:
@@ -2933,6 +2959,24 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         elif gs.vial_counters < 2:
             gs.vial_counters += 1
             log_fn(f"Aether Vial — {gs.vial_counters} counter(s)")
+
+    # Vial activation — free creature deploy at matching CMC (bypasses mana, Thalia, FoW).
+    # Picks highest-impact body in hand at the counter value.
+    if vial_perm_b and gs.vial_counters > 0:
+        vial_prio = ('thalia', 'orchid', 'eidolon', 'bowm', 'dungeoneer',
+                     'recruiter', 'minsc')
+        for tag in vial_prio:
+            crea = player.find_tag(tag)
+            if crea and crea.cmc == gs.vial_counters:
+                # Don't duplicate a legendary already on board
+                if tag in ('thalia', 'minsc') and any(c.card.tag == tag for c in player.creatures):
+                    continue
+                player.remove_from_hand(crea)
+                player.put_creature_in_play(crea)  # uncounterable via Vial
+                log_fn(f"★ Vial [{gs.vial_counters}] → {crea.name} (free, uncounterable)", True)
+                if tag == 'eidolon':
+                    gs.eidolon_active = True
+                break
 
     # Hard cast ALL affordable creatures — Boros wants maximum board pressure.
     # Deploy up to 3 per turn (aggro floods the board to overwhelm BUG's removal).
@@ -2979,16 +3023,21 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             player.add_to_grave(ch)
 
-    # Lightning Bolt — aggressive burn plan: face when near-lethal, otherwise kill blocker
-    # Fire all available bolts when BUG life ≤ 9 (burn them out)
+    # Lightning Bolt — aggressive burn plan. Compute expected combat damage from unblocked
+    # attackers this turn; fire bolts face if board-dmg + bolts-in-hand kills the opponent.
     bolts = [c for c in player.hand if c.is_removal and c.cmc == 1 and not c.is_creature()]
+    # Estimate unblocked damage: sum our creature power for which opp has no viable blocker.
+    # Simple model: opp blocks biggest attackers first with any available creature.
+    my_attackers = [c for c in player.creatures if not c.summoning_sick and c.power > 0]
+    board_dmg = max(0, sum(c.power for c in my_attackers) - sum(b.toughness for b in opponent.creatures[:len(my_attackers)]))
+    lethal_with_bolts = (opponent.life - board_dmg) <= 3 * len(bolts)
     for bolt in bolts:
         if not opp_can_cast(bolt, total_mana, gs, caster=player):
             break
         total_mana -= 1  # cost 1R each
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
-        # Burn face if: BUG life ≤ 12 (3-bolt kill range), or no threatening blocker
-        go_face = opponent.life <= 12 or not any(c.toughness <= 3 for c in opponent.creatures)
+        # Burn face if: board+bolts already lethal, opp life ≤ 12, or no killable blocker
+        go_face = lethal_with_bolts or opponent.life <= 12 or not any(c.toughness <= 3 for c in opponent.creatures)
         # Bolt costs 1R; after paying, mana remaining = total_mana (already decremented above)
         small = next((c for c in sorted(opponent.creatures, key=lambda x: x.toughness)
                       if c.toughness <= 3 and _can_target(c, total_mana)), None)

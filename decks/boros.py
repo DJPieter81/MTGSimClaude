@@ -18,13 +18,11 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
 # ─── Mulligan ────────────────────────────────────────────────────────────────
 
 def _keep_boros(hand, matchup=''):
+    """Boros aggro mulligan: want 2-4 lands + any turn-1 play.
+    Permissive — Boros aggro prefers imperfect 7s over 6-card mulligans."""
     lands = [c for c in hand if c.is_land()]
     nonlands = [c for c in hand if not c.is_land()]
     lc = len(lands)
-    threats = sum(1 for c in nonlands if c.is_creature())
-    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    counters = sum(1 for c in nonlands if c.tag in ('fow', 'daze'))
-    action = threats + cantrips + counters
     tags = {c.tag for c in hand}
     has_t1 = 'vial' in tags or any(c.is_creature() for c in nonlands)
     return 2 <= lc <= 4 and has_t1
