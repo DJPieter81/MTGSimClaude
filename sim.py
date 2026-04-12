@@ -482,8 +482,15 @@ def protagonist_turn(gs, turn, matchup):
             log(f"Wasteland [ACTIVATED-uncounterable] → {target.card.name}")
 
     # ── Thoughtseize: strip opponent's best card (if we have mana) ──
+    # Mardu-vs-Burn: skip — 4-of burn spells are fungible and -2 life accelerates
+    # our loss in a race we're already behind in. Mardu's own strategy handles TS
+    # for other matchups via _strategy_mardu. Other decks (BUG, Dimir, Storm) still
+    # benefit from TS vs Burn (Eidolon/Fireblast are high-value strips for them).
+    _ts_mardu_vs_burn = (getattr(gs, 'p1_deck', '') == 'mardu'
+                         and getattr(gs, 'p2_deck', '') == 'burn'
+                         and b is gs.p1)
     ts = b.find_tag('ts') or b.find_tag('thoughtseize')
-    if ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc):
+    if ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc) and not _ts_mardu_vs_burn:
         opp_nonland = [c for c in o.hand if not c.is_land()]
         if opp_nonland and b.life > 4:
             b.remove_from_hand(ts)
