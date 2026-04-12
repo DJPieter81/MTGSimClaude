@@ -198,6 +198,10 @@ a.product-link{text-decoration:none;color:inherit;display:block}
     <div class="chart-card"><h4>Flat win rate by deck</h4><div class="chart-sub">Top 8 and bottom 5 · 30 games/pair</div><div class="chart-wrap"><canvas id="wrChart"></canvas></div></div>
     <div class="chart-card"><h4>Convergence (Burn vs Dimir)</h4><div class="chart-sub">WR stabilises at ~500 games</div><div class="chart-wrap"><canvas id="convChart"></canvas></div></div>
   </div>
+  <div class="chart-grid reveal" style="margin-top:16px">
+    <div class="chart-card"><h4>Win resolution</h4><div class="chart-sub">500 games across 10 matchup pairs</div><div class="chart-wrap"><canvas id="resChart"></canvas></div></div>
+    <div class="chart-card"><h4>Avg game length by matchup type</h4><div class="chart-sub">Turns to completion · 30 games/pair</div><div class="chart-wrap"><canvas id="turnChart"></canvas></div></div>
+  </div>
 </section>
 
 <!-- ARCHITECTURE -->
@@ -317,6 +321,12 @@ new Chart(document.getElementById('wrChart'),{type:'bar',data:{labels:['Burn','I
 
 // Convergence line chart
 new Chart(document.getElementById('convChart'),{type:'line',data:{labels:['n=30','n=50','n=100','n=200','n=300','n=500'],datasets:[{data:[83.3,81,80,76.5,75.8,75.2],borderColor:G,backgroundColor:'rgba(184,148,30,.08)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:G,pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5},{data:[75.2,75.2,75.2,75.2,75.2,75.2],borderColor:T,borderDash:[5,5],borderWidth:1.5,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:70,max:88,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},x:{grid:{display:false},ticks:{font:{family:'JetBrains Mono',size:10}}}}}});
+
+// Win resolution doughnut
+new Chart(document.getElementById('resChart'),{type:'doughnut',data:{labels:['Combat damage','Combo kill','Timeout (T15)'],datasets:[{data:[46.2,18.0,35.8],backgroundColor:[T,P,A],borderWidth:0,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{family:'Outfit',size:11},padding:14,usePointStyle:true,pointStyleWidth:8}}}}});
+
+// Turn length by archetype
+new Chart(document.getElementById('turnChart'),{type:'bar',data:{labels:['Combo v Aggro','Aggro v Aggro','Combo v Tempo','Aggro v Tempo','Tempo mirror','Control v Tempo'],datasets:[{data:[3.8,4.2,6.7,6.4,9.3,9.6],backgroundColor:[P,'#5dcaa5',P,T,G,A],borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'t',font:{family:'JetBrains Mono',size:10}}},x:{grid:{display:false},ticks:{font:{family:'Outfit',size:10},maxRotation:35}}}}});
 
 // Interactive accuracy rows
 const accData=[
@@ -445,14 +455,14 @@ function showArch(el,i){
 
 // AI pipeline stepper
 const aiD=[
-  {n:'1',t:'Spell casting',h:'Strategy dispatch + priority chain',d:'Match deck name → dispatch to _strategy_storm() (one of 19 functions). Scan hand for 73 unique card tags. Walk if/elif tree (41 branches avg). Priority: Wasteland → Thoughtseize → Removal → Creatures → Cantrips.',f:'_strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries)'},
-  {n:'2',t:'Counter logic',h:'4-level threat → priority chain',d:'classify_threat() returns MUST / HIGH / MEDIUM / LOW. Skip cantrips. Check Trinisphere (blocks FoW/FoN alternate costs per CR 601.2f). Priority chain: FoN → FoW → Counterspell → Flusterstorm → Pyroblast → Daze. Hand-size gates: CS needs 4+ cards.',f:'threat = classify_threat(spell, gs) → MUST_ANSWER_NOW (4)\ncounter_chain = [FoN, FoW, CS, Fluster, Pyro, Daze]'},
-  {n:'3',t:'Combat EV',h:'Per-creature evaluation',d:'get_attackers() evaluates each creature independently. best_blocker_for(attacker) models favorable/even/losing trades. Flying vs no flyers = unblocked. Near lethal = attack regardless. Blocker assignment: greedy largest-first.',f:'attack_ev = damage_if_unblocked × P(unblocked)\n           + trade_value × P(blocked)\nnear_lethal → attack_ev = +∞'},
-  {n:'4',t:'Combo kill',h:'Explicit kill conditions',d:'Storm: simulate ritual chain mana (Trinisphere tax, Chalice blocks). Test 6 kill conditions (kill_A..kill_F). Estimate storm count. Safety check: Veil active? No FoW? Desperate? Veil first → execute → Flusterstorm backup.',f:'est_storm = len(rituals) + LED + tutor + cantrips\nlethal_storm = ceil(opp_life / 2) - 1\ncan_kill = kill_A || kill_B || ... || kill_F'}
+  {n:'1',t:'Spell casting',h:'Strategy dispatch + priority chain',src:'engine.py:1088',d:'Match deck name → dispatch to _strategy_storm() (one of 19 functions). Scan hand for 73 unique card tags. Walk if/elif tree (41 branches avg). Priority: Wasteland → Thoughtseize → Removal → Creatures → Cantrips.',f:'_strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries)'},
+  {n:'2',t:'Counter logic',h:'4-level threat → priority chain',src:'engine.py:819 + interaction.py:32',d:'classify_threat() returns MUST / HIGH / MEDIUM / LOW. Skip cantrips. Check Trinisphere (blocks FoW/FoN alternate costs per CR 601.2f). Priority chain: FoN → FoW → Counterspell → Flusterstorm → Pyroblast → Daze. Hand-size gates: CS needs 4+ cards.',f:'threat = classify_threat(spell, gs) → MUST_ANSWER_NOW (4)\ncounter_chain = [FoN, FoW, CS, Fluster, Pyro, Daze]'},
+  {n:'3',t:'Combat EV',h:'Per-creature evaluation',src:'game.py:get_attackers() + engine.py:535',d:'get_attackers() evaluates each creature independently. best_blocker_for(attacker) models favorable/even/losing trades. Flying vs no flyers = unblocked. Near lethal = attack regardless. Blocker assignment: greedy largest-first.',f:'attack_ev = damage_if_unblocked × P(unblocked)\n           + trade_value × P(blocked)\nnear_lethal → attack_ev = +∞'},
+  {n:'4',t:'Combo kill',h:'Explicit kill conditions',src:'engine.py:4429 (Storm example)',d:'Storm: simulate ritual chain mana (Trinisphere tax, Chalice blocks). Test 6 kill conditions (kill_A..kill_F). Estimate storm count. Safety check: Veil active? No FoW? Desperate? Veil first → execute → Flusterstorm backup.',f:'est_storm = len(rituals) + LED + tutor + cantrips\nlethal_storm = ceil(opp_life / 2) - 1\ncan_kill = kill_A || kill_B || ... || kill_F'}
 ];
 const aiFlow=document.getElementById('aiFlow');
-aiD.forEach((d,i)=>{aiFlow.innerHTML+=`<div class="ai-step${i===0?' active':''}" onclick="showAI(${i})"><div class="sn">${d.n}</div><div class="st">${d.t}</div></div>`});
-function showAI(i){document.querySelectorAll('.ai-step').forEach((s,j)=>s.classList.toggle('active',j===i));const d=aiD[i],det=document.getElementById('aiDet');det.className='ai-detail show';det.innerHTML=`<h4>${d.h}</h4><p>${d.d}</p><div class="formula">${d.f}</div>`}
+aiD.forEach((d,i)=>{aiFlow.innerHTML+=`<div class="ai-step${i===0?' active':''}" onclick="showAI(${i})"><div class="sn">${d.n}</div><div class="st">${d.t}</div><div style="font-family:var(--font-m);font-size:9px;color:var(--ink4);margin-top:3px">${d.src}</div></div>`});
+function showAI(i){document.querySelectorAll('.ai-step').forEach((s,j)=>s.classList.toggle('active',j===i));const d=aiD[i],det=document.getElementById('aiDet');det.className='ai-detail show';det.innerHTML=`<h4>${d.h}</h4><div style="font-family:var(--font-m);font-size:10px;color:var(--ink3);margin-bottom:8px">${d.src}</div><p>${d.d}</p><div class="formula">${d.f}</div>`}
 showAI(0);
 </script>
 </body>
