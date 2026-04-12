@@ -357,3 +357,13 @@ Design:
 - Never inject a decklist into Burn — it has a hand-crafted two-column layout already
 - Never call .name on p1_opening_hand items — they're already strings
 - Never generate guides without all 7 features (two-col, kt, arch, hands, findings, hover, meta)
+
+## Cross-Project Sync
+
+Read `CROSS_PROJECT_SYNC.md` before any cross-project work. It tracks:
+- Legacy → Modern adoption (parallel.py, hypothesis_testing.py, deck_registry.py)
+- Modern → Legacy adoption (proInsights(), G1/G3/sweep stats, SB guide)
+- Shared modules (clock.py, bhi.py, strategic_logger.py, gameplan.py)
+- Common standards (file naming, GitHub Pages URLs, skill format)
+
+Same file exists in both repos — keep them in sync.

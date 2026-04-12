@@ -65,23 +65,67 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 
 ## Next Session Priorities
 
-### P0 — Must Do
-1. ~~**Re-run matrix**~~ — ✅ DONE (PR #77): n=200, symmetrise_matrix(), both fixes included
-2. ~~**Regenerate all guides**~~ — ✅ DONE (PR #77): 36 guides in `guides/`, fresh data
-3. ~~**Rebuild matrix HTML**~~ — ✅ DONE (PR #77): `build_matrix_html.py`, 9-function validation
+### Shipped in PR #77 / #80 / #81 (April 2026)
 
-### P1 — Should Do
-4. **Implement replayer v2 light theme** in `game_replay.py` — design system documented
-   in skills but rendering code still uses dark theme.
-5. **Add card-level data (C, I) to matrix HTML** — `extract_cards.py` / `extract_interactions.py`
-   not in repo. Matrix HTML shows "no data" for card drill-downs until these land.
-6. **More hand-crafted guides** — Burn-level quality for other T1 decks (UR Delver, Infect, Depths).
+- Matrix re-run n=200, symmetrise_matrix(), all fixes baked in
+- 36 guides regenerated; UR Delver + Infect + Depths now hand-crafted (sentinel)
+- Matrix HTML rebuilt with C + I card/interaction layers (via card_trimmed.json / interact.json)
+- Replayer v2: light theme (GitHub Primer), combat detail boxes, reasoning toggle
+- Strategic logger: 18/19 strategies instrumented + gameplan phase labels in traces
+- verify.py post-action helper; symmetrise_matrix() averaging
+- clock.py + threat_level_to_clock_delta bridge (adopted in _strategy_ur_aggro trace)
+- bhi.py Bayesian hand inference + 14 deck profiles (adopted in _strategy_storm)
+- 7 declarative gameplans + goal_engine.py reader
+- llm_judge.py trace-collection scaffold (prompt bundler; no LLM call yet)
+- Proxy deck upgrades: mono_black, boros, ocelot (3/5)
+- EXPECTED_RANGES dict in meta_audit.py (Control 9)
+- Static lock persistence verified + 7 regression tests
+- refresh_all.py full pipeline with `--decks 36`, hand-craft sentinel
+
+### P0 — Must Do (none currently)
+
+All P0 accuracy blockers are addressed. Next session priorities are P1/P2.
+
+### P1 — Should Do (each a dedicated cowork PR — briefs in `docs/`)
+
+1. **Unify `protagonist_turn` + `opp_turn`** — the REAL root cause of
+   tempo-mirror asymmetry. P1 goes through a 294-line function; P2
+   through a 155-line function with less feature coverage. See
+   `results/tempo_mirror_root_cause.md` and
+   `docs/cowork_brief_turn_unification.md`. Expected: 106 outlier pairs
+   → ≤60, dimir-mirror sum 145% → ≤115%.
+
+2. **Full Bo3 matrix** (PLANNING_REFERENCE §9 #5) — wire `run_any_bo3`
+   into `run_meta_matrix`. Needs sideboard plans for ~22 full-strategy
+   decks. Single-matchup `--bo3` CLI is the prototype (commit 4ef0c55).
+   See `docs/cowork_brief_bo3_matrix.md`.
+
+3. **LLM judge execution** (PLANNING_REFERENCE §9 #7) — scaffold is
+   in `llm_judge.py`; needs `scripts/grade_traces.py` that hits the
+   Anthropic API and produces a markdown report. Needs API credentials.
+   See `docs/cowork_brief_llm_judge.md`.
 
 ### P2 — Nice to Have
-7. **Implement combat detail boxes** in replayer (⚔ attacker + dmg → life).
-8. **Add reasoning toggle** to replayer (hidden by default, · to reveal).
-9. ~~**Symmetry audit**~~ — ✅ FIXED: turn-function unification (`_execute_turn`) merged `protagonist_turn` + `opp_turn` into single code path. Avg asymmetry 12.5pp → 7.8pp. Remaining asymmetry from `_p1_respond_on_opp_turn` / `_p2_respond_on_pro_turn` response functions (different instant-speed options per slot).
-10. ~~**Symmetry audit**~~ — ✅ FIXED: worst outlier (Dimir vs Dimir_flash) dropped from 145% sum to ~126%.
+
+4. **Remaining proxy upgrades** — Mardu (7 appearances in top-60 outliers)
+   and Elves (was already-real but underperforms vs aggro). Note: Mardu
+   got +3pp vs Burn from TS-skip fix in PR #82.
+5. ~~**More hand-crafted guides**~~ — ✅ DONE via PR #82: UR Delver,
+   Infect, Depths, Doomsday, Sneak & Show, Eldrazi (6 total; sentinel
+   markers survive `gen_guides.py` regen).
+6. ~~**Full BHI adoption**~~ — ✅ DONE via PR #82: `_strategy_storm`,
+   `_strategy_oops`, `_strategy_doomsday` all consult `HandBelief`.
+7. **Clock-based evaluation adoption** — use `board_clock()` in
+   go-face-vs-remove-blocker decisions for Burn, UR Aggro, UR Delver.
+8. **Matrix N bump** — n=200 → n=500 for tighter statistical power
+   (±3.9% → ±2.5%). Needs ~10 min at current speed.
+9. ~~**Symmetry audit**~~ — ✅ FIXED by this PR: turn-function unification
+   (`_execute_turn`) merged `protagonist_turn` + `opp_turn` into single
+   code path. Avg asymmetry 12.5pp → 7.8pp. Remaining asymmetry from
+   `_p1_respond_on_opp_turn` / `_p2_respond_on_pro_turn` response
+   functions (different instant-speed options per slot).
+10. ~~**Worst outlier**~~ — ✅ FIXED by this PR: Dimir vs Dimir_flash
+    dropped from 145% sum to ~126%.
 
 ---
 

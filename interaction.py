@@ -123,66 +123,13 @@ def _hand_size(b) -> int:
     return len(b.hand)
 
 
-def best_reactive_answer(spell_card, gs, is_opponents_turn: bool) -> AnswerPlan:
-    """
-    Choose cheapest answer to a spell on the stack.
-    Push/AD cannot counter stacked spells — only counters available here.
-    """
-    b = gs.p1
-    tag = spell_card.tag
-    cmc = spell_card.cmc
-    is_creature = spell_card.is_creature()
-
-    threat = classify_threat(spell_card, gs)
-    opp_untapped = gs.p2.available_mana_count()
-    hand = _hand_size(b)
-    life = b.life
-    is_mirror = MC.is_mirror(gs)
-    critical = life <= IP.CRITICAL_LIFE
-
-    # ── LOW: only Fluster/Daze, never hard counters ──
-    if threat == ThreatLevel.LOW:
-        if _has(b, 'fluster') and not is_creature:
-            return AnswerPlan('fluster', f'Flusterstorm low-threat {tag}')
-        if opp_untapped <= cmc:
-            return AnswerPlan('daze', f'Daze low-threat {tag}')
-        return AnswerPlan('none', f'LOW threat — pass {tag}')
-
-    # ── FoN: free on opp's turn for noncreature spells ──
-    fon_ok = is_opponents_turn and not is_creature and _has(b, 'fon') and hand >= 2
-    if fon_ok and threat >= ThreatLevel.MEDIUM:
-        return AnswerPlan('fon', f'FoN noncreature CMC{cmc}')
-
-    # ── FoW threshold ──
-    # Creatures: FoW is often the only reactive answer (Push can't counter stacked spells).
-    #   Mirror: MEDIUM threshold (every creature matters).
-    #   Non-mirror: HIGH threshold (CMC2+ already HIGH via classify_threat).
-    # Noncreatures: HIGH+ only (FoN handled MEDIUM).
-    gate = IP.FOW_HAND_GATE_DnT if MC.is_vial(gs) else IP.FOW_HAND_GATE
-    fow_ok_economy = hand >= gate or threat == ThreatLevel.MUST_ANSWER_NOW or critical
-
-    if is_creature:
-        fow_threshold = ThreatLevel.MEDIUM if is_mirror else ThreatLevel.HIGH
-        fow_needed = threat >= fow_threshold
-    else:
-        fow_needed = threat >= ThreatLevel.HIGH
-
-    if fow_needed and fow_ok_economy and _has(b, 'fow'):
-        return AnswerPlan('fow', f'FoW threat={threat}')
-
-    # ── Flusterstorm: 1U, instant/sorcery only ──
-    if _has(b, 'fluster') and not is_creature and threat >= ThreatLevel.MEDIUM:
-        return AnswerPlan('fluster', f'Flusterstorm CMC{cmc}')
-
-    # ── Daze: free when opp tapped out ──
-    if opp_untapped <= cmc and threat >= ThreatLevel.MEDIUM:
-        return AnswerPlan('daze', f'Daze ({opp_untapped} mana vs CMC{cmc})')
-
-    # ── FoW last resort for MUST_ANSWER ──
-    if threat == ThreatLevel.MUST_ANSWER_NOW and _has(b, 'fow'):
-        return AnswerPlan('fow', 'FoW last resort — MUST_ANSWER')
-
-    return AnswerPlan('none', f'No answer for {tag}')
+# best_reactive_answer() was removed on 2026-04-12 — it had been imported by
+# engine.py but never actually called. Its P1-hardcoded `b = gs.p1` logic was
+# cited as a cause of tempo-mirror asymmetry; that diagnosis was wrong (the
+# real cause is the protagonist_turn / opp_turn path divergence — see
+# results/tempo_mirror_root_cause.md). Removing the dead code keeps the
+# module focused on what callers actually use: classify_threat() and
+# best_proactive_target().
 
 
 # ─────────────────────────────────────────────
@@ -241,31 +188,6 @@ def best_proactive_target(gs, opponent=None):
 # Proactive Push timing
 # ─────────────────────────────────────────────
 
-def should_push_now(gs, target_perm) -> bool:
-    """Should BUG spend Fatal Push on target_perm now vs holding mana for a counter?"""
-    from rules import MTGRules
-    b = gs.p1
-    revolt = b.revolt_this_turn
-
-    if not MTGRules.fatal_push_valid_target(target_perm, revolt):
-        return False
-
-    card = target_perm.card
-    # Always Push immediately: engines, lock pieces, haste threats, draw triggers
-    if card.engine or card.lock_piece or card.haste or card.draw_trigger:
-        return True
-
-    # Push if it's blocking our win
-    bug_power = sum(c.power for c in b.creatures
-                    if not c.summoning_sick and not c.tapped)
-    if target_perm.toughness >= bug_power > 0:
-        return True
-
-    # Hold if we have a counter and opp likely has more spells
-    has_counter = any(c.free_cast_if_blue or c.tag in ('fow','fon','daze','fluster')
-                      for c in b.hand)
-    opp_has_spells = any(not c.is_land() for c in gs.p2.hand)
-    if has_counter and opp_has_spells:
-        return False
-
-    return True
+# should_push_now() was removed on 2026-04-12 for the same reason as
+# best_reactive_answer above: imported but never called, P1-hardcoded,
+# and not the root cause of tempo-mirror asymmetry (see that doc).

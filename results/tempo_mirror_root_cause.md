@@ -55,3 +55,9 @@ def opp_turn_unified(gs, turn, matchup):
 The `_p1_respond_on_opp_turn` and `_p2_respond_on_pro_turn` response functions still
 offer different instant-speed options per slot (P1 gets Flash Bowmasters + Force of Vigor;
 P2 gets Snuff Out + Lightning Bolt). Unifying these is a follow-up task.
+
+## Related
+
+- `results/symmetry_audit_20260412.md` — original top-20 outlier ranking
+- PLANNING.md §"Known Sim Limitations" — "P1 advantage inflation" row now marked FIXED
+- `docs/cowork_brief_turn_unification.md` — original spec; implementation delivered
