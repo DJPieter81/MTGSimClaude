@@ -1,0 +1,32 @@
+{
+  "key": "prison",
+  "name": "Artifacts Prison",
+  "archetype": "prison_combo",
+  "mulligan_keys": {
+    "7": ["tomb OR city", "chalice OR trini + fast_mana_source"],
+    "6": ["lock_piece AND fast_mana"],
+    "5": ["any lock piece"]
+  },
+  "goal_sequence": [
+    {"phase": "fast_mana",   "turns": [1, 1], "action": "Ancient Tomb / City of Traitors; crack Lotus Petal; deploy Grim Monolith"},
+    {"phase": "chalice_trin","turns": [1, 2], "action": "Chalice on 1 (blanks Brainstorm/Ponder/Daze); then Trinisphere"},
+    {"phase": "karn_wish",   "turns": [3, 4], "action": "Karn the Great Creator → tutor combo pieces or Pithing Needle from sideboard"},
+    {"phase": "painter_mill","turns": [4, 99], "action": "Painter's Servant + Grindstone = mill opponent's library entirely"}
+  ],
+  "card_roles": {
+    "chalice":  "lock_piece",
+    "trini":    "lock_piece",
+    "bridge":   "lock_piece",
+    "karn":     "tutor",
+    "painter":  "combo_trigger",
+    "grindstone":"combo_trigger",
+    "tks":      "threat",
+    "petal":    "fast_mana",
+    "monolith": "fast_mana",
+    "tomb":     "sol_land",
+    "city":     "sol_land",
+    "nullrod":  "artifact_hate"
+  },
+  "win_conditions": ["marit_lage", "painter", "grindstone", "tks"],
+  "notes": "Lock-first deck. Chalice@1 is free against blue cantrips. Karn the Great Creator tutors Painter/Grindstone combo pieces from sideboard."
+}

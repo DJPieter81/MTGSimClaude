@@ -1147,6 +1147,12 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     budget = [total_mana]
     turn = gs.turn
 
+    gs.strat_log.log_decision(
+        gs.turn, 'bug',
+        candidates=['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, hand={len(player.hand)}, threats_in_play={len(player.creatures)}")
+
     # Trinisphere CR 601.2f: all spells cost at least {3}
     trini_min = 3 if gs.trinisphere_active else 0
     thalia_tax = 1 if gs.thalia_on_board else 0
@@ -2446,6 +2452,11 @@ def combat_declare(player, opponent, gs, log_entries, attackers):
 
 def _strategy_elves(player, opponent, gs, total_mana, log_fn, log_entries):
     """Elves strategy — delegates to _elves_strategy (the shared implementation)."""
+    gs.strat_log.log_decision(
+        gs.turn, 'elves',
+        candidates=['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, creatures={len(player.creatures)}, hand={len(player.hand)}")
     _elves_strategy(player, opponent, gs, total_mana, log_fn, log_entries)
 
 
@@ -2703,56 +2714,163 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
-    """Mono Black Aggro: fast creatures + discard + Snuff Out."""
-    # Thoughtseize T1
+    """Mono Black Aggro — real strategy.
+
+    Plan:
+      T1:  Thoughtseize opp (strip counter/removal), or deploy 1-drop threat.
+      T2:  Biggest affordable threat (dauthi > carnage > bowm).
+      T3+: Keep deploying + recur value; Hymn when relevant; Braids on 4 mana.
+      Always: Fatal Push / Snuff Out on opp threats BEFORE combat;
+              Thoughtseize counter-magic prior to casting key threats.
+    """
+    import random
+
+    # ── Entry instrumentation ──
+    creature_tags_in_hand = [c.tag for c in player.hand if c.is_creature()]
+    gs.strat_log.log_decision(
+        gs.turn, 'mono_black',
+        candidates=['grief', 'ts', 'hymn', 'push', 'snuffout', 'deploy', 'braids', 'combat'],
+        chosen='entry',
+        reason=(f"mana={total_mana}, life={player.life}, hand={len(player.hand)}, "
+                f"creatures_in_hand={creature_tags_in_hand}, "
+                f"opp_creatures={len(opponent.creatures)}"))
+
+    # ── 1. Grief (evoke) T1 — exile opp's best nonland ──
+    grief = player.find_tag('grief')
+    if grief and gs.turn == 1 and opponent.hand:
+        blacks = [c for c in player.hand if 'B' in c.colors and c.tag != 'grief']
+        if blacks:
+            pitch = blacks[0]
+            player.remove_from_hand(grief); player.remove_from_hand(pitch)
+            player.add_to_grave(pitch)
+            if not _try_counter_any(player, opponent, gs, grief, log_entries):
+                nonlands = [c for c in opponent.hand if not c.is_land()]
+                target = (next((c for c in nonlands if c.free_cast_if_blue), None)
+                          or (max(nonlands, key=lambda c: c.cmc) if nonlands else None))
+                if target:
+                    opponent.remove_from_hand(target); opponent.add_to_grave(target)
+                    log_fn(f"★ Grief (evoke, pitch {pitch.name}) exiles {target.name}")
+                player.exile.append(grief)  # evoke exiles Grief
+            else:
+                player.add_to_grave(grief)
+
+    # ── 2. Thoughtseize — T1 priority only; otherwise save mana for threats/Hymn ──
     ts = player.find_tag('ts')
-    if ts and opp_can_cast(ts, total_mana, gs, caster=player) and gs.turn <= 2:
-        player.cast_spell(ts, log_fn=log_fn)  # pays life_cost=2
-        if opponent.hand:
-            nonlands = [c for c in opponent.hand if not c.is_land()]
-            target = next((c for c in nonlands if c.free_cast_if_blue), None)
-            if not target and nonlands: target = max(nonlands, key=lambda c: c.cmc)
+    threat_in_hand = next((c for c in player.hand
+                           if c.is_creature() and c.tag != 'grief'
+                           and opp_can_cast(c, total_mana, gs, caster=player)), None)
+    if ts and opp_can_cast(ts, total_mana, gs, caster=player) \
+            and opponent.hand and player.life > 8:
+        nonlands = [c for c in opponent.hand if not c.is_land()]
+        has_priority_target = any(
+            c.free_cast_if_blue or c.tag in ('daze', 'fow')
+            or c.is_removal or c.engine or c.cmc >= 3
+            for c in nonlands)
+        # Cast TS when: (a) T1 + opp has real target, or
+        # (b) we have no castable threat AND no Hymn castable AND priority target exists
+        hymn_castable = (player.find_tag('hymn')
+                         and opp_can_cast(player.find_tag('hymn'), total_mana, gs, caster=player)
+                         and len(opponent.hand) >= 2)
+        cast_ts = False
+        if gs.turn <= 2 and nonlands:
+            cast_ts = True
+        elif not threat_in_hand and not hymn_castable and has_priority_target:
+            cast_ts = True
+        # Don't TS if we could cast threat AND Hymn instead (both are better tempo)
+        if cast_ts and threat_in_hand and hymn_castable:
+            cast_ts = False
+        if cast_ts:
+            total_mana -= ts.cmc
+            player.cast_spell(ts, log_fn=log_fn)
+            target = (next((c for c in nonlands if c.free_cast_if_blue), None)
+                      or next((c for c in nonlands if c.tag in ('daze', 'bs', 'ponder')), None)
+                      or next((c for c in nonlands if c.is_removal), None)
+                      or next((c for c in nonlands if c.engine), None)
+                      or (max(nonlands, key=lambda c: c.cmc) if nonlands else None))
             if target:
                 opponent.remove_from_hand(target); opponent.add_to_grave(target)
                 log_fn(f"★ Thoughtseize strips {target.name}")
-    # Hymn to Tourach T2
+
+    # ── 3. Fatal Push — kill opp's threats pre-combat ──
+    push = player.find_tag('push')
+    if push and opponent.creatures and opp_can_cast(push, total_mana, gs, caster=player):
+        push_targets = [c for c in opponent.creatures
+                        if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)]
+        if push_targets:
+            target = (
+                next((c for c in push_targets if (c.card.haste or c.card.draw_trigger)), None)
+                or next((c for c in push_targets if c.card.deathtouch or c.card.lifelink), None)
+                or max(push_targets, key=lambda c: c.power, default=None)
+            )
+            if target:
+                total_mana -= push.cmc
+                player.remove_from_hand(push); player.add_to_grave(push)
+                if not _try_counter_any(player, opponent, gs, push, log_entries):
+                    opponent.remove_creature(target)
+                    rev = " [revolt CMC≤4]" if player.revolt_this_turn else " [CMC≤2]"
+                    log_fn(f"Fatal Push{rev} → kills {target.card.name} (CMC {target.card.cmc})")
+                    update_goyf(gs)
+
+    # ── 4. Snuff Out — free (pay 4 life) vs nonblack creatures ──
+    snuff = player.find_tag('snuffout')
+    if snuff and opponent.creatures and player.life > 8:
+        has_swamp = any('B' in l.effective_produces() for l in player.lands)
+        snuff_targets = [c for c in opponent.creatures
+                         if 'B' not in getattr(c.card, 'colors', set())]
+        if has_swamp and snuff_targets:
+            target = max(snuff_targets, key=lambda c: (c.cmc, c.power))
+            if target.cmc >= 3 or target.power >= 3 or target.toughness >= 3:
+                player.remove_from_hand(snuff); player.add_to_grave(snuff)
+                player.life -= 4
+                if not _try_counter_any(player, opponent, gs, snuff, log_entries):
+                    opponent.remove_creature(target)
+                    player.revolt_this_turn = True
+                    log_fn(f"Snuff Out (free, −4 life → {player.life}) "
+                           f"→ kills {target.card.name} (CMC {target.card.cmc})")
+                    update_goyf(gs)
+
+    # ── 5. Hymn to Tourach — T2+, when opp has 2+ cards ──
     hymn = player.find_tag('hymn')
-    if hymn and opp_can_cast(hymn, total_mana, gs, caster=player) and gs.turn >= 2 and len(opponent.hand) >= 2:
+    if hymn and opp_can_cast(hymn, total_mana, gs, caster=player) \
+            and gs.turn >= 2 and len(opponent.hand) >= 2:
+        total_mana -= hymn.cmc
         player.remove_from_hand(hymn); player.add_to_grave(hymn)
         if not _try_counter_any(player, opponent, gs, hymn, log_entries):
-            import random
             discards = random.sample(list(opponent.hand), min(2, len(opponent.hand)))
             for c in discards:
                 opponent.remove_from_hand(c); opponent.add_to_grave(c)
-            log_fn(f"Hymn to Tourach — BUG discards {len(discards)} cards")
-    # Grief evoke T1 (exile black card from hand)
-    grief = player.find_tag('grief')
-    blacks = [c for c in player.hand if 'B' in c.colors and c.tag != 'grief']
-    if grief and blacks and gs.turn == 1:
-        player.remove_from_hand(grief); player.remove_from_hand(blacks[0]); player.add_to_grave(blacks[0])
-        if not _try_counter_any(player, opponent, gs, grief, log_entries):
-            if opponent.hand:
-                nonlands = [c for c in opponent.hand if not c.is_land()]
-                target = (next((c for c in nonlands if c.free_cast_if_blue), None)
-                          or (nonlands[0] if nonlands else None))
-                if target:
-                    opponent.remove_from_hand(target); opponent.add_to_grave(target)
-                    log_fn(f"★ Grief (evoke) strips {target.name}")
-    # Creatures
-    # Mono Black creatures: find any creature opp can cast
-    crea = next((c for c in player.hand
-                 if c.is_creature() and opp_can_cast(c, total_mana, gs, caster=player)), None)
-    if crea:
+            log_fn(f"Hymn to Tourach — opponent discards "
+                   f"{', '.join(c.name for c in discards)}")
+
+    # ── 6. Deploy creatures — priority order ──
+    deploy_priority = ['dauthi', 'braids', 'carnage', 'bowm', 'grief']
+    max_deploys = 2 if total_mana >= 4 else 1
+    deployed = 0
+    for tag in deploy_priority:
+        if deployed >= max_deploys:
+            break
+        crea = player.find_tag(tag)
+        if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
+            continue
+        if tag == 'braids' and (gs.turn < 3 or not player.creatures):
+            continue
+        gs.strat_log.log_decision(
+            gs.turn, 'mono_black',
+            candidates=deploy_priority,
+            chosen=tag,
+            reason=f"mana={total_mana}, deployed={deployed}, board={len(player.creatures)}")
         player.remove_from_hand(crea)
         if not _try_counter_any(player, opponent, gs, crea, log_entries):
             player.put_creature_in_play(crea)
+            total_mana -= crea.cmc
+            deployed += 1
             log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
         else:
             player.add_to_grave(crea)
 
-    # Wasteland — only when 4+ lands (need mana for Braids CMC4 / Grief CMC5)
+    # ── 7. Wasteland — disrupt opp's nonbasic ──
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
-    if wl and len(player.lands) >= 4:
+    if wl and len(player.lands) >= 3:
         targets = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
         if targets:
             target = max(targets, key=lambda l: 3 if l.card.tag == 'dual' else 2 if l.is_fetch else 1)
@@ -2763,14 +2881,20 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Wasteland → destroys {target.card.name}")
             update_goyf(gs)
 
-    # Combat
-    attackers_this_turn = _select_attackers(player, opponent, hold_tags=('bowm',))
+    # ── 8. Combat ──
+    hold = ('bowm',) if opponent.life > 6 and len(player.creatures) >= 2 else ()
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
 
 def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
     """Boros Aggro/Initiative: fast white/red creatures, Vial, Thalia."""
+    gs.strat_log.log_decision(
+        gs.turn, 'boros',
+        candidates=['vial', 'thalia', 'initiative', 'threat', 'removal', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, creatures={len(player.creatures)}, vial_counters={gs.vial_counters}")
 
     # Aether Vial — highest priority, cast T1-T3
     vial = player.find_tag('vial')
@@ -3239,6 +3363,12 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
 
+    gs.strat_log.log_decision(
+        gs.turn, 'show',
+        candidates=['show_and_tell', 'sneak_attack', 'emrakul', 'griselbrand', 'cantrip', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, hand={len(player.hand)}")
+
     # ── Mana: Ancient Tomb gives {CC} generic; City of Traitors gives {CC} ──
     # Lotus Petal sacs for any mana
     tomb_untapped = sum(1 for l in player.lands if l.card.tag == 'tomb' and not l.tapped)
@@ -3374,6 +3504,13 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
+    gs.strat_log.log_decision(
+        gs.turn, 'lands',
+        candidates=['crop_rotation', 'depths', 'stage', 'marit_lage', 'exploration', 'pass'],
+        chosen='entry',
+        reason=(f"mana={total_mana}, lands={len(player.lands)}, "
+                f"depths_out={any(l.card.tag=='depths' for l in player.lands)}"))
+
     crop = player.find_tag('crop')
     if crop and opp_can_cast(crop, total_mana, gs, caster=player):
         player.remove_from_hand(crop)
@@ -3867,6 +4004,12 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
 def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     rem = total_mana  # remaining mana this gs.turn — deduct after each spell cast
 
+    gs.strat_log.log_decision(
+        gs.turn, 'dimir',
+        candidates=['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'],
+        chosen='entry',
+        reason=f"mana={rem}, hand={len(player.hand)}, threats_in_play={len(player.creatures)}")
+
     # ── 0a. Thoughtseize — proactive disruption (early turns) ──
     from config import MatchupCategory as MC
     from interaction import best_proactive_target
@@ -4058,6 +4201,11 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     - WST has flash+flying+vigilance — can block AND attack same gs.turn if cast on BUG's EOT
     Strategy: cantrip, hold up WST at X=2-3 (3-4 mana), cast on BUG's EOT for maximum value
     """
+    gs.strat_log.log_decision(
+        gs.turn, 'dimir_flash',
+        candidates=['cantrip', 'thoughtseize', 'wst', 'counter', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, hand={len(player.hand)}")
 
     # ── Cantrips ──
     # Cantrips: find any CMC1 noncreature spell opp can cast
@@ -4185,6 +4333,12 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     Mana tracked via mana_ref to avoid phantom multi-casting.
     Reactive hook: FoW/Daze/STP used against opponent threats.
     """
+    gs.strat_log.log_decision(
+        gs.turn, 'uwx',
+        candidates=['removal', 'mentor', 'lock_piece', 'cantrip', 'counter', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, opp_creatures={len(opponent.creatures)}")
+
     mana_ref = [total_mana]
 
     def can_cast(card):
@@ -4333,6 +4487,11 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
     Plan: fast mana → Karn wishes for combo pieces → assemble and win.
     The One Ring provides card draw + protection. Tezzeret recurs artifacts.
     """
+    gs.strat_log.log_decision(
+        gs.turn, 'painter',
+        candidates=['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, hand={len(player.hand)}, artifacts={len(player.artifacts)}")
 
     # ── 0. Fast mana: Lotus Petal, Mox Opal, Grim Monolith ──
     for _ in range(6):
@@ -4852,6 +5011,11 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
 def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
     """UR Delver/Aggro: Delver of Secrets, Ragavan, Dragon's Rage Channeler, Murktide.
     Strategy: deploy cheap threats T1-2, protect with Daze/FoW, Bolt face to close."""
+    gs.strat_log.log_decision(
+        gs.turn, 'ur_aggro',
+        candidates=['cantrip', 'ragavan', 'drc', 'delver', 'murktide', 'bolt', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, creatures={len(player.creatures)}, opp_life={opponent.life}")
 
     # Cantrips — dig for threats early
     can = next((c for c in player.hand if c.is_cantrip and total_mana >= 1), None)
@@ -4934,6 +5098,11 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     """Mardu Initiative/Grief: Grief+Ephemerate T1 strip engine, Ragavan, Bowmasters, Fury."""
+    gs.strat_log.log_decision(
+        gs.turn, 'mardu',
+        candidates=['grief_ephemerate', 'ragavan', 'bowmasters', 'fury', 'initiative', 'pass'],
+        chosen='entry',
+        reason=f"mana={total_mana}, creatures={len(player.creatures)}")
 
     grief = player.find_tag('grief')
     ephemerate = player.find_tag('ephemerate')

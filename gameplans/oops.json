@@ -1,0 +1,34 @@
+{
+  "key": "oops",
+  "name": "Oops All Spells",
+  "archetype": "fast_combo",
+  "mulligan_keys": {
+    "7": ["(spy OR informer OR spact) AND total_sources>=3 AND scaling"],
+    "6": ["(spy OR informer OR spact) AND (total_sources>=3 OR (total_sources>=2 AND scaling))"],
+    "5": ["combo_access AND total_sources>=2"]
+  },
+  "goal_sequence": [
+    {"phase": "t1_kill",    "turns": [1, 1], "action": "crack all petals/mox, exile spirit guides, cast Spy (4) or Informer+act (4)"},
+    {"phase": "t2_kill",    "turns": [2, 2], "action": "same as T1 but with 1 land drop for extra mana"},
+    {"phase": "disruption", "turns": [3, 99], "action": "Grief evoke + Cabal Therapy to clear protection; then combo"}
+  ],
+  "card_roles": {
+    "spy":      "combo_trigger",
+    "informer": "combo_trigger",
+    "spact":    "tutor",
+    "oracle":   "finisher",
+    "dread":    "finisher_enabler",
+    "narco":    "combo_body",
+    "petal":    "fast_mana",
+    "cmox":     "fast_mana",
+    "esg":      "fast_mana",
+    "ssg":      "fast_mana",
+    "darkrit":  "ritual",
+    "cabalrit": "ritual",
+    "grief":    "discard",
+    "vos":      "protection",
+    "pact":     "counter"
+  },
+  "win_conditions": ["oracle"],
+  "notes": "Oops All Spells — 0-land shell. T1-T2 kill rate ~40%. MDFC lands (Agadeem/Turntimber) as backup. All-Petal hands cap at 3 mana — need ritual or MDFC to hit 4. Leyline of the Void auto-loses."
+}

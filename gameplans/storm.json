@@ -1,0 +1,32 @@
+{
+  "key": "storm",
+  "name": "Storm (ANT)",
+  "archetype": "combo",
+  "mulligan_keys": {
+    "7": ["rituals>=2 AND (itutor OR tendrils)", "led AND rituals>=1", "3+ cantrips + 1+ ritual"],
+    "6": ["rituals>=1 AND (tendrils OR itutor)", "led + cantrip"],
+    "5": ["has_any_kill_path"]
+  },
+  "goal_sequence": [
+    {"phase": "setup",   "turns": [1, 2], "action": "cantrip + land drop; thoughtseize if hate detected"},
+    {"phase": "combo",   "turns": [2, 4], "action": "execute ritual chain → Infernal Tutor → Tendrils of Agony"},
+    {"phase": "desperate", "turns": [5, 99], "action": "any kill path, accept storm-1 count"}
+  ],
+  "card_roles": {
+    "darkrit":   "ritual",
+    "cabalrit":  "ritual",
+    "led":       "burst_mana",
+    "itutor":    "tutor",
+    "tendrils":  "finisher",
+    "ts":        "discard",
+    "bs":        "cantrip",
+    "ponder":    "cantrip",
+    "adnauseam": "self_assembler",
+    "pif":       "recursion",
+    "vos":       "protection",
+    "fow":       "protection",
+    "fluster":   "protection"
+  },
+  "win_conditions": ["tendrils", "adnauseam", "pif"],
+  "notes": "ANT Storm — goldfish T2-T3 with rituals + LED, protect with Veil/Flusterstorm/FoW. Under Thalia/Trinisphere, lethal_storm threshold relaxes by 1."
+}

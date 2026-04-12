@@ -1,0 +1,31 @@
+{
+  "key": "show",
+  "name": "Show and Tell",
+  "archetype": "fast_combo",
+  "mulligan_keys": {
+    "7": ["show_and_tell + (emrakul OR griselbrand OR omni) + blue_source"],
+    "6": ["show_and_tell AND finisher"],
+    "5": ["any combo piece + blue"]
+  },
+  "goal_sequence": [
+    {"phase": "dig",     "turns": [1, 2], "action": "Brainstorm / Ponder aggressively to find Show and Tell + finisher"},
+    {"phase": "protect", "turns": [2, 3], "action": "Hold Force of Will / Spell Pierce; Thoughtseize T1 if fast combo opponent"},
+    {"phase": "resolve", "turns": [2, 4], "action": "Cast Show and Tell on U{U}, put Emrakul/Griselbrand/Omniscience into play"}
+  ],
+  "card_roles": {
+    "show":       "combo_trigger",
+    "sneak":      "alt_combo",
+    "emrakul":    "finisher",
+    "griselbrand":"finisher",
+    "omni":       "engine",
+    "bs":         "cantrip",
+    "ponder":     "cantrip",
+    "probe":      "cantrip",
+    "fow":        "protection",
+    "vos":        "protection",
+    "fluster":    "protection",
+    "ts":         "discard"
+  },
+  "win_conditions": ["emrakul", "griselbrand", "omni"],
+  "notes": "Show and Tell cheats a finisher into play for 3 mana. Omniscience chains into cast-free card draw. Grisel draws 7 on ETB. Emrakul wins on swing."
+}
