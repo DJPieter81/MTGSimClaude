@@ -799,12 +799,19 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
 
 
 def _select_fow_pitch(hand, exclude_card):
-    """Select least-valuable blue card for FoW/FoN pitch. Never exile blue threats."""
-    never_exile = {'tamiyo', 'murk', 'kaito', 'borrow'}
+    """Select least-valuable blue card for FoW/FoN pitch. Never exile blue threats
+    or combo win conditions."""
+    never_exile = {'tamiyo', 'murk', 'kaito', 'borrow',
+                   # Combo win conditions — pitching these loses the game
+                   'oracle', 'dd', 'tendrils', 'hoof', 'natorder',
+                   'show', 'sneak', 'emrakul', 'omni', 'reanimate',
+                   'entomb', 'griselbrand', 'painter', 'grind'}
     def pitch_value(c):
         if c is exclude_card: return 999
         if 'U' not in getattr(c, 'colors', set()): return 999
         if c.tag in never_exile: return 90
+        if getattr(c, 'win_condition', False): return 90  # never pitch win cons
+        if getattr(c, 'is_combo_piece', False): return 90  # never pitch combo pieces
         if c.is_land(): return 95
         if c.tag == 'bauble':  return 1
         if c.tag == 'ponder':  return 2

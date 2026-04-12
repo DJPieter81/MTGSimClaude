@@ -14,6 +14,7 @@ Key lines:
 """
 
 import sys
+import random
 sys.path.insert(0, '/home/claude/mtg_sim')
 
 from cards import creature, instant, sorcery, artifact, enchantment
@@ -380,9 +381,9 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                 mana -= 1
                 player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
                 _sacrifice_land(player, sac_land)
-                # ~40% chance the combo piece is in the bottom of the library
+                # Crop Rotation searches entire library — always finds the piece
                 piece_in_lib = any(c.tag == missing for c in player.library)
-                if piece_in_lib and random.random() < 0.60:
+                if piece_in_lib:
                     log_fn(f"★ Crop Rotation (sac {sac_land.card.name}) → find {missing}", True)
                     _tutor_land_to_play(player, missing, log_fn)
                     # Re-check combo after tutoring
