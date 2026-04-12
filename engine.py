@@ -3489,7 +3489,8 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Show and Tell (costs 3 generic: UU1) ──
     sat = player.find_tag('sat')
     win_card = (player.find_tag('emrakul') or player.find_tag('omni') or
-                player.find_tag('sneak')   or player.find_tag('gris'))
+                player.find_tag('sneak')   or player.find_tag('gris') or
+                player.find_tag('atraxa')  or player.find_tag('archon'))
     if sat and win_card and om_eff >= 3:
         # Spend Lotus Petals if needed
         mana_needed = max(0, 3 - total_mana)
