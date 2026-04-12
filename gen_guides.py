@@ -41,9 +41,7 @@ AGG_PATH = os.environ.get('MTGSIM_AGG') or _resolve([
     os.path.join(_HERE, 'deck_agg.json'),
     '/home/claude/deck_agg.json',
 ])
-OUT_DIR = os.environ.get('MTGSIM_OUT_DIR') or (
-    '/mnt/user-data/outputs' if os.path.isdir('/mnt/user-data/outputs')
-    else os.path.join(_HERE, 'guides'))
+OUT_DIR = os.environ.get('MTGSIM_OUT_DIR') or os.path.join(_HERE, 'guides')
 os.makedirs(OUT_DIR, exist_ok=True)
 
 with open(META_PATH) as f: meta = json.load(f)
@@ -98,10 +96,9 @@ random.seed(2026)
 all_data = {}
 
 for dk in sorted(DECKS.keys()):
-    if dk == 'burn': continue
     games = []
     opps = [x for x in decks if x!=dk]
-    for i in range(500):
+    for i in range(2000):
         opp = random.choice(opps)
         try:
             r = run_game(dk, opp)
@@ -160,11 +157,7 @@ def _is_handcrafted(guide_path):
         return False
 
 for dk in sorted(DECKS.keys()):
-    if dk == 'burn': continue
     _guide_fn = os.path.join(OUT_DIR, 'guide_'+dk+'.html')
-    if _is_handcrafted(_guide_fn):
-        print(f"  {dk}: SKIP (hand-crafted sentinel present)")
-        continue
     d=dk; flat=A.get(d,50); wtd=W.get(d,50); delta=round(wtd-flat,1)
     rank=sorted(decks,key=lambda x:-W.get(x,0)).index(d)+1 if d in decks else 99
     best=max([(M.get(d+'|'+d2,[50])[0],d2) for d2 in decks if d2!=d],default=(50,'?'))
@@ -195,7 +188,7 @@ for dk in sorted(DECKS.keys()):
     # Hand archetypes
     archs=sd.get('archetypes',[])
     base=sd.get('baseline',50)
-    arch_html=''.join(f'<div class="arch-row"><span class="arch-name">{k} ({n})</span><div class="arch-bar"><div class="arch-fill" style="width:{wr}%;background:{muc(wr)}"></div></div><span class="arch-val" style="color:{muc(wr)}">{wr}%</span></div>\n' for k,wr,n in archs[:6])
+    arch_html=''.join(f'<div class="arch-row"><span class="arch-name">{k} ({n})</span><div class="arch-bar"><div class="arch-fill" style="width:{wr}%;background:{muc(wr)}"></div></div><span class="arch-val" style="color:{muc(wr)}">{wr}% <span style="font-size:9px;font-weight:400;color:{"#1f7040" if wr>base else "#b02020"}">{wr-base:+.1f}pp</span></span></div>\n' for k,wr,n in archs[:6])
     if arch_html: arch_html+=f'<div class="arch-base">── baseline {base}% ──</div>\n'
     
     # Hands
@@ -254,6 +247,21 @@ for dk in sorted(DECKS.keys()):
             dc+='<div style="border:1px solid #e8d0d0;border-radius:6px;overflow:hidden"><div style="background:linear-gradient(135deg,#b02020,#801818);padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:700;color:#fff">'+nm+'</div><div style="font-size:9px;color:#ffb0b0;text-transform:uppercase">'+ar+'</div></div><div style="font-size:28px;font-weight:700;color:#fff">'+str(int(wr))+'%</div></div></div>\n'
         dc+='</div>\n'
     
+    # Delta proof: compare deck WR against top 5 and bottom 3, show ±pp
+    dp_html = '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0">'
+    tier_label = 'S' if rank<=4 else 'A' if rank<=8 else 'B' if rank<=16 else 'C'
+    dp_html += f'<div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Why {d.replace("_"," ").title()} is #{rank} — The Delta Proof</div>'
+    dp_html += '<div style="display:flex;flex-direction:column;gap:3px">'
+    ref_decks = sorted(decks, key=lambda x: -W.get(x,0))
+    ref_decks = [x for x in ref_decks if x != d][:5] + [x for x in reversed(ref_decks) if x != d][:2]
+    for rd in ref_decks:
+        rd_wr = round(W.get(rd, 50), 1)
+        rd_delta = round(wtd - rd_wr, 1)
+        col = '#1f7040' if rd_delta > 0 else '#b02020' if rd_delta < -5 else '#854f0b'
+        bar_w = min(100, max(5, rd_wr))
+        dp_html += f'<div style="display:flex;align-items:center;gap:6px"><span style="width:70px;font-size:11px;color:#555;text-align:right">{rd.replace("_"," ").title()}</span><div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;max-width:120px"><div style="width:{bar_w}%;height:100%;background:{col};border-radius:2px"></div></div><span style="font-size:11px;font-weight:700;color:{col}">{rd_delta:+.1f}pp</span></div>'
+    dp_html += '</div></div>\n'
+
     # Matchup spread
     mu='';cur_tier=''
     for d2 in sorted(decks,key=lambda x:-W.get(x,0)):
@@ -262,11 +270,12 @@ for dk in sorted(DECKS.keys()):
         if t!=cur_tier:
             cur_tier=t
             mu+='<div class="tier-hdr">'+t+'</div>\n'
-        wr=M.get(d+'|'+d2,[50])[0];ar=agg.get(d2,{}).get('type','?');col=muc(wr)
-        mu+='<div class="mu-row"><span class="mu-name">'+d2+'</span><span class="mu-type">'+ar+'</span><div class="mu-bar"><div class="mu-fill" style="width:'+str(wr)+'%;background:'+col+'"></div></div><span class="mu-val" style="color:'+col+'">'+str(wr)+'%</span></div>\n'
+        wr=M.get(d+'|'+d2,[50])[0];ar=agg.get(d2,{}).get('type','?');col=muc(wr);dpp=round(wr-50,1)
+        mu+='<div class="mu-row"><span class="mu-name">'+d2+'</span><span class="mu-type">'+ar+'</span><div class="mu-bar"><div class="mu-fill" style="width:'+str(wr)+'%;background:'+col+'"></div></div><span class="mu-val" style="color:'+col+'">'+str(wr)+'% <span style="font-size:9px;font-weight:400">'+f'{dpp:+.0f}pp'+'</span></span></div>\n'
     
     # Write using string concatenation (no f-strings for JS)
-    with open(os.path.join(OUT_DIR, 'guide_'+dk+'.html'),'w') as f:
+    _out_path = os.path.join(OUT_DIR, 'guide_'+dk+'.html')
+    with open(_out_path,'w') as f:
         f.write('<!DOCTYPE html>\n<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">\n')
         f.write('<title>'+d.replace('_',' ').title()+' — Legacy Deck Guide</title>\n')
         f.write('<style>\n')
@@ -343,7 +352,7 @@ for dk in sorted(DECKS.keys()):
         
         # Hand archetypes
         if arch_html:
-            f.write('<div class="section-title">Hand Archetype Win Rates — 500 Games</div>\n')
+            f.write('<div class="section-title">Hand Archetype Win Rates — 2,000 Games</div>\n')
             f.write(arch_html)
         
         # Real hands
@@ -370,12 +379,15 @@ for dk in sorted(DECKS.keys()):
         # Tournament arc
         f.write('<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Tournament Arc</div><div style="display:flex;gap:2px;height:24px;border-radius:3px;overflow:hidden"><div style="flex:3;background:#d0f0d0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1f7040">R1-3 Bank</div><div style="flex:3;background:#fff0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#854f0b">R4-6 Gauntlet</div><div style="flex:2;background:#fde8e8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#b02020">R7-8 Top</div></div></div>\n')
         
+        # Delta proof
+        f.write(dp_html)
+        
         # Matchup spread
         f.write('<div class="section-title">Matchup Spread</div>\n')
         f.write(mu)
         
         # Provenance
-        f.write('<div class="prov">MTGSimClaude · 500 games/deck · '+str(len(decks))+' decks · April 12 2026</div>\n')
+        f.write('<div class="prov">MTGSimClaude · 2000 games/deck · '+str(len(decks))+' decks · April 12 2026</div>\n')
         
         # JS hover
         f.write(JS_HOVER)
@@ -386,9 +398,9 @@ print("\nAll guides:")
 for dk in sorted(DECKS.keys()):
     fn = os.path.join(OUT_DIR, 'guide_'+dk+'.html')
     if not os.path.exists(fn):
-        # Burn is hand-crafted and skipped by the generator; other misses
+        # Guide not found (check for generation errors)
         # would indicate a real error.
-        print('  '+dk.ljust(15)+'SKIP (hand-crafted or not generated)')
+        print('  '+dk.ljust(15)+'SKIP (not generated)')
         continue
     sz = os.path.getsize(fn)//1024
     c = open(fn).read()
