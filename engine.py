@@ -3698,32 +3698,56 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"{mdfc.name} → enters tapped as land ({color})")
 
     # ── 1. Free mana: crack Petals, exile Spirit Guides ──
-    for _ in range(10):  # loop for multiple petals/guides
-        petal = player.find_tag('petal') or player.find_tag('cmox')
-        if petal:
-            player.remove_from_hand(petal); player.add_to_grave(petal)
-            total_mana += 1
-            log_fn(f"{petal.name} → +1 mana")
-            continue
-        esg = player.find_tag('esg') or player.find_tag('ssg')
-        if esg:
-            player.remove_from_hand(esg); player.exile.append(esg)
-            total_mana += 1
-            log_fn(f"Exile {esg.name} → +1 mana")
-            continue
-        break
+    # CRITICAL: simulate first — only crack if combo path exists (can reach 4 mana).
+    # Without this gate, T1 wastes all Petals/Guides even when combo is impossible,
+    # leaving nothing for T2+.
+    petals = [c for c in player.hand if c.tag in ('petal', 'cmox')]
+    guides = [c for c in player.hand if c.tag in ('esg', 'ssg')]
+    rituals_in_hand = [c for c in player.hand if c.tag in ('darkrit', 'cabalrit')]
+    cantors = [c for c in player.hand if c.tag == 'cantor']
+    has_spy = any(c.tag in ('spy', 'informer') for c in player.hand)
+    has_pact = any(c.tag == 'spact' for c in player.hand)
+    # Simulate: how much mana CAN we make?
+    sim_mana = total_mana + len(petals) + len(guides) + len(cantors)
+    for r in rituals_in_hand:
+        if r.cmc <= sim_mana:
+            sim_mana += 2  # net +2 from Dark/Cabal Ritual
+    combo_possible = (has_spy or has_pact) and sim_mana >= 4
 
-    # ── 2. Rituals ──
-    for _ in range(10):
-        rit = next((c for c in player.hand if c.tag in ('darkrit', 'cabalrit')
-                     and c.cmc <= total_mana), None)
-        if rit:
-            player.remove_from_hand(rit); player.add_to_grave(rit)
-            total_mana -= rit.cmc
-            total_mana += 3  # Dark Ritual/Cabal Ritual produce BBB/BBBBB
-            log_fn(f"{rit.name} → mana now {total_mana}")
-        else:
+    if combo_possible:
+        for _ in range(10):  # loop for multiple petals/guides
+            petal = player.find_tag('petal') or player.find_tag('cmox')
+            if petal:
+                player.remove_from_hand(petal); player.add_to_grave(petal)
+                total_mana += 1
+                log_fn(f"{petal.name} → +1 mana")
+                continue
+            esg = player.find_tag('esg') or player.find_tag('ssg')
+            if esg:
+                player.remove_from_hand(esg); player.exile.append(esg)
+                total_mana += 1
+                log_fn(f"Exile {esg.name} → +1 mana")
+                continue
+            cantor = player.find_tag('cantor')
+            if cantor:
+                player.remove_from_hand(cantor); player.add_to_grave(cantor)
+                total_mana += 1
+                log_fn(f"{cantor.name} → +1 mana")
+                continue
             break
+
+    # ── 2. Rituals (only if combo path exists) ──
+    if combo_possible:
+        for _ in range(10):
+            rit = next((c for c in player.hand if c.tag in ('darkrit', 'cabalrit')
+                         and c.cmc <= total_mana), None)
+            if rit:
+                player.remove_from_hand(rit); player.add_to_grave(rit)
+                total_mana -= rit.cmc
+                total_mana += 3  # Dark Ritual/Cabal Ritual produce BBB/BBBBB
+                log_fn(f"{rit.name} → mana now {total_mana}")
+            else:
+                break
 
     # ── 2b. Summoner's Pact: free tutor for green creature (Spy) ──
     # Pact costs 0 now, pay {2}{G}{G} next upkeep (or lose the game).
@@ -3964,12 +3988,16 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── Pre-DD: rituals for mana acceleration ──
-    rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
-    extra = 0
-    for r in rits:
-        player.remove_from_hand(r); player.add_to_grave(r); extra += 2
-    if extra: log_fn(f"Dark Ritual ×{len(rits)} → +{extra} mana")
-    mana += extra
+    # Only cast rituals if DD is already in hand — otherwise save mana for cantrips
+    # that dig for DD. Rituals drawn by cantrips are cast inside the cantrip loop.
+    dd = player.find_tag('dd')
+    if dd:
+        rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
+        extra = 0
+        for r in rits:
+            player.remove_from_hand(r); player.add_to_grave(r); extra += 2
+        if extra: log_fn(f"Dark Ritual ×{len(rits)} → +{extra} mana")
+        mana += extra
 
     # ── Cantrips (pre-DD: dig for combo pieces) ──
     # If we have DD + enough mana, skip mana cantrips to preserve mana for DD.
