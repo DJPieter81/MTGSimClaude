@@ -1,0 +1,73 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: storm_vs_dnt
+Seed: 42
+Result: p2 (BUG life reaches 0 on turn 7) on turn None of 7
+
+Opening hands:
+  P1 (storm): Veil of Summer, Infernal Tutor, Underground Sea, Lion's Eye Diamond, Ponder, Infernal Tutor, Volcanic Island
+  P2 (dnt): Rishadan Port, Sanctum Prelate, Thalia, Guardian of Thraben, Plains, Plains, Phelia, Exuberant Shepherd, Plains
+
+Strategic decision trace (11 entries):
+  T1 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=3/9, rituals=0, safe=True, thalia=False, life=20
+  T2 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=3/9, rituals=0, safe=True, thalia=False, life=20
+  T3 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['prelate', 'thalia', 'phelia', 'basic', 'karakas', 'flickerwisp']
+  T3 [storm] [phase:combo] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=3/8, rituals=0, safe=True, thalia=True, life=20
+  T4 [dnt] chose phelia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=4, hand=['prelate', 'phelia', 'karakas', 'flickerwisp', 'port']
+  T4 [storm] [phase:combo] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=2/8, rituals=0, safe=True, thalia=True, life=18
+  T5 [dnt] chose flickerwisp from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=5, hand=['prelate', 'flickerwisp', 'port', 'equipment']
+  T5 [storm] [phase:desperate] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=2/8, rituals=0, safe=True, thalia=True, life=16
+  T6 [dnt] chose skyclave from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=6, hand=['prelate', 'equipment', 'skyclave']
+  T6 [storm] [phase:desperate] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=2/8, rituals=0, safe=True, thalia=True, life=9
+  T7 [dnt] chose recruiter from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=6, hand=['prelate', 'equipment', 'recruiter']
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  STORM vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  STORM (P1):
+  Draw 7:
+    1. Veil of Summer (instant, CMC 1)
+    2. Infernal Tutor (sorcery, CMC 2, combo)
+    3. Underground Sea (dual)
+    4. Lion's Eye Diamond (artifact, CMC 0, combo)
+    5. Ponder (sorcery, CMC 1, cantrip)
+    6. Infernal Tutor (sorcery, CMC 2, combo)
+    7. Volcanic Island (dual)
+    [Lands: 2  Cantrips: 1  Combo: 3  Other: 1]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; cantrip(s) to dig for threats; combo pieces present — can threaten early kill
+
+  DNT (P2):
+  Draw 7:
+    1. Rishadan Port (land)
+    2. Sanctum Prelate (creature 2/2, CMC 3)
+    3. Thalia, Guardian of Thraben (creature 2/1, CMC 2)
+    4. Plains (basic)
+    5. Plains (basic)
+    6. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    7. Plains (basic)
+    [Lands: 4  Creatures: 3]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; 3 threat(s) for a clock
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: storm 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Rishadan Port (1 lands)
+  ── Main ──
+
+Grade the **storm** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.
