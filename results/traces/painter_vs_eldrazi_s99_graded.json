@@ -1,0 +1,32 @@
+{
+  "trace_file": "painter_vs_eldrazi_s99.json",
+  "matchup": "painter_vs_eldrazi",
+  "seed": 99,
+  "winner": "p1",
+  "win_reason": "Painter + Grindstone combo",
+  "kill_turn": 4,
+  "game_length": 4,
+  "deck1": "painter",
+  "deck2": "eldrazi",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "B+",
+    "combat": "B",
+    "combo": "B",
+    "interaction": "B",
+    "meta": "B+",
+    "overall": "B+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Resource deployment supported a T4 win",
+    "combat": "Won through non-combat means",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "Adequate interaction for game plan",
+    "meta": "Efficiently closed the matchup",
+    "overall": "Average across 6 domains \u2014 won in 4 turns"
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Resource deployment supported a T4 win\ncombat: B \u2014 Won through non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B \u2014 Adequate interaction for game plan\nmeta: B+ \u2014 Efficiently closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns",
+  "model": "heuristic-v1",
+  "graded_at": "2026-04-12T13:09:10.613375Z"
+}

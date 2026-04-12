@@ -1,0 +1,80 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: oops_vs_dimir
+Seed: 42
+Result: p2 (BUG life reaches -1 on turn 9) on turn None of 9
+
+Opening hands:
+  P1 (oops): Balustrade Spy, Wild Cantor, Elvish Spirit Guide, Cabal Ritual, Dark Ritual, Agadeem's Awakening
+  P2 (dimir): Polluted Delta, Undercity Sewers, Brainstorm, Wasteland, Orcish Bowmasters, Ponder, Force of Will
+
+Strategic decision trace (18 entries):
+  T1 [oops] [phase:t1_kill] chose cast_spy from ['cast_spy', 'cast_informer', 'pass'] — mana=4, spy=True, informer=False, leyline=False
+  T1 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=5, threats_in_play=0
+  T2 [oops] [phase:t2_kill] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=2, spy=False, informer=False, leyline=False
+  T2 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=6, threats_in_play=0
+  T3 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=1, spy=False, informer=False, leyline=False
+  T3 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=5, threats_in_play=1
+  T4 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=0, spy=False, informer=False, leyline=False
+  T4 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=2, hand=4, threats_in_play=3
+  T5 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=0, spy=False, informer=False, leyline=False
+  T5 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=6, threats_in_play=3
+  T6 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=0, spy=False, informer=False, leyline=False
+  T6 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=4, hand=6, threats_in_play=3
+  T7 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=0, spy=True, informer=False, leyline=False
+  T7 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=5, hand=5, threats_in_play=4
+  T8 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=0, spy=True, informer=False, leyline=False
+  T8 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=6, hand=5, threats_in_play=4
+  T9 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=3, spy=True, informer=False, leyline=False
+  T9 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=7, hand=5, threats_in_play=4
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  OOPS vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: OOPS wins the die roll, goes FIRST
+
+  OOPS (P1):
+  Draw 7:
+    1. Pact of Negation (instant, CMC 0)
+    2. Lotus Petal (artifact, CMC 0)
+    3. Turntimber Symbiosis (sorcery, CMC 7)
+    4. Narcomoeba (creature 1/1, CMC 2)
+    5. Elvish Spirit Guide (creature 2/2, CMC 3)
+    6. Simian Spirit Guide (creature 2/2, CMC 3)
+    7. Turntimber Symbiosis (sorcery, CMC 7)
+    [Lands: 0  Creatures: 3  Other: 4]
+  → MULLIGAN
+    Reason: zero lands — can't cast anything
+  Mulligan #1 — draw 7:
+    1. Cabal Ritual (instant, CMC 2)
+    2. Dark Ritual (instant, CMC 1)
+    3. Balustrade Spy (creature 2/3, CMC 4, combo)
+    4. Agadeem's Awakening (sorcery, CMC 3)
+    5. Wild Cantor (creature 1/1, CMC 1)
+    6. Elvish Spirit Guide (creature 2/2, CMC 3)
+    7. Cabal Therapy (sorcery, CMC 1)
+    [Lands: 0  Creatures: 3  Combo: 1  Other: 3]
+  Keep best 6: Balustrade Spy, Wild Cantor, Elvish Spirit Guide, Cabal Ritual, Dark Ritual, Agadeem's Awakening
+  Bottom 1: Cabal Therapy
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 3 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Polluted Delta (fetch)
+    2. Undercity Sewers (dual)
+    3. Brainstorm (instant, CMC 1, cantrip)
+
+Grade the **oops** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

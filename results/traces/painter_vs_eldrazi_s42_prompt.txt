@@ -1,0 +1,67 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: painter_vs_eldrazi
+Seed: 42
+Result: p2 (BUG life reaches -10 on turn 6) on turn None of 6
+
+Opening hands:
+  P1 (painter): Soul-Guide Lantern, Lotus Petal, Urza's Tower, Tezzeret, Cruel Captain, Grim Monolith, Lotus Petal, Urza's Tower
+  P2 (eldrazi): Simian Spirit Guide, Kozilek's Command, Thought-Knot Seer, City of Traitors, Wasteland, Chalice of the Void, City of Traitors
+
+Strategic decision trace (5 entries):
+  T1 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=3, hand=6, artifacts=0
+  T2 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=2, hand=2, artifacts=1
+  T3 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=2, hand=1, artifacts=1
+  T4 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=2, hand=1, artifacts=2
+  T5 [painter] chose entry from ['fast_mana', 'painter', 'grindstone', 'karn', 'ring', 'tezzeret', 'pass'] — mana=2, hand=1, artifacts=2
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  PAINTER vs ELDRAZI
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: ELDRAZI wins the die roll, goes FIRST
+
+  PAINTER (P1):
+  Draw 7:
+    1. Soul-Guide Lantern (artifact, CMC 1)
+    2. Lotus Petal (artifact, CMC 0)
+    3. Urza's Tower (land)
+    4. Tezzeret, Cruel Captain (planeswalker, CMC 3)
+    5. Grim Monolith (artifact, CMC 2)
+    6. Lotus Petal (artifact, CMC 0)
+    7. Urza's Tower (land)
+    [Lands: 2  Other: 5]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base
+
+  ELDRAZI (P2):
+  Draw 7:
+    1. Simian Spirit Guide (creature 2/2, CMC 3)
+    2. Kozilek's Command (instant, CMC 3)
+    3. Thought-Knot Seer (creature 4/4, CMC 4)
+    4. City of Traitors (land)
+    5. Wasteland (land)
+    6. Chalice of the Void (artifact, CMC 0, combo)
+    7. City of Traitors (land)
+    [Lands: 3  Creatures: 2  Combo: 1  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+━━ TURN 1 — ELDRAZI ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: painter 20 | eldrazi 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: City of Traitors (1 lands)
+  ── Main ──
+
+Grade the **painter** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

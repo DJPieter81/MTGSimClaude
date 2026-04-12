@@ -1,0 +1,72 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: ur_delver_vs_dimir
+Seed: 7
+Result: p2 (BUG life reaches 0 on turn 10) on turn None of 10
+
+Opening hands:
+  P1 (ur_delver): Murktide Regent, Brazen Borrower, Dragon's Rage Channeler, Delver of Secrets, Volcanic Island, Brainstorm
+  P2 (dimir): Fatal Push, Murktide Regent, Tamiyo, Inquisitive Student, Orcish Bowmasters, Brainstorm, Polluted Delta, Wasteland
+
+Strategic decision trace (10 entries):
+  T1 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=7, threats_in_play=0
+  T2 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=2, hand=5, threats_in_play=0
+  T3 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=2, hand=5, threats_in_play=1
+  T4 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=4, threats_in_play=2
+  T5 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=4, hand=4, threats_in_play=2
+  T6 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=4, hand=5, threats_in_play=2
+  T7 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=4, hand=6, threats_in_play=3
+  T8 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=4, hand=6, threats_in_play=4
+  T9 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=5, hand=6, threats_in_play=3
+  T10 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=5, hand=6, threats_in_play=4
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  UR_DELVER vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: UR_DELVER wins the die roll, goes FIRST
+
+  UR_DELVER (P1):
+  Draw 7:
+    1. Brazen Borrower (creature 3/1, CMC 3)
+    2. Scalding Tarn (fetch)
+    3. Murktide Regent (creature 5/5, CMC 7)
+    4. Expressive Iteration (sorcery, CMC 2)
+    5. Volcanic Island (dual)
+    6. Volcanic Island (dual)
+    7. Force of Will (instant, CMC 5, free counter)
+    [Lands: 3  Creatures: 2  Counters: 1  Other: 1]
+  → MULLIGAN
+    Reason: doesn't meet deck-specific keep criteria
+  Mulligan #1 — draw 7:
+    1. Murktide Regent (creature 5/5, CMC 7)
+    2. Brazen Borrower (creature 3/1, CMC 3)
+    3. Daze (instant, CMC 2, free counter)
+    4. Dragon's Rage Channeler (creature 1/1, CMC 1)
+    5. Delver of Secrets (creature 1/1, CMC 1)
+    6. Volcanic Island (dual)
+    7. Brainstorm (instant, CMC 1, cantrip)
+    [Lands: 1  Creatures: 4  Counters: 1  Cantrips: 1]
+  Keep best 6: Murktide Regent, Brazen Borrower, Dragon's Rage Channeler, Delver of Secrets, Volcanic Island, Brainstorm
+  Bottom 1: Daze
+    Bottom rationale: weakest by priority (counters > creatures > cantrips > other)
+  → KEEP (mull to 6)
+    Reason: 1 land + cantrip to find more; 4 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Fatal Push (instant, CMC 1, removal)
+    2. Murktide Regent (creature 3/3, CMC 7)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+
+Grade the **ur_delver** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

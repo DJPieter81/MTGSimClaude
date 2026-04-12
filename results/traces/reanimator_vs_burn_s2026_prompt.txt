@@ -1,0 +1,65 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: reanimator_vs_burn
+Seed: 2026
+Result: p2 (BUG life reaches -3 on turn 3) on turn None of 3
+
+Opening hands:
+  P1 (reanimator): Underground Sea, Underground Sea, Entomb, Thoughtseize, Swamp, Entomb, Unmask
+  P2 (burn): Eidolon of the Great Revel, Chain Lightning, Monastery Swiftspear, Price of Progress, Searing Blaze, Mountain, Barbarian Ring
+
+Strategic decision trace (3 entries):
+  T1 [reanimator] [phase:t1_free_mana] chose pass from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=0, entomb=True, reanimate=False, target=False
+  T2 [reanimator] [phase:t2_plan_b] chose pass from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=2, entomb=True, reanimate=False, target=False
+  T3 [reanimator] [phase:t2_plan_b] chose entomb_reanimate from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=3, entomb=True, reanimate=True, target=False
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  REANIMATOR vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BURN wins the die roll, goes FIRST
+
+  REANIMATOR (P1):
+  Draw 7:
+    1. Underground Sea (dual)
+    2. Underground Sea (dual)
+    3. Entomb (instant, CMC 1, combo)
+    4. Thoughtseize (sorcery, CMC 1)
+    5. Swamp (basic)
+    6. Entomb (instant, CMC 1, combo)
+    7. Unmask (sorcery, CMC 4)
+    [Lands: 3  Combo: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; combo pieces present — can threaten early kill
+
+  BURN (P2):
+  Draw 7:
+    1. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    2. Chain Lightning (sorcery, CMC 1, win-con)
+    3. Monastery Swiftspear (creature 1/2, CMC 1)
+    4. Price of Progress (instant, CMC 2, win-con)
+    5. Searing Blaze (instant, CMC 2, win-con)
+    6. Mountain (basic)
+    7. Barbarian Ring (land)
+    [Lands: 2  Creatures: 2  Combo: 3]
+  → KEEP (opening 7)
+    Reason: 2 lands — good mana base; 5 threat(s) for a clock; combo pieces present — can threaten early kill
+
+━━ TURN 1 — BURN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Mountain (1 lands)
+  ── Main ──
+
+Grade the **reanimator** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

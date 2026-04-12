@@ -1,0 +1,65 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: reanimator_vs_burn
+Seed: 7
+Result: p2 (BUG life reaches -1 on turn 3) on turn None of 3
+
+Opening hands:
+  P1 (reanimator): Animate Dead, Marsh Flats, Exhume, Polluted Delta, Underground Sea, Swamp, Thoughtseize
+  P2 (burn): Eidolon of the Great Revel, Lightning Bolt, Fireblast, Monastery Swiftspear, Goblin Guide, Barbarian Ring, Lava Spike
+
+Strategic decision trace (3 entries):
+  T1 [reanimator] [phase:t1_free_mana] chose pass from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=0, entomb=False, reanimate=True, target=False
+  T2 [reanimator] [phase:t2_plan_b] chose pass from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=2, entomb=False, reanimate=True, target=False
+  T3 [reanimator] [phase:t2_plan_b] chose entomb_reanimate from ['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'] — mana=3, entomb=True, reanimate=True, target=False
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  REANIMATOR vs BURN
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: REANIMATOR wins the die roll, goes FIRST
+
+  REANIMATOR (P1):
+  Draw 7:
+    1. Animate Dead (CMC 2, combo)
+    2. Marsh Flats (fetch)
+    3. Exhume (sorcery, CMC 2, combo)
+    4. Polluted Delta (fetch)
+    5. Underground Sea (dual)
+    6. Swamp (basic)
+    7. Thoughtseize (sorcery, CMC 1)
+    [Lands: 4  Combo: 2  Other: 1]
+  → KEEP (opening 7)
+    Reason: 4 lands — slightly land-heavy but playable; combo pieces present — can threaten early kill
+
+  BURN (P2):
+  Draw 7:
+    1. Eidolon of the Great Revel (creature 2/2, CMC 2)
+    2. Lightning Bolt (instant, CMC 1, win-con)
+    3. Fireblast (instant, CMC 6, win-con)
+    4. Monastery Swiftspear (creature 1/2, CMC 1)
+    5. Goblin Guide (creature 2/2, CMC 1)
+    6. Barbarian Ring (land)
+    7. Lava Spike (sorcery, CMC 1, win-con)
+    [Lands: 1  Creatures: 3  Combo: 3]
+  → KEEP (opening 7)
+    Reason: 6 threat(s) for a clock; combo pieces present — can threaten early kill
+
+━━ TURN 1 — REANIMATOR ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: reanimator 20 | burn 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+
+Grade the **reanimator** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

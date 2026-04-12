@@ -1,0 +1,32 @@
+{
+  "trace_file": "ur_delver_vs_dimir_s7.json",
+  "matchup": "ur_delver_vs_dimir",
+  "seed": 7,
+  "winner": "p2",
+  "win_reason": "BUG life reaches 0 on turn 10",
+  "kill_turn": null,
+  "game_length": 10,
+  "deck1": "ur_delver",
+  "deck2": "dimir",
+  "grades": {
+    "mulligan": "C+",
+    "mana": "B",
+    "combat": "C",
+    "combo": "B",
+    "interaction": "C",
+    "meta": "C+",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Mulled to 6; card disadvantage contributed to loss",
+    "mana": "Adequate mana utilization over 10 turns",
+    "combat": "Limited combat engagement",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "Disruption was insufficient \u2014 key threats went unanswered",
+    "meta": "Lost \u2014 played actively but could not overcome matchup",
+    "overall": "Average across 6 domains \u2014 lost in 10 turns"
+  },
+  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: B \u2014 Adequate mana utilization over 10 turns\ncombat: C \u2014 Limited combat engagement\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C \u2014 Disruption was insufficient \u2014 key threats went unanswered\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 10 turns",
+  "model": "heuristic-v1",
+  "graded_at": "2026-04-12T13:09:10.645282Z"
+}

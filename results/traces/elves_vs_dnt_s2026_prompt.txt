@@ -1,0 +1,77 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: elves_vs_dnt
+Seed: 2026
+Result: p2 (BUG life reaches -1 on turn 9) on turn None of 9
+
+Opening hands:
+  P1 (elves): Windswept Heath, Verdant Catacombs, Llanowar Elves, Craterhoof Behemoth, Savannah, Llanowar Elves, Glimpse of Nature
+  P2 (dnt): Recruiter of the Guard, Phelia, Exuberant Shepherd, Stoneforge Mystic, Aether Vial, Wasteland, Karakas, Plains
+
+Strategic decision trace (15 entries):
+  T1 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=1, creatures=0, hand=7
+  T2 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=1, creatures=0, hand=6
+  T3 [dnt] chose sfm from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=2, hand=['recruiter', 'phelia', 'sfm', 'basic']
+  T3 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=2, creatures=1, hand=5
+  T4 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'phelia', 'kaldra', 'thalia']
+  T4 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=2, creatures=3, hand=4
+  T5 [dnt] chose skyclave from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'phelia', 'skyclave']
+  T5 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=2, creatures=4, hand=4
+  T6 [dnt] chose thalia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'phelia', 'thalia']
+  T6 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=3, creatures=4, hand=3
+  T7 [dnt] chose phelia from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'phelia', 'flickerwisp']
+  T7 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=4, creatures=2, hand=3
+  T8 [dnt] chose sfm from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=3, hand=['recruiter', 'flickerwisp', 'sfm']
+  T8 [elves] chose entry from ['mana_elf', 'natural_order', 'craterhoof', 'glimpse', 'pass'] — mana=6, creatures=1, hand=3
+  T9 [dnt] chose flickerwisp from ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp', 'orchid', 'mom', 'recruiter'] — mana=4, hand=['recruiter', 'flickerwisp']
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  ELVES vs DNT
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DNT wins the die roll, goes FIRST
+
+  ELVES (P1):
+  Draw 7:
+    1. Windswept Heath (fetch)
+    2. Verdant Catacombs (fetch)
+    3. Llanowar Elves (creature 1/1, CMC 1)
+    4. Craterhoof Behemoth (creature 5/5, CMC 8, win-con)
+    5. Savannah (dual)
+    6. Llanowar Elves (creature 1/1, CMC 1)
+    7. Glimpse of Nature (sorcery, CMC 1, combo)
+    [Lands: 3  Creatures: 3  Combo: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 3 threat(s) for a clock; combo pieces present — can threaten early kill
+
+  DNT (P2):
+  Draw 7:
+    1. Recruiter of the Guard (creature 1/1, CMC 3)
+    2. Phelia, Exuberant Shepherd (creature 2/2, CMC 2)
+    3. Stoneforge Mystic (creature 1/2, CMC 2)
+    4. Aether Vial (artifact, CMC 1)
+    5. Wasteland (land)
+    6. Karakas (land)
+    7. Plains (basic)
+    [Lands: 3  Creatures: 3  Other: 1]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 3 threat(s) for a clock
+
+━━ TURN 1 — DNT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: elves 20 | dnt 20
+
+  ── Untap ── (0 lands)
+  ── Draw ── (skipped — on the play, T1)
+  Land: Wasteland (1 lands)
+  ── Main ──
+
+Grade the **elves** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

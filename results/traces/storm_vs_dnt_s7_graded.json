@@ -1,0 +1,32 @@
+{
+  "trace_file": "storm_vs_dnt_s7.json",
+  "matchup": "storm_vs_dnt",
+  "seed": 7,
+  "winner": "p1",
+  "win_reason": "ANT combo (Ad Nauseam)",
+  "kill_turn": 5,
+  "game_length": 5,
+  "deck1": "storm",
+  "deck2": "dnt",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "B+",
+    "combat": "B",
+    "combo": "B+",
+    "interaction": "B",
+    "meta": "A",
+    "overall": "B+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Won but took 5 turns \u2014 mana was adequate",
+    "combat": "Combo deck \u2014 combat decisions minimal",
+    "combo": "Combo executed on T5 \u2014 efficient",
+    "interaction": "Combo resolved without needing protection",
+    "meta": "Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness",
+    "overall": "Average across 6 domains \u2014 won in 5 turns"
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 5 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: B+ \u2014 Combo executed on T5 \u2014 efficient\ninteraction: B \u2014 Combo resolved without needing protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 5 turns",
+  "model": "heuristic-v1",
+  "graded_at": "2026-04-12T13:09:10.639862Z"
+}

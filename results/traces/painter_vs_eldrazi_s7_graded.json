@@ -1,0 +1,32 @@
+{
+  "trace_file": "painter_vs_eldrazi_s7.json",
+  "matchup": "painter_vs_eldrazi",
+  "seed": 7,
+  "winner": "p2",
+  "win_reason": "BUG life reaches -3 on turn 6",
+  "kill_turn": null,
+  "game_length": 6,
+  "deck1": "painter",
+  "deck2": "eldrazi",
+  "grades": {
+    "mulligan": "B",
+    "mana": "C+",
+    "combat": "C",
+    "combo": "B",
+    "interaction": "C+",
+    "meta": "C+",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
+    "mana": "Suboptimal mana utilization over 6 turns",
+    "combat": "Limited combat engagement",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "Interaction fell short of needs",
+    "meta": "Lost \u2014 played actively but could not overcome matchup",
+    "overall": "Average across 6 domains \u2014 lost in 6 turns"
+  },
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Suboptimal mana utilization over 6 turns\ncombat: C \u2014 Limited combat engagement\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 Interaction fell short of needs\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 6 turns",
+  "model": "heuristic-v1",
+  "graded_at": "2026-04-12T13:09:10.612185Z"
+}

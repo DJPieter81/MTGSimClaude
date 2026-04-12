@@ -1,0 +1,85 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: oops_vs_dimir
+Seed: 7
+Result: p2 (BUG life reaches 0 on turn 12) on turn None of 12
+
+Opening hands:
+  P1 (oops): Narcomoeba, Grief, Narcomoeba, Summoner's Pact, Agadeem's Awakening, Turntimber Symbiosis, Dark Ritual
+  P2 (dimir): Tamiyo, Inquisitive Student, Murktide Regent, Brazen Borrower, Brainstorm
+
+Strategic decision trace (23 entries):
+  T1 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=0, hand=4, threats_in_play=0
+  T1 [oops] [phase:t1_kill] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=3, spy=True, informer=False, leyline=False
+  T2 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=0, hand=5, threats_in_play=0
+  T2 [oops] [phase:t2_kill] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=2, spy=True, informer=False, leyline=False
+  T3 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=0, hand=6, threats_in_play=0
+  T3 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=3, spy=True, informer=False, leyline=False
+  T4 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=0, hand=7, threats_in_play=0
+  T4 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=1, spy=True, informer=False, leyline=False
+  T5 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=7, threats_in_play=0
+  T5 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=0, spy=True, informer=False, leyline=False
+  T6 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=0, hand=6, threats_in_play=1
+  T6 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=3, spy=True, informer=False, leyline=False
+  T7 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=1, hand=7, threats_in_play=1
+  T7 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=1, spy=True, informer=False, leyline=False
+  T8 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=2, hand=9, threats_in_play=1
+  T8 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=2, spy=True, informer=False, leyline=False
+  T9 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=6, threats_in_play=1
+  T9 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=1, spy=True, informer=False, leyline=False
+  T10 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=3, hand=6, threats_in_play=2
+  T10 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=3, spy=True, informer=False, leyline=False
+  T11 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=4, hand=5, threats_in_play=3
+  T11 [oops] [phase:disruption] chose pass from ['cast_spy', 'cast_informer', 'pass'] — mana=0, spy=True, informer=False, leyline=False
+  T12 [dimir] chose entry from ['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'] — mana=4, hand=7, threats_in_play=3
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  OOPS vs DIMIR
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: DIMIR wins the die roll, goes FIRST
+
+  OOPS (P1):
+  Draw 7:
+    1. Narcomoeba (creature 1/1, CMC 2)
+    2. Grief (creature 3/2, CMC 5)
+    3. Narcomoeba (creature 1/1, CMC 2)
+    4. Summoner's Pact (instant, CMC 0)
+    5. Agadeem's Awakening (sorcery, CMC 3)
+    6. Turntimber Symbiosis (sorcery, CMC 7)
+    7. Dark Ritual (instant, CMC 1)
+    [Lands: 0  Creatures: 3  Other: 4]
+  → KEEP (opening 7)
+    Reason: 3 threat(s) for a clock
+
+  DIMIR (P2):
+  Draw 7:
+    1. Nethergoyf (creature 0/1, CMC 2)
+    2. Murktide Regent (creature 3/3, CMC 7)
+    3. Thoughtseize (sorcery, CMC 1)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    6. Underground Sea (dual)
+    7. Ponder (sorcery, CMC 1, cantrip)
+    [Lands: 1  Creatures: 4  Cantrips: 1  Other: 1]
+  → MULLIGAN
+    Reason: doesn't meet keep criteria
+  Mulligan #1 — draw 7:
+    1. Fatal Push (instant, CMC 1, removal)
+    2. Murktide Regent (creature 3/3, CMC 7)
+    3. Tamiyo, Inquisitive Student (creature 0/3, CMC 1)
+    4. Orcish Bowmasters (creature 1/1, CMC 2)
+    5. Brainstorm (instant, CMC 1, cantrip)
+    6. Polluted Delta (fetch)
+
+Grade the **oops** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.

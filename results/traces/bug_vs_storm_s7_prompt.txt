@@ -1,0 +1,79 @@
+You are a Legacy MTG grandmaster grading an AI's play in a simulated game.
+
+Matchup: bug_vs_storm
+Seed: 7
+Result: p1 (Opp life reaches -3 on turn 9) on turn 9 of 9
+
+Opening hands:
+  P1 (bug): Murktide Regent, Marsh Flats, Orcish Bowmasters, Mishra's Bauble, Underground Sea, Undercity Sewers, Thoughtseize
+  P2 (storm): Lion's Eye Diamond, Brainstorm, Force of Will, Cabal Ritual, Dark Ritual, Misty Rainforest, Infernal Tutor
+
+Strategic decision trace (17 entries):
+  T1 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=0, hand=5, threats_in_play=0
+  T1 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=4/8, rituals=2, safe=True, thalia=False, life=19
+  T2 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=2, hand=5, threats_in_play=0
+  T2 [storm] [phase:setup] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=4/8, rituals=2, safe=True, thalia=False, life=19
+  T3 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=4, threats_in_play=1
+  T3 [storm] [phase:combo] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=5/8, rituals=3, safe=False, thalia=False, life=18
+  T4 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=4, threats_in_play=2
+  T4 [storm] [phase:combo] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=6/8, rituals=4, safe=False, thalia=False, life=17
+  T5 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=5, threats_in_play=3
+  T5 [storm] [phase:desperate] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=6/8, rituals=4, safe=False, thalia=False, life=13
+  T6 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=3, hand=6, threats_in_play=3
+  T6 [storm] [phase:desperate] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=6/8, rituals=4, safe=True, thalia=False, life=9
+  T7 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=4, hand=6, threats_in_play=3
+  T7 [storm] [phase:desperate] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=7/8, rituals=4, safe=True, thalia=False, life=5
+  T8 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=4, hand=7, threats_in_play=3
+  T8 [storm] [phase:desperate] chose pass from ['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'] — storm=7/8, rituals=4, safe=True, thalia=False, life=1
+  T9 [bug] chose entry from ['cantrip', 'discard', 'removal', 'threat', 'waste', 'pass'] — mana=4, hand=8, threats_in_play=3
+
+Full log (first 40 lines):
+══════════════════════════════════════════════════════════════════════
+  BUG vs STORM
+══════════════════════════════════════════════════════════════════════
+
+── PREGAME ──────────────────────────────────────────────────────────
+
+  Coin flip: BUG wins the die roll, goes FIRST
+
+  BUG (P1):
+  Draw 7:
+    1. Murktide Regent (creature 3/3, CMC 7)
+    2. Marsh Flats (fetch)
+    3. Orcish Bowmasters (creature 1/1, CMC 2)
+    4. Mishra's Bauble (artifact, CMC 0)
+    5. Underground Sea (dual)
+    6. Undercity Sewers (land)
+    7. Thoughtseize (sorcery, CMC 1)
+    [Lands: 3  Creatures: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 3 lands — good mana base; 2 threat(s) for a clock
+
+  STORM (P2):
+  Draw 7:
+    1. Lion's Eye Diamond (artifact, CMC 0, combo)
+    2. Brainstorm (instant, CMC 1, cantrip)
+    3. Force of Will (instant, CMC 5, free counter)
+    4. Cabal Ritual (instant, CMC 2)
+    5. Dark Ritual (instant, CMC 1)
+    6. Misty Rainforest (fetch)
+    7. Infernal Tutor (sorcery, CMC 2, combo)
+    [Lands: 1  Counters: 1  Cantrips: 1  Combo: 2  Other: 2]
+  → KEEP (opening 7)
+    Reason: 1 land + cantrip to find more; 1 counter(s) for protection/disruption; cantrip(s) to dig for threats; combo pieces present — can threaten early kill
+
+━━ TURN 1 — BUG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Life: bug 20 | storm 20
+
+  ── Untap ── (0 lands)
+  ── Upkeep ──
+  ── Draw ── (skipped — on the play, T1)
+  Land: Underground Sea (1 lands)
+
+Grade the **bug** player on each domain. For each domain, output a
+single line of the form:
+    <domain>: <grade> — <one-sentence justification>
+
+Domains: mulligan, mana, combat, combo, interaction, meta
+Grade scale: A+, A, B+, B, C+, C, D, F
+
+Also output a final "overall: <grade> — <summary>" line.
