@@ -3660,6 +3660,12 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     dd_already_resolved = getattr(gs, '_doomsday_pile_built', False)
     mana = total_mana  # track remaining mana
 
+    gs.strat_log.log_decision(
+        gs.turn, 'doomsday',
+        candidates=['cast_doomsday', 'cycle_and_oracle', 'pass'],
+        chosen='cast_doomsday' if not dd_already_resolved and mana >= 3 else 'cycle_and_oracle' if dd_already_resolved else 'pass',
+        reason=f"mana={mana}, dd_resolved={dd_already_resolved}, life={player.life}")
+
     # ── Helper: cycle cards from hand (activated abilities — uncounterable) ──
     # Repeatedly cycle: each Wraith/Edge drawn from the pile can itself be cycled,
     # chaining through the pile to thin the library for Oracle.
@@ -4656,6 +4662,16 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
     Reanimate oracle: pay life equal to creature's CMC. Griselbrand=8 → lose 8 life.
     """
     mana = total_mana  # start with land mana (Swamp or fetchable dual = {B})
+
+    # Trace: entry-state snapshot
+    has_entomb = player.find_tag('entomb') is not None
+    has_reanimate = any(c.tag in ('reanimate','exhume','animate_dead') for c in player.hand)
+    has_target = any(c.tag in ('griselbrand','archon','atraxa','emrakul') for c in player.hand + player.graveyard)
+    gs.strat_log.log_decision(
+        gs.turn, 'reanimator',
+        candidates=['entomb_reanimate', 'petal_ritual', 'unmask', 'pass'],
+        chosen='entomb_reanimate' if has_entomb and has_reanimate else 'pass',
+        reason=f"mana={mana}, entomb={has_entomb}, reanimate={has_reanimate}, target={has_target}")
 
     # ── Step 1: Lotus Petal — free mana, always first ────────────────────────
     petals = [c for c in player.hand if c.tag == 'petal']
