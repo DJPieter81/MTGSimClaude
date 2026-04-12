@@ -413,101 +413,101 @@ def generate_html(matchup, seeds, protagonist='bug'):
 <title>{title}</title>
 <style>
 *{{box-sizing:border-box;margin:0;padding:0}}
-body{{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:900px;margin:0 auto}}
-.header{{background:linear-gradient(135deg,#161b22,#1c2333);border:1px solid #30363d;border-radius:12px;padding:24px;margin-bottom:20px}}
-.header h1{{font-size:1.6em;margin-bottom:8px;color:#f0f6fc}}
+body{{background:#fff;color:#222;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;padding:20px;max-width:920px;margin:0 auto;font-size:14px}}
+.header{{background:linear-gradient(135deg,#fafafa,#fafafa);border:1px solid #e0e0e0;border-radius:12px;padding:24px;margin-bottom:20px}}
+.header h1{{font-size:1.6em;margin-bottom:8px;color:#111}}
 .header h1 .vs{{color:#666}}
-.header .bug-name{{color:#58a6ff}}
-.header .opp-name{{color:#f85149}}
-.header .meta{{color:#8b949e;font-size:0.9em;margin-top:4px}}
+.header .bug-name{{color:#2060c0}}
+.header .opp-name{{color:#b02020}}
+.header .meta{{color:#666;font-size:0.9em;margin-top:4px}}
 .series-score{{font-size:1.3em;margin-top:8px;font-weight:700}}
-.series-score .bug-s{{color:#58a6ff}}.series-score .opp-s{{color:#f85149}}
+.series-score .bug-s{{color:#2060c0}}.series-score .opp-s{{color:#b02020}}
 .game-tabs{{display:flex;gap:4px;margin-bottom:16px}}
-.game-tab{{background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;font-weight:600;font-size:0.95em}}
-.game-tab:hover{{background:#30363d}}
-.game-tab.active{{background:#161b22;color:#f0f6fc;border-bottom-color:#161b22}}
+.game-tab{{background:#f0f0f0;color:#666;border:1px solid #e0e0e0;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;font-weight:600;font-size:0.95em}}
+.game-tab:hover{{background:#e0e0e0}}
+.game-tab.active{{background:#fafafa;color:#111;border-bottom-color:#fafafa}}
 .game-tab .winner-dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px}}
-.game-tab .winner-dot.bug{{background:#58a6ff}}.game-tab .winner-dot.opp{{background:#f85149}}
+.game-tab .winner-dot.bug{{background:#2060c0}}.game-tab .winner-dot.opp{{background:#b02020}}
 .game-panel{{display:none}}.game-panel.active{{display:block}}
 .hands{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}}
-.hand-box{{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}}
-.hand-box h3{{font-size:0.85em;color:#8b949e;margin-bottom:8px}}
-.hand-box.bug{{border-left:3px solid #58a6ff}}.hand-box.opp{{border-left:3px solid #f85149}}
-.pill{{display:inline-block;background:#21262d;border:1px solid #30363d;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#e3b341}}
+.hand-box{{background:#fafafa;border:1px solid #e0e0e0;border-radius:8px;padding:12px}}
+.hand-box h3{{font-size:0.85em;color:#666;margin-bottom:8px}}
+.hand-box.bug{{border-left:3px solid #2060c0}}.hand-box.opp{{border-left:3px solid #b02020}}
+.pill{{display:inline-block;background:#f0f0f0;border:1px solid #e0e0e0;border-radius:12px;padding:2px 10px;margin:2px;font-size:0.8em;font-family:'Fira Code','Consolas',monospace;color:#854f0b}}
 .controls{{display:flex;gap:8px;margin-bottom:16px}}
-.controls button{{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}}
-.controls button:hover{{background:#30363d}}
-.life-chart{{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:20px}}
-.life-chart h3{{font-size:0.85em;color:#8b949e;margin-bottom:12px}}
+.controls button{{background:#f0f0f0;color:#222;border:1px solid #e0e0e0;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:0.85em}}
+.controls button:hover{{background:#e0e0e0}}
+.life-chart{{background:#fafafa;border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin-bottom:20px}}
+.life-chart h3{{font-size:0.85em;color:#666;margin-bottom:12px}}
 .life-chart svg{{width:100%;height:80px}}
-.turn{{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}}
-.turn.bug{{border-left:3px solid #58a6ff}}.turn.opp{{border-left:3px solid #f85149}}
-.turn.active{{border-color:#e3b341}}
+.turn{{background:#fafafa;border:1px solid #e0e0e0;border-radius:8px;margin-bottom:8px;overflow:hidden;transition:all 0.2s}}
+.turn.bug{{border-left:3px solid #2060c0}}.turn.opp{{border-left:3px solid #b02020}}
+.turn.active{{border-color:#854f0b}}
 .turn-header{{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}}
-.turn-header:hover{{background:#1c2333}}
+.turn-header:hover{{background:#fafafa}}
 .turn-header .left{{display:flex;align-items:center;gap:12px}}
 .turn-header .tnum{{font-weight:700;font-size:1.1em;min-width:36px}}
-.turn-header .tnum.bug{{color:#58a6ff}}.turn-header .tnum.opp{{color:#f85149}}
+.turn-header .tnum.bug{{color:#2060c0}}.turn-header .tnum.opp{{color:#b02020}}
 .turn-header .player{{font-weight:600;font-size:0.9em;padding:2px 8px;border-radius:4px}}
-.turn-header .player.bug{{background:#0d2847;color:#58a6ff}}.turn-header .player.opp{{background:#3d1418;color:#f85149}}
-.turn-header .life{{font-size:0.9em;color:#8b949e}}
-.turn-header .life b{{color:#f0f6fc}}
-.turn-header .arrow{{color:#484f58;transition:transform 0.2s;font-size:0.8em}}
+.turn-header .player.bug{{background:#e8f0ff;color:#2060c0}}.turn-header .player.opp{{background:#f0c8c8;color:#b02020}}
+.turn-header .life{{font-size:0.9em;color:#666}}
+.turn-header .life b{{color:#111}}
+.turn-header .arrow{{color:#888;transition:transform 0.2s;font-size:0.8em}}
 .turn.open .arrow{{transform:rotate(90deg)}}
-.turn-body{{display:none;padding:0 16px 16px;border-top:1px solid #21262d}}
+.turn-body{{display:none;padding:0 16px 16px;border-top:1px solid #f0f0f0}}
 .turn.open .turn-body{{display:block}}
-.section-label{{font-size:0.75em;text-transform:uppercase;letter-spacing:1px;color:#484f58;margin:12px 0 6px}}
+.section-label{{font-size:0.75em;text-transform:uppercase;letter-spacing:1px;color:#888;margin:12px 0 6px}}
 .hand-pills{{margin-bottom:4px}}
 .play{{padding:6px 0;display:flex;gap:8px;align-items:flex-start}}
-.play .step{{color:#484f58;font-size:0.85em;min-width:20px;text-align:right;padding-top:1px}}
-.play .action{{font-family:'Fira Code','Consolas',monospace;font-size:0.85em;color:#c9d1d9;flex:1}}
-.play .action.key{{color:#e3b341;font-weight:600}}
-.play .action.counter{{color:#f85149;text-decoration:line-through;opacity:0.7}}
-.play .reasoning{{font-size:0.8em;color:#6e7681;font-style:italic;margin-left:4px;display:none}}
+.play .step{{color:#888;font-size:0.85em;min-width:20px;text-align:right;padding-top:1px}}
+.play .action{{font-family:'Fira Code','Consolas',monospace;font-size:0.85em;color:#222;flex:1}}
+.play .action.key{{color:#854f0b;font-weight:600}}
+.play .action.counter{{color:#b02020;text-decoration:line-through;opacity:0.7}}
+.play .reasoning{{font-size:0.8em;color:#888;font-style:italic;margin-left:4px;display:none}}
 body.show-reasoning .play .reasoning{{display:inline}}
-.reasoning-toggle{{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#21262d;border:1px solid #30363d;border-radius:4px;cursor:pointer;font-size:0.8em;color:#8b949e;user-select:none;margin-left:8px}}
-.reasoning-toggle:hover{{background:#2d333b;color:#c9d1d9}}
-body.show-reasoning .reasoning-toggle{{background:#1f6feb30;color:#58a6ff;border-color:#58a6ff60}}
+.reasoning-toggle{{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#f0f0f0;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;font-size:0.8em;color:#666;user-select:none;margin-left:8px}}
+.reasoning-toggle:hover{{background:#e8e8e8;color:#222}}
+body.show-reasoning .reasoning-toggle{{background:#2060c030;color:#2060c0;border-color:#2060c060}}
 .reasoning-toggle::before{{content:"·";font-size:1.4em;line-height:0}}
 body.show-reasoning .reasoning-toggle::before{{content:"✓"}}
 .play .cat-badge{{font-size:0.65em;text-transform:uppercase;letter-spacing:0.5px;padding:1px 5px;border-radius:3px;font-weight:600;margin-right:4px;font-family:'Segoe UI',system-ui,sans-serif;min-width:50px;text-align:center;display:inline-block}}
-.cat-draw{{background:#1a1a2e;color:#8b8bb8}}.cat-land{{background:#0d2611;color:#7ee787}}.cat-combat{{background:#3d1418;color:#f85149}}.cat-interact{{background:#2d1b4e;color:#d2a8ff}}
-.cat-discard{{background:#3d2e14;color:#e3b341}}.cat-removal{{background:#3d1418;color:#ff7b72}}.cat-combo{{background:#4a1942;color:#f778ba}}.cat-spell{{background:#0d2847;color:#58a6ff}}
-.cat-trigger{{background:#2a2000;color:#d29922}}.cat-cantrip{{background:#0a2540;color:#79c0ff}}.cat-mana{{background:#1a2e1a;color:#56d364}}.cat-other{{background:#1c1c1c;color:#6e7681}}
-.cat-fetch{{background:#2a1a3a;color:#a78bfa}}.cat-counter{{background:#2d1b4e;color:#d2a8ff}}.cat-death{{background:#3a1a1a;color:#f85149}}.cat-exile{{background:#2a1a3a;color:#a78bfa}}
-.cat-sba{{background:#2a2a2a;color:#8b949e}}.cat-pw{{background:#1a3a3a;color:#22d3ee}}.cat-damage{{background:#3a1a1a;color:#f85149}}.cat-life{{background:#1a3a1a;color:#4ade80}}
+.cat-draw{{background:#f4f4f8;color:#5050a0}}.cat-land{{background:#e8f5e8;color:#1f7040}}.cat-combat{{background:#f0c8c8;color:#b02020}}.cat-interact{{background:#f0e8ff;color:#7030a0}}
+.cat-discard{{background:#fff4e0;color:#854f0b}}.cat-removal{{background:#f0c8c8;color:#b02020}}.cat-combo{{background:#f8e8f8;color:#c0408a}}.cat-spell{{background:#e8f0ff;color:#2060c0}}
+.cat-trigger{{background:#fff4e0;color:#854f0b}}.cat-cantrip{{background:#e8f0ff;color:#2060c0}}.cat-mana{{background:#e8f5e8;color:#1f7040}}.cat-other{{background:#f0f0f0;color:#888}}
+.cat-fetch{{background:#f0e8ff;color:#7030a0}}.cat-counter{{background:#f0e8ff;color:#7030a0}}.cat-death{{background:#ffe8e8;color:#b02020}}.cat-exile{{background:#f0e8ff;color:#7030a0}}
+.cat-sba{{background:#f4f4f4;color:#666}}.cat-pw{{background:#e0f0f0;color:#2060c0}}.cat-damage{{background:#ffe8e8;color:#b02020}}.cat-life{{background:#d8e8d8;color:#1f7040}}
 .board-grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}}
-.board-side{{background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px 10px}}
+.board-side{{background:#fff;border:1px solid #f0f0f0;border-radius:6px;padding:8px 10px}}
 .board-side h4{{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}}
-.board-side.bug h4{{color:#58a6ff}}.board-side.opp h4{{color:#f85149}}
-.combat-detail{{background:#1a0a0a;border:1px solid #3d1418;border-radius:6px;padding:8px 12px;margin:4px 0;font-family:'Fira Code','Consolas',monospace;font-size:0.82em}}
-.combat-detail .atk-line{{color:#e3b341;margin-bottom:2px}}.combat-detail .blk-line{{color:#d2a8ff;margin-bottom:2px}}
-.combat-detail .dmg-line{{color:#f85149;font-weight:600}}.combat-detail .death-line{{color:#f85149;opacity:0.8;font-style:italic}}
+.board-side.bug h4{{color:#2060c0}}.board-side.opp h4{{color:#b02020}}
+.combat-detail{{background:#fff0f0;border:1px solid #f0c8c8;border-radius:6px;padding:8px 12px;margin:4px 0;font-family:'Fira Code','Consolas',monospace;font-size:0.82em}}
+.combat-detail .atk-line{{color:#854f0b;margin-bottom:2px}}.combat-detail .blk-line{{color:#7030a0;margin-bottom:2px}}
+.combat-detail .dmg-line{{color:#b02020;font-weight:600}}.combat-detail .death-line{{color:#b02020;opacity:0.8;font-style:italic}}
 .board{{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}}
-.creature-badge{{background:#0d2847;border:1px solid #1f3d5c;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#58a6ff}}
-.creature-badge .pt{{color:#e3b341;font-weight:700;margin-left:4px}}
-.creature-badge .sick{{color:#f85149;font-size:0.7em}}
-.land-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#7ee787}}
+.creature-badge{{background:#e8f0ff;border:1px solid #e8f0ff;border-radius:6px;padding:4px 10px;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#2060c0}}
+.creature-badge .pt{{color:#854f0b;font-weight:700;margin-left:4px}}
+.creature-badge .sick{{color:#b02020;font-size:0.7em}}
+.land-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#1f7040}}
 .perm-list{{font-family:'Fira Code','Consolas',monospace;font-size:0.8em}}
-.art-list{{color:#e3b341}}
-.ench-list{{color:#d2a8ff}}
-.pw-list{{color:#79c0ff}}
-.gy-list{{color:#6e7681;font-size:0.75em}}
+.art-list{{color:#854f0b}}
+.ench-list{{color:#7030a0}}
+.pw-list{{color:#2060c0}}
+.gy-list{{color:#888;font-size:0.75em}}
 .mull-step{{display:flex;align-items:center;gap:8px;margin:6px 0 2px;font-size:0.8em}}
-.mull-label{{color:#8b949e;font-weight:600}}
-.keep-tag{{color:#3fb950;font-weight:700;font-size:0.85em}}
-.mull-tag{{color:#f85149;font-weight:700;font-size:0.85em}}
+.mull-label{{color:#666;font-weight:600}}
+.keep-tag{{color:#1f7040;font-weight:700;font-size:0.85em}}
+.mull-tag{{color:#b02020;font-weight:700;font-size:0.85em}}
 .mull-pills{{opacity:0.5;margin:2px 0}}
 .mull-pills .pill{{font-size:0.7em;text-decoration:line-through}}
-.mull-reason{{font-size:0.75em;color:#f85149;margin:2px 0 8px;font-style:italic;padding-left:4px;border-left:2px solid #f8514930}}
-.hand-analysis{{font-size:0.75em;color:#3fb950;margin-top:6px;padding:4px 8px;background:#3fb95010;border-radius:4px;border-left:2px solid #3fb95040}}
-.turn-narrative{{font-size:0.8em;color:#d2a8ff;background:#d2a8ff08;border-left:2px solid #d2a8ff40;padding:4px 10px;margin:8px 0;border-radius:0 4px 4px 0;font-style:italic}}
-.result{{background:linear-gradient(135deg,#161b22,#1c2333);border:2px solid #30363d;border-radius:12px;padding:24px;text-align:center;margin-top:20px}}
+.mull-reason{{font-size:0.75em;color:#b02020;margin:2px 0 8px;font-style:italic;padding-left:4px;border-left:2px solid #b0202030}}
+.hand-analysis{{font-size:0.75em;color:#1f7040;margin-top:6px;padding:4px 8px;background:#1f704010;border-radius:4px;border-left:2px solid #1f704040}}
+.turn-narrative{{font-size:0.8em;color:#7030a0;background:#7030a008;border-left:2px solid #7030a040;padding:4px 10px;margin:8px 0;border-radius:0 4px 4px 0;font-style:italic}}
+.result{{background:linear-gradient(135deg,#fafafa,#fafafa);border:2px solid #e0e0e0;border-radius:12px;padding:24px;text-align:center;margin-top:20px}}
 .result h2{{font-size:1.8em;margin-bottom:8px}}
-.result h2.bug-win{{color:#58a6ff}}.result h2.opp-win{{color:#f85149}}
-.result .reason{{color:#8b949e;font-size:1em;margin-bottom:12px}}
-.result .stats{{color:#6e7681;font-size:0.9em}}
-.kbd{{font-size:0.75em;color:#6e7681;margin-left:auto}}
+.result h2.bug-win{{color:#2060c0}}.result h2.opp-win{{color:#b02020}}
+.result .reason{{color:#666;font-size:1em;margin-bottom:12px}}
+.result .stats{{color:#888;font-size:0.9em}}
+.kbd{{font-size:0.75em;color:#888;margin-left:auto}}
 </style></head><body>
 """)
 
@@ -536,7 +536,7 @@ body.show-reasoning .reasoning-toggle::before{{content:"✓"}}
 
         # Opening hands with mulligan history
         play_str = 'ON THE PLAY' if g['bug_goes_first'] else 'ON THE DRAW'
-        h.append(f'<div class="meta" style="margin-bottom:12px;color:#8b949e">{html.escape(pro_label)} is {play_str} &nbsp;|&nbsp; Seed: {g["seed"]}</div>')
+        h.append(f'<div class="meta" style="margin-bottom:12px;color:#666">{html.escape(pro_label)} is {play_str} &nbsp;|&nbsp; Seed: {g["seed"]}</div>')
         h.append(f'<div class="hands">')
         # Protagonist mulligan history
         h.append(f'<div class="hand-box bug"><h3>{html.escape(pro_label)} (mull {g["bug_mulls"]})</h3>')
@@ -586,12 +586,12 @@ body.show-reasoning .reasoning-toggle::before{{content:"✓"}}
                 px = (i-1)*40-20
                 pby = max(5, 75 - (max(lb[i-1],0)/22*70))
                 poy = max(5, 75 - (max(lo[i-1],0)/22*70))
-                h.append(f'<line x1="{px}" y1="{pby}" x2="{x}" y2="{by}" stroke="#58a6ff" stroke-width="2"/>')
-                h.append(f'<line x1="{px}" y1="{poy}" x2="{x}" y2="{oy}" stroke="#f85149" stroke-width="2"/>')
-            h.append(f'<circle cx="{x}" cy="{by}" r="3" fill="#58a6ff"/>')
-            h.append(f'<circle cx="{x}" cy="{oy}" r="3" fill="#f85149"/>')
-            h.append(f'<text x="{x}" y="{by-6}" text-anchor="middle" fill="#58a6ff" font-size="9">{lb[i]}</text>')
-            h.append(f'<text x="{x}" y="{oy+12}" text-anchor="middle" fill="#f85149" font-size="9">{lo[i]}</text>')
+                h.append(f'<line x1="{px}" y1="{pby}" x2="{x}" y2="{by}" stroke="#2060c0" stroke-width="2"/>')
+                h.append(f'<line x1="{px}" y1="{poy}" x2="{x}" y2="{oy}" stroke="#b02020" stroke-width="2"/>')
+            h.append(f'<circle cx="{x}" cy="{by}" r="3" fill="#2060c0"/>')
+            h.append(f'<circle cx="{x}" cy="{oy}" r="3" fill="#b02020"/>')
+            h.append(f'<text x="{x}" y="{by-6}" text-anchor="middle" fill="#2060c0" font-size="9">{lb[i]}</text>')
+            h.append(f'<text x="{x}" y="{oy+12}" text-anchor="middle" fill="#b02020" font-size="9">{lo[i]}</text>')
         h.append(f'</svg></div>')
 
         # Controls
@@ -625,10 +625,10 @@ body.show-reasoning .reasoning-toggle::before{{content:"✓"}}
             n_spells = sum(1 for p in td['plays'] if p.get('cat') in ('spell','cantrip'))
             n_interact = sum(1 for p in td['plays'] if p.get('cat') in ('interact','discard','removal'))
             n_combo = sum(1 for p in td['plays'] if p.get('cat') == 'combo')
-            if n_combat: summary_parts.append(f'<span style="color:#f85149;font-size:0.75em">⚔{n_combat}</span>')
-            if n_spells: summary_parts.append(f'<span style="color:#58a6ff;font-size:0.75em">🃏{n_spells}</span>')
-            if n_interact: summary_parts.append(f'<span style="color:#d2a8ff;font-size:0.75em">🛡{n_interact}</span>')
-            if n_combo: summary_parts.append(f'<span style="color:#f778ba;font-size:0.75em">★{n_combo}</span>')
+            if n_combat: summary_parts.append(f'<span style="color:#b02020;font-size:0.75em">⚔{n_combat}</span>')
+            if n_spells: summary_parts.append(f'<span style="color:#2060c0;font-size:0.75em">🃏{n_spells}</span>')
+            if n_interact: summary_parts.append(f'<span style="color:#7030a0;font-size:0.75em">🛡{n_interact}</span>')
+            if n_combo: summary_parts.append(f'<span style="color:#c0408a;font-size:0.75em">★{n_combo}</span>')
             if summary_parts:
                 h.append(f'<span style="margin-left:8px">{" ".join(summary_parts)}</span>')
             h.append(f'</div><span class="arrow">&#9654;</span></div>')
@@ -679,7 +679,7 @@ body.show-reasoning .reasoning-toggle::before{{content:"✓"}}
                 if 'dies' in p['text'].lower():
                     h.append(f'<div class="combat-detail"><div class="death-line">☠ {p["text"]}</div></div>')
             if not td['plays']:
-                h.append(f'<div class="play"><span class="step">-</span><span class="action" style="color:#484f58">(no plays)</span></div>')
+                h.append(f'<div class="play"><span class="step">-</span><span class="action" style="color:#888">(no plays)</span></div>')
 
             # Strategic narrative
             narrative = td.get('narrative', '')
@@ -701,7 +701,7 @@ body.show-reasoning .reasoning-toggle::before{{content:"✓"}}
                 sick = ' <span class="sick">(sick)</span>' if c['sick'] else ''
                 h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span>{sick}</span>')
             if not td['creatures']:
-                h.append(f'<span style="color:#484f58;font-size:0.8em">no creatures</span>')
+                h.append(f'<span style="color:#888;font-size:0.8em">no creatures</span>')
             h.append(f'</div>')
             h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td["lands"]) if td["lands"] else "none"}</div>')
             if td.get('artifacts'):
@@ -724,7 +724,7 @@ body.show-reasoning .reasoning-toggle::before{{content:"✓"}}
                 sick = ' <span class="sick">(sick)</span>' if c['sick'] else ''
                 h.append(f'<span class="creature-badge">{html.escape(c["name"])}<span class="pt">{c["power"]}/{c["toughness"]}</span>{sick}</span>')
             if not td.get('opp_creatures', []):
-                h.append(f'<span style="color:#484f58;font-size:0.8em">no creatures</span>')
+                h.append(f'<span style="color:#888;font-size:0.8em">no creatures</span>')
             h.append(f'</div>')
             h.append(f'<div class="land-list" style="margin-top:4px">{", ".join(html.escape(l) for l in td.get("opp_lands", [])) if td.get("opp_lands") else "none"}</div>')
             if td.get('opp_artifacts'):
