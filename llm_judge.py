@@ -97,6 +97,37 @@ Also output a final "overall: <grade> — <summary>" line.
 """
 
 
+def build_prompt(trace: dict) -> str:
+    """Build the LLM grading prompt from a trace dict.
+
+    Importable helper so downstream consumers (e.g. scripts/grade_traces.py)
+    don't duplicate the templating logic.
+    """
+    decisions_block = '\n'.join(
+        f"  T{x['turn']} [{x['deck']}]"
+        + (f" [phase:{x['phase']}]" if x.get('phase') else '')
+        + f" chose {x['chosen']} from {x['candidates']} — {x['reason']}"
+        for x in trace['strategic_decisions']
+    ) or '  (no decisions logged)'
+    log_excerpt = '\n'.join(trace['full_log'][:40])
+
+    return GRADING_PROMPT_TEMPLATE.format(
+        matchup=trace['matchup'],
+        seed=trace['seed'],
+        winner=trace['winner'],
+        win_reason=trace['win_reason'],
+        kill_turn=trace.get('kill_turn') or 'N/A',
+        game_length=trace['game_length'],
+        deck1=trace['deck1'],
+        deck2=trace['deck2'],
+        p1_hand=', '.join(trace['opening_hands']['p1']),
+        p2_hand=', '.join(trace['opening_hands']['p2']),
+        n_decisions=len(trace['strategic_decisions']),
+        decisions_block=decisions_block,
+        log_excerpt=log_excerpt,
+    )
+
+
 def collect(deck1, deck2, seeds):
     """Run one game per seed, dump trace to JSON. Returns list of paths written."""
     out_paths = []
@@ -171,33 +202,12 @@ def list_traces():
 
 
 def bundle(paths):
-    """Write one LLM-ready prompt per trace to results/traces/bundle_<name>.txt."""
+    """Write one LLM-ready prompt per trace to results/traces/<name>_prompt.txt."""
     written = []
     for path in paths:
         with open(path) as f:
             d = json.load(f)
-        decisions_block = '\n'.join(
-            f"  T{x['turn']} [{x['deck']}]"
-            + (f" [phase:{x['phase']}]" if x.get('phase') else '')
-            + f" chose {x['chosen']} from {x['candidates']} — {x['reason']}"
-            for x in d['strategic_decisions']
-        ) or '  (no decisions logged)'
-        log_excerpt = '\n'.join(d['full_log'][:40])
-        prompt = GRADING_PROMPT_TEMPLATE.format(
-            matchup=d['matchup'],
-            seed=d['seed'],
-            winner=d['winner'],
-            win_reason=d['win_reason'],
-            kill_turn=d['kill_turn'],
-            game_length=d['game_length'],
-            deck1=d['deck1'],
-            deck2=d['deck2'],
-            p1_hand=', '.join(d['opening_hands']['p1']),
-            p2_hand=', '.join(d['opening_hands']['p2']),
-            n_decisions=len(d['strategic_decisions']),
-            decisions_block=decisions_block,
-            log_excerpt=log_excerpt,
-        )
+        prompt = build_prompt(d)
         out_path = Path(path).with_name(Path(path).stem + '_prompt.txt')
         with open(out_path, 'w') as f:
             f.write(prompt)
