@@ -4884,11 +4884,35 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                           for c in opponent.creatures)
     if thalia_on_table and (len(rituals) >= 2 or (led_castable and len(rituals) >= 1)):
         storm_desperate = True
-    # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
-    opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
-    opp_blue_pitch = any(c for c in opponent.hand
-                         if 'U' in getattr(c, 'colors', set()) and c.tag not in ('fow', 'fon'))
-    opp_has_free_counter = opp_fow and opp_blue_pitch
+    # Check if opponent likely has free counter via Bayesian Hand Inference (§9 #8).
+    # Replaces the earlier ad-hoc peek at opponent.hand (which was technically cheating)
+    # with a probability estimate derived from opponent's deck identity + observed draws.
+    from bhi import HandBelief
+    opp_deck_key = gs.p2_deck if opponent is gs.p2 else gs.p1_deck
+    # Cache belief on gs; invalidate when opp hand size changes or deck key differs.
+    _bhi_cache = getattr(gs, '_bhi_p2', None)
+    if (_bhi_cache is None or _bhi_cache.get('deck') != opp_deck_key
+            or _bhi_cache.get('hand_size') != len(opponent.hand)
+            or _bhi_cache.get('turn') != gs.turn):
+        belief = HandBelief(opp_deck_key,
+                            cards_drawn=7 + max(0, gs.turn - 1),
+                            cards_in_hand=len(opponent.hand))
+        gs._bhi_p2 = {'deck': opp_deck_key, 'hand_size': len(opponent.hand),
+                      'turn': gs.turn, 'belief': belief}
+    else:
+        belief = _bhi_cache['belief']
+    opp_has_free_counter = belief.p_free_counter > 0.4
+    # For debugging: log BHI probability alongside the old scan-based comparison.
+    _scan_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
+    _scan_blue_pitch = any(c for c in opponent.hand
+                           if 'U' in getattr(c, 'colors', set()) and c.tag not in ('fow', 'fon'))
+    _scan_free_counter = _scan_fow and _scan_blue_pitch
+    gs.strat_log.log_decision(
+        gs.turn, 'storm',
+        candidates=['bhi_free_counter'],
+        chosen=f'p={belief.p_free_counter:.2f}',
+        reason=f'bhi_thinks_opp_has_free_counter={opp_has_free_counter} '
+               f'scan_said={_scan_free_counter}')
     # Need enough mana sources to support a ritual chain (land mana, not just LED)
     has_mana_base = total_mana >= 1 or len(rituals) >= 1
     safe_to_combo = (veil_protecting or storm_desperate or
@@ -5211,11 +5235,17 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
 def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
     """UR Delver/Aggro: Delver of Secrets, Ragavan, Dragon's Rage Channeler, Murktide.
     Strategy: deploy cheap threats T1-2, protect with Daze/FoW, Bolt face to close."""
+    # Clock-delta snapshot (clock.py §9 #4 adoption). Our clock is turns-to-
+    # lethal on opp; their clock is turns-to-lethal on us. Visible in traces.
+    from clock import board_clock as _board_clock
+    our_clock = _board_clock(player.creatures, opponent.creatures, opponent.life)
+    their_clock = _board_clock(opponent.creatures, player.creatures, player.life)
     gs.strat_log.log_decision(
         gs.turn, 'ur_aggro',
         candidates=['cantrip', 'ragavan', 'drc', 'delver', 'murktide', 'bolt', 'pass'],
         chosen='entry',
-        reason=f"mana={total_mana}, creatures={len(player.creatures)}, opp_life={opponent.life}")
+        reason=(f"mana={total_mana}, creatures={len(player.creatures)}, "
+                f"opp_life={opponent.life}, our_clock={our_clock}, their_clock={their_clock}"))
 
     # Cantrips — dig for threats early
     can = next((c for c in player.hand if c.is_cantrip and total_mana >= 1), None)
@@ -5358,9 +5388,13 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ Fury {label} (4 divided) — kills: {[c.name for c in killed]}", True)
         update_goyf(gs); gs.state_based_actions()
 
-    # Thoughtseize — cast early (T1-T3) unless Grief+Ephemerate already stripped
+    # Thoughtseize — cast early (T1-T3) unless Grief+Ephemerate already stripped.
+    # Skip vs Burn: -2 life for marginal value (4-of burn spells are fungible) and
+    # we desperately need our life total vs their clock.
+    opp_deck_key = gs.p2_deck if opponent is gs.p2 else gs.p1_deck
+    vs_burn = (opp_deck_key == 'burn')
     ts = player.find_tag('ts')
-    if ts and opp_can_cast(ts, total_mana, gs, caster=player) and not (grief and ephemerate) and gs.turn <= 3:
+    if ts and opp_can_cast(ts, total_mana, gs, caster=player) and not (grief and ephemerate) and gs.turn <= 3 and not vs_burn:
         veil_b = opponent.find_tag('vos')
         if veil_b and can_afford(opponent, veil_b.mana_cost):
             opponent.remove_from_hand(veil_b); opponent.add_to_grave(veil_b)
