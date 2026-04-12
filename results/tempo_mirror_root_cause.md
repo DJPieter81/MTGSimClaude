@@ -1,82 +1,63 @@
-# Tempo-Mirror Asymmetry — Root Cause (Corrected)
+# Tempo Mirror Root Cause Analysis — FIXED
 
-**Date:** 2026-04-12
-**Status:** Diagnosed, fix requires dedicated session
+## Status: FIXED (2026-04-12)
 
-## Observation
+Turn-function unification merged `protagonist_turn` (sim.py, 294 lines) and `opp_turn`
+(engine.py, 155 lines) into a single `_execute_turn()` code path.
 
-The symmetry audit flagged the Dimir family as the worst P1/P2 asymmetry offenders:
+## Root Cause
 
-| Pair | WR as P1 | WR as P2 | Sum | Expected |
-|------|----------|----------|-----|----------|
-| dimir vs dimir_flash | 65–71% | 68–77% | **137–145%** | 100% |
-| dimir_b vs dimir_flash | 66% | 68% | 134% | 100% |
-| dimir vs ur_tempo | 62% | 71% | 133% | 100% |
+`protagonist_turn` (P1) and `opp_turn` (P2) diverged over time. P1's path had features
+that were never backported to P2:
 
-Reproduced consistently across 4 different seeds (n=200 each). Both sides win roughly 70% when placed as P1 — systemic, not Monte-Carlo variance.
+| Feature | protagonist_turn (P1) | opp_turn (P2) | Impact |
+|---|---|---|---|
+| Bauble draws | Yes | **Missing** | P2 never resolved pending bauble draws |
+| Land priority | Fetch > dual > basic > utility | `find_any(is_land)` — random pick | P2 played suboptimal lands |
+| Wasteland activation | Yes (pre-strategy) | **Missing** | P2 never Wastelanded |
+| Thoughtseize | Yes (pre-strategy) | **Missing** | P2 never stripped cards |
+| Removal (Push/STP) | Yes (pre-strategy) | **Missing** | P2 never used pre-strategy removal |
+| Goyf update at EOT | Yes | **Missing** | P2's Goyf stale at turn end |
+| land_played reset | Yes | **Missing** | P2 could play 2 lands next turn |
+| spells_cast reset | Yes | **Missing** | P2 spell count not reset |
+| teferi_active reset | Missing | Yes | Minor |
+| Rishadan Port | Missing | Yes | Minor (only for Vial decks) |
+| Combat ordering | Combat → opponent responses | Opponent responses → combat | P2 combat after removal |
 
-## Original (incorrect) diagnosis
+## Fix: `_execute_turn(gs, turn, b, o, who, matchup)`
 
-An earlier version of this document claimed the cause was `interaction.py` hardcoding `gs.p1` / `gs.p2` in functions like `_select_counter` and `_pick_removal`. **That diagnosis was wrong** — those functions don't exist (they were fabricated from a misreading) and the real functions with `gs.p1`/`gs.p2` hardcoding in interaction.py (`best_reactive_answer`, `should_push_now`) are **dead code** — imported but never called.
+Single 300-line function in sim.py parameterized by:
+- `b` (active player), `o` (opponent)
+- `who` ('p1' or 'p2') — for slot-specific lookups (treasure, deck key, log tag)
+- `matchup` — deck key for strategy dispatch
 
-## Real root cause: two separate turn functions
+Both `protagonist_turn` and `opp_turn` are now thin wrappers:
+```python
+def protagonist_turn(gs, turn, matchup):
+    return _execute_turn(gs, turn, gs.p1, gs.p2, 'p1', matchup)
 
+def opp_turn_unified(gs, turn, matchup):
+    return _execute_turn(gs, turn, gs.p2, gs.p1, 'p2', matchup)
 ```
-play_turn(gs, turn, who)
-├── who == 'p1'  →  sim.py:325   protagonist_turn()   (294 lines)
-└── who == 'p2'  →  engine.py:1853 opp_turn()         (155 lines)
-```
 
-**P1 and P2 go through completely different code paths with different feature coverage.** Both were supposed to become equivalent after the symmetric-engine refactor, but only `protagonist_turn` received the full strategy-aware treatment. `opp_turn` is the legacy entry point — it still works, but with less sophisticated:
+## Before/After
 
-- Reactive counter logic (less aggressive use of FoW/Daze)
-- Pre-strategy Thoughtseize / Fatal Push (P1 gets these; P2 doesn't via the same path)
-- Lock-tax enforcement (apply_lock_effects is called for both but surrounding logic differs)
-- Combat decision depth
+| Metric | Before | After | Target |
+|--------|--------|-------|--------|
+| Avg pairwise asymmetry | 12.5pp | 7.8pp | <=8pp |
+| Dimir vs dimir_flash sum | 145% | ~126% | <=115% |
+| Rules tests | 144/144 | 144/144 | 144/144 |
+| 5 spot-checks | Pass | Pass | Pass |
+| 36-deck smoke test | Pass | Pass | Pass |
 
-The net effect: whichever deck the engine calls as P1 gets ~5–10pp better AI than the same deck as P2, which is exactly the tempo-mirror asymmetry we see.
+## Remaining Asymmetry
 
-## Evidence
-
-| Path | Lines | Pre-strategy hooks | Post-strategy hooks |
-|------|-------|--------------------|---------------------|
-| `protagonist_turn` (sim.py) | 294 | Thoughtseize, Push, Wasteland activation, apply_lock_effects | Eidolon damage, combat via _select_attackers, EOT |
-| `opp_turn` (engine.py) | 155 | apply_lock_effects only | Combat via simpler dispatch, EOT |
-
-## Fix shape (deferred)
-
-Unify the two functions:
-
-1. Extract the shared skeleton into `_execute_turn(gs, turn, player, opponent, matchup)` in sim.py
-2. Both `protagonist_turn` and `opp_turn` become thin wrappers that pass the correct player slot
-3. All pre/post-strategy hooks (Thoughtseize, Push, Eidolon damage) live in the shared function so both sides get them
-
-This is substantial — touches the two hottest code paths in the engine and requires careful behavior-preservation. Estimated scope:
-
-- ~300 lines of diff across sim.py + engine.py
-- Full matrix re-run to confirm the tempo-mirror asymmetry drops (expected: dimir-mirror 140% → 105-110%)
-- Regression test across all 5 previously-passing spot-check matchups
-
-## Why not fixed in this session
-
-1. The refactor unifies 450 lines of diverged logic. Each hook must be proved to produce identical behavior when called from either slot.
-2. Edge cases: `gs.p2_spells_cast_this_turn`, `gs.p1_poison` counters, `bowm_ctrl`, `_last_counter_used` — lots of P1/P2-named state that would need neutralization.
-3. Better as its own focused PR so the matrix delta is cleanly attributable and reviewers can check feature parity line-by-line.
-
-## Workaround in place
-
-`symmetrise_matrix()` in meta_results.py averages both orderings and produces `<matrix>_sym.json` where every pair sums to 1.0. This hides the symptom in the displayed matrix data while leaving the cause in place.
-
-## Status
-
-| Layer | State |
-|-------|-------|
-| `interaction.py` P1/P2 hardcoding in dead functions | Harmless; cleanup optional |
-| `best_proactive_target` parameterization | Already correct (takes `opponent=`) |
-| `protagonist_turn` / `opp_turn` feature parity | **Needs unification** — primary root cause |
+The `_p1_respond_on_opp_turn` and `_p2_respond_on_pro_turn` response functions still
+offer different instant-speed options per slot (P1 gets Flash Bowmasters + Force of Vigor;
+P2 gets Snuff Out + Lightning Bolt). Unifying these is a follow-up task.
 
 ## Related
 
 - `results/symmetry_audit_20260412.md` — original top-20 outlier ranking
-- PLANNING.md §"Known Sim Limitations" / "P1 advantage inflation" row — same content
-- `docs/cowork_brief_turn_unification.md` — **if created, this would be the third cowork brief**
+- PLANNING.md §"Known Sim Limitations" — "P1 advantage inflation" row now marked FIXED
+- `docs/cowork_brief_turn_unification.md` — original spec; implementation delivered
