@@ -215,3 +215,34 @@ python3 -c "from sim import run_game; r=run_game('burn','dimir',verbose=True); [
 ## Downgraded: Oops vs Burn — NOT a strategy bug
 
 Oops T1 kill rate = 38% (correct). G1 WR = 44% (reasonable). Bo3 WR = 30% is a sideboard issue — Oops lacks SB hate vs Burn (needs Leyline of Sanctity). Not a P0 strategy bug.
+
+## Session 2026-04-12 (afternoon) — Burn/Storm/Oops/Doomsday audit
+
+### Fixes pushed (8 commits)
+1. **Bo3 case sensitivity** — `BURN != burn` miscounted wins as losses
+2. **Burn fetchlands** — 0 fetches → 6, Fireblast 0%→34%, vs Affinity +15pp
+3. **Burn Mountain subtypes** — `subtypes={'Mountain'}` missing, fetches couldn't find basics
+4. **Burn Fireblast condition** — T6+ opp≤8 → T4+ opp≤10
+5. **Storm multi-cantrip** — cast ALL affordable cantrips, not just 1. +6pp vs D&T
+6. **Oops combo gate** — only crack Petals/Guides when combo path exists. +19pp overall
+7. **Doomsday ritual timing** — only cast rituals when DD in hand. +15pp vs D&T
+8. **Deck guide skill** — merged from Modern session, adapted to Legacy CLI
+
+### Matrix runs
+- `matrix_20260412_150805.json` — post Burn+Storm, pre Oops/DD
+- `matrix_20260412_152929.json` — post all fixes, canonical for this session
+
+### Remaining P0
+- Storm vs D&T still 43% (expected 55-80%) — needs ritual chain under Thalia + bounce priority
+- Painter 35% — needs Karn lockout (Cowork Brief B)
+- Prison 44% — needs lock enforcement (Cowork Brief B)
+
+### Additional fix: Reanimator combo gate (same session)
+- Gate Petals/Rituals behind combo_path check (has reanimate spell + target or entomb)
+- vs Dimir: ~40% → 54% (+14pp)
+- Careful Study left ungated (discarding fatties to GY is always useful)
+
+### Checked and NOT broken:
+- Show and Tell: already gates Petal crack behind combo check (line 3455). 40% stuck is legitimate (needs 2 specific pieces).
+- TES: 39% stuck, but uses registry dispatch — needs separate audit.
+- Goblins/Lands/UR Aggro: proxy strategies, no full strategy to fix.
