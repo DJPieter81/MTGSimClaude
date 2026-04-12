@@ -23,9 +23,11 @@ def _keep_ur_aggro(hand, matchup=''):
     lc = len(lands)
     threats = sum(1 for c in nonlands if c.is_creature())
     cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
-    # UR Aggro wants land + threat
+    # UR Aggro wants land + threat. Murktide Regent (CMC 7) makes 4-land hands
+    # playable — restricting to 3 lands max was causing P1 WR to collapse vs
+    # ur_delver (7.5% P1 / 29.5% P2 pre-fix, per symmetry audit).
     if len(hand) <= 5: return lc >= 1 and threats >= 1
-    return 1 <= lc <= 3 and (threats >= 1 or cantrips >= 2)
+    return 1 <= lc <= 4 and (threats >= 1 or cantrips >= 2)
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
 
