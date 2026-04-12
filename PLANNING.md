@@ -86,24 +86,24 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 
 All P0 accuracy blockers are addressed. Next session priorities are P1/P2.
 
-### P1 — Should Do
+### P1 — Should Do (each a dedicated cowork PR — briefs in `docs/`)
 
-1. **Fix interaction.py P1/P2 hardcoding** — root cause of tempo-mirror
-   asymmetry (dimir-vs-dimir_flash sums to 140%+). See
-   `results/tempo_mirror_root_cause.md`. Refactor `_select_counter`,
-   `_pick_removal`, `best_proactive_target` to take explicit us/them
-   params. ~30 edits, dedicated PR. Expected impact: dimir-mirror
-   asymmetry drops from ~140% to ~110%.
+1. **Unify `protagonist_turn` + `opp_turn`** — the REAL root cause of
+   tempo-mirror asymmetry. P1 goes through a 294-line function; P2
+   through a 155-line function with less feature coverage. See
+   `results/tempo_mirror_root_cause.md` and
+   `docs/cowork_brief_turn_unification.md`. Expected: 106 outlier pairs
+   → ≤60, dimir-mirror sum 145% → ≤115%.
 
 2. **Full Bo3 matrix** (PLANNING_REFERENCE §9 #5) — wire `run_any_bo3`
    into `run_meta_matrix`. Needs sideboard plans for ~22 full-strategy
-   decks. Single-matchup `--bo3` CLI already works as a prototype.
-   Dedicated cowork session.
+   decks. Single-matchup `--bo3` CLI is the prototype (commit 4ef0c55).
+   See `docs/cowork_brief_bo3_matrix.md`.
 
 3. **LLM judge execution** (PLANNING_REFERENCE §9 #7) — scaffold is
    in `llm_judge.py`; needs `scripts/grade_traces.py` that hits the
    Anthropic API and produces a markdown report. Needs API credentials.
-   Dedicated cowork session.
+   See `docs/cowork_brief_llm_judge.md`.
 
 ### P2 — Nice to Have
 
