@@ -777,11 +777,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                     c.power_mod = art_count
                     c.toughness_mod = art_count
 
-            # Credit Automaton for the artifact cast via Emry
-            for c in player.creatures:
-                if c.card.tag == 'automaton':
-                    c.power_mod = getattr(c, 'power_mod', 0) + 1
-                    c.toughness_mod = getattr(c, 'toughness_mod', 0) + 1
+            # (Automaton boost handled at end-of-strategy via artifacts_cast_this_turn)
 
     # ── 13b. Sink into Stupor — bounce blocker or discard mode ───────────────
     # Priority 1: bounce a big blocker (power >= 3) before combat
