@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bo3 Replay: BURN vs Storm</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#ffffff;color:#1f2328;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;max-width:920px;margin:0 auto;font-size:13px}
+.header{background:linear-gradient(135deg,#f0f4f8,#e8edf2);border:1px solid #d0d7de;border-radius:12px;padding:24px;margin-bottom:16px}
+.header h1{font-size:1.5em;margin-bottom:6px;color:#1f2328}
+.header h1 .vs{color:#9198a1}
+.header .bug-name{color:#0969da}
+.header .opp-name{color:#d1242f}
+.header .meta{color:#656d76;font-size:0.85em;margin-top:4px}
+.series-score{font-size:1.3em;margin-top:8px;font-weight:700}
+.series-score .bug-s{color:#0969da}.series-score .opp-s{color:#d1242f}
+.legend-box{background:#f6f8fa;border:1px solid #d0d7de;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:11px}
+.legend-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9198a1;margin-bottom:8px}
+.legend-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.leg-item{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.leg-label{color:#656d76;font-size:10px}
+.legend-note{margin-top:8px;font-size:10px;color:#9198a1;font-style:italic;border-top:1px solid #d0d7de;padding-top:6px}
+.game-tabs{display:flex;gap:4px;margin-bottom:0}
+.game-tab{background:#eaeef2;color:#656d76;border:1px solid #d0d7de;border-radius:8px 8px 0 0;padding:10px 20px;cursor:pointer;font-weight:600;font-size:0.9em;transition:background .15s}
+.game-tab:hover{background:#d0d7de}
+.game-tab.active{background:#ffffff;color:#1f2328;border-bottom-color:#ffffff}
+.game-tab .winner-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px}
+.game-tab .winner-dot.bug{background:#0969da}.game-tab .winner-dot.opp{background:#d1242f}
+.game-panel{display:none;background:#ffffff;border:1px solid #d0d7de;border-top:none;border-radius:0 8px 8px 8px;padding:16px;margin-bottom:16px}.game-panel.active{display:block}
+.hands{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.hand-box{background:#f6f8fa;border:1px solid #d0d7de;border-radius:8px;padding:12px}
+.hand-box h3{font-size:0.8em;color:#656d76;margin-bottom:8px;font-weight:600}
+.hand-box.bug{border-left:3px solid #0969da}.hand-box.opp{border-left:3px solid #d1242f}
+.pill{display:inline-block;background:#eaeef2;border:1px solid #d0d7de;border-radius:10px;padding:2px 8px;margin:2px;font-size:0.78em;font-family:'Fira Code','Consolas',monospace;color:#9a6700}
+.controls{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.controls button{background:#f6f8fa;color:#1f2328;border:1px solid #d0d7de;border-radius:5px;padding:5px 12px;cursor:pointer;font-size:0.82em}
+.controls button:hover{background:#eaeef2;border-color:#0969da}
+.life-chart{background:#f6f8fa;border:1px solid #d0d7de;border-radius:8px;padding:14px;margin-bottom:12px}
+.life-chart h3{font-size:0.82em;color:#656d76;margin-bottom:10px;font-weight:600}
+.life-chart svg{width:100%;height:80px}
+.turn{background:#f6f8fa;border:1px solid #d0d7de;border-radius:8px;margin-bottom:6px;overflow:hidden;transition:border-color .15s}
+.turn.bug{border-left:3px solid #0969da}.turn.opp{border-left:3px solid #d1242f}
+.turn.active{border-color:#bf8700!important}
+.turn-header{padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;transition:background .1s}
+.turn-header:hover{background:#eaeef2}
+.turn-header .left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.turn-header .tnum{font-weight:700;font-size:1.05em;min-width:32px;font-family:'Fira Code',monospace}
+.turn-header .tnum.bug{color:#0969da}.turn-header .tnum.opp{color:#d1242f}
+.turn-header .player{font-weight:600;font-size:0.82em;padding:2px 7px;border-radius:4px}
+.turn-header .player.bug{background:#ddf4ff;color:#0969da}.turn-header .player.opp{background:#ffebe9;color:#d1242f}
+.turn-header .life{font-size:0.85em;color:#656d76}
+.turn-header .life b{color:#1f2328}
+.hand-count{font-size:.75em;color:#9198a1;background:#eaeef2;padding:1px 5px;border-radius:3px;font-family:'Fira Code',monospace}
+.turn-header .arrow{color:#9198a1;transition:transform 0.2s;font-size:0.75em;flex-shrink:0}
+.turn.open .arrow{transform:rotate(90deg)}
+.turn-body{display:none;padding:0 14px 14px;border-top:1px solid #d0d7de}
+.turn.open .turn-body{display:block}
+.section-label{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;color:#9198a1;margin:10px 0 5px;font-weight:600}
+.hand-pills{margin-bottom:4px}
+.draw-row{margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.play{padding:5px 0;display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;border-bottom:1px solid #eaeef2}
+.play .step{color:#9198a1;font-size:0.82em;min-width:18px;text-align:right;padding-top:2px;flex-shrink:0}
+.play .action{font-family:'Fira Code','Consolas',monospace;font-size:0.82em;color:#1f2328;flex:1}
+.play .action.key{color:#9a6700;font-weight:600}
+.play .action.counter{color:#d1242f;text-decoration:line-through;opacity:0.7}
+.play .reasoning{font-size:0.75em;color:#656d76;font-style:italic;width:100%;padding:2px 0 2px 24px;margin-top:1px;border-left:2px solid #d0d7de;margin-left:24px;display:none}
+body.show-reasoning .play .reasoning{display:block}
+.reasoning-toggle{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#f6f8fa;border:1px solid #d0d7de;border-radius:4px;cursor:pointer;font-size:0.8em;color:#656d76;user-select:none;margin-left:8px}
+.reasoning-toggle:hover{background:#eaeef2;color:#1f2328}
+body.show-reasoning .reasoning-toggle{background:#ddf4ff;color:#0969da;border-color:#0969da60}
+.reasoning-toggle::before{content:"·";font-size:1.4em;line-height:0}
+body.show-reasoning .reasoning-toggle::before{content:"✓"}
+.play .cat-badge{font-size:0.62em;text-transform:uppercase;letter-spacing:0.5px;padding:1px 5px;border-radius:3px;font-weight:700;margin-right:3px;font-family:system-ui;min-width:46px;text-align:center;display:inline-block;flex-shrink:0}
+.cat-draw{background:#f0f0ff;color:#5a5a9a}.cat-land{background:#dafbe1;color:#1a7f37}.cat-combat{background:#ffebe9;color:#d1242f}.cat-interact{background:#f5f0ff;color:#8250df}
+.cat-discard{background:#fff8c5;color:#9a6700}.cat-removal{background:#ffebe9;color:#d1242f}.cat-combo{background:#fff0f8;color:#bf4b8a}.cat-spell{background:#ddf4ff;color:#0969da}
+.cat-trigger{background:#fff8c5;color:#9a6700}.cat-cantrip{background:#ddf4ff;color:#0969da}.cat-mana{background:#dafbe1;color:#1a7f37}.cat-other{background:#f6f8fa;color:#656d76}
+.cat-fetch{background:#f5f0ff;color:#6639ba}.cat-counter{background:#f5f0ff;color:#8250df}.cat-death{background:#ffebe9;color:#d1242f}.cat-exile{background:#f5f0ff;color:#6639ba}
+.cat-sba{background:#f6f8fa;color:#9198a1}.cat-pw{background:#ddf4ff;color:#0969da}.cat-damage{background:#ffebe9;color:#d1242f}.cat-life{background:#dafbe1;color:#1a7f37}
+.board-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.board-side{background:#ffffff;border:1px solid #d0d7de;border-radius:6px;padding:8px 10px}
+.board-side h4{font-size:0.7em;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
+.board-side.bug h4{color:#0969da}.board-side.opp h4{color:#d1242f}
+.combat-detail{background:#fff8f8;border:1px solid #f5b8b0;border-radius:5px;padding:6px 10px;margin:3px 0;font-family:'Fira Code','Consolas',monospace;font-size:0.8em;color:#1f2328}
+.combat-detail .atk-line{color:#9a6700;margin-bottom:2px}.combat-detail .blk-line{color:#8250df;margin-bottom:2px}
+.combat-detail .dmg-line{color:#d1242f;font-weight:600}.combat-detail .death-line{color:#d1242f;opacity:0.8;font-style:italic}
+.board{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.creature-badge{background:#ddf4ff;border:1px solid #a8d8f0;border-radius:5px;padding:3px 8px;font-family:'Fira Code','Consolas',monospace;font-size:0.78em;color:#0969da;display:inline-flex;align-items:center;gap:4px}
+.creature-badge .pt{color:#656d76;font-size:0.9em}
+.creature-badge .sick{color:#d1242f;font-size:0.7em}
+.land-list{font-family:'Fira Code','Consolas',monospace;font-size:0.78em;color:#1a7f37}
+.perm-list{font-family:'Fira Code','Consolas',monospace;font-size:0.78em}
+.art-list{color:#9a6700}
+.ench-list{color:#8250df}
+.pw-list{color:#0969da}
+.gy-list{color:#9198a1;font-size:0.72em}
+.mull-step{display:flex;align-items:center;gap:8px;margin:5px 0 2px;font-size:0.8em}
+.mull-label{color:#656d76;font-weight:600}
+.keep-tag{color:#1a7f37;font-weight:700;font-size:0.82em;padding:1px 6px;background:#dafbe1;border-radius:3px}
+.mull-tag{color:#d1242f;font-weight:700;font-size:0.82em;padding:1px 6px;background:#ffebe9;border-radius:3px}
+.mull-pills{opacity:0.5;margin:2px 0}
+.mull-pills .pill{font-size:0.7em;text-decoration:line-through}
+.mull-reason{font-size:0.75em;color:#d1242f;margin:2px 0 6px;font-style:italic;padding-left:6px;border-left:2px solid #f5b8b0}
+.hand-analysis{font-size:0.75em;color:#1a7f37;margin-top:5px;padding:3px 7px;background:#dafbe1;border-radius:3px;border-left:2px solid #4ac26b}
+.turn-narrative{font-size:0.8em;color:#8250df;background:#f5f0ff;border-left:2px solid #d2a8ff;padding:4px 10px;margin:8px 0;border-radius:0 4px 4px 0;font-style:italic}
+.play-response{background:#fff8e1;border-left:3px solid #bf8700;border-radius:0 4px 4px 0;padding:5px 6px;margin:2px 0}
+.respond-badge{font-size:.75em;font-weight:700;margin-right:6px;letter-spacing:.3px}
+.reason-toggle{color:#9198a1;font-size:1.1em;cursor:pointer;padding:0 4px;border-radius:3px;user-select:none;flex-shrink:0}.reason-toggle:hover{color:#1f2328;background:#eaeef2}.reason-toggle.open{color:#0969da}
+.result{background:linear-gradient(135deg,#f0f4f8,#e8edf2);border:2px solid #d0d7de;border-radius:12px;padding:24px;text-align:center;margin-top:16px}
+.result h2{font-size:1.8em;margin-bottom:6px}
+.result h2.bug-win{color:#0969da}.result h2.opp-win{color:#d1242f}
+.result .reason{color:#656d76;font-size:0.9em;margin-bottom:4px}
+.result .stats{color:#9198a1;font-size:0.85em}
+.kbd{font-size:0.75em;color:#9198a1;margin-left:auto}
+</style></head><body>
+
+<div class="header">
+<h1><span class="bug-name">BURN</span> <span class="vs">vs</span> <span class="opp-name">Storm</span></h1>
+<div class="series-score"><span class="bug-s">BURN 1</span> — <span class="opp-s">2 OPP</span></div>
+<div class="meta"><span class="opp-name">OPP wins the series</span></div>
+</div>
+<div class="game-tabs">
+<div class="game-tab active" onclick="showGame(0)">Game 1<span class="winner-dot opp"></span></div>
+<div class="game-tab" onclick="showGame(1)">Game 2<span class="winner-dot bug"></span></div>
+<div class="game-tab" onclick="showGame(2)">Game 3<span class="winner-dot opp"></span></div>
+</div>
+<div class="game-panel active" id="game-0">
+<div class="meta" style="margin-bottom:12px;color:#656d76">BURN is ON THE PLAY &nbsp;|&nbsp; Seed: 55</div>
+<div class="hands">
+<div class="hand-box bug"><h3>BURN (mull 1)</h3>
+<div class="mull-step">
+<span class="mull-label">7 cards</span>
+<span class="mull-tag">✗ MULL</span>
+</div>
+<div class="mull-pills">
+<span class="pill mull-pill">Eidolon of the Great Revel</span>
+<span class="pill mull-pill">Lava Spike</span>
+<span class="pill mull-pill">Mountain</span>
+<span class="pill mull-pill">Goblin Guide</span>
+<span class="pill mull-pill">Mountain</span>
+<span class="pill mull-pill">Wooded Foothills</span>
+<span class="pill mull-pill">Barbarian Ring</span>
+</div>
+<div class="mull-reason">4L/2T/0can</div>
+<div class="mull-step">
+<span class="mull-label">6 cards</span>
+<span class="keep-tag">✓ KEEP</span>
+</div>
+<span class="pill">Goblin Guide</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Monastery Swiftspear</span>
+<span class="pill">Fiery Islet</span>
+<span class="pill">Price of Progress</span>
+<span class="pill">Chain Lightning</span>
+<div class="hand-analysis">1L/3T/0can — ISSUES: 1 land no cantrip</div>
+</div>
+<div class="hand-box opp"><h3>OPP (mull 0)</h3>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Dark Ritual</span>
+<span class="pill">Ad Nauseam</span>
+<span class="pill">Thoughtseize</span>
+<div class="hand-analysis">0L/0T/2can · 3 fast mana — ISSUES: no lands</div>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 120 80">
+<circle cx="20" cy="14.545454545454547" r="3" fill="#0969da"/>
+<circle cx="20" cy="14.545454545454547" r="3" fill="#d1242f"/>
+<text x="20" y="8.545454545454547" text-anchor="middle" fill="#0969da" font-size="9">19</text>
+<text x="20" y="26.545454545454547" text-anchor="middle" fill="#d1242f" font-size="9">19</text>
+<line x1="20" y1="14.545454545454547" x2="60" y2="14.545454545454547" stroke="#0969da" stroke-width="2"/>
+<line x1="20" y1="14.545454545454547" x2="60" y2="14.545454545454547" stroke="#d1242f" stroke-width="2"/>
+<circle cx="60" cy="14.545454545454547" r="3" fill="#0969da"/>
+<circle cx="60" cy="14.545454545454547" r="3" fill="#d1242f"/>
+<text x="60" y="8.545454545454547" text-anchor="middle" fill="#0969da" font-size="9">19</text>
+<text x="60" y="26.545454545454547" text-anchor="middle" fill="#d1242f" font-size="9">19</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="reasoning-toggle" onclick="toggleReasoning()" title="Toggle AI reasoning annotations">AI reasoning</span>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle &nbsp; R: reasoning</span>
+</div>
+<div class="turn bug" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T1</span>
+<span class="player bug">BURN</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#d1242f;font-size:0.75em">⚔1</span> <span style="color:#0969da;font-size:0.75em">🃏1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Goblin Guide</span>
+<span class="pill">Eidolon of the Great Revel</span>
+<span class="pill">Monastery Swiftspear</span>
+<span class="pill">Fiery Islet</span>
+<span class="pill">Price of Progress</span>
+<span class="pill">Chain Lightning</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Fiery Islet (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Monastery Swiftspear enters the battlefield</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Monastery Swiftspear — 1 unblocked → o at 19</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Monastery Swiftspear</div>
+<div class="dmg-line">→ 1 unblocked → o at 19</div>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-sba">SBA</span>
+<span class="action key">★ Fiery Islet sacrificed — pay 1 life (19), draw a card</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-spell">CAST</span>
+<span class="action">Drew: Mountain</span>
+</div>
+<div class="turn-narrative">Pressing damage — clock is ticking</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BURN — 0 lands</h4>
+<div class="board">
+<span class="creature-badge">Monastery Sw..<span class="pt">1/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Fiery Islet</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp open" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T2</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: 19</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Brainstorm</span>
+<span class="pill">Dark Ritual</span>
+<span class="pill">Ad Nauseam</span>
+<span class="pill">Thoughtseize</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Infernal Tutor</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Storm Ad Nauseam — wins (est. storm ~4)</span>
+</div>
+<div class="turn-narrative">COMBO TURN — going for the win · Missed land drop — mana screw risk</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Infernal Tutor, Dark Ritual</div>
+</div>
+<div class="board-side bug">
+<h4>BURN — 0 lands</h4>
+<div class="board">
+<span class="creature-badge">Monastery Sw..<span class="pt">1/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Fiery Islet</div>
+</div>
+</div>
+</div></div>
+<div class="result">
+<h2 class="opp-win">OPP WINS</h2>
+<div class="reason">ANT combo (Ad Nauseam)</div>
+<div class="stats">Final life: BURN 19 | OPP 19 &nbsp;|&nbsp; Length: T2</div>
+<div class="stats" style="margin-top:6px">BURN: 
+<span class="creature-badge">Monastery Sw..<span class="pt">1/2</span></span> 
+</div>
+</div>
+</div>
+<div class="game-panel" id="game-1">
+<div class="meta" style="margin-bottom:12px;color:#656d76">BURN is ON THE PLAY &nbsp;|&nbsp; Seed: 88</div>
+<div class="hands">
+<div class="hand-box bug"><h3>BURN (mull 1)</h3>
+<div class="mull-step">
+<span class="mull-label">7 cards</span>
+<span class="mull-tag">✗ MULL</span>
+</div>
+<div class="mull-pills">
+<span class="pill mull-pill">Goblin Guide</span>
+<span class="pill mull-pill">Lava Spike</span>
+<span class="pill mull-pill">Fireblast</span>
+<span class="pill mull-pill">Chain Lightning</span>
+<span class="pill mull-pill">Chain Lightning</span>
+<span class="pill mull-pill">Goblin Guide</span>
+<span class="pill mull-pill">Eidolon of the Great Revel</span>
+</div>
+<div class="mull-reason">0L/3T/0can — ISSUES: no lands</div>
+<div class="mull-step">
+<span class="mull-label">6 cards</span>
+<span class="keep-tag">✓ KEEP</span>
+</div>
+<span class="pill">Goblin Guide</span>
+<span class="pill">Bloodstained Mire</span>
+<span class="pill">Mountain</span>
+<span class="pill">Price of Progress</span>
+<span class="pill">Rift Bolt</span>
+<span class="pill">Chain Lightning</span>
+<div class="hand-analysis">2L/1T/0can</div>
+</div>
+<div class="hand-box opp"><h3>OPP (mull 0)</h3>
+<span class="pill">Tendrils of Agony</span>
+<span class="pill">Infernal Tutor</span>
+<span class="pill">Bayou</span>
+<span class="pill">Swamp</span>
+<span class="pill">Dark Ritual</span>
+<span class="pill">Thoughtseize</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<div class="hand-analysis">2L/0T/0can · 2 fast mana — ISSUES: no action</div>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 240 80">
+<circle cx="20" cy="11.363636363636367" r="3" fill="#0969da"/>
+<circle cx="20" cy="17.727272727272727" r="3" fill="#d1242f"/>
+<text x="20" y="5.363636363636367" text-anchor="middle" fill="#0969da" font-size="9">20</text>
+<text x="20" y="29.727272727272727" text-anchor="middle" fill="#d1242f" font-size="9">18</text>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#0969da" stroke-width="2"/>
+<line x1="20" y1="17.727272727272727" x2="60" y2="24.090909090909086" stroke="#d1242f" stroke-width="2"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#0969da"/>
+<circle cx="60" cy="24.090909090909086" r="3" fill="#d1242f"/>
+<text x="60" y="5.363636363636367" text-anchor="middle" fill="#0969da" font-size="9">20</text>
+<text x="60" y="36.090909090909086" text-anchor="middle" fill="#d1242f" font-size="9">16</text>
+<line x1="60" y1="11.363636363636367" x2="100" y2="14.545454545454547" stroke="#0969da" stroke-width="2"/>
+<line x1="60" y1="24.090909090909086" x2="100" y2="46.36363636363636" stroke="#d1242f" stroke-width="2"/>
+<circle cx="100" cy="14.545454545454547" r="3" fill="#0969da"/>
+<circle cx="100" cy="46.36363636363636" r="3" fill="#d1242f"/>
+<text x="100" y="8.545454545454547" text-anchor="middle" fill="#0969da" font-size="9">19</text>
+<text x="100" y="58.36363636363636" text-anchor="middle" fill="#d1242f" font-size="9">9</text>
+<line x1="100" y1="14.545454545454547" x2="140" y2="14.545454545454547" stroke="#0969da" stroke-width="2"/>
+<line x1="100" y1="46.36363636363636" x2="140" y2="46.36363636363636" stroke="#d1242f" stroke-width="2"/>
+<circle cx="140" cy="14.545454545454547" r="3" fill="#0969da"/>
+<circle cx="140" cy="46.36363636363636" r="3" fill="#d1242f"/>
+<text x="140" y="8.545454545454547" text-anchor="middle" fill="#0969da" font-size="9">19</text>
+<text x="140" y="58.36363636363636" text-anchor="middle" fill="#d1242f" font-size="9">9</text>
+<line x1="140" y1="14.545454545454547" x2="180" y2="14.545454545454547" stroke="#0969da" stroke-width="2"/>
+<line x1="140" y1="46.36363636363636" x2="180" y2="75.0" stroke="#d1242f" stroke-width="2"/>
+<circle cx="180" cy="14.545454545454547" r="3" fill="#0969da"/>
+<circle cx="180" cy="75.0" r="3" fill="#d1242f"/>
+<text x="180" y="8.545454545454547" text-anchor="middle" fill="#0969da" font-size="9">19</text>
+<text x="180" y="87.0" text-anchor="middle" fill="#d1242f" font-size="9">-1</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="reasoning-toggle" onclick="toggleReasoning()" title="Toggle AI reasoning annotations">AI reasoning</span>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle &nbsp; R: reasoning</span>
+</div>
+<div class="turn bug" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T1</span>
+<span class="player bug">BURN</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 18</span>
+<span style="margin-left:8px"><span style="color:#d1242f;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Goblin Guide</span>
+<span class="pill">Bloodstained Mire</span>
+<span class="pill">Mountain</span>
+<span class="pill">Price of Progress</span>
+<span class="pill">Rift Bolt</span>
+<span class="pill">Chain Lightning</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Mountain (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide enters the battlefield</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide trigger → reveals Lion&#x27;s Eye Diamond (nonland) — stays on top</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Goblin Guide — 2 unblocked → o at 18</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Goblin Guide</div>
+<div class="dmg-line">→ 2 unblocked → o at 18</div>
+</div>
+<div class="turn-narrative">Pressing damage — clock is ticking</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BURN — 1 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T2</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16 (-2)</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Tendrils of Agony</span>
+<span class="pill">Infernal Tutor</span>
+<span class="pill">Bayou</span>
+<span class="pill">Swamp</span>
+<span class="pill">Dark Ritual</span>
+<span class="pill">Thoughtseize</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Lion&#x27;s Eye Diamond</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Bayou (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-discard">DISCARD</span>
+<span class="action">Thoughtseize → takes Price of Progress (−2 life, 16)</span>
+<span class="reasoning">&larr; pay 2 life to see hand + take best card</span>
+</div>
+<div class="turn-narrative">Stripping opponent&#x27;s best card before committing</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Bayou</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Thoughtseize</div>
+</div>
+<div class="board-side bug">
+<h4>BURN — 1 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Price of Progress</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T3</span>
+<span class="player bug">BURN</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 9</span>
+<span style="margin-left:8px"><span style="color:#d1242f;font-size:0.75em">⚔1</span> <span style="color:#d2a8ff;font-size:0.75em">🛡1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Bloodstained Mire</span>
+<span class="pill">Rift Bolt</span>
+<span class="pill">Chain Lightning</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Goblin Guide</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-fetch">FETCH</span>
+<span class="action">Play+crack Bloodstained Mire (−1 life, 19) → Mountain</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide enters the battlefield</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide trigger → reveals Infernal Tutor (nonland) — stays on top</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide trigger → reveals Infernal Tutor (nonland) — stays on top</span>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Goblin Guide, Goblin Guide — 4 unblocked → o at 12</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Goblin Guide, Goblin Guide</div>
+<div class="dmg-line">→ 4 unblocked → o at 12</div>
+</div>
+<div class="play"><span class="step">7.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action key">★ Rift Bolt → 3 damage (opp at 9)</span>
+<span class="reasoning">&larr; 3 damage removal or burn</span>
+</div>
+<div class="turn-narrative">Pressing damage — clock is ticking · Missed land drop — mana screw risk</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BURN — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Mountain</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Price of Progress, Bloodstained Mire, Bloodstained Mire, Rift Bolt</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Bayou</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Thoughtseize</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T4</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>9</b> &nbsp;|&nbsp; Opp: 19</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Tendrils of Agony</span>
+<span class="pill">Infernal Tutor</span>
+<span class="pill">Swamp</span>
+<span class="pill">Dark Ritual</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Infernal Tutor</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Swamp (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="turn-narrative">Developing mana, holding cards — waiting for the right moment</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Bayou, Swamp</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Thoughtseize</div>
+</div>
+<div class="board-side bug">
+<h4>BURN — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Mountain</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Price of Progress, Bloodstained Mire, Bloodstained Mire, Rift Bolt</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug open" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T5</span>
+<span class="player bug">BURN</span>
+<span class="life">Life: <b>19</b> &nbsp;|&nbsp; Opp: -1</span>
+<span style="margin-left:8px"><span style="color:#d1242f;font-size:0.75em">⚔1</span> <span style="color:#d2a8ff;font-size:0.75em">🛡1</span> <span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Chain Lightning</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Bolt</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide trigger → reveals FoW (nonland) — stays on top</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide trigger → reveals FoW (nonland) — stays on top</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Goblin Guide, Goblin Guide — 4 unblocked → o at 5</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Goblin Guide, Goblin Guide</div>
+<div class="dmg-line">→ 4 unblocked → o at 5</div>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Chain Lightning → 3 damage (opp at 2)</span>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action key">★ Bolt → 3 damage (opp at -1)</span>
+<span class="reasoning">&larr; 3 damage removal or burn</span>
+</div>
+<div class="turn-narrative">COMBO TURN — going for the win · Pressing damage — clock is ticking · Missed land drop — mana screw risk</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BURN — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Mountain</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Price of Progress, Bloodstained Mire, Bloodstained Mire, Rift Bolt, Chain Lightning, Bolt</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Bayou, Swamp</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Thoughtseize</div>
+</div>
+</div>
+</div></div>
+<div class="result">
+<h2 class="bug-win">BURN WINS</h2>
+<div class="reason">Opp life reaches -1 on turn 3</div>
+<div class="stats">Final life: BURN 19 | OPP -1 &nbsp;|&nbsp; Length: T5</div>
+<div class="stats" style="margin-top:6px">BURN: 
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span> 
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span> 
+</div>
+</div>
+</div>
+<div class="game-panel" id="game-2">
+<div class="meta" style="margin-bottom:12px;color:#656d76">BURN is ON THE DRAW &nbsp;|&nbsp; Seed: 33</div>
+<div class="hands">
+<div class="hand-box bug"><h3>BURN (mull 0)</h3>
+<span class="pill">Barbarian Ring</span>
+<span class="pill">Lava Spike</span>
+<span class="pill">Rift Bolt</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Mountain</span>
+<span class="pill">Fireblast</span>
+<span class="pill">Mountain</span>
+<div class="hand-analysis">3L/0T/0can — ISSUES: no action</div>
+</div>
+<div class="hand-box opp"><h3>OPP (mull 0)</h3>
+<span class="pill">Fluster</span>
+<span class="pill">Past in Flames</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Ponder</span>
+<span class="pill">Cabal Ritual</span>
+<span class="pill">MRain</span>
+<span class="pill">FoW</span>
+<div class="hand-analysis">1L/0T/1can · 2 protection · 1 fast mana</div>
+</div></div>
+<div class="life-chart"><h3>Life Totals</h3><svg viewBox="0 0 240 80">
+<circle cx="20" cy="11.363636363636367" r="3" fill="#0969da"/>
+<circle cx="20" cy="14.545454545454547" r="3" fill="#d1242f"/>
+<text x="20" y="5.363636363636367" text-anchor="middle" fill="#0969da" font-size="9">20</text>
+<text x="20" y="26.545454545454547" text-anchor="middle" fill="#d1242f" font-size="9">19</text>
+<line x1="20" y1="11.363636363636367" x2="60" y2="11.363636363636367" stroke="#0969da" stroke-width="2"/>
+<line x1="20" y1="14.545454545454547" x2="60" y2="20.909090909090914" stroke="#d1242f" stroke-width="2"/>
+<circle cx="60" cy="11.363636363636367" r="3" fill="#0969da"/>
+<circle cx="60" cy="20.909090909090914" r="3" fill="#d1242f"/>
+<text x="60" y="5.363636363636367" text-anchor="middle" fill="#0969da" font-size="9">20</text>
+<text x="60" y="32.909090909090914" text-anchor="middle" fill="#d1242f" font-size="9">17</text>
+<line x1="60" y1="11.363636363636367" x2="100" y2="11.363636363636367" stroke="#0969da" stroke-width="2"/>
+<line x1="60" y1="20.909090909090914" x2="100" y2="24.090909090909086" stroke="#d1242f" stroke-width="2"/>
+<circle cx="100" cy="11.363636363636367" r="3" fill="#0969da"/>
+<circle cx="100" cy="24.090909090909086" r="3" fill="#d1242f"/>
+<text x="100" y="5.363636363636367" text-anchor="middle" fill="#0969da" font-size="9">20</text>
+<text x="100" y="36.090909090909086" text-anchor="middle" fill="#d1242f" font-size="9">16</text>
+<line x1="100" y1="11.363636363636367" x2="140" y2="11.363636363636367" stroke="#0969da" stroke-width="2"/>
+<line x1="100" y1="24.090909090909086" x2="140" y2="49.54545454545455" stroke="#d1242f" stroke-width="2"/>
+<circle cx="140" cy="11.363636363636367" r="3" fill="#0969da"/>
+<circle cx="140" cy="49.54545454545455" r="3" fill="#d1242f"/>
+<text x="140" y="5.363636363636367" text-anchor="middle" fill="#0969da" font-size="9">20</text>
+<text x="140" y="61.54545454545455" text-anchor="middle" fill="#d1242f" font-size="9">8</text>
+<line x1="140" y1="11.363636363636367" x2="180" y2="11.363636363636367" stroke="#0969da" stroke-width="2"/>
+<line x1="140" y1="49.54545454545455" x2="180" y2="49.54545454545455" stroke="#d1242f" stroke-width="2"/>
+<circle cx="180" cy="11.363636363636367" r="3" fill="#0969da"/>
+<circle cx="180" cy="49.54545454545455" r="3" fill="#d1242f"/>
+<text x="180" y="5.363636363636367" text-anchor="middle" fill="#0969da" font-size="9">20</text>
+<text x="180" y="61.54545454545455" text-anchor="middle" fill="#d1242f" font-size="9">8</text>
+</svg></div>
+<div class="controls">
+<button onclick="expandAll()">Expand All</button>
+<button onclick="collapseAll()">Collapse All</button>
+<span class="reasoning-toggle" onclick="toggleReasoning()" title="Toggle AI reasoning annotations">AI reasoning</span>
+<span class="kbd">↑↓ navigate &nbsp; Enter: toggle &nbsp; R: reasoning</span>
+</div>
+<div class="turn opp" data-idx="0">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T1</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>19 (-1)</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Fluster</span>
+<span class="pill">Past in Flames</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Ponder</span>
+<span class="pill">Cabal Ritual</span>
+<span class="pill">MRain</span>
+<span class="pill">FoW</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-fetch">FETCH</span>
+<span class="action">Play+crack MRain (−1 life, 19) → Volc</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain, MRain</div>
+</div>
+<div class="board-side bug">
+<h4>BURN — 0 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">none</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="1">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T2</span>
+<span class="player bug">BURN</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 17</span>
+<span style="margin-left:8px"><span style="color:#d1242f;font-size:0.75em">⚔1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Barbarian Ring</span>
+<span class="pill">Lava Spike</span>
+<span class="pill">Rift Bolt</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Mountain</span>
+<span class="pill">Fireblast</span>
+<span class="pill">Mountain</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Goblin Guide</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Mountain (1 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide enters the battlefield</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide trigger → reveals PDelta (land) — opponent draws it</span>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Goblin Guide — 2 unblocked → o at 17</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Goblin Guide</div>
+<div class="dmg-line">→ 2 unblocked → o at 17</div>
+</div>
+<div class="turn-narrative">Pressing damage — clock is ticking</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BURN — 1 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 1 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain, MRain</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp" data-idx="2">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T3</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>16 (-1)</b> &nbsp;|&nbsp; Opp: 20</span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Fluster</span>
+<span class="pill">Past in Flames</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Ponder</span>
+<span class="pill">Cabal Ritual</span>
+<span class="pill">FoW</span>
+<span class="pill">PDelta</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Dark Ritual</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-fetch">FETCH</span>
+<span class="action">Play+crack PDelta (−1 life, 16) → USea</span>
+<span class="reasoning">&larr; fix mana + shuffle</span>
+</div>
+<div class="turn-narrative">Missed land drop — mana screw risk</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain, MRain, PDelta, PDelta</div>
+</div>
+<div class="board-side bug">
+<h4>BURN — 1 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain</div>
+</div>
+</div>
+</div></div>
+<div class="turn bug" data-idx="3">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum bug">T4</span>
+<span class="player bug">BURN</span>
+<span class="life">Life: <b>20</b> &nbsp;|&nbsp; Opp: 8</span>
+<span style="margin-left:8px"><span style="color:#d1242f;font-size:0.75em">⚔1</span> <span style="color:#d2a8ff;font-size:0.75em">🛡1</span> <span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Barbarian Ring</span>
+<span class="pill">Lava Spike</span>
+<span class="pill">Rift Bolt</span>
+<span class="pill">Chain Lightning</span>
+<span class="pill">Fireblast</span>
+<span class="pill">Mountain</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Bolt</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-land">LAND</span>
+<span class="action">Land: Mountain (2 lands)</span>
+<span class="reasoning">&larr; develop mana</span>
+</div>
+<div class="play"><span class="step">3.</span>
+<span class="cat-badge cat-trigger">TRIGGER</span>
+<span class="action">Goblin Guide trigger → reveals Tendrils of Agony (nonland) — stays on top</span>
+</div>
+<div class="play"><span class="step">4.</span>
+<span class="cat-badge cat-combat">COMBAT</span>
+<span class="action">Attack: Goblin Guide — 2 unblocked → o at 14</span>
+<span class="reasoning">&larr; swing for damage</span>
+</div>
+<div class="combat-detail">
+<div class="atk-line">⚔ Attackers: Goblin Guide</div>
+<div class="dmg-line">→ 2 unblocked → o at 14</div>
+</div>
+<div class="play"><span class="step">5.</span>
+<span class="cat-badge cat-counter">COUNTER</span>
+<span class="action key">★  FoW counters Lava Spike (exiles Ponder)</span>
+<span class="reasoning">&larr; FREE counter (exile blue card)</span>
+</div>
+<div class="play"><span class="step">6.</span>
+<span class="cat-badge cat-counter">COUNTER</span>
+<span class="action counter">Lava Spike COUNTERED — goes to graveyard</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">7.</span>
+<span class="cat-badge cat-counter">COUNTER</span>
+<span class="action counter">Lava Spike countered</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">8.</span>
+<span class="cat-badge cat-counter">COUNTER</span>
+<span class="action key">★  Fluster counters Rift Bolt</span>
+</div>
+<div class="play"><span class="step">9.</span>
+<span class="cat-badge cat-counter">COUNTER</span>
+<span class="action counter">Rift Bolt COUNTERED — goes to graveyard</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">10.</span>
+<span class="cat-badge cat-counter">COUNTER</span>
+<span class="action counter">Rift Bolt countered</span>
+<span class="reasoning">&larr; COUNTERED!</span>
+</div>
+<div class="play"><span class="step">11.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Chain Lightning → 3 damage (opp at 11)</span>
+</div>
+<div class="play"><span class="step">12.</span>
+<span class="cat-badge cat-removal">REMOVE</span>
+<span class="action key">★ Bolt → 3 damage (opp at 8)</span>
+<span class="reasoning">&larr; 3 damage removal or burn</span>
+</div>
+<div class="turn-narrative">COMBO TURN — going for the win · Stack interaction — counter war · Pressing damage — clock is ticking</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side bug">
+<h4>BURN — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Mountain</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Lava Spike, Rift Bolt, Chain Lightning, Bolt</div>
+</div>
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain, MRain, PDelta, PDelta, FoW, Fluster</div>
+</div>
+</div>
+</div></div>
+<div class="turn opp open" data-idx="4">
+<div class="turn-header" onclick="toggle(this.parentElement)">
+<div class="left">
+<span class="tnum opp">T5</span>
+<span class="player opp">OPP</span>
+<span class="life">Life: <b>8</b> &nbsp;|&nbsp; Opp: 20</span>
+<span style="margin-left:8px"><span style="color:#f778ba;font-size:0.75em">★1</span></span>
+</div><span class="arrow">&#9654;</span></div>
+<div class="turn-body">
+<div class="section-label">Hand</div><div class="hand-pills">
+<span class="pill">Past in Flames</span>
+<span class="pill">Lion&#x27;s Eye Diamond</span>
+<span class="pill">Cabal Ritual</span>
+<span class="pill">Dark Ritual</span>
+</div>
+<div class="section-label">Plays</div>
+<div class="play"><span class="step">1.</span>
+<span class="cat-badge cat-draw">DRAW</span>
+<span class="action">Draw: Tendrils of Agony</span>
+<span class="reasoning">&larr; draw for turn</span>
+</div>
+<div class="play"><span class="step">2.</span>
+<span class="cat-badge cat-combo">COMBO</span>
+<span class="action key">★ Storm Past in Flames — wins (est. storm ~6)</span>
+</div>
+<div class="turn-narrative">COMBO TURN — going for the win · Missed land drop — mana screw risk</div>
+<div class="section-label">Board State</div>
+<div class="board-grid">
+<div class="board-side opp">
+<h4>OPP — 2 lands</h4>
+<div class="board">
+<span style="color:#484f58;font-size:0.8em">no creatures</span>
+</div>
+<div class="land-list" style="margin-top:4px">Volc, USea</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 MRain, MRain, PDelta, PDelta, FoW, Fluster, Tendrils of Agony, Cabal Ritual (+1 more)</div>
+</div>
+<div class="board-side bug">
+<h4>BURN — 2 lands</h4>
+<div class="board">
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span>
+</div>
+<div class="land-list" style="margin-top:4px">Mountain, Mountain</div>
+<div class="perm-list gy-list" style="margin-top:4px">🪦 Lava Spike, Rift Bolt, Chain Lightning, Bolt</div>
+</div>
+</div>
+</div></div>
+<div class="result">
+<h2 class="opp-win">OPP WINS</h2>
+<div class="reason">ANT combo (Past in Flames)</div>
+<div class="stats">Final life: BURN 20 | OPP 8 &nbsp;|&nbsp; Length: T5</div>
+<div class="stats" style="margin-top:6px">BURN: 
+<span class="creature-badge">Goblin Guide<span class="pt">2/2</span></span> 
+</div>
+</div>
+</div>
+
+<script>
+function toggle(el) { el.classList.toggle('open'); }
+function expandAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.add('open')); }
+function collapseAll() { document.querySelectorAll('.game-panel.active .turn').forEach(t => t.classList.remove('open')); }
+function toggleReasoning() {
+  document.body.classList.toggle('show-reasoning');
+  try { localStorage.setItem('mtg_show_reasoning', document.body.classList.contains('show-reasoning') ? '1' : '0'); } catch(e) {}
+}
+// Restore reasoning-toggle state from last session
+try { if (localStorage.getItem('mtg_show_reasoning') === '1') document.body.classList.add('show-reasoning'); } catch(e) {}
+function showGame(idx) {
+  document.querySelectorAll('.game-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.game-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+}
+document.addEventListener('keydown', e => {
+  const active = document.querySelector('.game-panel.active');
+  if (!active) return;
+  const turns = active.querySelectorAll('.turn');
+  let cur = [...turns].findIndex(t => t.classList.contains('active'));
+  if (e.key === 'ArrowDown') { e.preventDefault(); if(cur<turns.length-1){turns.forEach(t=>t.classList.remove('active'));turns[cur+1].classList.add('active');turns[cur+1].scrollIntoView({behavior:'smooth',block:'center'});} }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); if(cur>0){turns.forEach(t=>t.classList.remove('active'));turns[cur-1].classList.add('active');turns[cur-1].scrollIntoView({behavior:'smooth',block:'center'});} }
+  else if (e.key === 'Enter' && cur>=0) { e.preventDefault(); toggle(turns[cur]); }
+  else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); toggleReasoning(); }
+});
+</script>
+</body></html>
