@@ -188,8 +188,8 @@ a.product-link{text-decoration:none;color:inherit;display:block}
   <h1>MTGSim<em>Claude</em></h1>
   <p class="hero-sub">AI-driven metagame simulation for Legacy. 787 decision branches across 19 strategy engines. Three production outputs. 2.5ms per game.</p>
   <div class="counter-row">
-    <div class="counter"><div class="num" data-target="38">0</div><div class="unit">Decks</div></div>
-    <div class="counter"><div class="num" data-target="1260">0</div><div class="unit">Matchups</div></div>
+    <div class="counter"><div class="num" data-target="36">0</div><div class="unit">Decks</div></div>
+    <div class="counter"><div class="num" data-target="315000">0</div><div class="unit">Bo3 Games</div></div>
     <div class="counter"><div class="num" data-target="137">0</div><div class="unit">Tests Pass</div></div>
     <div class="counter"><div class="num" data-target="25842">0</div><div class="unit">Lines of Code</div></div>
   </div>
@@ -318,7 +318,7 @@ a.product-link{text-decoration:none;color:inherit;display:block}
 const G='#b8941e',T='#0f6e56',A='#d4850b',R='#a32d2d',B='#185fa5',P='#534ab7';
 const hD=['Burn','Dimir','Infect','UR Del','Eldrazi','Storm','Oops','Reanim'];
 const hK=['burn','dimir','infect','ur_delver','eldrazi','storm','oops','reanimator'];
-const hV=[[50,71,58,70,35,65,64,74],[21,50,51,59,34,73,71,42],[40,47,50,52,31,81,62,62],[29,39,55,50,50,66,81,71],[53,52,57,40,50,79,62,62],[27,37,25,26,26,50,75,57],[31,27,35,26,40,36,50,48],[20,50,35,29,47,38,47,50]];
+const hV=[[50,83,46,62,31,78,63,79],[14,50,48,53,35,72,90,44],[49,76,50,43,22,77,74,70],[42,78,54,50,41,70,89,69],[61,64,69,40,50,75,62,64],[24,41,24,38,19,50,57,56],[30,23,32,18,33,29,50,47],[20,72,29,24,35,31,45,50]];
 
 // Scroll reveal + counters
 const obs=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&(e.target.classList.add('visible'),obs.unobserve(e.target))})},{threshold:.1});
@@ -326,15 +326,15 @@ document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;document.querySelectorAll('.counter .num').forEach(el=>{const t=+el.dataset.target,s=performance.now();(function f(n){const p=Math.min((n-s)/1800,1);el.textContent=Math.round(t*(1-Math.pow(1-p,3))).toLocaleString();p<1&&requestAnimationFrame(f)})(s)})},{threshold:.5}).observe(document.querySelector('.counter-row'));
 
 // === PER-DECK DATA FOR CROSS-FILTERING ===
-const deckRes={Burn:{d:92.9,c:7.1,t:0},Dimir:{d:82.9,c:14.3,t:2.9},Infect:{d:91.4,c:8.6,t:0},'UR Del':{d:88.6,c:11.4,t:0},Eldrazi:{d:92.9,c:7.1,t:0},Storm:{d:58.6,c:41.4,t:0},Oops:{d:64.3,c:31.4,t:4.3},Reanim:{d:84.3,c:10,t:5.7}};
-const deckArch={Burn:'aggro',Dimir:'tempo',Infect:'combo-aggro','UR Del':'tempo',Eldrazi:'aggro',Storm:'combo',Oops:'combo',Reanim:'combo','Dimir B':'tempo','Dimir Flash':'tempo','UR Tempo':'tempo','Sneak B':'combo','8-Cast':'aggro',Painter:'combo',WST:'tempo',Doomsday:'combo'};
+const deckRes={Burn:{d:92.9,c:7.1,t:0},Dimir:{d:82.9,c:14.3,t:2.9},Infect:{d:91.4,c:8.6,t:0},'UR Del':{d:88.6,c:11.4,t:0},Eldrazi:{d:92.9,c:7.1,t:0},Storm:{d:58.6,c:41.4,t:0},Oops:{d:64.3,c:31.4,t:4.3},Reanim:{d:84.3,c:10,t:5.7},Affinity:{d:90,c:5,t:5}};
+const deckArch={Burn:'aggro',Dimir:'tempo',Infect:'combo-aggro','UR Del':'tempo',Eldrazi:'aggro',Storm:'combo',Oops:'combo',Reanim:'combo','Dimir B':'tempo','Dimir Flash':'tempo','UR Tempo':'tempo','Sneak A':'combo','Sneak B':'combo','8-Cast':'aggro',Painter:'combo',WST:'tempo',Doomsday:'combo',Affinity:'aggro','D&T':'tax-aggro',Ocelot:'tempo','UR Delver':'tempo'};
 const archTypes=['Combo v Aggro','Aggro v Aggro','Combo v Tempo','Aggro v Tempo','Tempo mirror','Control v Tempo'];
 const archMatch={'Combo v Aggro':['combo','aggro'],'Aggro v Aggro':['aggro'],'Combo v Tempo':['combo','tempo'],'Aggro v Tempo':['aggro','tempo'],'Tempo mirror':['tempo'],'Control v Tempo':['control','tempo']};
 const allRes=[46.2,18.0,35.8], allLen=[3.8,4.2,6.7,6.4,9.3,9.6], turnBg=[P,'#5dcaa5',P,T,G,A];
 
 // === CHARTS (all stored for cross-update) ===
-const wrLabels=['Burn','Infect','UR Tempo','Dimir B','Dimir','Dimir Flash','Eldrazi','Sneak B','8-Cast','Oops','Painter','WST','Doomsday'];
-const wrData=[71,66,63,62,60,60,60,59,38,38,37,36,33];
+const wrLabels=['Affinity','Burn','Dimir Flash','Dimir B','Infect','Dimir','UR Tempo','UR Delver','Sneak A','Eldrazi','D&T','Sneak B','Ocelot'];
+const wrData=[81,77,76,74,72,69,69,67,67,67,66,65,58];
 const wrBgDef=wrLabels.map((_,i)=>wrData[i]>=59?'rgba(15,110,86,.15)':'rgba(163,45,45,.12)');
 const wrBrDef=wrLabels.map((_,i)=>wrData[i]>=59?T:R);
 const wrChart=new Chart(document.getElementById('wrChart'),{type:'bar',data:{labels:wrLabels,datasets:[{data:wrData,backgroundColor:[...wrBgDef],borderColor:[...wrBrDef],borderWidth:1.5,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',onClick:(e,els)=>{if(els.length)selectDeck(wrLabels[els[0].index]);else clearSelection()},plugins:{legend:{display:false}},scales:{x:{max:85,grid:{color:'#e8e4dd'},ticks:{callback:v=>v+'%',font:{family:'JetBrains Mono',size:10}}},y:{grid:{display:false},ticks:{font:{family:'Outfit',size:11}}}}}});
