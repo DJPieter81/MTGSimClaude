@@ -223,6 +223,12 @@ class InteractionParams:
     # Murktide: min graveyard spells to cast
     MURKTIDE_DELVE_MIN = 4
 
+    # BHI (Bayesian Hand Inference) thresholds — HandBelief probabilities above
+    # which strategies should treat opponent as holding specific threats.
+    # Used by _strategy_storm, _strategy_oops, _strategy_doomsday combo gates.
+    BHI_FREE_COUNTER_THRESHOLD = 0.40  # p_free_counter: FoW/FoN pitch cast
+    BHI_COUNTER_THRESHOLD      = 0.55  # p_counter: any counter in hand
+
 
 # ═══════════════════════════════════════════════════════════════════
 # THREAT CONFIG  (drives classify_threat in interaction.py)
