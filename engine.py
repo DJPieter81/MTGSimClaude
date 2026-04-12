@@ -3912,12 +3912,31 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
     elif informer and total_mana >= 4:  # 3 to cast + 1 to activate
         combo_card = informer; combo_cost = 4
 
+    # Bayesian Hand Inference (§9 #8): surface opp's probability of holding a
+    # free counter (FoW/FoN + blue pitch) in traces. Informational only —
+    # Oops's combo gate is not changed by this reading; future tuning can use it.
+    from bhi import HandBelief
+    opp_deck_key = gs.p2_deck if opponent is gs.p2 else gs.p1_deck
+    _bhi_cache = getattr(gs, '_bhi_p2', None)
+    if (_bhi_cache is None or _bhi_cache.get('deck') != opp_deck_key
+            or _bhi_cache.get('hand_size') != len(opponent.hand)
+            or _bhi_cache.get('turn') != gs.turn):
+        _belief = HandBelief(opp_deck_key,
+                             cards_drawn=7 + max(0, gs.turn - 1),
+                             cards_in_hand=len(opponent.hand))
+        gs._bhi_p2 = {'deck': opp_deck_key, 'hand_size': len(opponent.hand),
+                      'turn': gs.turn, 'belief': _belief}
+    else:
+        _belief = _bhi_cache['belief']
+    _p_free_counter = _belief.p_free_counter
+
     gs.strat_log.log_decision(
         gs.turn, 'oops',
         candidates=['cast_spy', 'cast_informer', 'pass'],
         chosen=('cast_' + combo_card.tag) if combo_card else 'pass',
         reason=(f"mana={total_mana}, spy={spy is not None}, "
-                f"informer={informer is not None}, leyline={gs.leyline_active}"))
+                f"informer={informer is not None}, leyline={gs.leyline_active}, "
+                f"bhi_p_free_counter={_p_free_counter:.2f}"))
 
     if combo_card:
         # Try Veil protection first
@@ -3996,11 +4015,29 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     dd_already_resolved = getattr(gs, '_doomsday_pile_built', False)
     mana = total_mana  # track remaining mana
 
+    # Bayesian Hand Inference (§9 #8): estimate P(opp has free counter) from deck
+    # identity + observed draws. Informational only here — surfaced in trace for
+    # future tuning (e.g. delaying the combo turn under high counter risk).
+    from bhi import HandBelief
+    opp_deck_key = gs.p2_deck if opponent is gs.p2 else gs.p1_deck
+    _bhi_cache = getattr(gs, '_bhi_p2', None)
+    if (_bhi_cache is None or _bhi_cache.get('deck') != opp_deck_key
+            or _bhi_cache.get('hand_size') != len(opponent.hand)
+            or _bhi_cache.get('turn') != gs.turn):
+        belief = HandBelief(opp_deck_key,
+                            cards_drawn=7 + max(0, gs.turn - 1),
+                            cards_in_hand=len(opponent.hand))
+        gs._bhi_p2 = {'deck': opp_deck_key, 'hand_size': len(opponent.hand),
+                      'turn': gs.turn, 'belief': belief}
+    else:
+        belief = _bhi_cache['belief']
+
     gs.strat_log.log_decision(
         gs.turn, 'doomsday',
         candidates=['cast_doomsday', 'cycle_and_oracle', 'pass'],
         chosen='cast_doomsday' if not dd_already_resolved and mana >= 3 else 'cycle_and_oracle' if dd_already_resolved else 'pass',
-        reason=f"mana={mana}, dd_resolved={dd_already_resolved}, life={player.life}")
+        reason=f"mana={mana}, dd_resolved={dd_already_resolved}, life={player.life}, "
+               f"bhi_p_free_counter={belief.p_free_counter:.2f}")
 
     # ── Helper: cycle cards from hand (activated abilities — uncounterable) ──
     # Repeatedly cycle: each Wraith/Edge drawn from the pile can itself be cycled,
