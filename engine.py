@@ -4466,9 +4466,11 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     rituals2 = [c for c in player.hand if _is_ritual(c) and c not in rituals
                 and _ritual_cost(c) <= sim_mana and not _chalice_blocks(c)]
     rituals = rituals + rituals2
-    # Infernal Tutor acts as a ritual proxy: if in hand and mana available, 
-    # it can fetch a ritual or kill spell
-    itutor_proxy = player.find_tag('itutor') and sim_mana >= 2
+    # Infernal Tutor acts as a ritual proxy: if in hand and mana available,
+    # it can fetch a ritual or kill spell. Use card.cmc (which respects Thalia's
+    # +1 tax applied in apply_lock_effects) — not a hardcoded 2.
+    _itutor_card = player.find_tag('itutor')
+    itutor_proxy = _itutor_card and sim_mana >= _itutor_card.cmc
     tendrils = player.find_tag('tendrils')
     # Storm should only go off when safe: Veil active, opp has no FoW, or desperate
     veil_protecting = getattr(gs, 'veil_active', False)
@@ -4483,6 +4485,13 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
         storm_desperate = True
     # Also desperate at ≤10 life regardless (getting close to lethal range)
     if player.life <= 10:
+        storm_desperate = True
+    # Thalia-desperate: if Thalia is out, rituals net less mana and waiting
+    # only makes things worse (D&T will add Phyrexian Revoker / SFM pressure
+    # next turn). Take any kill line we have.
+    thalia_on_table = any(getattr(c.card, 'tag', None) == 'thalia'
+                          for c in opponent.creatures)
+    if thalia_on_table and (len(rituals) >= 2 or (led_castable and len(rituals) >= 1)):
         storm_desperate = True
     # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
     opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
@@ -4518,6 +4527,11 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     est_storm = (len(rituals) + (1 if led else 0) + (1 if itutor_proxy else 0)
                  + cantrips_in_hand + (1 if vos_in_hand else 0) + (1 if pif else 0))
     lethal_storm = max(1, (opponent.life + 1) // 2 - 1)  # storm copies needed for lethal
+    # Under Thalia, rituals net less mana — Storm can't afford to wait for a
+    # "clean" kill hand. Accept one-short storm counts: if we can storm for
+    # lethal_storm - 1, the final itutor/tendrils cast pushes us over.
+    if thalia_on_table:
+        lethal_storm = max(1, lethal_storm - 1)
     # Ad Nauseam / Past in Flames self-generate storm during resolution (draw 15+ / replay GY)
     self_assembles = False
 
