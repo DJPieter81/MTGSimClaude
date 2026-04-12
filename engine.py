@@ -1242,7 +1242,7 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
         if budget[0] >= effective_cmc(ts) and can_afford(player, ts.mana_cost):
             # SEQ-09: only cast TS if opp has a non-land worth stripping.
             # Casting TS into an all-land hand wastes a card and 2 life for nothing.
-            target = best_proactive_target(gs)
+            target = best_proactive_target(gs, opponent)
             if target:
                 spend(ts)
                 player.cast_spell(ts, log_fn=log_fn)
@@ -3841,7 +3841,7 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
     ts = player.find_tag('ts')
     ts_turn_cap = 3 if MC.is_combo(gs) else 2  # aligned with config (was 6/3 — too oppressive vs combo)
     if ts and gs.turn <= ts_turn_cap and rem >= 1:
-        target = best_proactive_target(gs) if hasattr(gs, 'p2') else None
+        target = best_proactive_target(gs, opponent) if hasattr(gs, 'p2') else None
         if target:
             player.remove_from_hand(ts)
             player.add_to_grave(ts)
