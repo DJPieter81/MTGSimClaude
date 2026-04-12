@@ -18,30 +18,50 @@ PLANNING_REFERENCE.md Section 9 #1.
 class StrategicLogger:
     """Thin decision recorder. Cost when disabled: one attribute read per call."""
 
-    __slots__ = ('enabled', 'entries')
+    __slots__ = ('enabled', 'entries', '_plan_cache')
 
     def __init__(self, enabled: bool = False) -> None:
         self.enabled = enabled
         self.entries: list[dict] = []
+        # Per-deck GoalEngine cache (lazy — only hit if enabled + call-site asks)
+        self._plan_cache: dict = {}
 
     def log_decision(self, turn: int, deck: str, candidates, chosen, reason: str) -> None:
         if not self.enabled:
             return
+        # Enrich with gameplan phase label when a plan exists for this deck
+        phase = self._phase_for(deck, turn)
         self.entries.append({
             'turn': turn,
             'deck': deck,
             'candidates': list(candidates),
             'chosen': chosen,
             'reason': reason,
+            'phase': phase,
         })
+
+    def _phase_for(self, deck: str, turn: int):
+        """Look up the gameplan phase for this turn. Returns None when no plan."""
+        if deck not in self._plan_cache:
+            try:
+                from goal_engine import GoalEngine  # local import — optional dep
+                self._plan_cache[deck] = GoalEngine(deck)
+            except Exception:
+                self._plan_cache[deck] = None
+        ge = self._plan_cache[deck]
+        if ge is None or not ge.has_plan:
+            return None
+        phase = ge.phase_for_turn(turn)
+        return phase.get('phase') if phase else None
 
     def dump(self) -> list[str]:
         """Flatten entries into log_lines-compatible strings."""
         out = []
         for e in self.entries:
             cands = ','.join(str(c) for c in e['candidates'])
+            phase_tag = f" [phase:{e['phase']}]" if e.get('phase') else ''
             out.append(
-                f"T{e['turn']} [{e['deck']}] chose {e['chosen']} "
+                f"T{e['turn']} [{e['deck']}]{phase_tag} chose {e['chosen']} "
                 f"from [{cands}] — {e['reason']}"
             )
         return out
