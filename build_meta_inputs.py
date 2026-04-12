@@ -34,7 +34,9 @@ from deck_registry import get_meta
 
 
 def pct(wr):
-    """Coerce 0-1 or 0-100 to percent."""
+    """Coerce 0-1 or 0-100 to percent. Handles both float and list [wr, ...] formats."""
+    if isinstance(wr, (list, tuple)):
+        wr = wr[0]
     return wr * 100 if wr <= 1.0 else wr
 
 
