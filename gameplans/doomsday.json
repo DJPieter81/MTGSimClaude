@@ -1,0 +1,31 @@
+{
+  "key": "doomsday",
+  "name": "Doomsday",
+  "archetype": "combo",
+  "mulligan_keys": {
+    "7": ["doomsday AND life>=10 AND BBB_accessible", "2+ cantrips + BBB source"],
+    "6": ["doomsday OR (2+ cantrips + BBB)"],
+    "5": ["any BBB source + (doomsday OR tutor)"]
+  },
+  "goal_sequence": [
+    {"phase": "dig",     "turns": [1, 2], "action": "cantrip aggressively (Brainstorm/Ponder/Gitaxian) to find Doomsday + BBB"},
+    {"phase": "cast_dd", "turns": [2, 4], "action": "Cast Doomsday (pay half life), build 5-card pile (Wraith/Edge/Oracle/U-source/cycle)"},
+    {"phase": "oracle_win", "turns": [3, 5], "action": "Cycle Street Wraith (-2 life) through pile, cast Thassa's Oracle (UU), win when library empty"}
+  ],
+  "card_roles": {
+    "doomsday":  "combo_trigger",
+    "oracle":    "finisher",
+    "wraith":    "cycler",
+    "edge":      "cycler",
+    "bs":        "cantrip",
+    "ponder":    "cantrip",
+    "probe":     "cantrip",
+    "darkrit":   "ritual",
+    "led":       "burst_mana",
+    "fow":       "protection",
+    "vos":       "protection",
+    "ts":        "discard"
+  },
+  "win_conditions": ["oracle"],
+  "notes": "Doomsday combo — pay (life/2) to cast DD, build pile, cycle down to Oracle. Pile must include UU source + Oracle. Life total under 10 after DD cast — race with protection."
+}

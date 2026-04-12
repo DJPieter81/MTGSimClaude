@@ -1,0 +1,33 @@
+{
+  "key": "reanimator",
+  "name": "Reanimator",
+  "archetype": "fast_combo",
+  "mulligan_keys": {
+    "7": ["(entomb OR unmask OR griselbrand_in_hand) AND (reanimate OR exhume OR animate_dead) AND B_source"],
+    "6": ["entomb AND (reanimate OR exhume OR animate_dead)", "griselbrand + (reanimate OR animate_dead) + swamp"],
+    "5": ["any combo triple"]
+  },
+  "goal_sequence": [
+    {"phase": "t1_free_mana", "turns": [1, 1], "action": "Lotus Petal; then Unmask (free, pitch) to strip FoW before building mana"},
+    {"phase": "t1_combo",     "turns": [1, 1], "action": "Dark Ritual (3B) → Entomb Griselbrand → Reanimate (1B, pay 8 life)"},
+    {"phase": "t2_plan_b",    "turns": [2, 3], "action": "If no T1 combo: Thoughtseize then reanimate; Exhume as wrap-around"},
+    {"phase": "grind",        "turns": [4, 99], "action": "Griselbrand draws 7 per turn — maintain threat density"}
+  ],
+  "card_roles": {
+    "entomb":       "tutor",
+    "reanimate":    "reanimator",
+    "exhume":       "reanimator",
+    "animate_dead": "reanimator",
+    "griselbrand":  "finisher",
+    "archon":       "finisher",
+    "atraxa":       "finisher",
+    "petal":        "fast_mana",
+    "darkrit":      "ritual",
+    "unmask":       "discard_free",
+    "ts":           "discard",
+    "fow":          "protection",
+    "vos":          "protection"
+  },
+  "win_conditions": ["griselbrand", "archon", "atraxa"],
+  "notes": "Sequencing is critical: Unmask BEFORE ritual (otherwise they can Unmask your kill spell via FoW). T1 kill with Swamp + Petal + Unmask + Ritual + Entomb + Reanimate."
+}

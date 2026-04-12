@@ -1,0 +1,30 @@
+{
+  "key": "lands",
+  "name": "Lands",
+  "archetype": "prison_combo",
+  "mulligan_keys": {
+    "7": ["(crop_rotation OR depths) AND exploration_like AND life_from_loam_path"],
+    "6": ["crop_rotation + life_from_loam + 2+ lands"],
+    "5": ["any Dark Depths path OR any Life from the Loam path"]
+  },
+  "goal_sequence": [
+    {"phase": "ramp",        "turns": [1, 2], "action": "Exploration; play extra lands; Mox Diamond; Crop Rotation when needed"},
+    {"phase": "lock_and_loam","turns": [2, 4], "action": "Wasteland + Rishadan Port + Life from the Loam to mana-deny the opponent"},
+    {"phase": "marit_lage",  "turns": [3, 5], "action": "Crop Rotation → Dark Depths; Thespian's Stage copies Depths → Marit Lage 20/20"},
+    {"phase": "endurance",   "turns": [5, 99], "action": "Endurance shuffles graveyard into library if Loam engine stalls"}
+  ],
+  "card_roles": {
+    "crop":        "tutor",
+    "depths":      "combo_trigger",
+    "stage":       "combo_trigger",
+    "loam":        "engine",
+    "exploration": "engine",
+    "wasteland":   "mana_denial",
+    "port":        "mana_denial",
+    "moxd":        "fast_mana",
+    "fow":         "protection",
+    "endurance":   "graveyard_hate"
+  },
+  "win_conditions": ["marit_lage"],
+  "notes": "Lands combo — assemble Dark Depths + Thespian's Stage for instant 20/20 Marit Lage. Back-up plan is slow lock with Loam + Wasteland + Port."
+}
