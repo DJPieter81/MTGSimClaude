@@ -543,17 +543,6 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
     if not attackers:
         return
 
-    # Maze of Ith — defender untaps and removes target attacking creature from combat
-    maze = next((l for l in defender_player.lands
-                 if l.card.tag == 'maze' and not l.tapped), None)
-    if maze and attackers:
-        biggest = max(attackers, key=lambda a: a.power)
-        attackers.remove(biggest)
-        maze.tapped = True
-        log_list.append(f"Maze of Ith — removes {biggest.name} ({biggest.power}/{biggest.toughness}) from combat")
-        if not attackers:
-            return
-
     # C2 — tap every attacker
     for a in attackers:
         MTGRules.tap_attacker(a)
@@ -613,7 +602,12 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
         if True:  # fire whenever defender has Vial
             vial_perm = next((p for p in vial_owner.artifacts if p.card.tag == 'vial'), None)
             if vial_perm and gs.vial_counters > 0:
-                ambush_tags = ('flickerwisp','skyclave','thalia','phelia',
+                # Karn lockout: opponent's Karn blocks artifact activations
+                karn_blocks = (gs.p1_karn_active if vial_owner is gs.p2 else
+                               gs.p2_karn_active if vial_owner is gs.p1 else False)
+                if karn_blocks:
+                    log_list.append("Karn lockout — Aether Vial can't be activated")
+                ambush_tags = () if karn_blocks else ('flickerwisp','skyclave','thalia','phelia',
                                'recruiter','solitude','orchid','dungeoneer','minsc')
                 for tag in ambush_tags:
                     crea = vial_owner.find_tag(tag)
