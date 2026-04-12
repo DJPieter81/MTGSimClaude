@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // ── Data ──────────────────────────────────────────────────────────────
 const LEGACY_DECKS = [
@@ -19,8 +19,10 @@ const LEGACY_BASE = "https://djpieter81.github.io/MTGSimClaude";
 const MODERN_BASE = "https://djpieter81.github.io/MTGSimManu";
 // Local fallback: computer:///Users/lynette/MTGSimManu/MTGSimClaude, computer:///Users/lynette/MTGSimManu/MTGSimManu/MTGSimManu
 
-// ── Run history (regenerate with: python3 scan_results.py) ───────────
-const LEGACY_HISTORY = [
+// ── Run history — loaded dynamically from run_history.json ───────────
+// Regenerate: python3 scan_results.py
+// Fallback: hardcoded snapshots (replaced by fetch on load)
+const LEGACY_HISTORY_FALLBACK = [
   { file:"matrix_20260411_134630.json", tag:"matrix", type:"matrix", ts:"2026-04-11T13:46:30", decks:36, n:100, path:"results/matrix_20260411_134630.json" },
   { file:"matrix_20260411_131017.json", tag:"matrix", type:"matrix", ts:"2026-04-11T13:10:17", decks:36, n:100, path:"results/matrix_20260411_131017.json" },
   { file:"matrix_20260411_121738.json", tag:"matrix", type:"matrix", ts:"2026-04-11T12:17:38", decks:38, n:100, path:"results/matrix_20260411_121738.json" },
@@ -69,16 +71,8 @@ const LEGACY_HISTORY = [
   { file:"overnight_sweep.json", tag:"sweep", type:"sweep", ts:"2026-04-12T06:58:51", path:"results/overnight_sweep.json" },
 ];
 
-const MODERN_HISTORY = [
+const MODERN_HISTORY_FALLBACK = [
   { file:"metagame_results.json", tag:"matrix", type:"matrix", ts:"2026-04-11T20:15:00", decks:8, n:10, path:"metagame_results.json" },
-  // ── Bo3 logs (replays/) ──
-  { file:"boros_energy_vs_domain_zoo_s55555.txt", tag:"bo3", type:"bo3-log", ts:"2026-04-12T09:09:00", d1:"Boros Energy", d2:"Domain Zoo", seed:"55555", path:"replays/boros_energy_vs_domain_zoo_s55555.txt", size_kb:61.7 },
-  { file:"azorius_wst_vs_boros_s55555.txt", tag:"bo3", type:"bo3-log", ts:"2026-04-12T09:09:00", d1:"Azorius Control", d2:"Boros Energy", seed:"55555", path:"replays/azorius_wst_vs_boros_s55555.txt", size_kb:37.4 },
-  { file:"ruby_storm_vs_affinity_s55555.txt", tag:"bo3", type:"bo3-log", ts:"2026-04-12T09:08:00", d1:"Ruby Storm", d2:"Affinity", seed:"55555", path:"replays/ruby_storm_vs_affinity_s55555.txt", size_kb:25.3 },
-  { file:"eldrazi_tron_vs_izzet_prowess_s55555.txt", tag:"bo3", type:"bo3-log", ts:"2026-04-11T18:13:00", d1:"Eldrazi Tron", d2:"Izzet Prowess", seed:"55555", path:"replays/eldrazi_tron_vs_izzet_prowess_s55555.txt", size_kb:60.4 },
-  { file:"jeskai_blink_vs_affinity_s55555.txt", tag:"bo3", type:"bo3-log", ts:"2026-04-11T18:13:00", d1:"Jeskai Blink", d2:"Affinity", seed:"55555", path:"replays/jeskai_blink_vs_affinity_s55555.txt", size_kb:33.3 },
-  { file:"affinity_vs_domain_zoo_s55555.txt", tag:"bo3", type:"bo3-log", ts:"2026-04-11T18:13:00", d1:"Affinity", d2:"Domain Zoo", seed:"55555", path:"replays/affinity_vs_domain_zoo_s55555.txt", size_kb:37.0 },
-  { file:"affinity_vs_izzet_prowess_s55555.txt", tag:"bo3", type:"bo3-log", ts:"2026-04-11T18:13:00", d1:"Affinity", d2:"Izzet Prowess", seed:"55555", path:"replays/affinity_vs_izzet_prowess_s55555.txt", size_kb:26.2 },
 ];
 
 // ── Theme ─────────────────────────────────────────────────────────────
@@ -95,14 +89,19 @@ const pink = "#db2777", pinkLight = "#fce7f3";
 const TAG_COLORS = {
   matrix: { c: blue, bg: blueLight },
   custom: { c: amber, bg: amberLight },
+  "bo3-matrix": { c: blue, bg: blueLight },
   trace: { c: teal, bg: tealLight },
+  "graded-trace": { c: teal, bg: tealLight },
   bo3: { c: green, bg: greenLight },
   replay: { c: accent, bg: accentLight },
+  dashboard: { c: blue, bg: blueLight },
   audit: { c: red, bg: redLight },
   report: { c: pink, bg: pinkLight },
   guide: { c: pink, bg: pinkLight },
+  showcase: { c: accent, bg: accentLight },
   profile: { c: muted, bg: "#f3f4f6" },
   sweep: { c: amber, bg: amberLight },
+  data: { c: muted, bg: "#f3f4f6" },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────
@@ -152,14 +151,30 @@ const FILTER_TYPES = [
   { k: "trace", l: "Traces" },
   { k: "bo3", l: "Bo3" },
   { k: "replay", l: "Replays" },
+  { k: "dashboard", l: "Dashboards" },
   { k: "audit", l: "Audit" },
   { k: "report", l: "Reports" },
+  { k: "guide", l: "Guides" },
+  { k: "showcase", l: "Showcase" },
   { k: "sweep", l: "Sweeps" },
+  { k: "data", l: "Data" },
 ];
 
 // ── Main ──────────────────────────────────────────────────────────────
 export default function SimControlPanel() {
   const [format, setFormat] = useState("legacy");
+  const [legacyHistory, setLegacyHistory] = useState(LEGACY_HISTORY_FALLBACK);
+  const [modernHistory, setModernHistory] = useState(MODERN_HISTORY_FALLBACK);
+  useEffect(() => {
+    const load = async (base, setter) => {
+      try {
+        const res = await fetch(base + "/run_history.json?_=" + Date.now());
+        if (res.ok) { const d = await res.json(); if (d.runs) setter(d.runs); }
+      } catch(e) { console.warn("Failed to load history from " + base, e); }
+    };
+    load(LEGACY_BASE, setLegacyHistory);
+    load(MODERN_BASE, setModernHistory);
+  }, []);
   const [tab, setTab] = useState("history");
   const [histFilter, setHistFilter] = useState("all");
   const [runType, setRunType] = useState("matrix");
@@ -185,10 +200,15 @@ export default function SimControlPanel() {
   const selectNone = () => setSelectedDecks([]);
 
   const basePath = format === "legacy" ? LEGACY_BASE : MODERN_BASE;
-  const allRuns = format === "legacy" ? LEGACY_HISTORY : MODERN_HISTORY;
+  const allRuns = format === "legacy" ? legacyHistory : modernHistory;
   const filteredRuns = histFilter === "all" ? allRuns :
     allRuns.filter(r => r.type === histFilter || r.tag === histFilter ||
-      (histFilter === "bo3" && (r.type === "bo3" || r.type === "bo3-log")));
+      (histFilter === "bo3" && (r.type === "bo3" || r.type === "bo3-log")) ||
+      (histFilter === "matrix" && (r.type === "matrix" || r.tag === "bo3-matrix" || r.tag === "custom")) ||
+      (histFilter === "trace" && (r.tag === "trace" || r.tag === "graded-trace")) ||
+      (histFilter === "dashboard" && r.type === "dashboard") ||
+      (histFilter === "report" && (r.type === "report" || r.tag === "profile")) ||
+      (histFilter === "guide" && (r.type === "guide" || r.tag === "guide")));
   const matrixRuns = allRuns.filter(r => r.type === "matrix");
   const latest = allRuns[0];
   const toggleOut = (k) => setOutputs(p => ({ ...p, [k]: !p[k] }));
@@ -201,7 +221,14 @@ export default function SimControlPanel() {
 
   // ── Count by type ──
   const typeCounts = {};
-  allRuns.forEach(r => { const k = r.type === "bo3-log" ? "bo3" : r.type; typeCounts[k] = (typeCounts[k] || 0) + 1; });
+  allRuns.forEach(r => {
+    let k = r.type;
+    if (k === "bo3-log") k = "bo3";
+    if (r.tag === "graded-trace") k = "trace";
+    if (r.tag === "custom" || r.tag === "bo3-matrix") k = "matrix";
+    if (r.tag === "profile") k = "report";
+    typeCounts[k] = (typeCounts[k] || 0) + 1;
+  });
 
   // ── GitHub Actions trigger ──
   const triggerGitHub = async () => {
@@ -287,7 +314,7 @@ export default function SimControlPanel() {
       lines.push(`${step++}. Run: python3 run_meta.py --field ${deck1 || "deck1"} -n ${gamesPerPair}`);
     }
 
-    if (outputs.dashboard) lines.push(`${step++}. Rebuild the metagame matrix dashboard (use /mtg-meta-matrix skill). For Modern: run 'python3 -c "from build_dashboard import merge_results, build; merge_results(\\'metagame_results.json\\', \\'metagame_14deck.jsx\\'); build(\\'metagame_14deck.jsx\\', \\'./modern_meta_matrix_full.html\\')"'`);
+    if (outputs.dashboard) lines.push(`${step++}. Rebuild the metagame matrix dashboard (use /mtg-meta-matrix skill). For Modern: run 'python3 -c "from build_dashboard import merge_results, build; merge_results(\\'metagame_results.json\\', \\'metagame_data.jsx\\'); build(\\'metagame_data.jsx\\', \\'./modern_meta_matrix_full.html\\')"'`);
     if (outputs.replays) lines.push(`${step++}. Generate Bo3 replays for the 3 most interesting outlier matchups (use /mtg-bo3-replayer-v2 skill, seeds 80000+)`);
     if (outputs.audit) lines.push(`${step++}. Run meta_audit.py to generate audit_dashboard.html`);
     if (outputs.deckGuide) lines.push(`${step++}. Generate a comprehensive deck guide for "${guideDeck || "selected deck"}" (use /mtg-deck-guide skill). Include mulligan analysis, matchup guide, sideboard plans, and key hand archetypes.`);
