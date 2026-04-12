@@ -543,6 +543,17 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
     if not attackers:
         return
 
+    # Maze of Ith — defender untaps and removes target attacking creature from combat
+    maze = next((l for l in defender_player.lands
+                 if l.card.tag == 'maze' and not l.tapped), None)
+    if maze and attackers:
+        biggest = max(attackers, key=lambda a: a.power)
+        attackers.remove(biggest)
+        maze.tapped = True
+        log_list.append(f"Maze of Ith — removes {biggest.name} ({biggest.power}/{biggest.toughness}) from combat")
+        if not attackers:
+            return
+
     # C2 — tap every attacker
     for a in attackers:
         MTGRules.tap_attacker(a)
