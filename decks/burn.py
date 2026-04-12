@@ -335,6 +335,8 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                     opponent.library.pop(0)
                     opponent.hand.append(top)
                     log_fn(f"  Goblin Guide trigger → reveals {top.name} (land) — opponent draws it")
+                else:
+                    log_fn(f"  Goblin Guide trigger → reveals {top.name} (nonland) — stays on top")
 
         combat_declare(player, opponent, gs, log_entries, attackers)
         gs.state_based_actions()
