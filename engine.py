@@ -4983,13 +4983,22 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
         chosen='entomb_reanimate' if has_entomb and has_reanimate else 'pass',
         reason=f"mana={mana}, entomb={has_entomb}, reanimate={has_reanimate}, target={has_target}")
 
-    # ── Step 1: Lotus Petal — free mana, always first ────────────────────────
+    # ── Step 1: Lotus Petal — only crack if combo path exists ──────────────
+    # Check: do we have Entomb+Reanimate, or target in GY + Reanimate?
+    has_entomb = player.find_tag('entomb') is not None
+    has_reanimate_spell = any(c.tag in ('reanimate','exhume','animatedead') for c in player.hand)
+    has_gy_target = any((c.win_condition or c.is_combo_piece) and c.is_creature()
+                        for c in player.graveyard)
+    has_hand_target = any(c.tag in ('gris','archon','atraxa','emrakul') for c in player.hand)
+    combo_path = has_reanimate_spell and (has_gy_target or has_entomb or has_hand_target)
+
     petals = [c for c in player.hand if c.tag == 'petal']
-    for p in petals:
-        player.remove_from_hand(p)
-        player.exile.append(p)
-        mana += 1
-        log_fn(f"Lotus Petal — mana {mana}")
+    if combo_path:
+        for p in petals:
+            player.remove_from_hand(p)
+            player.exile.append(p)
+            mana += 1
+            log_fn(f"Lotus Petal — mana {mana}")
 
     # ── Step 2: Unmask (free) — strip FoW BEFORE committing mana ────────────
     # Unmask is free if you reveal your hand and opponent chooses a nonland card you discard.
@@ -5012,11 +5021,9 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
             else:
                 log_fn(f"Unmask (free) — discards {gris_for_unmask.name} to GY")
 
-    # ── Step 3: Dark Ritual — spend {B}, add {B}{B}{B} (net +2) ────────────
-    # Requires at least 1 black source (land or prior ritual output).
-    # Fire all rituals to maximise mana pool.
-    has_black_source = (mana >= 1)  # any mana at this point should be black (Swamp/dual/petal)
-    if has_black_source:
+    # ── Step 3: Dark Ritual — only if combo path exists ────────────────────
+    has_black_source = (mana >= 1)
+    if has_black_source and combo_path:
         rituals = [c for c in player.hand if c.tag == 'darkrit']
         for r in rituals:
             if mana >= 1:  # spend 1B, get 3B
@@ -5026,6 +5033,7 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"Dark Ritual ({mana-2}B→{mana}B)")
 
     # ── Careful Study / Brainstorm — fill GY with reanimation targets ────────
+    # Always worth casting: even without combo ready, Study puts fatties in GY
     study = player.find_tag('study')
     if study and mana >= 1:
         player.remove_from_hand(study); player.add_to_grave(study)
