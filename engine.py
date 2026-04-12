@@ -2149,6 +2149,28 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
         mana_ref[0] -= 1
         log_fn("★ Allosaurus Shepherd — always resolves (can't be countered)", True)
 
+    # ── Priority 1b: Deploy Heritage Druid BEFORE Glimpse (enables chain) ──
+    heritage_card = player.find_tag('heritage')
+    if heritage_card and not find_heritage() and mana_ref[0] >= 1:
+        player.remove_from_hand(heritage_card)
+        if not _try_counter_any(player, opponent, gs, heritage_card, log_entries):
+            player.put_creature_in_play(heritage_card)
+            mana_ref[0] -= 1
+            log_fn("Heritage Druid (1/1) — enables Glimpse chain")
+        else:
+            player.add_to_grave(heritage_card)
+
+    # ── Priority 1c: Deploy cheap mana elves to reach 3 for Heritage activation ──
+    for tag in ['llanowar', 'mystic', 'nettle']:
+        elf_card = player.find_tag(tag)
+        if elf_card and mana_ref[0] >= 1 and elf_count() < 3:
+            player.remove_from_hand(elf_card)
+            if not _try_counter_any(player, opponent, gs, elf_card, log_entries):
+                player.put_creature_in_play(elf_card)
+                mana_ref[0] -= 1
+            else:
+                player.add_to_grave(elf_card)
+
     # ── Priority 2: Glimpse of Nature chain ──
     glimpse   = player.find_tag('glimpse')
     heritage  = find_heritage()
