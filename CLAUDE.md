@@ -5,11 +5,13 @@
 ```bash
 # Verify installation
 python3 -c "from sim import run_rules_tests; run_rules_tests()"
-# Should print: 116 passed, 0 failed
+# Should print: 137 passed, 0 failed
 
 # Run a game
 python3 -c "from sim import run_game; r = run_game('ur_delver', 'dimir'); print(r.winner, r.win_reason)"
 ```
+
+**Always read `PLANNING.md` first** — it has known issues, stale data warnings, and session priorities.
 
 ## Core API (all imports from `sim.py`)
 

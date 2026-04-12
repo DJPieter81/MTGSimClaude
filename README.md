@@ -36,6 +36,7 @@ python3 game_replay.py ur_delver --pro burn --bo3 42 99 7
 | `game_replay.py` | Bo3 HTML replayer with 17 play categories |
 | `gen_guides.py` | Generates all 37 deck guides from sim data |
 | `CLAUDE.md` | Session instructions — read this first every session |
+| `PLANNING.md` | Known issues, stale data warnings, next session priorities |
 | `templates/` | Reference HTML templates (matrix + Burn guide) |
 | `skills/` | 3 reusable skills (meta-matrix, deck-guide, bo3-replayer) |
 | `results/` | Saved matrix JSON files |

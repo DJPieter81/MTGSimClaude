@@ -169,12 +169,14 @@ def best_reactive_answer(spell_card, gs, is_opponents_turn: bool) -> AnswerPlan:
 # Proactive Thoughtseize targeting
 # ─────────────────────────────────────────────
 
-def best_proactive_target(gs):
+def best_proactive_target(gs, opponent=None):
     """
     Property-based Thoughtseize targeting.
     Orders by strategic priority, not tag membership.
+    `opponent` is the player whose hand to search. If not provided, defaults to gs.p2
+    (correct only when the caster is P1).
     """
-    o = gs.p2
+    o = opponent if opponent is not None else gs.p2
     if not o.hand:
         return None
 
