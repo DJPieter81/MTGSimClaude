@@ -11,7 +11,7 @@ Typical goldfish kill: T3-4.
 import sys
 sys.path.insert(0, '/home/claude/mtg_sim')
 
-from cards import creature, instant, sorcery
+from cards import creature, instant, sorcery, basic_land, fetch_land
 from rules import Card, CardType
 
 
@@ -87,12 +87,17 @@ def make_burn_deck():
 
     # ── Lands (20) ───────────────────────────────────────────────────────────
 
-    # Mountain (basic)
-    for _ in range(10):
-        c = Card('Mountain', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='basic', produces={'R'},
-                 is_basic=True, gy_type='land')
-        d.append(c)
+    # Mountain (basic) — must have subtypes={'Mountain'} for fetchlands to find them
+    for _ in range(8):
+        d.append(basic_land('Mountain', 'R', 'Mountain'))
+
+    # Wooded Foothills (fetch → Mountain or Forest) — enables Fireblast + Searing Blaze landfall
+    for _ in range(4):
+        d.append(fetch_land('Wooded Foothills', ['Mountain', 'Forest']))
+
+    # Bloodstained Mire (fetch → Swamp or Mountain)
+    for _ in range(2):
+        d.append(fetch_land('Bloodstained Mire', ['Swamp', 'Mountain']))
 
     # Barbarian Ring: threshold — sac, deal 2 damage
     for _ in range(4):
@@ -104,13 +109,6 @@ def make_burn_deck():
     for _ in range(2):
         c = Card('Fiery Islet', CardType.LAND, cmc=0, mana_cost={},
                  colors=set(), tag='islet', produces={'R'}, gy_type='land')
-        d.append(c)
-
-    # Inspiring Vantage: taps for R or W
-    for _ in range(4):
-        c = Card('Inspiring Vantage', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='vantage', produces={'R', 'W'},
-                 gy_type='land')
         d.append(c)
 
     assert len(d) == 60, f"Burn deck: {len(d)} cards (expected 60)"
@@ -533,7 +531,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
                                   if c.tag == 'fireblast' and c is not fireblast) > 0
         should_fireblast = (
             opponent.life <= 4 + remaining_burn    # combined lethal with other burn
-            or (gs.turn >= 6 and opponent.life <= 8)  # desperate late-game
+            or (gs.turn >= 4 and opponent.life <= 10)  # aggressive: T4+ and opp hurting
             or has_second_fireblast                    # chain both Fireblasts
         )
         if not should_fireblast:

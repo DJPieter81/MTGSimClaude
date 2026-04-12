@@ -176,3 +176,24 @@ Individual steps (chained by refresh_all.py):
 | Apr 12 2026 (Claude.ai) | Thoughtseize P2 bug fix, 37 deck guides, gen_guides.py, classify_play 17 categories, pills() fix, CLAUDE.md + PLANNING.md + README + all 3 skills updated, outlier replays, merged Amulet+Legacy design, Scryfall hovers |
 | Apr 10 2026 | 38-deck matrix, card-level data, interaction events, 9 deck guides, Bo3 replayer with 6 zones + mulligan + narrative |
 | Apr 06 2026 | Initial 36-deck matrix, first deck guides (Burn, UR Delver), meta-weighted WR |
+
+## P0: Burn manabase — missing fetchlands (2026-04-12 audit)
+
+**Impact:** Fireblast cast rate ~23% (should be ~50%+), Searing Blaze half-powered, avg kill T5.7 (should be ~T4.5)
+
+### Findings
+1. **No fetchlands** — deck runs 4x Inspiring Vantage (Modern card) + 2x Fiery Islet instead of 8x fetchlands. Only 10/20 lands are Mountains (50% vs real 80%)
+2. **Fireblast bottleneck** — needs 2 Mountains on board, only 34% have that by T4
+3. **Searing Blaze landfall** — 1+1 without landfall vs 3+3 with. No fetches = no on-demand landfall
+4. **Barbarian Ring threshold** — fetches fuel GY for threshold (7 cards). Without fetches, threshold is slower
+
+### Fix plan
+1. Replace manabase: 10 Mountain → 8 Mountain, 4 Inspiring Vantage → 4 Wooded Foothills, 2 Fiery Islet → 2 Bloodstained Mire, keep 4 Barbarian Ring, keep 2 Fiery Islet (or replace with 2 more fetches)
+2. Add fetch crack logic to Burn strategy (crack fetch → Mountain, triggers landfall for Searing Blaze)
+3. Relax Fireblast condition: fire at T4+ when opp ≤ 10 and holding 2+ other burn spells
+4. Re-run Burn matchups after fix, expect +3-5pp across the board
+
+### Trace commands
+```
+python3 -c "from sim import run_game; r=run_game('burn','dimir',verbose=True); [print(l) for l in r.log_lines if 'Fireblast' in l or 'Mountain' in l]"
+```
