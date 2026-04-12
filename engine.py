@@ -2582,6 +2582,11 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             crea = player.find_tag(tag)
             if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
                 continue
+            gs.strat_log.log_decision(
+                gs.turn, 'dnt',
+                candidates=deploy_priority,
+                chosen=tag,
+                reason=f"mana={total_mana}, hand={[c.tag for c in player.hand]}")
             player.remove_from_hand(crea)
             if not _try_counter_any(player, opponent, gs, crea, log_entries):
                 player.put_creature_in_play(crea)
@@ -3557,6 +3562,13 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
     elif informer and total_mana >= 4:  # 3 to cast + 1 to activate
         combo_card = informer; combo_cost = 4
 
+    gs.strat_log.log_decision(
+        gs.turn, 'oops',
+        candidates=['cast_spy', 'cast_informer', 'pass'],
+        chosen=('cast_' + combo_card.tag) if combo_card else 'pass',
+        reason=(f"mana={total_mana}, spy={spy is not None}, "
+                f"informer={informer is not None}, leyline={gs.leyline_active}"))
+
     if combo_card:
         # Try Veil protection first
         vos = player.find_tag('vos')
@@ -4466,9 +4478,11 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     rituals2 = [c for c in player.hand if _is_ritual(c) and c not in rituals
                 and _ritual_cost(c) <= sim_mana and not _chalice_blocks(c)]
     rituals = rituals + rituals2
-    # Infernal Tutor acts as a ritual proxy: if in hand and mana available, 
-    # it can fetch a ritual or kill spell
-    itutor_proxy = player.find_tag('itutor') and sim_mana >= 2
+    # Infernal Tutor acts as a ritual proxy: if in hand and mana available,
+    # it can fetch a ritual or kill spell. Use card.cmc (which respects Thalia's
+    # +1 tax applied in apply_lock_effects) — not a hardcoded 2.
+    _itutor_card = player.find_tag('itutor')
+    itutor_proxy = _itutor_card and sim_mana >= _itutor_card.cmc
     tendrils = player.find_tag('tendrils')
     # Storm should only go off when safe: Veil active, opp has no FoW, or desperate
     veil_protecting = getattr(gs, 'veil_active', False)
@@ -4483,6 +4497,13 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
         storm_desperate = True
     # Also desperate at ≤10 life regardless (getting close to lethal range)
     if player.life <= 10:
+        storm_desperate = True
+    # Thalia-desperate: if Thalia is out, rituals net less mana and waiting
+    # only makes things worse (D&T will add Phyrexian Revoker / SFM pressure
+    # next turn). Take any kill line we have.
+    thalia_on_table = any(getattr(c.card, 'tag', None) == 'thalia'
+                          for c in opponent.creatures)
+    if thalia_on_table and (len(rituals) >= 2 or (led_castable and len(rituals) >= 1)):
         storm_desperate = True
     # Check if opponent likely has free counter (FoW/FoN + blue pitch card)
     opp_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
@@ -4518,6 +4539,11 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     est_storm = (len(rituals) + (1 if led else 0) + (1 if itutor_proxy else 0)
                  + cantrips_in_hand + (1 if vos_in_hand else 0) + (1 if pif else 0))
     lethal_storm = max(1, (opponent.life + 1) // 2 - 1)  # storm copies needed for lethal
+    # Under Thalia, rituals net less mana — Storm can't afford to wait for a
+    # "clean" kill hand. Accept one-short storm counts: if we can storm for
+    # lethal_storm - 1, the final itutor/tendrils cast pushes us over.
+    if thalia_on_table:
+        lethal_storm = max(1, lethal_storm - 1)
     # Ad Nauseam / Past in Flames self-generate storm during resolution (draw 15+ / replay GY)
     self_assembles = False
 
@@ -4530,6 +4556,16 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     kill_F = bool(itutor_proxy and len(rituals) >= 2 and sim_mana >= 3 and est_storm >= lethal_storm)
     self_assembles = kill_C or kill_D  # these generate their own storm count
     can_kill = kill_A or kill_B or kill_C or kill_D or kill_E or kill_F
+
+    # Strategic trace (no-op unless --trace)
+    _fired_kill = next((n for n, k in (('A', kill_A), ('B', kill_B), ('C', kill_C),
+                                       ('D', kill_D), ('E', kill_E), ('F', kill_F)) if k), 'pass')
+    gs.strat_log.log_decision(
+        gs.turn, 'storm',
+        candidates=['kill_A', 'kill_B', 'kill_C', 'kill_D', 'kill_E', 'kill_F', 'pass'],
+        chosen=('kill_' + _fired_kill) if can_kill else 'pass',
+        reason=(f"storm={est_storm}/{lethal_storm}, rituals={len(rituals)}, "
+                f"safe={safe_to_combo}, thalia={thalia_on_table}, life={player.life}"))
 
     if can_kill and safe_to_combo:
         # ── Try to protect with Veil of Summer first ────────────────────────

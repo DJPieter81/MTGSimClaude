@@ -180,3 +180,71 @@ def print_matrix(data):
         tier = 'T1' if get_meta_share(d) >= 0.05 else 'T2' if get_meta_share(d) >= 0.04 else '  '
         bar = '#' * int(ev * 40)
         print(f'  {i+1:2d}. {d:15s} {ev:5.1%}  {tier}  {bar}')
+
+
+# ── Symmetry averaging (PLANNING_REFERENCE §9 #3) ────────────────────────────
+
+def symmetrise_matrix(data, asymmetry_threshold=0.10):
+    """Average each matchup across both orderings to eliminate p1/p2 asymmetry.
+
+    For every pair (d1, d2) where both 'd1_vs_d2' and 'd2_vs_d1' exist, replace
+    each value with ((wr_as_p1) + (1 - wr_as_p2)) / 2. Keeps the `d1+d2 ≈ 1`
+    invariant exactly. Flags any pair whose pre-symmetrisation asymmetry
+    exceeds `asymmetry_threshold` in a 'symmetry_warnings' list.
+
+    Args:
+        data: matrix dict as returned by load_matrix() (must contain 'matchups').
+        asymmetry_threshold: flag pairs where |wr_p1 + wr_p2 - 1| > threshold.
+
+    Returns:
+        dict with keys:
+            'matchups'           — the averaged matchup map
+            'symmetry_warnings'  — list of (d1, d2, wr_p1, wr_p2, asymmetry)
+            'unpaired'           — list of matchup keys missing their reverse
+        Plus all other keys from the input data.
+    """
+    mu = data['matchups']
+    averaged = {}
+    warnings = []
+    unpaired = []
+    seen = set()
+    for key, wr in mu.items():
+        if '_vs_' not in key:
+            averaged[key] = wr
+            continue
+        d1, d2 = key.split('_vs_', 1)
+        reverse_key = f"{d2}_vs_{d1}"
+        reverse_wr = mu.get(reverse_key)
+        if reverse_wr is None:
+            averaged[key] = wr
+            unpaired.append(key)
+            continue
+        pair_id = tuple(sorted((d1, d2)))
+        if pair_id not in seen:
+            asymmetry = abs(wr + reverse_wr - 1.0)
+            if asymmetry > asymmetry_threshold:
+                warnings.append((d1, d2, wr, reverse_wr, asymmetry))
+            seen.add(pair_id)
+        # Symmetric average: this side's "win rate as p1" averaged with
+        # "1 - opponent's win rate as p1" (i.e. my win rate as p2)
+        averaged[key] = (wr + (1 - reverse_wr)) / 2
+    out = dict(data)
+    out['matchups'] = averaged
+    out['symmetry_warnings'] = warnings
+    out['unpaired'] = unpaired
+    return out
+
+
+def save_symmetrised(data, path=None):
+    """Write a symmetrised matrix alongside the original.
+
+    If path is None, derives '<original>_sym.json' from the timestamp.
+    """
+    _ensure_dir()
+    if path is None:
+        ts = data.get('timestamp', datetime.now().isoformat()).replace(':', '').replace('-', '').split('.')[0]
+        path = os.path.join(RESULTS_DIR, f"matrix_{ts}_sym.json")
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=2)
+    print(f"Saved symmetrised matrix: {path}")
+    return path
