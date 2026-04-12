@@ -154,3 +154,31 @@ mtg-deck-guide/
     ├── design_system.md    — CSS variables, fonts, component patterns
     └── mana_math.md        — Common mana math pitfalls to avoid
 ```
+
+## Generator Script
+
+`gen_guides.py` in repo root generates all 37 guides automatically:
+
+```bash
+python3 gen_guides.py    # ~30s, 500 games/deck
+```
+
+Features produced per guide:
+1. Two-column layout (decklist + findings)
+2. Kill turn distribution chart (from sim data)
+3. Hand archetype WR bars (500 games)
+4. Real sim hands (2 wins + 1 loss with game logs)
+5. Scryfall card image hovers
+6. Metagame strategy (7 visual components)
+7. Full matchup spread by meta tier
+
+**Burn is skipped** — it has a hand-crafted template at `templates/reference_deck_guide.html`.
+
+### API Gotcha
+
+`run_game(d1, d2)` returns `p1_opening_hand` as a **list of strings**, not Card objects.
+Do NOT call `.name` on them. Use directly:
+```python
+hand_cards = list(r.p1_opening_hand)  # correct
+hand_cards = [c.name for c in r.p1_opening_hand]  # WRONG — crashes
+```
