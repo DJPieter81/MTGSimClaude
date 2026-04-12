@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
 grade_traces.py — Grade MTGSimClaude traces via Anthropic API (§9 #7).
+"""
+from __future__ import annotations
+"""
 
 Usage:
     # LLM grading (requires valid Anthropic API key)
