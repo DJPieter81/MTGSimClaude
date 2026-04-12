@@ -5444,12 +5444,16 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Swords to Plowshares exiles {target.card.name}")
             update_goyf(gs)
 
-    # Lightning Bolt — creature removal first, face only at ≤ 9 (Mardu is midrange, not pure burn)
+    # Lightning Bolt — creature removal first, face only at ≤ 9 (Mardu is midrange, not pure burn).
+    # vs Burn: race mode — kill Eidolon/Swiftspear (snowball threats) but otherwise go face
+    # to close the game before their 20-damage hand resolves.
     bolt = player.find_tag('bolt')
     if bolt and opp_can_cast(bolt, total_mana, gs, caster=player):
         def bolt_priority(c):
             if c.card.tag == 'tamiyo': return 0
             if c.card.tag == 'bowm':   return 1
+            if vs_burn and c.card.tag in ('eidolon', 'swiftspear'): return 1
+            if vs_burn: return 99  # ignore other burn creatures — race face
             if c.toughness <= 2:       return 2
             if c.toughness == 3:       return 3
             return 99
@@ -5458,7 +5462,9 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
         candidates = [c for c in opponent.creatures
                       if bolt_priority(c) < 99 and _can_target(c, _bolt_mana_after)]
         target = min(candidates, key=bolt_priority) if candidates else None
-        go_face = (target is None and opponent.life <= 9)
+        # vs Burn: go face aggressively to race (no creature target worth saving burn for)
+        face_threshold = 17 if vs_burn else 9
+        go_face = (target is None and opponent.life <= face_threshold)
         player.remove_from_hand(bolt); player.add_to_grave(bolt)
         total_mana -= 1
         if target:
