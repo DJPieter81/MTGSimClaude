@@ -398,13 +398,18 @@ def protagonist_turn(gs, turn, matchup):
             if fast:
                 return fast
         # Priority: fetch > dual > basic > utility (Wasteland etc)
+        # For artifact decks (Affinity, 8-Cast): prefer artifact lands and Saga
+        # over basics because they contribute to artifact count / affinity.
+        is_artifact_deck = gs.p1_deck in ('affinity', 'eight_cast')
         def land_priority(c):
             if getattr(c, 'is_fetch', False): return 2
             tag = getattr(c, 'tag', '')
             if tag == 'dual': return 1
-            if c.is_basic: return 1
             if tag in ('sewers',): return 1
             if tag in ('ancient_tomb', 'city'): return 0
+            if is_artifact_deck and tag == 'saga': return 0  # Saga is highest priority
+            if is_artifact_deck and tag == 'seat': return 0  # artifact land > basic
+            if c.is_basic: return 1
             if tag == 'wl': return 5
             return 3
         return min(lands_in_hand, key=land_priority)
