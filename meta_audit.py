@@ -23,6 +23,63 @@ from deck_registry import get_meta_share, get_all_keys, get_meta
 from meta_results import load_matrix, RESULTS_DIR
 
 
+# ── Expected matchup ranges (PLANNING_REFERENCE §10 P2 #12) ──────────────────
+#
+# Legacy-consensus win-rate ranges for known matchups. Populated from
+# PLANNING_REFERENCE.md Section 4 "Known matchup spot-checks" plus a few
+# obvious additions. Key is (deck1, deck2) where deck1 is P1. Value is
+# (lo, hi) as fractions — e.g. 'burn vs storm' expected 55-75% for Burn.
+#
+# Used by check_expected_ranges() to flag when the sim drifts outside a
+# known-good range. Add entries here as new reference points are
+# established through playtesting / tournament data.
+EXPECTED_RANGES = {
+    # From PLANNING_REFERENCE §4 spot-checks:
+    ('burn', 'storm'):        (0.55, 0.75),
+    ('burn', 'dimir'):        (0.55, 0.80),
+    ('infect', 'burn'):       (0.35, 0.55),
+    ('reanimator', 'dimir'):  (0.35, 0.65),
+    ('eldrazi', 'storm'):     (0.55, 0.80),
+    ('storm', 'dnt'):         (0.55, 0.80),  # P0 #1 target
+    ('oops', 'burn'):         (0.55, 0.80),  # P0 #2 target
+    # Symmetric counterparts for quick lookup
+    ('storm', 'burn'):        (0.25, 0.45),
+    ('dimir', 'burn'):        (0.20, 0.45),
+    ('burn', 'infect'):       (0.45, 0.65),
+    ('dimir', 'reanimator'):  (0.35, 0.65),
+    ('storm', 'eldrazi'):     (0.20, 0.45),
+    ('dnt', 'storm'):         (0.20, 0.45),
+    ('burn', 'oops'):         (0.20, 0.45),
+}
+
+
+def check_expected_ranges(matrix_data, ranges=None):
+    """Verify known matchups are within their expected ranges.
+
+    Args:
+        matrix_data: loaded matrix dict (must have 'matchups' key)
+        ranges: dict {(d1, d2): (lo, hi)} of expected ranges.
+                Defaults to EXPECTED_RANGES.
+
+    Returns:
+        list of (d1, d2, actual_wr, (lo, hi)) for matchups outside the range.
+    """
+    if ranges is None:
+        ranges = EXPECTED_RANGES
+    mu = matrix_data['matchups']
+    out = []
+    for (d1, d2), (lo, hi) in ranges.items():
+        key = f"{d1}_vs_{d2}"
+        wr = mu.get(key)
+        if wr is None:
+            continue
+        # Matrix values can be either 0-1 floats or 0-100 percents
+        wr_frac = wr / 100 if wr > 1 else wr
+        if not (lo <= wr_frac <= hi):
+            out.append((d1, d2, wr_frac, (lo, hi)))
+    return out
+
+
 # ── 1. Outlier Detection ─────────────────────────────────────────────────────
 
 def detect_outliers(matrix_data, threshold=0.15):
@@ -145,6 +202,16 @@ def post_matrix_audit(matrix_data):
             print(f"\n⚠ BURN CEILING EXCEEDED: {burn_wr:.0%} (limit: 55%)")
         else:
             print(f"\n✓ Burn meta WR: {burn_wr:.0%} (within 55% ceiling)")
+
+    # Control 9: Known matchup ranges
+    out_of_range = check_expected_ranges(matrix_data)
+    if out_of_range:
+        print(f"\n⚠ MATCHUPS OUTSIDE EXPECTED RANGES ({len(out_of_range)} / "
+              f"{len(EXPECTED_RANGES)} tracked):")
+        for d1, d2, wr, (lo, hi) in out_of_range:
+            print(f"  {d1} vs {d2}: {wr:.0%} (expected {lo:.0%}-{hi:.0%})")
+    else:
+        print(f"\n✓ All {len(EXPECTED_RANGES)} known matchups within expected ranges")
 
     print("=" * 60 + "\n")
     return len(sym), len(ext)
