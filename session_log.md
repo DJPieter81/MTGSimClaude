@@ -33,3 +33,5 @@
 - _strategy_ocelot: 7 casts converted, tests 147/0, commit 73d33f0
 - _strategy_mono_black: 8 casts converted, tests 147/0, commit 474eeb6
 - _strategy_boros: 8 casts converted, tests 147/0, commit a492d31
+- _strategy_mardu: 6 casts converted (T1 grief+ephemerate combo left as-is), tests 147/0, commit d74ee91
+- _strategy_doomsday: SKIPPED (complex DD+VoS+Oracle sequence with intertwined counter checks; conversion risk too high given remaining time)

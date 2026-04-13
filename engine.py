@@ -3210,28 +3210,27 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         total_mana += 1  # Grim Monolith: costs 2, taps for 3 (net +1 same turn)
         log_fn("Grim Monolith → +3 mana")
 
-    # ── 1. Chalice of the Void on 1 — T1 priority with Ancient Tomb ──
-    ch = player.find_tag('chalice')
-    if ch and gs.chalice_x is None and total_mana >= 2:
-        player.remove_from_hand(ch)
-        if not _try_counter_any(player, opponent, gs, ch, log_entries):
-            player.put_artifact_in_play(ch)
-            total_mana -= 2
-            _resolve_lock(gs, ch, log_fn)
-        else:
-            player.add_to_grave(ch)
+    budget = [total_mana]
 
-    # ── 2. Trinisphere — second lock piece ──
+    # ── 1. Chalice of the Void on 1 ──
+    ch = player.find_tag('chalice')
+    if ch and gs.chalice_x is None and budget[0] >= 2:
+        def _resolve_ch(c):
+            player.put_artifact_in_play(c)
+            _resolve_lock(gs, c, log_fn)
+        cast_spell(player, opponent, gs, ch, budget, log_fn, log_entries,
+                   on_resolve=_resolve_ch)
+
+    # ── 2. Trinisphere ──
     tri = player.find_tag('trini')
-    if tri and not gs.trinisphere_active and total_mana >= 3:
-        player.remove_from_hand(tri)
-        if not _try_counter_any(player, opponent, gs, tri, log_entries):
-            player.put_artifact_in_play(tri)
-            total_mana -= 3
+    if tri and not gs.trinisphere_active and budget[0] >= 3:
+        def _resolve_tri(c):
+            player.put_artifact_in_play(c)
             gs.trinisphere_active = True
             log_fn("Trinisphere — all spells cost minimum 3", True)
-        else:
-            player.add_to_grave(tri)
+        cast_spell(player, opponent, gs, tri, budget, log_fn, log_entries,
+                   on_resolve=_resolve_tri)
+    total_mana = budget[0]
 
     # (FoV is handled by _p1_respond_on_opp_turn, not here — removed
     #  self-destructive call that destroyed Prison's own lock pieces as P2)
@@ -3253,26 +3252,24 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             return
 
     # Deploy Painter's Servant (CMC 2)
+    budget[0] = total_mana
     painter = player.find_tag('painter')
-    if painter and not painter_in_play and total_mana >= 2:
-        player.remove_from_hand(painter)
-        if not _try_counter_any(player, opponent, gs, painter, log_entries):
-            player.put_artifact_in_play(painter)
-            total_mana -= 2
+    if painter and not painter_in_play and budget[0] >= 2:
+        def _resolve_painter(c):
+            player.put_artifact_in_play(c)
             log_fn("Painter's Servant (naming blue)", True)
-        else:
-            player.add_to_grave(painter)
+        cast_spell(player, opponent, gs, painter, budget, log_fn, log_entries,
+                   on_resolve=_resolve_painter)
 
     # Deploy Grindstone (CMC 1)
     grind = player.find_tag('grind')
-    if grind and not grind_in_play and total_mana >= 1:
-        player.remove_from_hand(grind)
-        if not _try_counter_any(player, opponent, gs, grind, log_entries):
-            player.put_artifact_in_play(grind)
-            total_mana -= 1
+    if grind and not grind_in_play and budget[0] >= 1:
+        def _resolve_grind(c):
+            player.put_artifact_in_play(c)
             log_fn("Grindstone", True)
-        else:
-            player.add_to_grave(grind)
+        cast_spell(player, opponent, gs, grind, budget, log_fn, log_entries,
+                   on_resolve=_resolve_grind)
+    total_mana = budget[0]
 
     # Check combo again after deploying pieces
     painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
@@ -3315,54 +3312,54 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         _karn_wish()
 
     # Deploy Karn from hand if not yet on board
+    budget[0] = total_mana
     karn = player.find_tag('karn')
-    if karn and total_mana >= 4 and not karn_on_board:
-        player.remove_from_hand(karn)
-        if not _try_counter_any(player, opponent, gs, karn, log_entries):
-            player.put_artifact_in_play(karn)
-            total_mana -= 4
+    if karn and budget[0] >= 4 and not karn_on_board:
+        def _resolve_karn(c):
+            player.put_artifact_in_play(c)
             log_fn("Karn, the Great Creator (static: opp artifacts lose abilities)", True)
             _karn_wish()
-        else:
-            player.add_to_grave(karn)
+        cast_spell(player, opponent, gs, karn, budget, log_fn, log_entries,
+                   on_resolve=_resolve_karn)
 
     # ── 5. Ensnaring Bridge ──
     br = player.find_tag('bridge')
-    if br and not gs.bridge_on_board and total_mana >= 3:
-        player.remove_from_hand(br)
+    if br and not gs.bridge_on_board and budget[0] >= 3:
         ad = opponent.find_tag('ad')
         if ad and opponent.available_mana_count() >= ad.cmc:
+            # Abrupt Decay destroys Bridge in response — bridge still gets cast but then destroyed
+            player.remove_from_hand(br); player.add_to_grave(br)
             opponent.remove_from_hand(ad); opponent.add_to_grave(ad)
             log_fn("Abrupt Decay destroys Bridge in response", True)
-        elif not _try_counter_any(player, opponent, gs, br, log_entries):
-            player.put_artifact_in_play(br)
-            _resolve_lock(gs, br, log_fn)
         else:
-            player.add_to_grave(br)
+            def _resolve_br(c):
+                player.put_artifact_in_play(c)
+                _resolve_lock(gs, c, log_fn)
+            cast_spell(player, opponent, gs, br, budget, log_fn, log_entries,
+                       on_resolve=_resolve_br)
 
     # ── 6. TKS ──
     tks = player.find_tag('tks')
-    if tks and total_mana >= 4:
-        player.remove_from_hand(tks)
-        if not _try_counter_any(player, opponent, gs, tks, log_entries):
-            player.put_creature_in_play(tks)
+    if tks and budget[0] >= 4:
+        def _resolve_tks(c):
+            player.put_creature_in_play(c)
             if opponent.hand:
-                nonlands = [c for c in opponent.hand if not c.is_land()]
+                nonlands = [cc for cc in opponent.hand if not cc.is_land()]
                 if nonlands:
                     ex = random.choice(nonlands); opponent.hand.remove(ex); opponent.exile.append(ex)
                     log_fn(f"TKS exiles {ex.name}", True)
-        else:
-            player.add_to_grave(tks)
+        cast_spell(player, opponent, gs, tks, budget, log_fn, log_entries,
+                   on_resolve=_resolve_tks)
 
-    # ── 7. Null Rod (if no Karn already providing similar effect) ──
+    # ── 7. Null Rod ──
     nr = player.find_tag('nullrod')
-    if nr and total_mana >= 2 and not any(p.card.tag == 'karn' for p in player.artifacts):
-        player.remove_from_hand(nr)
-        if not _try_counter_any(player, opponent, gs, nr, log_entries):
-            player.put_artifact_in_play(nr)
+    if nr and budget[0] >= 2 and not any(p.card.tag == 'karn' for p in player.artifacts):
+        def _resolve_nr(c):
+            player.put_artifact_in_play(c)
             log_fn("Null Rod — activated abilities of artifacts don't work", True)
-        else:
-            player.add_to_grave(nr)
+        cast_spell(player, opponent, gs, nr, budget, log_fn, log_entries,
+                   on_resolve=_resolve_nr)
+    total_mana = budget[0]
 
     # Bridge hand-dump: reduce hand to 0-1 to block most creatures.
     if gs.bridge_on_board and len(player.hand) > 1:
