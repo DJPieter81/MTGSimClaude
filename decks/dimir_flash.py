@@ -18,36 +18,33 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     removal → Wasteland → combat.
     """
     from engine import (opp_can_cast, _try_counter_any, bowmasters_triggers,
-                        update_goyf, combat_declare)
+                        update_goyf, combat_declare, cast_spell, resolve_cantrip)
     from rules import MTGRules
+
+    budget = [total_mana]
 
     # ── Cantrips ──
     can = next((c for c in player.hand
-                if c.is_cantrip and opp_can_cast(c, total_mana, gs, caster=player)), None)
+                if c.is_cantrip and opp_can_cast(c, budget[0], gs, caster=player)), None)
     if can:
-        player.remove_from_hand(can); player.add_to_grave(can)
-        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-        player.draw(draws)
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(draws, gs, ctr)
-            for m in ctr: log_entries.append(m)
+        cast_spell(player, opponent, gs, can, budget, log_fn, log_entries,
+                   on_resolve=lambda c: (player.add_to_grave(c),
+                                         resolve_cantrip(player, c, gs, log_fn, log_entries)))
 
-    # ── Wan Shi Tong — cast with maximum X affordable ──
+    # ── Wan Shi Tong ──
     wst_card = player.find_tag('wst')
     wst_on_board = next((p for p in player.creatures if p.card.tag == 'wst'), None)
-    if wst_card and not wst_on_board and opp_can_cast(wst_card, total_mana, gs, caster=player):
-        x = max(0, min(total_mana - 2, 4))  # pay UU + X generic
+    if wst_card and not wst_on_board and opp_can_cast(wst_card, budget[0], gs, caster=player):
+        x = max(0, min(budget[0] - 2, 4))
         has_board = len(player.creatures) > 0
-        deploy = (x >= 1) or (x >= 0 and not has_board and total_mana >= 2)
+        deploy = (x >= 1) or (x >= 0 and not has_board and budget[0] >= 2)
         if deploy:
-            player.remove_from_hand(wst_card)
-            if not _try_counter_any(player, opponent, gs, wst_card, log_entries):
-                perm = player.put_creature_in_play(wst_card)
-                perm.power_mod = x
-                perm.toughness_mod = x
-                cards_drawn = x // 2
-                log_fn(f"Wan Shi Tong, Librarian (X={x}) enters as {perm.power}/{perm.toughness}")
+            def _resolve_wst(c, _x=x):
+                perm = player.put_creature_in_play(c)
+                perm.power_mod = _x
+                perm.toughness_mod = _x
+                cards_drawn = _x // 2
+                log_fn(f"Wan Shi Tong, Librarian (X={_x}) enters as {perm.power}/{perm.toughness}")
                 if cards_drawn > 0:
                     drawn = player.draw(cards_drawn)
                     if drawn:
@@ -55,29 +52,27 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
                     if gs.bowmasters_on_board:
                         ctr = []; bowmasters_triggers(cards_drawn, gs, ctr)
                         for m in ctr: log_entries.append(m)
-            else:
-                player.add_to_grave(wst_card)
+            cast_spell(player, opponent, gs, wst_card, budget, log_fn, log_entries,
+                       on_resolve=_resolve_wst, cost_override=2 + x)
 
-    # ── Other threats (Murktide, Tamiyo) — cast affordable creatures ──
-    thr = player.find_any(lambda c: c.is_creature() and c.cmc <= total_mana
+    # ── Other threats ──
+    thr = player.find_any(lambda c: c.is_creature() and c.cmc <= budget[0]
                           and c.tag not in ('bowm', 'wst', 'snuffout'))
     if thr:
-        player.remove_from_hand(thr)
-        if not _try_counter_any(player, opponent, gs, thr, log_entries):
-            player.put_creature_in_play(thr)
-            log_fn(f"{thr.name} ({thr.base_power}/{thr.base_toughness})")
-        else:
-            player.add_to_grave(thr)
+        def _resolve_thr(c):
+            player.put_creature_in_play(c)
+            log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+        cast_spell(player, opponent, gs, thr, budget, log_fn, log_entries,
+                   on_resolve=_resolve_thr)
 
     # ── Bowmasters at flash speed ──
     bowm = player.find_tag('bowm')
-    if bowm and opp_can_cast(bowm, total_mana, gs, caster=player):
-        player.remove_from_hand(bowm)
-        if not _try_counter_any(player, opponent, gs, bowm, log_entries):
-            player.put_creature_in_play(bowm)
+    if bowm and opp_can_cast(bowm, budget[0], gs, caster=player):
+        def _resolve_bowm(c):
+            player.put_creature_in_play(c)
             log_fn("Orcish Bowmasters (flash)")
-        else:
-            player.add_to_grave(bowm)
+        cast_spell(player, opponent, gs, bowm, budget, log_fn, log_entries,
+                   on_resolve=_resolve_bowm)
 
     # ── Removal ──
     push = player.find_tag('push')
@@ -85,11 +80,14 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
         target = next((c for c in opponent.creatures
                        if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)), None)
         if target:
-            player.remove_from_hand(push); player.add_to_grave(push)
-            opponent.remove_creature(target)
-            rev = "[revolt CMC<=4]" if player.revolt_this_turn else "[CMC<=2]"
-            log_fn(f"Fatal Push {rev} -> kills {target.name}")
-            update_goyf(gs)
+            def _resolve_push(c, _t=target):
+                player.add_to_grave(c)
+                opponent.remove_creature(_t)
+                rev = "[revolt CMC<=4]" if player.revolt_this_turn else "[CMC<=2]"
+                log_fn(f"Fatal Push {rev} -> kills {_t.name}")
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, push, budget, log_fn, log_entries,
+                       on_resolve=_resolve_push)
 
     # ── Wasteland ──
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
