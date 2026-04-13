@@ -39,3 +39,4 @@
 - _strategy_oops: SKIPPED (complex combo with Veil+Mindbreak+Dread Return nested counter logic)
 - _strategy_show: 2 casts converted (partial; Show+Veil combo left as-is), tests 147/0, commit d6035ee
 - _strategy_bug: SKIPPED (23 casts, very large; would require careful port of BUG's complex state assessment and spell sequences; left for a dedicated session)
+- decks/dimir_flash: 5 casts converted, tests 147/0, commit c43479c

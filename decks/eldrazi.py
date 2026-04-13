@@ -93,62 +93,61 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
 
     has_cavern = any(l.card.tag == 'cavern' for l in player.lands)
 
+    from engine import cast_spell
+
     def try_cast(card, cost, is_creature=True):
         nonlocal mana
-        player.remove_from_hand(card)
-        # Cavern makes Eldrazi creatures uncounterable
+        # Cavern makes Eldrazi creatures uncounterable — bypass counter window entirely
         if is_creature and has_cavern:
+            player.remove_from_hand(card)
             player.put_creature_in_play(card)
             mana -= cost
             log_fn(f"{card.name} ({card.base_power}/{card.base_toughness}) [Cavern — uncounterable]")
             return True
-        if not _try_counter_any(player, opponent, gs, card, log_entries):
+        _b = [mana]
+        def _on_resolve(c):
             if is_creature:
-                player.put_creature_in_play(card)
+                player.put_creature_in_play(c)
             else:
-                player.add_to_grave(card)
-            mana -= cost
-            log_fn(f"{card.name}")
-            return True
-        else:
-            player.add_to_grave(card)
-            mana -= cost
-            return False
+                player.add_to_grave(c)
+            log_fn(f"{c.name}")
+        result = cast_spell(player, opponent, gs, card, _b, log_fn, log_entries,
+                            on_resolve=_on_resolve, cost_override=cost)
+        mana = _b[0]
+        return result
 
-    # ── 1. Chalice on 1 (highest priority) ───────────────────────────────
+    # ── 1. Chalice on 1 ──
     ch = player.find_tag('chalice')
     if ch and gs.chalice_x is None:
         while mana < 2:
             if not crack_petal() and not crack_ssg():
                 break
         if mana >= 2:
-            player.remove_from_hand(ch)
-            if not _try_counter_any(player, opponent, gs, ch, log_entries):
-                player.put_artifact_in_play(ch)
+            _b = [mana]
+            def _resolve_ch(c):
+                player.put_artifact_in_play(c)
                 gs.chalice_x = 1
-                mana -= 2
                 log_fn("★ Chalice on 1 — blanks Push, Brainstorm, Ponder, Daze", True)
-            else:
-                player.add_to_grave(ch)
-                mana -= 2
+            cast_spell(player, opponent, gs, ch, _b, log_fn, log_entries,
+                       on_resolve=_resolve_ch, cost_override=2)
+            mana = _b[0]
 
-    # ── 2. The One Ring (4 mana) ─────────────────────────────────────────
+    # ── 2. The One Ring ──
     ring = player.find_tag('ring')
     if ring and gs.eldrazi_ring_turns == 0:
         while mana < 4:
             if not crack_petal() and not crack_ssg():
                 break
         if mana >= 4:
-            player.remove_from_hand(ring)
-            if not _try_counter_any(player, opponent, gs, ring, log_entries):
-                player.add_to_grave(ring)
-                mana -= 4
+            _b = [mana]
+            def _resolve_ring(c):
+                player.add_to_grave(c)
                 gs.eldrazi_ring_turns = 1
-                player.life += 5  # protection proxy
+                player.life += 5
                 log_fn("★ The One Ring — protection + draw engine", True)
-            else:
-                player.add_to_grave(ring)
-                mana -= 4
+            cast_spell(player, opponent, gs, ring, _b, log_fn, log_entries,
+                       on_resolve=_resolve_ring, cost_override=4)
+            mana = _b[0]
 
     # ── 3. TKS (4 mana with Temple discount = 3) ────────────────────────
     tks = player.find_tag('tks')
@@ -184,22 +183,21 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── 5. Kozilek's Command (3 mana) ────────────────────────────────────
     kcmd = player.find_tag('kcommand')
     if kcmd and mana >= 3:
-        player.remove_from_hand(kcmd)
-        if not _try_counter_any(player, opponent, gs, kcmd, log_entries):
-            player.add_to_grave(kcmd)
-            mana -= 3
-            small = [c for c in opponent.creatures if c.toughness <= 3]
+        _b = [mana]
+        def _resolve_kcmd(c):
+            player.add_to_grave(c)
+            small = [cc for cc in opponent.creatures if cc.toughness <= 3]
             if small:
-                target = max(small, key=lambda c: c.power)
+                target = max(small, key=lambda cc: cc.power)
                 opponent.creatures.remove(target)
                 log_fn(f"Kozilek's Command — kill {target.card.name} + Spawn", True)
                 update_goyf(gs)
             else:
                 player.draw(2)
                 log_fn("Kozilek's Command — draw 2")
-        else:
-            player.add_to_grave(kcmd)
-            mana -= 3
+        cast_spell(player, opponent, gs, kcmd, _b, log_fn, log_entries,
+                   on_resolve=_resolve_kcmd, cost_override=3)
+        mana = _b[0]
 
     # ── 6. Wasteland ────────────────────────────────────────────────────
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
