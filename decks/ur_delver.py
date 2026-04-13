@@ -145,84 +145,80 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── 1. Deploy threats ────────────────────────────────────────────────────
 
-    # Delver of Secrets — best T1 play (enters as 1/1, flips next upkeep)
+    from engine import cast_spell
+    budget = [mana]
+
+    # Delver of Secrets — best T1 play
     deployed_threat = False
     for tag in ('delver', 'drc'):
         threat = player.find_tag(tag)
-        if threat and mana >= 1:
-            player.remove_from_hand(threat)
-            if not _try_counter_any(player, opponent, gs, threat, log_entries):
-                player.put_creature_in_play(threat)
-                mana -= 1
-                suffix = " (1/1 — flips next upkeep)" if tag == 'delver' else ""
-                log_fn(f"{threat.name}{suffix}")
-            else:
-                player.add_to_grave(threat)
+        if threat and budget[0] >= 1:
+            def _resolve_threat(c, _tag=tag):
+                player.put_creature_in_play(c)
+                suffix = " (1/1 — flips next upkeep)" if _tag == 'delver' else ""
+                log_fn(f"{c.name}{suffix}")
+            cast_spell(player, opponent, gs, threat, budget, log_fn, log_entries,
+                       on_resolve=_resolve_threat, cost_override=1)
             deployed_threat = True
             break
 
-    # Murktide Regent — delve makes it effectively 2 mana with 5+ cards in GY
+    # Murktide Regent — delve
     if not deployed_threat:
         murk = player.find_tag('murk')
         if murk:
             gy_count = len(player.graveyard)
-            # Delve: exile up to (cmc - U cost) cards from GY to reduce generic cost
-            # Murktide is {1}{U} base, but Card has cmc=7; delve exiles up to 6
             delve_amount = min(gy_count, 6)
-            effective_cost = max(2, 7 - delve_amount)  # always need at least {1}{U}
-            if mana >= effective_cost:
-                player.remove_from_hand(murk)
-                if not _try_counter_any(player, opponent, gs, murk, log_entries):
-                    # Exile cards from GY for delve
-                    exiled = 0
-                    while exiled < delve_amount and player.graveyard:
-                        card = player.graveyard.pop(0)
-                        player.exile.append(card) if hasattr(player, 'exile') else None
-                        exiled += 1
-                    player.put_creature_in_play(murk)
-                    mana -= effective_cost
-                    log_fn(f"Murktide Regent (delve {exiled}, paid {effective_cost})")
-                else:
-                    player.add_to_grave(murk)
+            effective_cost = max(2, 7 - delve_amount)
+            if budget[0] >= effective_cost:
+                # Exile cards from GY for delve BEFORE casting (part of the cost)
+                exiled = 0
+                while exiled < delve_amount and player.graveyard:
+                    card = player.graveyard.pop(0)
+                    if hasattr(player, 'exile'): player.exile.append(card)
+                    exiled += 1
+                def _resolve_murk(c, _e=exiled, _cost=effective_cost):
+                    player.put_creature_in_play(c)
+                    log_fn(f"Murktide Regent (delve {_e}, paid {_cost})")
+                cast_spell(player, opponent, gs, murk, budget, log_fn, log_entries,
+                           on_resolve=_resolve_murk, cost_override=effective_cost)
                 deployed_threat = True
 
-    # Brazen Borrower — flash threat, deploy if no other plays
+    # Brazen Borrower
     if not deployed_threat:
         borrow = player.find_tag('borrow')
-        if borrow and mana >= 3:
-            player.remove_from_hand(borrow)
-            if not _try_counter_any(player, opponent, gs, borrow, log_entries):
-                player.put_creature_in_play(borrow)
-                mana -= 3
+        if borrow and budget[0] >= 3:
+            def _resolve_borrow(c):
+                player.put_creature_in_play(c)
                 log_fn("Brazen Borrower (3/1 flash flyer)")
-            else:
-                player.add_to_grave(borrow)
+            cast_spell(player, opponent, gs, borrow, budget, log_fn, log_entries,
+                       on_resolve=_resolve_borrow, cost_override=3)
 
-    # ── 2. Cantrips — flip Delver, find action ──────────────────────────────
-
+    # ── 2. Cantrips ──
     for cantrip_tag in ('bs', 'ponder', 'pre'):
         cantrip = player.find_tag(cantrip_tag)
-        if cantrip and mana >= 1:
-            player.remove_from_hand(cantrip)
-            player.add_to_grave(cantrip)
-            mana -= 1
-            drawn = player.draw(1)
-            log_fn(f"{cantrip.name} — cantrip")
+        if cantrip and budget[0] >= 1:
+            def _resolve_cant(c):
+                player.add_to_grave(c)
+                player.draw(1)
+                log_fn(f"{c.name} — cantrip")
+                bowmasters_triggers(1, gs, log_entries,
+                                    controller='o' if player is gs.p1 else 'b')
+            cast_spell(player, opponent, gs, cantrip, budget, log_fn, log_entries,
+                       on_resolve=_resolve_cant, cost_override=1)
+            break
+
+    # ── 3. Expressive Iteration ──
+    ei = player.find_tag('ei')
+    if ei and budget[0] >= 2:
+        def _resolve_ei(c):
+            player.add_to_grave(c)
+            player.draw(1)
+            log_fn("Expressive Iteration — draw + exile selection")
             bowmasters_triggers(1, gs, log_entries,
                                 controller='o' if player is gs.p1 else 'b')
-            break  # one cantrip per turn is usually enough
-
-    # ── 3. Expressive Iteration — card advantage (T3+) ─────────────────────
-
-    ei = player.find_tag('ei')
-    if ei and mana >= 2:
-        player.remove_from_hand(ei)
-        player.add_to_grave(ei)
-        mana -= 2
-        drawn = player.draw(1)
-        log_fn("Expressive Iteration — draw + exile selection")
-        bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.p1 else 'b')
+        cast_spell(player, opponent, gs, ei, budget, log_fn, log_entries,
+                   on_resolve=_resolve_ei, cost_override=2)
+    mana = budget[0]
 
     # ── 4. Lightning Bolt — removal-first, face burn only when closing ──────
 
@@ -251,23 +247,20 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
                         or (opponent.life <= 9 and turn >= 5)))
 
         if target or go_face:
-            player.remove_from_hand(bolt)
-            player.add_to_grave(bolt)
-            mana -= 1
-            if target:
-                if target.toughness <= 3:
-                    opponent.remove_creature(target)
-                    log_fn(f"Lightning Bolt -> {target.card.name}", True)
+            _b = [mana]
+            def _resolve_bolt(c, _t=target):
+                player.add_to_grave(c)
+                if _t and _t.toughness <= 3:
+                    opponent.remove_creature(_t)
+                    log_fn(f"Lightning Bolt -> {_t.card.name}", True)
                     update_goyf(gs)
                 else:
-                    # 3 damage not enough to kill; go face instead
                     opponent.life -= 3
                     log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
                     gs.check_life_totals()
-            else:
-                opponent.life -= 3
-                log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
-                gs.check_life_totals()
+            cast_spell(player, opponent, gs, bolt, _b, log_fn, log_entries,
+                       on_resolve=_resolve_bolt, cost_override=1)
+            mana = _b[0]
 
     if gs.game_over:
         return
@@ -290,12 +283,15 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
 
         if heat_targets:
             target = heat_targets[0]
-            player.remove_from_hand(heat)
-            player.add_to_grave(heat)
-            mana -= 1
-            opponent.remove_creature(target)
-            log_fn(f"Unholy Heat ({heat_dmg} dmg) -> {target.card.name}", True)
-            update_goyf(gs)
+            _b = [mana]
+            def _resolve_heat(c, _t=target, _d=heat_dmg):
+                player.add_to_grave(c)
+                opponent.remove_creature(_t)
+                log_fn(f"Unholy Heat ({_d} dmg) -> {_t.card.name}", True)
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, heat, _b, log_fn, log_entries,
+                       on_resolve=_resolve_heat, cost_override=1)
+            mana = _b[0]
 
     if gs.game_over:
         return
