@@ -2634,99 +2634,105 @@ def _strategy_ocelot(player, opponent, gs, total_mana, log_fn, log_entries):
                 f"opp_creatures={len(opponent.creatures)}, "
                 f"opp_life={opponent.life}"))
 
-    # 1. Thoughtseize - T1-T3 priority; avoid when life low
+    budget = [total_mana]
+
+    # 1. Thoughtseize
     ts = player.find_tag('ts')
-    if ts and opp_can_cast(ts, total_mana, gs, caster=player) \
+    if ts and opp_can_cast(ts, budget[0], gs, caster=player) \
             and opponent.hand and player.life > 8 and gs.turn <= 3:
         nonlands = [c for c in opponent.hand if not c.is_land()]
         if nonlands:
-            total_mana -= ts.cmc
-            player.remove_from_hand(ts); player.add_to_grave(ts)
-            player.life -= 2
-            target = (next((c for c in nonlands if c.free_cast_if_blue), None)
-                      or next((c for c in nonlands if c.tag in ('daze', 'fow', 'fon')), None)
-                      or next((c for c in nonlands if c.is_removal), None)
-                      or next((c for c in nonlands if c.win_condition or c.is_combo_piece), None)
-                      or next((c for c in nonlands if c.engine), None)
-                      or max(nonlands, key=lambda c: c.cmc))
-            opponent.remove_from_hand(target); opponent.add_to_grave(target)
-            log_fn(f"* Thoughtseize strips {target.name} (life -> {player.life})")
+            def _resolve_ts(c):
+                player.add_to_grave(c)
+                player.life -= 2
+                nl = [cc for cc in opponent.hand if not cc.is_land()]
+                if not nl: return
+                target = (next((cc for cc in nl if cc.free_cast_if_blue), None)
+                          or next((cc for cc in nl if cc.tag in ('daze', 'fow', 'fon')), None)
+                          or next((cc for cc in nl if cc.is_removal), None)
+                          or next((cc for cc in nl if cc.win_condition or cc.is_combo_piece), None)
+                          or next((cc for cc in nl if cc.engine), None)
+                          or max(nl, key=lambda cc: cc.cmc))
+                opponent.remove_from_hand(target); opponent.add_to_grave(target)
+                log_fn(f"* Thoughtseize strips {target.name} (life -> {player.life})")
+            cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ts)
 
-    # 2. Cabal Therapy - T2+, when opp has >=2 cards
+    # 2. Cabal Therapy
     therapy = player.find_tag('therapy')
-    if therapy and opp_can_cast(therapy, total_mana, gs, caster=player) \
+    if therapy and opp_can_cast(therapy, budget[0], gs, caster=player) \
             and len(opponent.hand) >= 2:
-        total_mana -= therapy.cmc
-        player.remove_from_hand(therapy); player.add_to_grave(therapy)
-        nonlands = [c for c in opponent.hand if not c.is_land()]
-        if nonlands:
-            from collections import Counter
-            name_counts = Counter(c.name for c in nonlands)
-            tgt_name, _ = name_counts.most_common(1)[0]
-            to_remove = [c for c in opponent.hand if c.name == tgt_name]
-            for c in to_remove:
-                opponent.remove_from_hand(c); opponent.add_to_grave(c)
-            log_fn(f"Cabal Therapy naming {tgt_name} - hits {len(to_remove)}")
+        def _resolve_therapy(c):
+            player.add_to_grave(c)
+            nl = [cc for cc in opponent.hand if not cc.is_land()]
+            if nl:
+                from collections import Counter
+                name_counts = Counter(cc.name for cc in nl)
+                tgt_name, _ = name_counts.most_common(1)[0]
+                to_remove = [cc for cc in opponent.hand if cc.name == tgt_name]
+                for cc in to_remove:
+                    opponent.remove_from_hand(cc); opponent.add_to_grave(cc)
+                log_fn(f"Cabal Therapy naming {tgt_name} - hits {len(to_remove)}")
+        cast_spell(player, opponent, gs, therapy, budget, log_fn, log_entries,
+                   on_resolve=_resolve_therapy)
 
-    # 3. Swords to Plowshares - pre-combat, kill biggest threat
+    # 3. Swords to Plowshares
     stp = player.find_tag('stp')
-    if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
+    if stp and opponent.creatures and opp_can_cast(stp, budget[0], gs, caster=player):
         biggest = max(opponent.creatures, key=lambda c: (c.power, c.toughness))
         worth_it = (biggest.power >= 2
                     or biggest.card.tag in ('bowm', 'murk', 'dd', 'nether',
                                             'barrow', 'dauthi', 'eidolon'))
         if worth_it:
-            total_mana -= stp.cmc
-            player.remove_from_hand(stp); player.add_to_grave(stp)
-            if not _try_counter_any(player, opponent, gs, stp, log_entries):
-                opponent.remove_creature(biggest)
-                opponent.life += biggest.toughness
-                log_fn(f"Swords to Plowshares -> exiles {biggest.card.name} "
-                       f"(opp life +{biggest.toughness} -> {opponent.life})")
+            def _resolve_stp(c, _t=biggest):
+                player.add_to_grave(c)
+                opponent.remove_creature(_t)
+                opponent.life += _t.toughness
+                log_fn(f"Swords to Plowshares -> exiles {_t.card.name} "
+                       f"(opp life +{_t.toughness} -> {opponent.life})")
                 update_goyf(gs)
+            cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
+                       on_resolve=_resolve_stp)
 
-    # 4. Goblin Bombardment - deploy when we have creatures
+    # 4. Goblin Bombardment
     bombardment = player.find_tag('bombardment')
     bombardment_on_board = any(
         getattr(p.card, 'tag', None) == 'bombardment'
         for p in getattr(player, 'enchantments', []))
     if bombardment and not bombardment_on_board \
-            and opp_can_cast(bombardment, total_mana, gs, caster=player) \
+            and opp_can_cast(bombardment, budget[0], gs, caster=player) \
             and len(player.creatures) >= 1:
-        total_mana -= bombardment.cmc
-        player.remove_from_hand(bombardment)
-        if not _try_counter_any(player, opponent, gs, bombardment, log_entries):
-            player.put_enchantment_in_play(bombardment)
+        def _resolve_bomb(c):
+            player.put_enchantment_in_play(c)
             log_fn("Goblin Bombardment enters play")
-        else:
-            player.add_to_grave(bombardment)
+        cast_spell(player, opponent, gs, bombardment, budget, log_fn, log_entries,
+                   on_resolve=_resolve_bomb)
 
-    # 5. Deploy creatures - priority order
+    # 5. Deploy creatures
     deploy_priority = ['ocelot', 'guide', 'ajani', 'voice', 'bowm', 'raptor']
-    max_deploys = 3 if total_mana >= 4 else (2 if total_mana >= 2 else 1)
+    max_deploys = 3 if budget[0] >= 4 else (2 if budget[0] >= 2 else 1)
     deployed = 0
     for tag in deploy_priority:
         if deployed >= max_deploys:
             break
         crea = player.find_tag(tag)
-        if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
+        if not crea or not opp_can_cast(crea, budget[0], gs, caster=player):
             continue
         gs.strat_log.log_decision(
             gs.turn, 'ocelot',
             candidates=deploy_priority,
             chosen=tag,
-            reason=f"mana={total_mana}, deployed={deployed}, "
+            reason=f"mana={budget[0]}, deployed={deployed}, "
                    f"board={len(player.creatures)}")
-        player.remove_from_hand(crea)
-        if not _try_counter_any(player, opponent, gs, crea, log_entries):
-            player.put_creature_in_play(crea)
-            total_mana -= crea.cmc
-            deployed += 1
-            log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
-            if tag == 'bowm':
+        def _resolve_crea(c, _tag=tag):
+            player.put_creature_in_play(c)
+            log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+            if _tag == 'bowm':
                 gs.bowmasters_on_board = True
-        else:
-            player.add_to_grave(crea)
+        if cast_spell(player, opponent, gs, crea, budget, log_fn, log_entries,
+                      on_resolve=_resolve_crea):
+            deployed += 1
+    total_mana = budget[0]
 
     # 6. Wasteland - disrupt opp's dual/fetch
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
