@@ -151,7 +151,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
     4. Sneak Attack activation with a creature in hand
     5. Combat with any creatures in play
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
+    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
 
     mana = total_mana
 
@@ -192,15 +192,16 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
         for cantrip in list(cantrips):
             cost = cantrip.cmc
             if mana >= cost:
-                player.remove_from_hand(cantrip)
-                player.add_to_grave(cantrip)
-                mana -= cost
-                player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
-                draws = 2 if cantrip.tag == 'stock' else 1
-                player.draw(draws)
-                log_fn(f"{cantrip.name} (draw {draws}, mana={mana})")
-                bowmasters_triggers(draws, gs, log_entries,
-                                    controller='o' if player is gs.p1 else 'b')
+                _b = [mana]
+                def _resolve_cant(c, _d=(2 if cantrip.tag == 'stock' else 1)):
+                    player.add_to_grave(c)
+                    player.draw(_d)
+                    log_fn(f"{c.name} (draw {_d})")
+                    bowmasters_triggers(_d, gs, log_entries,
+                                        controller='o' if player is gs.p1 else 'b')
+                cast_spell(player, opponent, gs, cantrip, _b, log_fn, log_entries,
+                           on_resolve=_resolve_cant)
+                mana = _b[0]
                 gs.check_life_totals()
                 if gs.game_over:
                     return
@@ -214,16 +215,17 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
         for cantrip in list(cantrips):
             cost = cantrip.cmc
             if cost <= spare_mana and cantrip in player.hand:
-                player.remove_from_hand(cantrip)
-                player.add_to_grave(cantrip)
-                mana -= cost
-                spare_mana -= cost
-                player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
-                draws = 2 if cantrip.tag == 'stock' else 1
-                player.draw(draws)
-                log_fn(f"{cantrip.name} (draw {draws}, mana={mana})")
-                bowmasters_triggers(draws, gs, log_entries,
-                                    controller='o' if player is gs.p1 else 'b')
+                _b = [mana]
+                def _resolve_cant2(c, _d=(2 if cantrip.tag == 'stock' else 1)):
+                    player.add_to_grave(c)
+                    player.draw(_d)
+                    log_fn(f"{c.name} (draw {_d})")
+                    bowmasters_triggers(_d, gs, log_entries,
+                                        controller='o' if player is gs.p1 else 'b')
+                cast_spell(player, opponent, gs, cantrip, _b, log_fn, log_entries,
+                           on_resolve=_resolve_cant2)
+                mana = _b[0]
+                spare_mana = mana - 3
                 gs.check_life_totals()
                 if gs.game_over:
                     return
