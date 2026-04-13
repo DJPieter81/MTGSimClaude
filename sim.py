@@ -717,12 +717,10 @@ def _execute_turn(gs, turn, b, o, who, matchup):
 
     # ── Opponent instant-speed responses (after combat) ──
     if not gs.game_over:
-        if who == 'p1':
-            from engine import _p2_respond_on_pro_turn
-            _p2_respond_on_pro_turn(gs, log, log_entries)
-        else:
-            from engine import _p1_respond_on_opp_turn
-            _p1_respond_on_opp_turn(gs, log, log_entries)
+        from engine import _respond_on_opponent_turn
+        responder = gs.p2 if who == 'p1' else gs.p1
+        active_player = gs.p1 if who == 'p1' else gs.p2
+        _respond_on_opponent_turn(responder, active_player, gs, log, log_entries)
 
     update_goyf(gs)
     b.land_played_this_turn = False

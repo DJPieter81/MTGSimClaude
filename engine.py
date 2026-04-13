@@ -1916,157 +1916,168 @@ def _p1_force_of_vigor(gs, target_tags, log_list):
     return True
 
 
-def _p1_respond_on_opp_turn(gs, log_fn, log_entries):
+def _force_of_vigor_generic(responder, active, gs, target_tags, log_list):
     """
-    P1 instant-speed responses during P2's turn (after P2 strategy, before P2 combat).
-    Handles: STP on P2 threats, flash Bowmasters, Force of Vigor, Wasteland.
+    Force of Vigor — free on opponent's turn: exile a green card, destroy up to 2 a/e.
+    Symmetric version: responder casts it during active's turn.
     """
-    b, o = gs.p1, gs.p2
+    fov = responder.find_tag('fov')
+    if not fov: return False
+    green_pitch = next((c for c in responder.hand
+                        if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
+    if not green_pitch: return False
+    targets = [p for p in active.artifacts + active.enchantments
+               if p.card.tag in target_tags][:2]
+    if not targets: return False
+    responder.remove_from_hand(fov)
+    responder.remove_from_hand(green_pitch)
+    responder.exile.append(green_pitch)
+    names = []
+    for t in targets:
+        tlist = active.artifacts if t in active.artifacts else active.enchantments
+        if t in tlist:
+            tlist.remove(t)
+            active.add_to_grave(t.card)
+            names.append(t.name)
+            if t.card.tag == 'chalice': gs.chalice_x = None
+            elif t.card.tag == 'bridge': gs.bridge_on_board = False
+            elif t.card.tag == 'moon':   gs.set_moon(False)
+            elif t.card.tag == 'b2b':    gs.set_b2b(False)
+    update_goyf(gs)
+    log_list.append(f"★ Force of Vigor (free on opp's turn, exiles {green_pitch.name})"
+                    f" → destroys {' + '.join(names)}")
+    return True
 
-    # ── STP: exile P2's biggest creature if power >= 3 (major threat) ──
-    # STP costs 1W; after paying, remaining mana = available - 1
-    stp = b.find_tag('stp')
-    if stp and o.creatures and b.available_mana_count() >= 1:
-        mana_after_stp = b.available_mana_count() - 1
-        valid = [c for c in o.creatures if _can_target(c, mana_after_stp)]
+
+def _respond_on_opponent_turn(responder, active, gs, log_fn, log_entries):
+    """
+    Unified instant-speed responses during the opponent's turn.
+    responder = the player holding priority (NOT the active player).
+    active    = the player whose turn it is.
+    Handles: STP, Fatal Push, Snuff Out, Lightning Bolt/Heat, flash Bowmasters,
+    Force of Vigor, Wasteland. Selection is driven entirely by what's in
+    responder.hand — no P1/P2 hardcoding.
+    """
+    # ── STP: exile active's biggest creature if power >= 3 ──
+    stp = responder.find_tag('stp')
+    if stp and active.creatures and responder.available_mana_count() >= 1:
+        mana_after = responder.available_mana_count() - 1
+        valid = [c for c in active.creatures if _can_target(c, mana_after)]
         target = max(valid, key=lambda c: c.power) if valid else None
-        # STP high-power threats: Marit Lage, Emrakul, Murktide, etc.
         if target and target.power >= 3:
-            b.remove_from_hand(stp)
-            b.add_to_grave(stp)
+            responder.remove_from_hand(stp)
+            responder.add_to_grave(stp)
             life_gain = MTGRules.stp_life_gain(target)
-            o.creatures.remove(target)
-            o.life += life_gain
-            log_fn(f"★ P1 STP (instant, P2's turn) → exiles {target.card.name} "
-                   f"(P2 +{life_gain} life → {o.life})", True)
+            active.creatures.remove(target)
+            active.life += life_gain
+            log_fn(f"★ STP (instant, opp's turn) → exiles {target.card.name} "
+                   f"(+{life_gain} life → {active.life})", True)
             update_goyf(gs)
             gs.check_life_totals()
 
-    # ── Flash Bowmasters: deploy during P2's end step if P2 drew cards ──
-    bowm = b.find_tag('bowm')
-    bowm_on_board = any(c.card.tag == 'bowm' for c in b.creatures)
-    if bowm and not bowm_on_board and b.available_mana_count() >= 2:
-        # Deploy on P2's turn if P2 has cantrip-heavy deck (Dimir, UWx, etc.)
-        p2_drew_extra = o.draws_this_turn > 1
-        if p2_drew_extra or len(o.hand) >= 5:
-            from game import can_afford
-            if can_afford(b, bowm.mana_cost):
-                b.remove_from_hand(bowm)
-                if not _try_counter_any(b, o, gs, bowm, log_entries):
-                    b.put_creature_in_play(bowm)
-                    log_fn("★ P1 Flash Bowmasters (P2's turn — punishes next draw)", True)
-                else:
-                    b.add_to_grave(bowm)
-
-    # ── Force of Vigor: free on opponent's turn, destroy lock pieces ──
-    lock_targets = [p.card.tag for p in o.artifacts + o.enchantments if p.card.lock_piece]
-    if lock_targets:
-        _p1_force_of_vigor(gs, lock_targets, log_entries)
-
-    # ── Wasteland: destroy P2's key nonbasic land ──
-    wl = next((l for l in b.lands if l.card.tag == 'wl' and not l.tapped), None)
-    if wl:
-        eligible = [l for l in o.lands if not l.card.is_basic
-                    and MTGRules.wasteland_can_target(l)]
-        if eligible:
-            # Prioritise combo lands (Dark Depths / Thespian's Stage) above all else
-            def _wl_p1_prio(land):
-                if land.card.tag in ('depths', 'stage'): return 50
-                if land.card.mana_ritual: return 5
-                return 1
-            target = max(eligible, key=_wl_p1_prio)
-            b.lands.remove(wl)
-            b.add_to_grave(wl.card)
-            o.lands.remove(target)
-            o.add_to_grave(target.card)
-            log_fn(f"★ P1 Wasteland (P2's turn) → destroys {target.card.name}", True)
-            update_goyf(gs)
-
-
-def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
-    """
-    P2 instant-speed responses during P1's turn (after P1 combat).
-    Handles: STP, Fatal Push, Snuff Out, Lightning Bolt on P1 creatures.
-    Hexproof creatures (e.g. protected by Vines of Vastwood) cannot be
-    targeted by any of these spells (CR 702.11b).
-    Ward creatures (CR 702.143) require the caster to pay extra mana or
-    the targeting spell is countered on resolution.
-    """
-    b, o = gs.p1, gs.p2
-
-    # ── STP: exile P1's biggest creature if power >= 3 ──
-    # STP costs 1W; after paying, remaining mana = available - 1
-    stp = o.find_tag('stp')
-    if stp and b.creatures and o.available_mana_count() >= 1:
-        mana_after_stp = o.available_mana_count() - 1
-        valid = [c for c in b.creatures if _can_target(c, mana_after_stp)]
-        if valid:
-            target = max(valid, key=lambda c: c.power)
-            if target.power >= 3:
-                o.remove_from_hand(stp)
-                o.add_to_grave(stp)
-                life_gain = MTGRules.stp_life_gain(target)
-                b.creatures.remove(target)
-                b.life += life_gain
-                log_fn(f"★ P2 STP (instant, P1's turn) → exiles {target.card.name} "
-                       f"(P1 +{life_gain} life → {b.life})", True)
-                update_goyf(gs)
-
-    # ── Fatal Push on P1 creature (CMC ≤ 2, or ≤ 4 with revolt) ──
-    # Fatal Push costs 1B; after paying, remaining mana = available - 1
-    push = o.find_tag('push')
-    if push and b.creatures and o.available_mana_count() >= 1:
-        revolt = o.revolt_this_turn
-        mana_after_push = o.available_mana_count() - 1
-        targets = [c for c in b.creatures
-                   if MTGRules.fatal_push_valid_target(c, revolt) and _can_target(c, mana_after_push)]
+    # ── Fatal Push on active's creature ──
+    push = responder.find_tag('push')
+    if push and active.creatures and responder.available_mana_count() >= 1:
+        revolt = responder.revolt_this_turn
+        mana_after = responder.available_mana_count() - 1
+        targets = [c for c in active.creatures
+                   if MTGRules.fatal_push_valid_target(c, revolt)
+                   and _can_target(c, mana_after)]
         if targets:
             target = max(targets, key=lambda c: c.power)
-            if target.power >= 1:  # worth pushing any real threat
-                o.remove_from_hand(push)
-                o.add_to_grave(push)
-                b.creatures.remove(target)
-                b.add_to_grave(target.card)
+            if target.power >= 1:
+                responder.remove_from_hand(push)
+                responder.add_to_grave(push)
+                active.creatures.remove(target)
+                active.add_to_grave(target.card)
                 rev = " [revolt]" if revolt else ""
-                log_fn(f"★ P2 Push{rev} (instant, P1's turn) → kills {target.card.name}", True)
+                log_fn(f"★ Push{rev} (instant, opp's turn) → kills {target.card.name}", True)
                 update_goyf(gs)
 
-    # ── Snuff Out (free if controlling Swamp) ──
-    # Snuff Out is free (pay 4 life); after paying, all mana remains available
-    snuff = o.find_tag('snuffout')
-    if snuff and b.creatures and o.life > CT.SNUFF_LIFE_FLOOR_AGGRO:
-        has_swamp = any('B' in l.effective_produces() for l in o.lands)
+    # ── Snuff Out (free with Swamp, pay 4 life) ──
+    snuff = responder.find_tag('snuffout')
+    if snuff and active.creatures and responder.life > CT.SNUFF_LIFE_FLOOR_AGGRO:
+        has_swamp = any('B' in l.effective_produces() for l in responder.lands)
         if has_swamp:
-            mana_for_ward = o.available_mana_count()  # free spell — no mana spent
-            targets = [c for c in b.creatures
+            mana_for_ward = responder.available_mana_count()
+            targets = [c for c in active.creatures
                        if 'B' not in getattr(c.card, 'colors', set())
                        and _can_target(c, mana_for_ward)]
             if targets:
                 target = max(targets, key=lambda c: c.power)
                 if target.power >= 2:
-                    o.remove_from_hand(snuff)
-                    o.add_to_grave(snuff)
-                    o.life -= 4
-                    b.creatures.remove(target)
-                    b.add_to_grave(target.card)
-                    log_fn(f"★ P2 Snuff Out (free, −4 life → {o.life}, P1's turn) → kills {target.card.name}", True)
+                    responder.remove_from_hand(snuff)
+                    responder.add_to_grave(snuff)
+                    responder.life -= 4
+                    active.creatures.remove(target)
+                    active.add_to_grave(target.card)
+                    log_fn(f"★ Snuff Out (free, −4 life → {responder.life}, opp's turn) "
+                           f"→ kills {target.card.name}", True)
                     update_goyf(gs)
 
-    # ── Lightning Bolt on P1 creature ──
-    # Bolt costs 1R; after paying, remaining mana = available - 1
-    bolt = o.find_tag('bolt') or o.find_tag('heat')
-    if bolt and b.creatures and o.available_mana_count() >= 1:
-        mana_after_bolt = o.available_mana_count() - 1
-        targets = [c for c in b.creatures
-                   if c.toughness <= 3 and c.power >= 2 and _can_target(c, mana_after_bolt)]
+    # ── Lightning Bolt / Heat on active's creature ──
+    bolt = responder.find_tag('bolt') or responder.find_tag('heat')
+    if bolt and active.creatures and responder.available_mana_count() >= 1:
+        mana_after = responder.available_mana_count() - 1
+        targets = [c for c in active.creatures
+                   if c.toughness <= 3 and c.power >= 2 and _can_target(c, mana_after)]
         if targets:
             target = max(targets, key=lambda c: c.power)
-            o.remove_from_hand(bolt)
-            o.add_to_grave(bolt)
+            responder.remove_from_hand(bolt)
+            responder.add_to_grave(bolt)
             target.damage_marked += 3
-            log_fn(f"★ P2 Bolt (instant, P1's turn) → {target.card.name} takes 3 damage", True)
+            log_fn(f"★ Bolt (instant, opp's turn) → {target.card.name} takes 3 damage", True)
             gs.state_based_actions()
             update_goyf(gs)
+
+    # ── Flash Bowmasters: deploy on active's end step ──
+    bowm = responder.find_tag('bowm')
+    bowm_on_board = any(c.card.tag == 'bowm' for c in responder.creatures)
+    if bowm and not bowm_on_board and responder.available_mana_count() >= 2:
+        active_drew_extra = active.draws_this_turn > 1
+        if active_drew_extra or len(active.hand) >= 5:
+            from game import can_afford
+            if can_afford(responder, bowm.mana_cost):
+                responder.remove_from_hand(bowm)
+                if not _try_counter_any(responder, active, gs, bowm, log_entries):
+                    responder.put_creature_in_play(bowm)
+                    log_fn("★ Flash Bowmasters (opp's turn — punishes next draw)", True)
+                else:
+                    responder.add_to_grave(bowm)
+
+    # ── Force of Vigor: free on opp's turn, destroy lock pieces ──
+    lock_targets = [p.card.tag for p in active.artifacts + active.enchantments
+                    if p.card.lock_piece]
+    if lock_targets:
+        _force_of_vigor_generic(responder, active, gs, lock_targets, log_entries)
+
+    # ── Wasteland: destroy active's key nonbasic land ──
+    wl = next((l for l in responder.lands if l.card.tag == 'wl' and not l.tapped), None)
+    if wl:
+        eligible = [l for l in active.lands if not l.card.is_basic
+                    and MTGRules.wasteland_can_target(l)]
+        if eligible:
+            def _wl_prio(land):
+                if land.card.tag in ('depths', 'stage'): return 50
+                if land.card.mana_ritual: return 5
+                return 1
+            target = max(eligible, key=_wl_prio)
+            responder.lands.remove(wl)
+            responder.add_to_grave(wl.card)
+            active.lands.remove(target)
+            active.add_to_grave(target.card)
+            log_fn(f"★ Wasteland (opp's turn) → destroys {target.card.name}", True)
+            update_goyf(gs)
+
+
+def _p1_respond_on_opp_turn(gs, log_fn, log_entries):
+    """Deprecated wrapper — use _respond_on_opponent_turn."""
+    _respond_on_opponent_turn(gs.p1, gs.p2, gs, log_fn, log_entries)
+
+
+def _p2_respond_on_pro_turn(gs, log_fn, log_entries):
+    """Deprecated wrapper — use _respond_on_opponent_turn."""
+    _respond_on_opponent_turn(gs.p2, gs.p1, gs, log_fn, log_entries)
 
 
 def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
