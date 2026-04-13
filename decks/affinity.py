@@ -187,7 +187,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     9. Urza's Saga — tick chapters, generate constructs, tutor artifacts
     10. Attack with all creatures
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
+    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
     from rules import Card as _Card, CardType as _CT, Permanent
 
     def _has_blue():
@@ -321,17 +321,20 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         _sac_petal_if_needed(2)
         if mana < 2:
             break
-        player.remove_from_hand(automaton)
-        if not _try_counter_any(player, opponent, gs, automaton, log_entries):
-            player.put_creature_in_play(automaton)
-            mana -= 2
+        _b = [mana]
+        _resolved = [False]
+        def _resolve_auto(c):
+            player.put_creature_in_play(c)
+            _resolved[0] = True
+            log_fn("Patchwork Automaton (1/1, grows with artifact casts)")
+        cast_spell(player, opponent, gs, automaton, _b, log_fn, log_entries,
+                   on_resolve=_resolve_auto, cost_override=2)
+        mana = _b[0]
+        if _resolved[0]:
             art_count += 1
             artifacts_cast_this_turn += 1
             if cannoneer_on_board:
                 cannoneer_triggers += 1
-            log_fn("Patchwork Automaton (1/1, grows with artifact casts)")
-        else:
-            player.add_to_grave(automaton)
 
     # ── 5. Emry, Lurker of the Loch — engine ────────────────────────────────
     emry = player.find_tag('emry')
@@ -340,24 +343,25 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         eff_cost = _affinity_cost(3, player)
         _sac_petal_if_needed(eff_cost)
         if mana >= eff_cost and _has_blue():
-            player.remove_from_hand(emry)
-            if not _try_counter_any(player, opponent, gs, emry, log_entries):
-                player.put_creature_in_play(emry)
-                mana -= eff_cost
-                art_count += 1
-                # Emry is an artifact creature — triggers Automaton/Cannoneer
-                artifacts_cast_this_turn += 1
-                if cannoneer_on_board:
-                    cannoneer_triggers += 1
-                # Self-mill 4
+            _b = [mana]
+            _resolved = [False]
+            def _resolve_emry(c, _ec=eff_cost):
+                player.put_creature_in_play(c)
+                _resolved[0] = True
                 milled = []
                 for _ in range(min(4, len(player.library))):
                     card = player.library.pop(0)
                     player.graveyard.append(card)
                     milled.append(card.name)
-                log_fn(f"Emry, Lurker of the Loch (affinity {eff_cost}) — mills: {milled[:3]}")
-            else:
-                player.add_to_grave(emry)
+                log_fn(f"Emry, Lurker of the Loch (affinity {_ec}) — mills: {milled[:3]}")
+            cast_spell(player, opponent, gs, emry, _b, log_fn, log_entries,
+                       on_resolve=_resolve_emry, cost_override=eff_cost)
+            mana = _b[0]
+            if _resolved[0]:
+                art_count += 1
+                artifacts_cast_this_turn += 1
+                if cannoneer_on_board:
+                    cannoneer_triggers += 1
 
     # ── 6. Thought Monitor — affinity, draws 2 ──────────────────────────────
     # Cast BEFORE Emissary/Cannoneer so the 2 drawn cards can be deployed
@@ -370,17 +374,20 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         _sac_petal_if_needed(eff_cost)
         if mana < eff_cost or not _has_blue():
             break
-        player.remove_from_hand(monitor)
-        if not _try_counter_any(player, opponent, gs, monitor, log_entries):
-            player.put_creature_in_play(monitor)
-            mana -= eff_cost
-            art_count += 1
-            drawn = player.draw(2)
-            log_fn(f"Thought Monitor (2/2 flying, affinity {eff_cost}) — draws 2")
+        _b = [mana]
+        _resolved = [False]
+        def _resolve_mon(c, _ec=eff_cost):
+            player.put_creature_in_play(c)
+            _resolved[0] = True
+            player.draw(2)
+            log_fn(f"Thought Monitor (2/2 flying, affinity {_ec}) — draws 2")
             bowmasters_triggers(2, gs, log_entries,
                                 controller='o' if player is gs.p1 else 'b')
-        else:
-            player.add_to_grave(monitor)
+        cast_spell(player, opponent, gs, monitor, _b, log_fn, log_entries,
+                   on_resolve=_resolve_mon, cost_override=eff_cost)
+        mana = _b[0]
+        if _resolved[0]:
+            art_count += 1
         if gs.game_over:
             return
 
@@ -394,13 +401,16 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         _sac_petal_if_needed(eff_cost)
         if mana < eff_cost or not _has_blue():
             break
-        player.remove_from_hand(cast)
-        player.add_to_grave(cast)
-        mana -= eff_cost
-        drawn = player.draw(2)
-        log_fn(f"Thoughtcast (affinity {eff_cost}) — draws 2")
-        bowmasters_triggers(2, gs, log_entries,
-                            controller='o' if player is gs.p1 else 'b')
+        _b = [mana]
+        def _resolve_tc(c, _ec=eff_cost):
+            player.add_to_grave(c)
+            player.draw(2)
+            log_fn(f"Thoughtcast (affinity {_ec}) — draws 2")
+            bowmasters_triggers(2, gs, log_entries,
+                                controller='o' if player is gs.p1 else 'b')
+        cast_spell(player, opponent, gs, cast, _b, log_fn, log_entries,
+                   on_resolve=_resolve_tc, cost_override=eff_cost)
+        mana = _b[0]
         if gs.game_over:
             return
 
@@ -414,14 +424,17 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         _sac_petal_if_needed(eff_cost)
         if mana < eff_cost:
             break
-        player.remove_from_hand(emissary)
-        if not _try_counter_any(player, opponent, gs, emissary, log_entries):
-            player.put_creature_in_play(emissary)
-            mana -= eff_cost
+        _b = [mana]
+        _resolved = [False]
+        def _resolve_em(c, _ec=eff_cost):
+            player.put_creature_in_play(c)
+            _resolved[0] = True
+            log_fn(f"Pinnacle Emissary (3/3, affinity {_ec})")
+        cast_spell(player, opponent, gs, emissary, _b, log_fn, log_entries,
+                   on_resolve=_resolve_em, cost_override=eff_cost)
+        mana = _b[0]
+        if _resolved[0]:
             art_count += 1
-            log_fn(f"Pinnacle Emissary (3/3, affinity {eff_cost})")
-        else:
-            player.add_to_grave(emissary)
 
     # ── 9. Kappa Cannoneer — big affinity threat ────────────────────────────
     while True:
@@ -432,16 +445,18 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         _sac_petal_if_needed(eff_cost)
         if mana < eff_cost or not _has_blue():
             break
-        player.remove_from_hand(cannoneer)
-        if not _try_counter_any(player, opponent, gs, cannoneer, log_entries):
-            player.put_creature_in_play(cannoneer)
-            mana -= eff_cost
+        _b = [mana]
+        _resolved = [False]
+        def _resolve_can(c, _ec=eff_cost):
+            player.put_creature_in_play(c)
+            _resolved[0] = True
+            log_fn(f"Kappa Cannoneer (4/4 trample ward, affinity {_ec})")
+        cast_spell(player, opponent, gs, cannoneer, _b, log_fn, log_entries,
+                   on_resolve=_resolve_can, cost_override=eff_cost)
+        mana = _b[0]
+        if _resolved[0]:
             art_count += 1
-            # Cannoneer is now on the board — subsequent artifact ETBs trigger it.
             cannoneer_on_board = True
-            log_fn(f"Kappa Cannoneer (4/4 trample ward, affinity {eff_cost})")
-        else:
-            player.add_to_grave(cannoneer)
 
     # ── 10. Krang, Master Mind ────────────────────────────────────────────────
     # Krang costs {U}{B}{3} — requires BOTH blue AND black mana.
@@ -451,13 +466,13 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     if krang:
         _sac_petal_if_needed(5)
     if krang and mana >= 5 and _has_blue() and _has_black():
-        player.remove_from_hand(krang)
-        if not _try_counter_any(player, opponent, gs, krang, log_entries):
-            player.put_creature_in_play(krang)
-            mana -= 5
+        _b = [mana]
+        def _resolve_kr(c):
+            player.put_creature_in_play(c)
             log_fn("Krang, Master Mind (4/5)")
-        else:
-            player.add_to_grave(krang)
+        cast_spell(player, opponent, gs, krang, _b, log_fn, log_entries,
+                   on_resolve=_resolve_kr, cost_override=5)
+        mana = _b[0]
 
     # ── 11. Equipment — Lavaspur Boots / Shadowspear ─────────────────────────
     for equip_tag in ('boots', 'spear'):
