@@ -21,3 +21,5 @@
 - All 36 guides regenerated (500 games/deck, 121s)
 - Matrix HTML rebuilt, verify.py passed
 - Tests: 147/0
+---
+- _strategy_eldrazi: 5 casts converted, tests 147/0, commit d3beac3
