@@ -23,3 +23,4 @@
 - Tests: 147/0
 ---
 - _strategy_eldrazi: 5 casts converted, tests 147/0, commit d3beac3
+- _strategy_dimir_flash: 5 casts converted, tests 147/0, commit b1a7b56

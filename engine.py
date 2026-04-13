@@ -2399,28 +2399,29 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             gs._mom_protected_tag = best.card.tag
             log_fn(f"Mother of Runes protects {best.card.name}")
 
+    budget = [total_mana]
+
     # ── 0. Swords to Plowshares — FIRST PRIORITY vs any creature ──
-    # Real DnT always fires STP before deploying own threats.
-    # Exile their best threat and GAIN LIFE (critical vs Burn).
     while True:
         stp = player.find_tag('stp')
         if not stp or not opponent.creatures:
             break
-        if not opp_can_cast(stp, total_mana, gs, caster=player):
+        if not opp_can_cast(stp, budget[0], gs, caster=player):
             break
-        # STP costs 1W; mana remaining after casting = total_mana - 1 (for ward check)
-        mana_after_stp = total_mana - 1
+        mana_after_stp = budget[0] - 1
         valid_stp = [c for c in opponent.creatures if _can_target(c, mana_after_stp)]
         target = max(valid_stp, key=lambda c: c.power + c.toughness) if valid_stp else None
         if not target or target.power < 1:
-            break  # don't waste STP on 0-power creatures or ward-protected targets
-        player.remove_from_hand(stp); player.add_to_grave(stp)
-        total_mana -= 1
-        life_gain = MTGRules.stp_life_gain(target)
-        opponent.remove_creature(target, to_exile=True)
-        opponent.life += life_gain
-        log_fn(f"Swords to Plowshares exiles {target.card.name} (+{life_gain} life)")
-        update_goyf(gs)
+            break
+        def _resolve_stp(c, _t=target):
+            player.add_to_grave(c)
+            life_gain = MTGRules.stp_life_gain(_t)
+            opponent.remove_creature(_t, to_exile=True)
+            opponent.life += life_gain
+            log_fn(f"Swords to Plowshares exiles {_t.card.name} (+{life_gain} life)")
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
+                   on_resolve=_resolve_stp)
         if not opponent.creatures:
             break
 
@@ -2440,31 +2441,31 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
         white_pitch = min(white_candidates, key=lambda c: _pitch_priority.get(c.tag, 4),
                           default=None) if white_candidates else None
         if white_pitch:
-            # Solitude evoke is free (pitch + 0 mana); full mana available for ward
-            valid_sol = [c for c in opponent.creatures if _can_target(c, total_mana)]
+            valid_sol = [c for c in opponent.creatures if _can_target(c, budget[0])]
             target = max(valid_sol, key=lambda c: c.power + c.toughness) if valid_sol else None
             if target and target.power >= 1:
-                player.remove_from_hand(solitude); player.add_to_grave(solitude)
                 player.remove_from_hand(white_pitch); player.exile.append(white_pitch)
-                life_gain = target.toughness
-                opponent.remove_creature(target, to_exile=True)
-                player.life += life_gain
-                log_fn(f"★ Solitude (evoke, pitch {white_pitch.name}) exiles {target.card.name} (+{life_gain} life)", True)
-                update_goyf(gs)
+                def _resolve_sol(c, _t=target, _pitch=white_pitch):
+                    player.add_to_grave(c)
+                    life_gain = _t.toughness
+                    opponent.remove_creature(_t, to_exile=True)
+                    player.life += life_gain
+                    log_fn(f"★ Solitude (evoke, pitch {_pitch.name}) exiles {_t.card.name} (+{life_gain} life)", True)
+                    update_goyf(gs)
+                cast_spell(player, opponent, gs, solitude, None, log_fn, log_entries,
+                           on_resolve=_resolve_sol)
 
     # ── 2. Aether Vial — highest priority T1-T3 ──
     vial = player.find_tag('vial')
     vial_on_board = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
-    if vial and not vial_on_board and total_mana >= 1 and gs.turn <= 3:
-        player.remove_from_hand(vial)
-        if not _try_counter_any(player, opponent, gs, vial, log_entries):
-            player.put_artifact_in_play(vial)
+    if vial and not vial_on_board and budget[0] >= 1 and gs.turn <= 3:
+        def _resolve_vial(c):
+            player.put_artifact_in_play(c)
             gs.vial_counters = 0
             gs._vial_entered_last_turn = True
-            total_mana -= 1
             log_fn("Aether Vial enters play")
-        else:
-            player.add_to_grave(vial)
+        cast_spell(player, opponent, gs, vial, budget, log_fn, log_entries,
+                   on_resolve=_resolve_vial)
 
     # Vial upkeep tick
     vial_tags = ('thalia', 'mom', 'phelia', 'skyclave', 'recruiter', 'flickerwisp',
@@ -2487,57 +2488,54 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     # Vial handles EXTRA deployments at instant speed (EOT/combat),
     # but main phase should still hard-cast with available mana.
     deployed_this_turn = 0
-    max_deploys = 2 if total_mana >= 4 else 1
+    max_deploys = 2 if budget[0] >= 4 else 1
     if True:
         for tag in deploy_priority:
             crea = player.find_tag(tag)
-            if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
+            if not crea or not opp_can_cast(crea, budget[0], gs, caster=player):
                 continue
             gs.strat_log.log_decision(
                 gs.turn, 'dnt',
                 candidates=deploy_priority,
                 chosen=tag,
-                reason=f"mana={total_mana}, hand={[c.tag for c in player.hand]}")
-            player.remove_from_hand(crea)
-            if not _try_counter_any(player, opponent, gs, crea, log_entries):
-                player.put_creature_in_play(crea)
-                total_mana -= crea.cmc
-                log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
-                # ETB triggers
-                if tag == 'skyclave' and opponent.creatures:
-                    # Priority: Eidolon (punishes all our spells) > biggest threat
-                    target = next((c for c in opponent.creatures if c.card.tag == 'eidolon'), None)
+                reason=f"mana={budget[0]}, hand={[c.tag for c in player.hand]}")
+            def _resolve_crea(c, _tag=tag):
+                player.put_creature_in_play(c)
+                log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+                if _tag == 'skyclave' and opponent.creatures:
+                    target = next((cc for cc in opponent.creatures if cc.card.tag == 'eidolon'), None)
                     if not target:
-                        target = next((c for c in opponent.creatures if c.card.cmc <= 4), None)
+                        target = next((cc for cc in opponent.creatures if cc.card.cmc <= 4), None)
                     if target:
                         opponent.remove_creature(target)
                         if target.card.tag == 'eidolon':
                             gs.eidolon_active = False
                         log_fn(f"  Skyclave Apparition exiles {target.card.name}")
-                if tag == 'recruiter':
-                    found = next((c for c in player.library
-                                  if c.is_creature() and c.base_power <= 2), None)
+                if _tag == 'recruiter':
+                    found = next((cc for cc in player.library
+                                  if cc.is_creature() and cc.base_power <= 2), None)
                     if found:
                         player.library.remove(found); player.hand.append(found)
                         log_fn(f"  Recruiter tutors {found.name}")
-                if tag == 'sfm':
-                    equip = next((c for c in player.library if c.tag in CR.EQUIPMENT_SET), None)
+                if _tag == 'sfm':
+                    equip = next((cc for cc in player.library if cc.tag in CR.EQUIPMENT_SET), None)
                     if equip:
                         player.library.remove(equip); player.hand.append(equip)
                         log_fn(f"  Stoneforge Mystic tutors {equip.name}")
-                if tag == 'flickerwisp':
-                    tgt = max(opponent.creatures, key=lambda c: c.power, default=None)
+                if _tag == 'flickerwisp':
+                    tgt = max(opponent.creatures, key=lambda cc: cc.power, default=None)
                     if tgt:
                         opponent.remove_creature(tgt)
                         new_p = opponent.put_creature_in_play(tgt.card)
                         new_p.summoning_sick = True
                         log_fn(f"  Flickerwisp blinks {tgt.card.name}")
                         update_goyf(gs)
-            else:
-                player.add_to_grave(crea)
+            cast_spell(player, opponent, gs, crea, budget, log_fn, log_entries,
+                       on_resolve=_resolve_crea)
             deployed_this_turn += 1
             if deployed_this_turn >= max_deploys:
                 break
+    total_mana = budget[0]
 
     # SFM activated: put equipment into play
     sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)
