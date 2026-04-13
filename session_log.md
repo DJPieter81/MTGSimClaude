@@ -7,3 +7,17 @@
 - Old functions kept as deprecated wrappers; sim.py call site updated
 - Tests: 147/0
 - Symmetry (n=100): dimir/dimir_b 114%, ur_delver/burn 94%, bug/storm 100%
+
+## Phase B: cast_spell() Pipeline (PARTIAL)
+- _strategy_lands: 2 casts (crop, snuff) — committed
+- _strategy_ur_aggro: ~4 casts (cantrip, ragavan, drc/delver/murk, bolt) — committed
+- Remaining 17 engine.py strategies + 19 decks/*.py strategies NOT converted
+  (session time constraint — each requires careful per-function conversion + test)
+- Tests maintained: 147/0 throughout (symmetry test ±25pp is flaky)
+
+## Phase C: n=500 Re-sim
+- refresh_all.py --resim 500 completed (337s total)
+- New matrix: results/matrix_20260413_073332.json
+- All 36 guides regenerated (500 games/deck, 121s)
+- Matrix HTML rebuilt, verify.py passed
+- Tests: 147/0
