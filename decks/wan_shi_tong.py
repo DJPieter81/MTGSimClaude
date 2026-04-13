@@ -68,8 +68,11 @@ def _strategy_wst(player, opponent, gs, total_mana, log_fn, log_entries):
                         update_goyf, _resolve_lock, MTGRules)
 
     # ── 1. Chalice of the Void on 1 — T1 priority ──
+    # Don't self-lock: skip Chalice@1 if we hold CMC-1 spells we need to cast.
     ch = player.find_tag('chalice')
-    if ch and gs.chalice_x is None and total_mana >= 2:
+    own_cmc1 = sum(1 for c in player.hand
+                   if c is not ch and not c.is_land() and c.cmc == 1)
+    if ch and gs.chalice_x is None and total_mana >= 2 and own_cmc1 == 0:
         player.remove_from_hand(ch)
         if not _try_counter_any(player, opponent, gs, ch, log_entries):
             player.put_artifact_in_play(ch)
