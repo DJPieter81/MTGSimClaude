@@ -65,50 +65,50 @@ def _strategy_wst(player, opponent, gs, total_mana, log_fn, log_entries):
     Priority: Chalice on 1 → removal → wraths → Teferi → WST → counters → combat.
     """
     from engine import (opp_can_cast, _try_counter_any, combat_declare,
-                        update_goyf, _resolve_lock, MTGRules)
+                        update_goyf, _resolve_lock, MTGRules, cast_spell)
+
+    budget = [total_mana]
 
     # ── 1. Chalice of the Void on 1 — T1 priority ──
-    # Don't self-lock: skip Chalice@1 if we hold CMC-1 spells we need to cast.
     ch = player.find_tag('chalice')
     own_cmc1 = sum(1 for c in player.hand
                    if c is not ch and not c.is_land() and c.cmc == 1)
-    if ch and gs.chalice_x is None and total_mana >= 2 and own_cmc1 == 0:
-        player.remove_from_hand(ch)
-        if not _try_counter_any(player, opponent, gs, ch, log_entries):
-            player.put_artifact_in_play(ch)
-            total_mana -= 2
-            _resolve_lock(gs, ch, log_fn)
-        else:
-            player.add_to_grave(ch)
-    # Also deploy Chalice on 0 if we have a second copy and already have Chalice on 1
-    ch2 = player.find_tag('chalice')
-    if ch2 and gs.chalice_x == 1 and total_mana >= 0:
-        # Don't deploy second Chalice — it would overwrite chalice_x
-        pass
+    if ch and gs.chalice_x is None and budget[0] >= 2 and own_cmc1 == 0:
+        def _resolve_ch(c):
+            player.put_artifact_in_play(c)
+            _resolve_lock(gs, c, log_fn)
+        cast_spell(player, opponent, gs, ch, budget, log_fn, log_entries,
+                   on_resolve=_resolve_ch, cost_override=2)
 
     # ── 2. Swords to Plowshares — remove biggest threat ──
     stp = player.find_tag('stp')
-    if stp and opponent.creatures and total_mana >= 1:
+    if stp and opponent.creatures and budget[0] >= 1:
         target = max(opponent.creatures, key=lambda c: c.power + c.toughness)
         if target.power >= 2:
-            player.remove_from_hand(stp); player.add_to_grave(stp)
-            total_mana -= 1
-            life_gain = MTGRules.stp_life_gain(target)
-            opponent.remove_creature(target, to_exile=True)
-            opponent.life += life_gain
-            log_fn(f"Swords to Plowshares → exiles {target.card.name}")
-            update_goyf(gs)
+            def _resolve_stp(c, _t=target):
+                player.add_to_grave(c)
+                if _t in opponent.creatures:
+                    lg = MTGRules.stp_life_gain(_t)
+                    opponent.remove_creature(_t, to_exile=True)
+                    opponent.life += lg
+                    log_fn(f"Swords to Plowshares → exiles {_t.card.name}")
+                    update_goyf(gs)
+            cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
+                       on_resolve=_resolve_stp)
 
     # March of Otherworldly Light — exile removal
     march = player.find_tag('march')
-    if march and opponent.creatures and total_mana >= 2:
+    if march and opponent.creatures and budget[0] >= 2:
         target = max(opponent.creatures, key=lambda c: c.power + c.toughness)
         if target.power >= 2:
-            player.remove_from_hand(march); player.add_to_grave(march)
-            total_mana -= 2
-            opponent.remove_creature(target, to_exile=True)
-            log_fn(f"March of Otherworldly Light → exiles {target.card.name}")
-            update_goyf(gs)
+            def _resolve_march(c, _t=target):
+                player.add_to_grave(c)
+                if _t in opponent.creatures:
+                    opponent.remove_creature(_t, to_exile=True)
+                    log_fn(f"March of Otherworldly Light → exiles {_t.card.name}")
+                    update_goyf(gs)
+            cast_spell(player, opponent, gs, march, budget, log_fn, log_entries,
+                       on_resolve=_resolve_march, cost_override=2)
 
     # ── 3. Wraths — clear board when opponent has 2+ creatures ──
     opp_threat = sum(c.power for c in opponent.creatures)
@@ -116,82 +116,75 @@ def _strategy_wst(player, opponent, gs, total_mana, log_fn, log_entries):
 
     if len(opponent.creatures) >= 2 and (not wst_on_board or opp_threat >= player.life):
         wrath = player.find_tag('verdict') or player.find_tag('wrath')
-        if wrath and total_mana >= wrath.cmc:
-            player.remove_from_hand(wrath); player.add_to_grave(wrath)
-            total_mana -= wrath.cmc
-            for c in list(opponent.creatures):
-                opponent.add_to_grave(c.card); opponent.revolt_this_turn = True
-            opponent.creatures.clear()
-            for c in list(player.creatures):
-                player.add_to_grave(c.card)
-            player.creatures.clear()
-            log_fn(f"★ {wrath.name} — all creatures destroyed", True)
-            update_goyf(gs)
+        if wrath and budget[0] >= wrath.cmc:
+            def _resolve_wrath(c):
+                player.add_to_grave(c)
+                for cc in list(opponent.creatures):
+                    opponent.add_to_grave(cc.card); opponent.revolt_this_turn = True
+                opponent.creatures.clear()
+                for cc in list(player.creatures):
+                    player.add_to_grave(cc.card)
+                player.creatures.clear()
+                log_fn(f"★ {c.name} — all creatures destroyed", True)
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, wrath, budget, log_fn, log_entries,
+                       on_resolve=_resolve_wrath)
 
     # ── 4. Teferi, Time Raveler ──
     teferi = player.find_tag('teferi')
     teferi_on_board = any(p.card.tag == 'teferi' for p in player.artifacts)
-    if teferi and not teferi_on_board and total_mana >= 3:
-        player.remove_from_hand(teferi)
-        if not _try_counter_any(player, opponent, gs, teferi, log_entries):
-            player.put_artifact_in_play(teferi)
-            total_mana -= 3
-            # Teferi -3: bounce a permanent
+    if teferi and not teferi_on_board and budget[0] >= 3:
+        def _resolve_teferi(c):
+            player.put_artifact_in_play(c)
             if opponent.creatures:
-                tgt = max(opponent.creatures, key=lambda c: c.power)
+                tgt = max(opponent.creatures, key=lambda cc: cc.power)
                 opponent.remove_creature(tgt)
                 opponent.hand.append(tgt.card)
                 log_fn(f"Teferi, Time Raveler — bounces {tgt.card.name}, draw 1", True)
             else:
                 log_fn("Teferi, Time Raveler — opponent can't cast at instant speed", True)
             player.draw(1)
-        else:
-            player.add_to_grave(teferi)
+        cast_spell(player, opponent, gs, teferi, budget, log_fn, log_entries,
+                   on_resolve=_resolve_teferi, cost_override=3)
 
     # ── 5. Wan Shi Tong — deploy the engine ──
     wst = player.find_tag('wst')
-    if wst and not wst_on_board and total_mana >= 4:
-        player.remove_from_hand(wst)
-        if not _try_counter_any(player, opponent, gs, wst, log_entries):
-            player.put_creature_in_play(wst)
-            total_mana -= 4
+    if wst and not wst_on_board and budget[0] >= 4:
+        def _resolve_wst(c):
+            player.put_creature_in_play(c)
             log_fn("★ Wan Shi Tong, Librarian (3/5 flying) — draws on each opponent draw", True)
-        else:
-            player.add_to_grave(wst)
+        cast_spell(player, opponent, gs, wst, budget, log_fn, log_entries,
+                   on_resolve=_resolve_wst, cost_override=4)
 
     # ── 6. Sanctifier en-Vec ──
     sanc = player.find_tag('sanctifier')
-    if sanc and total_mana >= 2:
-        player.remove_from_hand(sanc)
-        if not _try_counter_any(player, opponent, gs, sanc, log_entries):
-            player.put_creature_in_play(sanc)
-            total_mana -= 2
+    if sanc and budget[0] >= 2:
+        def _resolve_sanc(c):
+            player.put_creature_in_play(c)
             log_fn("Sanctifier en-Vec (2/2, pro black/red)")
-        else:
-            player.add_to_grave(sanc)
+        cast_spell(player, opponent, gs, sanc, budget, log_fn, log_entries,
+                   on_resolve=_resolve_sanc, cost_override=2)
 
     # ── 7. Snapcaster Mage — flashback value ──
     snap = player.find_tag('snap')
-    if snap and total_mana >= 2:
+    if snap and budget[0] >= 2:
         fb_target = next((c for c in player.graveyard
                           if c.is_removal and not c.is_mass_removal and opponent.creatures), None)
         if fb_target:
-            player.remove_from_hand(snap)
-            if not _try_counter_any(player, opponent, gs, snap, log_entries):
-                player.put_creature_in_play(snap)
-                total_mana -= 2
-                # Flashback removal
+            def _resolve_snap(c, _fb=fb_target):
+                player.put_creature_in_play(c)
                 if opponent.creatures:
-                    tgt = max(opponent.creatures, key=lambda c: c.power)
+                    tgt = max(opponent.creatures, key=lambda cc: cc.power)
                     if tgt.power >= 2:
                         lg = MTGRules.stp_life_gain(tgt)
                         opponent.remove_creature(tgt, to_exile=True)
                         opponent.life += lg
-                        player.graveyard.remove(fb_target)
-                        log_fn(f"Snapcaster Mage — flashback {fb_target.name} → exiles {tgt.card.name}")
+                        if _fb in player.graveyard:
+                            player.graveyard.remove(_fb)
+                        log_fn(f"Snapcaster Mage — flashback {_fb.name} → exiles {tgt.card.name}")
                         update_goyf(gs)
-            else:
-                player.add_to_grave(snap)
+            cast_spell(player, opponent, gs, snap, budget, log_fn, log_entries,
+                       on_resolve=_resolve_snap, cost_override=2)
 
     # ── 8. Combat — attack with non-summoning-sick creatures ──
     attackers = [c for c in player.creatures if not c.summoning_sick]
