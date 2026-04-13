@@ -3619,18 +3619,21 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
         reason=(f"mana={total_mana}, lands={len(player.lands)}, "
                 f"depths_out={any(l.card.tag=='depths' for l in player.lands)}"))
 
+    budget = [total_mana]
     crop = player.find_tag('crop')
-    if crop and opp_can_cast(crop, total_mana, gs, caster=player):
-        player.remove_from_hand(crop)
-        if not _try_counter_any(player, opponent, gs, crop, log_entries):
-            player.add_to_grave(crop)
+    if crop and opp_can_cast(crop, budget[0], gs, caster=player):
+        def _resolve_crop(c):
+            player.add_to_grave(c)
             want = 'depths' if not any(l.card.tag == 'depths' for l in player.lands) else 'stage'
-            found = next((c for c in player.library if c.tag == want), None)
+            found = next((cc for cc in player.library if cc.tag == want), None)
             if found:
                 player.library.remove(found)
-                player.lands.append(LandPermanent(card=found, controller=('b' if player is gs.p1 else 'o')))
+                player.lands.append(LandPermanent(card=found,
+                                                  controller=('b' if player is gs.p1 else 'o')))
                 log_fn(f"Crop Rotation → {found.name}")
-        else: player.add_to_grave(crop)
+        cast_spell(player, opponent, gs, crop, budget, log_fn, log_entries,
+                   on_resolve=_resolve_crop)
+        total_mana = budget[0]
     has_depths = any(l.card.tag == 'depths' for l in player.lands)
     has_stage  = any(l.card.tag == 'stage' for l in player.lands)
     if has_depths and has_stage and not gs.game_over:
@@ -3670,10 +3673,15 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
         target = next((c for c in sorted(opponent.creatures, key=lambda x: -x.power)
                        if 'B' not in c.card.colors and _can_target(c, total_mana)), None)
         if target:
-            player.cast_spell(snuff)  # pays life_cost=4
-            opponent.remove_creature(target)
-            log_fn(f"Snuff Out (free, −4 life → {player.life}) → kills {target.name} (nonblack)", True)
-            update_goyf(gs)
+            def _resolve_snuff(c, _t=target):
+                player.add_to_grave(c)
+                player.life -= c.life_cost
+                opponent.remove_creature(_t)
+                log_fn(f"Snuff Out (free, −{c.life_cost} life → {player.life}) "
+                       f"→ kills {_t.name} (nonblack)", True)
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, snuff, None, log_fn, log_entries,
+                       on_resolve=_resolve_snuff)
 
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
     if wl:
