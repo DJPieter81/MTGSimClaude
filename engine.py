@@ -5058,73 +5058,74 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
             mana += 1
             log_fn(f"Lotus Petal — mana {mana}")
 
+    budget = [mana]
+
     # ── Step 2: Unmask (free) — strip FoW BEFORE committing mana ────────────
-    # Unmask is free if you reveal your hand and opponent chooses a nonland card you discard.
-    # In Reanimator: you CHOOSE to discard the fatties (self-mill + strip their counter).
     unmask = player.find_tag('unmask')
     gris_for_unmask = player.find_tag('gris') or player.find_tag('archon')
     if unmask and gris_for_unmask and gs.turn <= 2:
-        player.remove_from_hand(unmask); player.add_to_grave(unmask)
+        # Pitch the fatty to GY (not cast)
         player.remove_from_hand(gris_for_unmask)
         player.add_to_grave(gris_for_unmask)
-        # Strip opponent's best counter
-        if opponent.hand:
-            target = (next((c for c in opponent.hand if c.tag == 'fow'), None) or
-                      next((c for c in opponent.hand if c.tag == 'fon'), None) or
-                      next((c for c in opponent.hand if c.free_cast_if_blue), None) or
-                      next((c for c in opponent.hand if not c.is_land()), None))
-            if target:
-                opponent.hand.remove(target)
-                log_fn(f"Unmask (free) — discards {gris_for_unmask.name} to GY, strips {target.name}", True)
-            else:
-                log_fn(f"Unmask (free) — discards {gris_for_unmask.name} to GY")
+        def _resolve_unmask(c, _g=gris_for_unmask):
+            player.add_to_grave(c)
+            if opponent.hand:
+                target = (next((cc for cc in opponent.hand if cc.tag == 'fow'), None) or
+                          next((cc for cc in opponent.hand if cc.tag == 'fon'), None) or
+                          next((cc for cc in opponent.hand if cc.free_cast_if_blue), None) or
+                          next((cc for cc in opponent.hand if not cc.is_land()), None))
+                if target:
+                    opponent.hand.remove(target)
+                    log_fn(f"Unmask (free) — discards {_g.name} to GY, strips {target.name}", True)
+                else:
+                    log_fn(f"Unmask (free) — discards {_g.name} to GY")
+        cast_spell(player, opponent, gs, unmask, None, log_fn, log_entries,
+                   on_resolve=_resolve_unmask)
 
     # ── Step 3: Dark Ritual — only if combo path exists ────────────────────
-    has_black_source = (mana >= 1)
+    has_black_source = (budget[0] >= 1)
     if has_black_source and combo_path:
         rituals = [c for c in player.hand if c.tag == 'darkrit']
         for r in rituals:
-            if mana >= 1:  # spend 1B, get 3B
-                player.remove_from_hand(r)
-                player.add_to_grave(r)
-                mana += 2  # net +2
-                log_fn(f"Dark Ritual ({mana-2}B→{mana}B)")
+            if budget[0] >= 1:
+                def _resolve_drit(c):
+                    player.add_to_grave(c)
+                    budget[0] += 3  # cast_spell deducts 1 (cmc), on_resolve adds 3 = net +2
+                    log_fn(f"Dark Ritual (→{budget[0]}B)")
+                cast_spell(player, opponent, gs, r, budget, log_fn, log_entries,
+                           on_resolve=_resolve_drit)
 
-    # ── Careful Study / Brainstorm — fill GY with reanimation targets ────────
-    # Always worth casting: even without combo ready, Study puts fatties in GY
+    # ── Careful Study — fill GY with reanimation targets ────────
     study = player.find_tag('study')
-    if study and mana >= 1:
-        player.remove_from_hand(study); player.add_to_grave(study)
-        mana -= 1
-        drawn = player.draw(2)
-        # Discard 2 — prefer discarding the fatties into GY
-        discard_pref = sorted(player.hand,
-            key=lambda c: -(c.cmc if c.win_condition or c.is_combo_piece else 0))
-        for c in discard_pref[:2]:
-            player.hand.remove(c); player.add_to_grave(c)
-            log_fn(f"  Study discards {c.name} to GY")
+    if study and budget[0] >= 1:
+        def _resolve_study(c):
+            player.add_to_grave(c)
+            player.draw(2)
+            discard_pref = sorted(player.hand,
+                key=lambda cc: -(cc.cmc if cc.win_condition or cc.is_combo_piece else 0))
+            for cc in discard_pref[:2]:
+                player.hand.remove(cc); player.add_to_grave(cc)
+                log_fn(f"  Study discards {cc.name} to GY")
+        cast_spell(player, opponent, gs, study, budget, log_fn, log_entries,
+                   on_resolve=_resolve_study)
 
     # ── Entomb — put target into GY ─────────────────────────────────────────
     entomb = player.find_tag('entomb')
     gy_target = next((c for c in player.graveyard
                       if c.win_condition or c.is_combo_piece and c.is_creature()), None)
-    
-    if entomb and not gy_target and mana >= 1:
-        player.remove_from_hand(entomb)
-        if not _try_counter_any(player, opponent, gs, entomb, log_entries):
-            player.add_to_grave(entomb)
-            mana -= 1
-            # Tutor Griselbrand into GY
-            target = (next((c for c in player.library if c.tag == 'gris'), None) or
-                      next((c for c in player.library if c.win_condition), None))
+
+    if entomb and not gy_target and budget[0] >= 1:
+        def _resolve_entomb(c):
+            player.add_to_grave(c)
+            target = (next((cc for cc in player.library if cc.tag == 'gris'), None) or
+                      next((cc for cc in player.library if cc.win_condition), None))
             if target:
                 player.library.remove(target)
                 player.add_to_grave(target)
                 log_fn(f"Entomb → {target.name} in GY", True)
-                gy_target = target
-        else:
-            player.add_to_grave(entomb)
-            log_fn("Entomb countered")
+        cast_spell(player, opponent, gs, entomb, budget, log_fn, log_entries,
+                   on_resolve=_resolve_entomb)
+    mana = budget[0]
 
     # ── Reanimate / Exhume / Animate Dead — bring back the target ───────────
     gy_target = next((c for c in player.graveyard
@@ -5143,55 +5144,46 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
         elif animate and mana >= 2: spell, cost = animate, 2
         
         if spell:
-            player.remove_from_hand(spell)
-            if not _try_counter_any(player, opponent, gs, spell, log_entries):
-                player.add_to_grave(spell)
-                mana -= cost
-                # Reanimate oracle: pay life equal to reanimated creature's CMC
-                if spell.tag == 'reanimate':
-                    life_paid = gy_target.cmc
+            budget = [mana]
+            def _resolve_rean(c, _gy=gy_target):
+                player.add_to_grave(c)
+                if c.tag == 'reanimate':
+                    life_paid = _gy.cmc
                     player.life -= life_paid
                     log_fn(f"  Reanimate: pay {life_paid} life ({player.life} remaining)")
                     gs.check_life_totals()
-                player.graveyard.remove(gy_target)
-                perm = player.put_creature_in_play(gy_target)
-                log_fn(f"★ {spell.name} → {gy_target.name} enters play", True)
+                player.graveyard.remove(_gy)
+                perm = player.put_creature_in_play(_gy)
+                log_fn(f"★ {c.name} → {_gy.name} enters play", True)
                 # Griselbrand/Archon: extremely powerful but NOT instant-win.
                 # Real Legacy gives the opponent a turn to answer (Karakas, Borrower,
                 # STP, Fatal Push revolt, etc.). Model the creature correctly:
                 # - Griselbrand: 7/7 flying lifelink, draw 7 on ETB (simplified)
                 # - Archon: 6/6, ETB drain 3 + draw 1 + discard 1
                 # - Atraxa: 7/7 flying lifelink deathtouch, ETB draw 4
-                if gy_target.tag == 'gris':
-                    # Set flying/lifelink on BOTH perm and card (combat reads card attrs)
+                if _gy.tag == 'gris':
                     perm.flying = True
                     perm.lifelink = True
-                    gy_target.flying = True
-                    gy_target.lifelink = True
-                    # Griselbrand: activated ability "Pay 7 life: Draw 7 cards"
-                    # Check if Bowmasters would kill us: 7 draws = 7 pings = 7 damage
-                    opp_has_bowm = any(c.card.tag == 'bowm' for c in opponent.creatures)
+                    _gy.flying = True
+                    _gy.lifelink = True
+                    opp_has_bowm = any(cc.card.tag == 'bowm' for cc in opponent.creatures)
                     bowm_damage = 7 if (opp_has_bowm or gs.bowmasters_on_board) else 0
-                    # Need life > 7 (Griselbrand cost) + bowmasters pings + buffer
                     life_after = player.life - 7 - bowm_damage
                     if life_after >= 1:
                         player.life -= 7
                         drawn = player.draw(7)
                         log_fn(f"  Griselbrand: pay 7 life, draw 7 ({player.life} remaining)")
-                        # Bowmasters triggers on each of the 7 draws
                         if gs.bowmasters_on_board or opp_has_bowm:
                             bowmasters_triggers(7, gs, log_entries,
                                 controller='o' if player is gs.p1 else 'b')
                         gs.check_life_totals()
-                elif gy_target.tag == 'archon':
-                    # Archon ETB: target opponent sacrifices creature/planeswalker,
-                    # discards a card, loses 3 life; you draw, gain 3 life
+                elif _gy.tag == 'archon':
                     if opponent.creatures:
-                        worst = min(opponent.creatures, key=lambda c: c.power)
+                        worst = min(opponent.creatures, key=lambda cc: cc.power)
                         opponent.remove_creature(worst)
                         log_fn(f"  Archon ETB: opponent sacrifices {worst.card.name}")
                     if opponent.hand:
-                        worst = min(opponent.hand, key=lambda c: c.cmc)
+                        worst = min(opponent.hand, key=lambda cc: cc.cmc)
                         opponent.hand.remove(worst)
                         opponent.graveyard.append(worst)
                     player.draw(1)
@@ -5199,21 +5191,19 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
                     player.life += 3
                     log_fn(f"  Archon ETB: drain 3, draw 1, opp discards (opp at {opponent.life})")
                     gs.check_life_totals()
-                elif gy_target.tag == 'atraxa':
-                    # Set flying/lifelink/deathtouch on BOTH perm and card
+                elif _gy.tag == 'atraxa':
                     perm.flying = True
                     perm.lifelink = True
                     perm.deathtouch = True
-                    gy_target.flying = True
-                    gy_target.lifelink = True
-                    gy_target.deathtouch = True
-                    # Atraxa ETB: reveal top 10, put one of each type into hand
+                    _gy.flying = True
+                    _gy.lifelink = True
+                    _gy.deathtouch = True
                     drawn = player.draw(4)
                     log_fn(f"  Atraxa ETB: draw 4")
                     gs.check_life_totals()
-            else:
-                player.add_to_grave(spell)
-                log_fn(f"{spell.name} countered")
+            cast_spell(player, opponent, gs, spell, budget, log_fn, log_entries,
+                       on_resolve=_resolve_rean, cost_override=cost)
+            mana = budget[0]
     elif gy_target and gs.leyline_active:
         log_fn("Leyline active — no GY target available")
 
