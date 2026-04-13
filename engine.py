@@ -4777,6 +4777,20 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         total_mana -= 3
         log_fn("Disruptor Flute — names opponent's key card", True)
 
+    # ── 6. Deploy remaining utility artifacts / Tezzeret for card advantage ──
+    for tag in ('desk', 'lantern', 'needle', 'tezzeret'):
+        c = player.find_tag(tag)
+        if c and total_mana >= c.cmc:
+            player.remove_from_hand(c)
+            if not _try_counter_any(player, opponent, gs, c, log_entries):
+                player.put_artifact_in_play(c)
+                total_mana -= c.cmc
+                if getattr(c, 'is_cantrip', False):
+                    player.draw(1)
+                log_fn(f"{c.name} deployed", True)
+            else:
+                player.add_to_grave(c)
+
 
 
 def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
