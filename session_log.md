@@ -32,3 +32,4 @@
 - _strategy_reanimator: 7 casts converted, tests 147/0, commit cf6ba61
 - _strategy_ocelot: 7 casts converted, tests 147/0, commit 73d33f0
 - _strategy_mono_black: 8 casts converted, tests 147/0, commit 474eeb6
+- _strategy_boros: 8 casts converted, tests 147/0, commit a492d31

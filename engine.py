@@ -5355,125 +5355,130 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     elif grief and gs.turn <= 2:
         blacks = [c for c in player.hand if 'B' in getattr(c,'colors',set()) and c.tag != 'grief']
         if blacks:
-            player.remove_from_hand(grief); player.remove_from_hand(blacks[0])
-            player.exile.append(blacks[0])
-            if opponent.hand:
-                nonlands = [c for c in opponent.hand if not c.is_land()]
-                t = next((c for c in nonlands if c.free_cast_if_blue), None) or (nonlands[0] if nonlands else None)
-                if t:
-                    opponent.hand.remove(t); opponent.add_to_grave(t)
-                    log_fn(f"Grief (evoke) strips {t.name}")
-            player.add_to_grave(grief)
+            pitch = blacks[0]
+            player.remove_from_hand(pitch); player.exile.append(pitch)
+            def _resolve_grief_evoke(c, _p=pitch):
+                if opponent.hand:
+                    nonlands = [cc for cc in opponent.hand if not cc.is_land()]
+                    t = next((cc for cc in nonlands if cc.free_cast_if_blue), None) or (nonlands[0] if nonlands else None)
+                    if t:
+                        opponent.hand.remove(t); opponent.add_to_grave(t)
+                        log_fn(f"Grief (evoke) strips {t.name}")
+                player.add_to_grave(c)
+            cast_spell(player, opponent, gs, grief, None, log_fn, log_entries,
+                       on_resolve=_resolve_grief_evoke)
 
     # Fury — ETB 4 damage divided, Ephemerate for second wave
     fury = player.find_tag('fury')
     eph2 = player.find_tag('ephemerate')
     if fury and opponent.creatures:
-        player.remove_from_hand(fury)
-        red_pitch = next((c for c in player.hand if 'R' in getattr(c,'colors',set())), None)
+        red_pitch = next((c for c in player.hand if 'R' in getattr(c,'colors',set()) and c is not fury), None)
         if red_pitch: player.remove_from_hand(red_pitch); player.exile.append(red_pitch)
         n_waves = 2 if (eph2 and not (grief and ephemerate)) else 1
         if n_waves == 2: player.remove_from_hand(eph2); player.add_to_grave(eph2)
-        for wave in range(n_waves):
-            targets = sorted(opponent.creatures, key=lambda c: c.toughness)
-            rem = 4
-            killed, wounded = [], []
-            for t in targets:
-                if rem <= 0: break
-                deal = min(rem, t.toughness); t.damage_marked += deal; rem -= deal
-                if t.is_destroyed(): killed.append(t)
-                else: wounded.append(t)
-            for c in killed: opponent.remove_creature(c)
-            label = f"ETB#{wave+1}" + (" (Ephemerate blink)" if wave else "")
-            log_fn(f"★ Fury {label} (4 divided) — kills: {[c.name for c in killed]}", True)
-        update_goyf(gs); gs.state_based_actions()
+        def _resolve_fury(c, _nw=n_waves):
+            for wave in range(_nw):
+                targets = sorted(opponent.creatures, key=lambda cc: cc.toughness)
+                rem = 4
+                killed, wounded = [], []
+                for t in targets:
+                    if rem <= 0: break
+                    deal = min(rem, t.toughness); t.damage_marked += deal; rem -= deal
+                    if t.is_destroyed(): killed.append(t)
+                    else: wounded.append(t)
+                for cc in killed: opponent.remove_creature(cc)
+                label = f"ETB#{wave+1}" + (" (Ephemerate blink)" if wave else "")
+                log_fn(f"★ Fury {label} (4 divided) — kills: {[cc.name for cc in killed]}", True)
+            update_goyf(gs); gs.state_based_actions()
+        cast_spell(player, opponent, gs, fury, None, log_fn, log_entries,
+                   on_resolve=_resolve_fury)
 
     # Thoughtseize — cast early (T1-T3) unless Grief+Ephemerate already stripped.
     # Skip vs Burn: -2 life for marginal value (4-of burn spells are fungible) and
     # we desperately need our life total vs their clock.
     opp_deck_key = gs.p2_deck if opponent is gs.p2 else gs.p1_deck
     vs_burn = (opp_deck_key == 'burn')
+    budget = [total_mana]
     ts = player.find_tag('ts')
-    if ts and opp_can_cast(ts, total_mana, gs, caster=player) and not (grief and ephemerate) and gs.turn <= 3 and not vs_burn:
+    if ts and opp_can_cast(ts, budget[0], gs, caster=player) and not (grief and ephemerate) and gs.turn <= 3 and not vs_burn:
         veil_b = opponent.find_tag('vos')
         if veil_b and can_afford(opponent, veil_b.mana_cost):
             opponent.remove_from_hand(veil_b); opponent.add_to_grave(veil_b)
             opponent.draw(1)
             log_fn("Veil of Summer — TS fizzles")
         else:
-            player.cast_spell(ts, log_fn=log_fn)
-            t = (opponent.find_any(lambda c: c.free_cast_if_blue) or
-                 opponent.find_any(lambda c: c.is_creature()))
-            if t: opponent.hand.remove(t); log_fn(f"Thoughtseize — strips {t.name}")
+            def _resolve_ts_mardu(c):
+                player.add_to_grave(c)
+                t = (opponent.find_any(lambda cc: cc.free_cast_if_blue) or
+                     opponent.find_any(lambda cc: cc.is_creature()))
+                if t: opponent.hand.remove(t); log_fn(f"Thoughtseize — strips {t.name}")
+            cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ts_mardu)
 
-    # ── Creature deployment loop — deploy aggressively on curve ──
-    # Mardu floods the board: Ragavan T1, Bowmasters T2, second creature T3+
-    # Priority: Ragavan (haste, Treasure) > Bowmasters (draw punishment) > Grief (body)
+    # ── Creature deployment loop ──
     deploy_tags = ['ragavan', 'bowm', 'grief']
     for tag in deploy_tags:
         card = player.find_tag(tag)
-        if not card or not opp_can_cast(card, total_mana, gs, caster=player):
+        if not card or not opp_can_cast(card, budget[0], gs, caster=player):
             continue
-        # Grief: only deploy as body if Evoke already happened (it's a 3/2 menace)
         if tag == 'grief' and gs.turn <= 2:
-            continue  # T1-T2 Grief is handled by Evoke above
-        player.remove_from_hand(card)
-        if not _try_counter_any(player, opponent, gs, card, log_entries):
-            player.put_creature_in_play(card)
-            total_mana -= card.cmc
-            if tag == 'ragavan':
+            continue
+        def _resolve_deploy_mardu(c, _tag=tag):
+            player.put_creature_in_play(c)
+            if _tag == 'ragavan':
                 log_fn("Ragavan (haste)")
-            elif tag == 'bowm':
+            elif _tag == 'bowm':
                 log_fn("Orcish Bowmasters (flash)")
             else:
-                log_fn(f"{card.name} ({card.base_power}/{card.base_toughness})")
-        else:
-            player.add_to_grave(card)
+                log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+        cast_spell(player, opponent, gs, card, budget, log_fn, log_entries,
+                   on_resolve=_resolve_deploy_mardu)
 
-    # STP — exile big BUG threats only (Murktide, Kaito — hard to re-deploy)
+    # STP
     stp = player.find_tag('stp')
-    if stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player):
-        # STP costs 1W; mana after casting = total_mana - 1 (for ward check)
-        mana_after_stp = total_mana - 1
+    if stp and opponent.creatures and opp_can_cast(stp, budget[0], gs, caster=player):
+        mana_after_stp = budget[0] - 1
         valid_stp = [c for c in opponent.creatures if _can_target(c, mana_after_stp)]
         target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
-        if target and target.power >= 1:  # exile any creature — Mardu is aggressive with removal
-            player.remove_from_hand(stp); player.add_to_grave(stp)
-            total_mana -= 1
-            opponent.remove_creature(target)
-            log_fn(f"Swords to Plowshares exiles {target.card.name}")
-            update_goyf(gs)
+        if target and target.power >= 1:
+            def _resolve_stp_mardu(c, _t=target):
+                player.add_to_grave(c)
+                opponent.remove_creature(_t)
+                log_fn(f"Swords to Plowshares exiles {_t.card.name}")
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
+                       on_resolve=_resolve_stp_mardu)
 
-    # Lightning Bolt — creature removal first, face only at ≤ 9 (Mardu is midrange, not pure burn).
-    # vs Burn: race mode — kill Eidolon/Swiftspear (snowball threats) but otherwise go face
-    # to close the game before their 20-damage hand resolves.
+    # Lightning Bolt
     bolt = player.find_tag('bolt')
-    if bolt and opp_can_cast(bolt, total_mana, gs, caster=player):
+    if bolt and opp_can_cast(bolt, budget[0], gs, caster=player):
         def bolt_priority(c):
             if c.card.tag == 'tamiyo': return 0
             if c.card.tag == 'bowm':   return 1
             if vs_burn and c.card.tag in ('eidolon', 'swiftspear'): return 1
-            if vs_burn: return 99  # ignore other burn creatures — race face
+            if vs_burn: return 99
             if c.toughness <= 2:       return 2
             if c.toughness == 3:       return 3
             return 99
-        # Bolt costs 1R; mana after paying = total_mana - 1 (for ward check)
-        _bolt_mana_after = total_mana - 1
+        _bolt_mana_after = budget[0] - 1
         candidates = [c for c in opponent.creatures
                       if bolt_priority(c) < 99 and _can_target(c, _bolt_mana_after)]
         target = min(candidates, key=bolt_priority) if candidates else None
-        # vs Burn: go face aggressively to race (no creature target worth saving burn for)
         face_threshold = 17 if vs_burn else 9
         go_face = (target is None and opponent.life <= face_threshold)
-        player.remove_from_hand(bolt); player.add_to_grave(bolt)
-        total_mana -= 1
-        if target:
-            opponent.remove_creature(target)
-            log_fn(f"Lightning Bolt → kills {target.card.name}", True); update_goyf(gs)
-        elif go_face:
-            opponent.life -= 3
-            log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
-            gs.check_life_totals()
+        if target or go_face:
+            def _resolve_bolt_mardu(c, _t=target, _face=go_face):
+                player.add_to_grave(c)
+                if _t:
+                    opponent.remove_creature(_t)
+                    log_fn(f"Lightning Bolt → kills {_t.card.name}", True); update_goyf(gs)
+                elif _face:
+                    opponent.life -= 3
+                    log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
+                    gs.check_life_totals()
+            cast_spell(player, opponent, gs, bolt, budget, log_fn, log_entries,
+                       on_resolve=_resolve_bolt_mardu)
+    total_mana = budget[0]
 
     # Combat — Bowmasters holds back
     opp_has_blockers = len(opponent.creatures) > 0
