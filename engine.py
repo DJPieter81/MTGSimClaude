@@ -3392,6 +3392,8 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
     if gs.chalice_x is not None:
         _p1_force_of_vigor(gs, ['chalice'], log_entries)
 
+    budget = [total_mana]
+
     # ── Chalice of the Void ──
     # Oracle: costs {X}{X} = generic/colorless mana only
     # VALID sources: Ancient Tomb (2C), City of Traitors (2C), Lotus Petal (any)
@@ -3403,51 +3405,50 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
         petals   = [c for c in player.hand if c.tag == 'petal']
         has_2c_generic = tomb_ok or city_ok or len(petals) >= 2
 
-        if has_2c_generic or total_mana >= 2:
-            player.remove_from_hand(ch)
+        if has_2c_generic or budget[0] >= 2:
             # Spend Lotus Petals if no other 2-mana generic source
             if not tomb_ok and not city_ok and len(petals) >= 2:
                 for p in petals[:2]: player.remove_from_hand(p); player.add_to_grave(p)
-            if not _try_counter_any(player, opponent, gs, ch, log_entries):
-                player.put_artifact_in_play(ch); gs.chalice_x = 1
+            def _resolve_ch(c):
+                player.put_artifact_in_play(c); gs.chalice_x = 1
                 log_fn("Chalice on 1", True)
-            else: player.add_to_grave(ch)
+            cast_spell(player, opponent, gs, ch, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ch)
+    ch = player.find_tag('chalice')
     if ch and gs.chalice_x is None:
-        player.remove_from_hand(ch)
-        if not _try_counter_any(player, opponent, gs, ch, log_entries):
-            player.put_artifact_in_play(ch); gs.chalice_x = 1
+        def _resolve_ch2(c):
+            player.put_artifact_in_play(c); gs.chalice_x = 1
             log_fn("Chalice on 1", True)
-        else: player.add_to_grave(ch)
+        cast_spell(player, opponent, gs, ch, budget, log_fn, log_entries,
+                   on_resolve=_resolve_ch2)
     # ── Threats ──
     # ── Threats — deploy all affordable creatures each turn (biggest first) ──
     # TKS first (hand disruption is high-value)
     tks = player.find_tag('tks')
-    if tks and opp_can_cast(tks, total_mana, gs, caster=player):
-        player.remove_from_hand(tks)
-        if not _try_counter_any(player, opponent, gs, tks, log_entries):
-            player.put_creature_in_play(tks)
-            total_mana -= tks.cmc
+    if tks and opp_can_cast(tks, budget[0], gs, caster=player):
+        def _resolve_tks(c):
+            player.put_creature_in_play(c)
             if opponent.hand:
-                nonlands = [c for c in opponent.hand if not c.is_land()]
+                nonlands = [cc for cc in opponent.hand if not cc.is_land()]
                 if nonlands:
                     ex = random.choice(nonlands); opponent.hand.remove(ex); opponent.exile.append(ex)
                     log_fn(f"TKS exiles {ex.name}", True)
-        else: player.add_to_grave(tks)
+        cast_spell(player, opponent, gs, tks, budget, log_fn, log_entries,
+                   on_resolve=_resolve_tks)
 
     # Deploy remaining creatures, biggest-first
     while True:
         affordable = [c for c in player.hand
-                      if c.is_creature() and opp_can_cast(c, total_mana, gs, caster=player)]
+                      if c.is_creature() and opp_can_cast(c, budget[0], gs, caster=player)]
         if not affordable:
             break
         thr = max(affordable, key=lambda c: c.cmc)
-        player.remove_from_hand(thr)
-        if not _try_counter_any(player, opponent, gs, thr, log_entries):
-            player.put_creature_in_play(thr)
-            log_fn(f"{thr.name} ({thr.base_power}/{thr.base_toughness})")
-        else:
-            player.add_to_grave(thr)
-        total_mana -= thr.cmc
+        def _resolve_thr(c):
+            player.put_creature_in_play(c)
+            log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+        cast_spell(player, opponent, gs, thr, budget, log_fn, log_entries,
+                   on_resolve=_resolve_thr)
+    total_mana = budget[0]
 
     # Wasteland — only when 3+ lands (Eldrazi needs mana for CMC 3-4 threats)
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
