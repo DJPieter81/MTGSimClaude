@@ -4182,29 +4182,30 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
-    rem = total_mana  # remaining mana this gs.turn — deduct after each spell cast
+    budget = [total_mana]  # remaining mana this gs.turn — deduct after each spell cast
 
     gs.strat_log.log_decision(
         gs.turn, 'dimir',
         candidates=['thoughtseize', 'cantrip', 'removal', 'threat', 'wasteland', 'counter', 'pass'],
         chosen='entry',
-        reason=f"mana={rem}, hand={len(player.hand)}, threats_in_play={len(player.creatures)}")
+        reason=f"mana={budget[0]}, hand={len(player.hand)}, threats_in_play={len(player.creatures)}")
 
     # ── 0a. Thoughtseize — proactive disruption (early turns) ──
     from config import MatchupCategory as MC
     from interaction import best_proactive_target
     ts = player.find_tag('ts')
-    ts_turn_cap = 3 if MC.is_combo(gs) else 2  # aligned with config (was 6/3 — too oppressive vs combo)
-    if ts and gs.turn <= ts_turn_cap and rem >= 1:
+    ts_turn_cap = 3 if MC.is_combo(gs) else 2
+    if ts and gs.turn <= ts_turn_cap and budget[0] >= 1:
         target = best_proactive_target(gs, opponent) if hasattr(gs, 'p2') else None
         if target:
-            player.remove_from_hand(ts)
-            player.add_to_grave(ts)
-            rem -= 1
-            opponent.hand.remove(target)
-            opponent.add_to_grave(target)
-            player.life -= 2
-            log_fn(f"Thoughtseize → takes {target.name} (−2 life, {player.life})", True)
+            def _resolve_ts(c, _t=target):
+                player.add_to_grave(c)
+                opponent.hand.remove(_t)
+                opponent.add_to_grave(_t)
+                player.life -= 2
+                log_fn(f"Thoughtseize → takes {_t.name} (−2 life, {player.life})", True)
+            cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ts)
 
     # ── 0b. Deploy T1 threats (Tamiyo is the best T1 play) ──
     # Real Dimir plays T1 Tamiyo (starts flip clock, 0/3 blocks) or T1 Thoughtseize.
@@ -4217,40 +4218,33 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
         _deploy_priority = {'tamiyo': 0, 'nether': 1, 'barrow': 1, 'borrow': 3}
     cheap_threats = [(c, _deploy_priority.get(c.tag, 2))
                      for c in player.hand
-                     if c.is_creature() and c.cmc <= rem
+                     if c.is_creature() and c.cmc <= budget[0]
                      and c.tag not in ('snuffout', 'murk')]
     cheap_threats.sort(key=lambda x: x[1])
 
     for thr, _ in cheap_threats[:1]:  # deploy one creature
-        player.remove_from_hand(thr)
-        if not _try_counter_any(player, opponent, gs, thr, log_entries):
-            player.put_creature_in_play(thr)
-            log_fn(f"{thr.name} ({thr.base_power}/{thr.base_toughness})")
-            rem -= thr.cmc
-            if getattr(thr, 'engine', False) and thr.cmc == 2:
+        def _resolve_thr1(c):
+            player.put_creature_in_play(c)
+            log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+            if getattr(c, 'engine', False) and c.cmc == 2:
                 drawn = player.draw(1)
                 if drawn: log_fn(f"  Strix ETB → draws {drawn[0].name}")
                 if gs.bowmasters_on_board:
                     ctr = []; bowmasters_triggers(1, gs, ctr)
                     for m in ctr: log_entries.append(m)
-            elif thr.tag == 'barrow':
+            elif c.tag == 'barrow':
                 update_goyf(gs)
                 log_fn(f"  Barrowgoyf P/T: {player.creatures[-1].power}/{player.creatures[-1].toughness}")
-        else:
-            player.add_to_grave(thr)
+        cast_spell(player, opponent, gs, thr, budget, log_fn, log_entries,
+                   on_resolve=_resolve_thr1)
         break
 
     # ── 1. Cantrips — cast with remaining mana ──
-    can = next((c for c in player.hand if c.is_cantrip and rem >= 1), None)
+    can = next((c for c in player.hand if c.is_cantrip and budget[0] >= 1), None)
     if can:
-        player.remove_from_hand(can); player.add_to_grave(can)
-        rem -= 1  # spent 1 mana on cantrip
-        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-        player.draw(draws)
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(draws, gs, ctr)
-            for m in ctr: log_entries.append(m)
+        cast_spell(player, opponent, gs, can, budget, log_fn, log_entries,
+                   on_resolve=lambda c: (player.add_to_grave(c),
+                                         resolve_cantrip(player, c, gs, log_fn, log_entries)))
     # Mishra's Bauble: CMC 0, tap+sac → artifact in own GY, draw at next upkeep
     # Sacrifice every copy immediately: grow Nethergoyf T, queue delayed draws
     for bauble in list(player.hand):
@@ -4261,34 +4255,25 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
             update_goyf(gs)
             log_fn(f"Mishra\'s Bauble (sac, artifact in GY, +1 draw next upkeep)")
     # Deploy second creature if mana permits (moved primary deploy to top)
-    thr2 = player.find_any(lambda c: c.is_creature() and c.cmc <= rem and c.tag not in ('bowm','snuffout','murk'))
-    if thr2 and rem >= thr2.cmc:
-        player.remove_from_hand(thr2)
-        if not _try_counter_any(player, opponent, gs, thr2, log_entries):
-            player.put_creature_in_play(thr2)
-            log_fn(f"{thr2.name} ({thr2.base_power}/{thr2.base_toughness})")
-            rem -= thr2.cmc
-            if thr2.tag == 'barrow':
+    thr2 = player.find_any(lambda c: c.is_creature() and c.cmc <= budget[0] and c.tag not in ('bowm','snuffout','murk'))
+    if thr2 and budget[0] >= thr2.cmc:
+        def _resolve_thr2(c):
+            player.put_creature_in_play(c)
+            log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+            if c.tag == 'barrow':
                 update_goyf(gs)
-        else: player.add_to_grave(thr2)
+        cast_spell(player, opponent, gs, thr2, budget, log_fn, log_entries,
+                   on_resolve=_resolve_thr2)
 
-    # Deploy Bowmasters: flash creature that provides a blocker and pings on draws.
-    # In real Legacy, Bowmasters is cast on opponent's turn (flash), but since
-    # the sim doesn't model between-turn flash timing, deploy it on our turn
-    # when we have spare mana and need a body for blocking or board presence.
     bowm_in_play = any(c.card.tag == 'bowm' for c in player.creatures)
     bowm = player.find_tag('bowm')
-    if bowm and rem >= 2 and not bowm_in_play:
-        player.remove_from_hand(bowm)
-        if not _try_counter_any(player, opponent, gs, bowm, log_entries):
-            perm = player.put_creature_in_play(bowm)
-            rem -= 2
+    if bowm and budget[0] >= 2 and not bowm_in_play:
+        def _resolve_bowm(c):
+            perm = player.put_creature_in_play(c)
             log_fn(f"Orcish Bowmasters (1/1, flash)")
             gs.bowmasters_on_board = True
-            # Bowmasters ETB: deal 1 damage to any target, create 1/1 Orc Army
             if opponent.creatures:
-                # Target smallest enemy creature (ping to kill 1/1s like infect creatures)
-                target = min(opponent.creatures, key=lambda c: c.toughness)
+                target = min(opponent.creatures, key=lambda cc: cc.toughness)
                 if target.toughness <= 1:
                     opponent.remove_creature(target)
                     log_fn(f"  Bowmasters ETB: pings {target.card.name} (dies)")
@@ -4297,34 +4282,39 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
             army_card = creature("Orc Army", 1, {}, set(), 1, 1, tag='army')
             army_perm = Permanent(card=army_card, controller=perm.controller)
             player.creatures.append(army_perm)
-        else:
-            player.add_to_grave(bowm)
+        cast_spell(player, opponent, gs, bowm, budget, log_fn, log_entries,
+                   on_resolve=_resolve_bowm)
     push = player.find_tag('push')
     if push and opponent.creatures:
-        # Fatal Push costs 1B; mana after paying = rem - 1 (for ward check)
-        _push_mana_after = rem - 1
+        _push_mana_after = budget[0] - 1
         target = next((c for c in opponent.creatures
                        if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)
                        and _can_target(c, _push_mana_after)), None)
         if target:
-            player.remove_from_hand(push); player.add_to_grave(push)
-            opponent.remove_creature(target)
-            rev = "[revolt CMC≤4]" if player.revolt_this_turn else "[CMC≤2]"
-            log_fn(f"Fatal Push {rev} → kills {target.name}")
-            update_goyf(gs)
+            def _resolve_push(c, _t=target):
+                player.add_to_grave(c)
+                opponent.remove_creature(_t)
+                rev = "[revolt CMC≤4]" if player.revolt_this_turn else "[CMC≤2]"
+                log_fn(f"Fatal Push {rev} → kills {_t.name}")
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, push, budget, log_fn, log_entries,
+                       on_resolve=_resolve_push)
     # Snuff Out — free (pay 4 life) if controlling a Swamp; destroy nonblack creature
     snuff = player.find_tag('snuffout')
-    # Snuff Out: 'if you control a Swamp' = any land with Swamp subtype (incl. duals)
     has_swamp = any('Swamp' in l.card.subtypes or (l.card.is_basic and 'B' in l.effective_produces()) for l in player.lands)
     if snuff and has_swamp and opponent.creatures:
-        # Snuff Out is free (pay life); all rem mana available for ward
         target = next((c for c in sorted(opponent.creatures, key=lambda x: -x.power)
-                       if 'B' not in c.card.colors and _can_target(c, rem)), None)
+                       if 'B' not in c.card.colors and _can_target(c, budget[0])), None)
         if target:
-            player.cast_spell(snuff)  # pays life_cost=4
-            opponent.remove_creature(target)
-            log_fn(f"Snuff Out (free, −4 life → {player.life}) → kills {target.name} (nonblack)", True)
-            update_goyf(gs)
+            def _resolve_snuff(c, _t=target):
+                player.add_to_grave(c)
+                player.life -= c.life_cost
+                opponent.remove_creature(_t)
+                log_fn(f"Snuff Out (free, −{c.life_cost} life → {player.life}) → kills {_t.name} (nonblack)", True)
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, snuff, None, log_fn, log_entries,
+                       on_resolve=_resolve_snuff)
+    total_mana = budget[0]
 
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
     if wl:
