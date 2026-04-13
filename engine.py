@@ -4684,28 +4684,29 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         gs.win_reason = "Painter + Grindstone combo"
         return
 
+    budget = [total_mana]
+
     # ── 2. Deploy combo pieces from hand ──
     p_card = player.find_tag('painter')
-    if p_card and not painter_in_play and total_mana >= 2:
-        player.remove_from_hand(p_card)
-        if not _try_counter_any(player, opponent, gs, p_card, log_entries):
-            player.put_artifact_in_play(p_card)
-            total_mana -= 2
+    if p_card and not painter_in_play and budget[0] >= 2:
+        def _resolve_painter(c):
+            nonlocal painter_in_play
+            player.put_artifact_in_play(c)
             painter_in_play = True
             log_fn("Painter's Servant (naming blue)", True)
-        else:
-            player.add_to_grave(p_card)
+        cast_spell(player, opponent, gs, p_card, budget, log_fn, log_entries,
+                   on_resolve=_resolve_painter)
 
     grind_card = player.find_tag('grind')
-    if grind_card and not grind_in_play and total_mana >= 1:
-        player.remove_from_hand(grind_card)
-        if not _try_counter_any(player, opponent, gs, grind_card, log_entries):
-            player.put_artifact_in_play(grind_card)
-            total_mana -= 1
+    if grind_card and not grind_in_play and budget[0] >= 1:
+        def _resolve_grind(c):
+            nonlocal grind_in_play
+            player.put_artifact_in_play(c)
             grind_in_play = True
             log_fn("Grindstone", True)
-        else:
-            player.add_to_grave(grind_card)
+        cast_spell(player, opponent, gs, grind_card, budget, log_fn, log_entries,
+                   on_resolve=_resolve_grind)
+    total_mana = budget[0]
 
     # Check combo again after deploying
     if painter_in_play and grind_in_play and total_mana >= 3:
@@ -4717,16 +4718,16 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── 3. The One Ring — card draw + protection ──
+    budget[0] = total_mana
     ring = player.find_tag('ring')
-    if ring and total_mana >= 4:
-        player.remove_from_hand(ring)
-        if not _try_counter_any(player, opponent, gs, ring, log_entries):
-            player.put_artifact_in_play(ring)
-            total_mana -= 4
-            player.draw(2)  # approximate: Ring draws cards over time
+    if ring and budget[0] >= 4:
+        def _resolve_ring(c):
+            player.put_artifact_in_play(c)
+            player.draw(2)
             log_fn("The One Ring — protection + draw 2", True)
-        else:
-            player.add_to_grave(ring)
+        cast_spell(player, opponent, gs, ring, budget, log_fn, log_entries,
+                   on_resolve=_resolve_ring)
+    total_mana = budget[0]
 
     # ── 4. Karn, the Great Creator — wish for combo/lock pieces ──
     karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
@@ -4752,15 +4753,15 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         _karn_wish()
 
     karn = player.find_tag('karn')
-    if karn and total_mana >= 4 and not karn_on_board:
-        player.remove_from_hand(karn)
-        if not _try_counter_any(player, opponent, gs, karn, log_entries):
-            player.put_artifact_in_play(karn)
-            total_mana -= 4
+    budget[0] = total_mana
+    if karn and budget[0] >= 4 and not karn_on_board:
+        def _resolve_karn(c):
+            player.put_artifact_in_play(c)
             log_fn("Karn, the Great Creator", True)
             _karn_wish()
-        else:
-            player.add_to_grave(karn)
+        cast_spell(player, opponent, gs, karn, budget, log_fn, log_entries,
+                   on_resolve=_resolve_karn)
+    total_mana = budget[0]
 
     # Check combo once more after Karn wish
     if painter_in_play and grind_in_play and total_mana >= 3:
@@ -4772,25 +4773,27 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── 5. Disruptor Flute (name a key card) ──
+    budget[0] = total_mana
     flute = player.find_tag('flute')
-    if flute and total_mana >= 3:
-        player.remove_from_hand(flute); player.put_artifact_in_play(flute)
-        total_mana -= 3
-        log_fn("Disruptor Flute — names opponent's key card", True)
+    if flute and budget[0] >= 3:
+        def _resolve_flute(c):
+            player.put_artifact_in_play(c)
+            log_fn("Disruptor Flute — names opponent's key card", True)
+        cast_spell(player, opponent, gs, flute, budget, log_fn, log_entries,
+                   on_resolve=_resolve_flute)
 
     # ── 6. Deploy remaining utility artifacts / Tezzeret for card advantage ──
     for tag in ('desk', 'lantern', 'needle', 'tezzeret'):
-        c = player.find_tag(tag)
-        if c and total_mana >= c.cmc:
-            player.remove_from_hand(c)
-            if not _try_counter_any(player, opponent, gs, c, log_entries):
+        cc = player.find_tag(tag)
+        if cc and budget[0] >= cc.cmc:
+            def _resolve_util(c):
                 player.put_artifact_in_play(c)
-                total_mana -= c.cmc
                 if getattr(c, 'is_cantrip', False):
                     player.draw(1)
                 log_fn(f"{c.name} deployed", True)
-            else:
-                player.add_to_grave(c)
+            cast_spell(player, opponent, gs, cc, budget, log_fn, log_entries,
+                       on_resolve=_resolve_util)
+    total_mana = budget[0]
 
 
 
