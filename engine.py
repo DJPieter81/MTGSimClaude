@@ -2955,18 +2955,19 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
         chosen='entry',
         reason=f"mana={total_mana}, creatures={len(player.creatures)}, vial_counters={gs.vial_counters}")
 
+    budget = [total_mana]
+
     # Aether Vial — highest priority, cast T1-T3
     vial = player.find_tag('vial')
     vial_on_board_b = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
-    if vial and not vial_on_board_b and total_mana >= 1 and gs.turn <= 3:
-        player.remove_from_hand(vial)
-        if not _try_counter_any(player, opponent, gs, vial, log_entries):
-            player.put_artifact_in_play(vial)
+    if vial and not vial_on_board_b and budget[0] >= 1 and gs.turn <= 3:
+        def _resolve_vial(c):
+            player.put_artifact_in_play(c)
             gs.vial_counters = 0
-            gs._vial_entered_last_turn = True  # no tick until next upkeep (CR 702.12)
+            gs._vial_entered_last_turn = True
             log_fn("Aether Vial enters play")
-        else:
-            player.add_to_grave(vial)
+        cast_spell(player, opponent, gs, vial, budget, log_fn, log_entries,
+                   on_resolve=_resolve_vial)
 
     # Assess opponent profile: noncreature-heavy decks (combo/control) reward Thalia first,
     # while creature-heavy aggro mirrors want Eidolon's ETB-damage tax + a 2/2 body sooner.
@@ -2983,28 +2984,22 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
     # A turn-2 Thalia taxing FoW/Bolt/Ponder is the single biggest WR swing Boros offers.
     thalia = player.find_tag('thalia')
     thalia_on_board_own = any(c.card.tag == 'thalia' for c in player.creatures)
-    if thalia and not thalia_on_board_own and opp_noncreature_heavy and opp_can_cast(thalia, total_mana, gs, caster=player):
-        player.remove_from_hand(thalia)
-        if not _try_counter_any(player, opponent, gs, thalia, log_entries):
-            player.put_creature_in_play(thalia)
-            total_mana -= thalia.cmc
+    if thalia and not thalia_on_board_own and opp_noncreature_heavy and opp_can_cast(thalia, budget[0], gs, caster=player):
+        def _resolve_thalia(c):
+            player.put_creature_in_play(c)
             log_fn("★ Thalia, Guardian of Thraben — noncreature spells cost +1", True)
-        else:
-            player.add_to_grave(thalia)
+        cast_spell(player, opponent, gs, thalia, budget, log_fn, log_entries,
+                   on_resolve=_resolve_thalia)
 
-    # Eidolon of the Great Revel — CMC2 creature; taxes BUG's spells via ETB damage.
-    # Cast after Thalia (vs noncreature decks) so the lower-CMC tax lands first.
     eidolon = player.find_tag('eidolon')
     eidolon_on_board = any(c.card.tag == 'eidolon' for c in player.creatures)
-    if eidolon and not eidolon_on_board and total_mana >= 2:
-        player.remove_from_hand(eidolon)
-        if not _try_counter_any(player, opponent, gs, eidolon, log_entries):
-            player.put_creature_in_play(eidolon)
-            total_mana -= eidolon.cmc
+    if eidolon and not eidolon_on_board and budget[0] >= 2:
+        def _resolve_eid(c):
+            player.put_creature_in_play(c)
             gs.eidolon_active = True
             log_fn("★ Eidolon of the Great Revel — BUG pays 2 life per CMC≥2 spell", True)
-        else:
-            player.add_to_grave(eidolon)
+        cast_spell(player, opponent, gs, eidolon, budget, log_fn, log_entries,
+                   on_resolve=_resolve_eid)
     # Keep eidolon_active in sync with board state
     gs.eidolon_active = any(c.card.tag == 'eidolon' for c in player.creatures)
 
@@ -3041,46 +3036,44 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
     # Deploy up to 3 per turn (aggro floods the board to overwhelm BUG's removal).
     cast_count = 0
     for tag in boros_tags:
-        if cast_count >= 3 or total_mana < 1: break
+        if cast_count >= 3 or budget[0] < 1: break
         crea = player.find_tag(tag)
-        if crea and opp_can_cast(crea, total_mana, gs, caster=player):
-            player.remove_from_hand(crea)
-            if not _try_counter_any(player, opponent, gs, crea, log_entries):
-                player.put_creature_in_play(crea)
-                total_mana -= crea.cmc
-                log_fn(f"{crea.name}")
+        if crea and opp_can_cast(crea, budget[0], gs, caster=player):
+            def _resolve_boros(c):
+                player.put_creature_in_play(c)
+                log_fn(f"{c.name}")
+            if cast_spell(player, opponent, gs, crea, budget, log_fn, log_entries,
+                          on_resolve=_resolve_boros):
                 cast_count += 1
-            else:
-                player.add_to_grave(crea)
 
-    # STP removal — exile BUG threats aggressively, grant life (CR 106)
+    # STP removal
     for _ in range(4):
         stp = player.find_tag('stp')
-        if not (stp and opponent.creatures and opp_can_cast(stp, total_mana, gs, caster=player)):
+        if not (stp and opponent.creatures and opp_can_cast(stp, budget[0], gs, caster=player)):
             break
-        # STP costs 1W; mana after casting = total_mana - 1 (for ward check)
-        mana_after_stp = total_mana - 1
+        mana_after_stp = budget[0] - 1
         valid_stp = [c for c in opponent.creatures if _can_target(c, mana_after_stp)]
         target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
         if not target or target.power < 1: break
-        player.remove_from_hand(stp); player.add_to_grave(stp)
-        total_mana -= 1
-        life_gain = MTGRules.stp_life_gain(target)
-        opponent.remove_creature(target, to_exile=True)
-        opponent.life += life_gain
-        log_fn(f"Swords to Plowshares exiles {target.card.name} (+{life_gain} life)")
-        update_goyf(gs)
+        def _resolve_stp(c, _t=target):
+            player.add_to_grave(c)
+            life_gain = MTGRules.stp_life_gain(_t)
+            opponent.remove_creature(_t, to_exile=True)
+            opponent.life += life_gain
+            log_fn(f"Swords to Plowshares exiles {_t.card.name} (+{life_gain} life)")
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
+                   on_resolve=_resolve_stp)
 
-    # Chalice of the Void — Boros sometimes runs it to shut off BUG's CMC1 package
+    # Chalice of the Void
     ch = player.find_tag('chalice')
-    if ch and gs.chalice_x is None and total_mana >= 1:
-        player.remove_from_hand(ch)
-        if not _try_counter_any(player, opponent, gs, ch, log_entries):
-            player.put_artifact_in_play(ch)
+    if ch and gs.chalice_x is None and budget[0] >= 1:
+        def _resolve_ch(c):
+            player.put_artifact_in_play(c)
             gs.chalice_x = 1
             log_fn("★ Chalice on 1 — counters Brainstorm/Ponder/Push/Tamiyo/Daze", True)
-        else:
-            player.add_to_grave(ch)
+        cast_spell(player, opponent, gs, ch, budget, log_fn, log_entries,
+                   on_resolve=_resolve_ch)
 
     # Lightning Bolt — aggressive burn plan. Compute expected combat damage from unblocked
     # attackers this turn; fire bolts face if board-dmg + bolts-in-hand kills the opponent.
@@ -3091,31 +3084,31 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
     board_dmg = max(0, sum(c.power for c in my_attackers) - sum(b.toughness for b in opponent.creatures[:len(my_attackers)]))
     lethal_with_bolts = (opponent.life - board_dmg) <= 3 * len(bolts)
     for bolt in bolts:
-        if not opp_can_cast(bolt, total_mana, gs, caster=player):
+        if not opp_can_cast(bolt, budget[0], gs, caster=player):
             break
-        total_mana -= 1  # cost 1R each
-        player.remove_from_hand(bolt); player.add_to_grave(bolt)
-        # Burn face if: (a) board+bolts already lethal, or (b) the bolt
-        # shortens our clock — i.e. going face lowers turns-to-kill vs. the
-        # trade of removing a small blocker. Clock-based instead of a
-        # hardcoded life threshold (CLAUDE.md §"No hardcoded numbers").
         from clock import board_clock
         current_clock = board_clock(player.creatures, opponent.creatures, opponent.life)
         bolt_clock = board_clock(player.creatures, opponent.creatures, opponent.life - 3)
+        # We need mana check after cost; approximate small target check at current budget
         small = next((c for c in sorted(opponent.creatures, key=lambda x: x.toughness)
-                      if c.toughness <= 3 and _can_target(c, total_mana)), None)
+                      if c.toughness <= 3 and _can_target(c, budget[0] - 1)), None)
         go_face = (lethal_with_bolts
                    or small is None
                    or bolt_clock < current_clock)
-        if go_face or not small:
-            opponent.life -= 3
-            log_fn(f"Lightning Bolt — BUG face ({opponent.life})", True)
-            gs.check_life_totals()
-            if gs.game_over: break
-        else:
-            opponent.remove_creature(small)
-            log_fn(f"Lightning Bolt → {small.name}")
-            update_goyf(gs)
+        def _resolve_bolt(c, _small=None if go_face else small, _face=go_face):
+            player.add_to_grave(c)
+            if _face or not _small:
+                opponent.life -= 3
+                log_fn(f"Lightning Bolt — BUG face ({opponent.life})", True)
+                gs.check_life_totals()
+            else:
+                opponent.remove_creature(_small)
+                log_fn(f"Lightning Bolt → {_small.name}")
+                update_goyf(gs)
+        cast_spell(player, opponent, gs, bolt, budget, log_fn, log_entries,
+                   on_resolve=_resolve_bolt)
+        if gs.game_over: break
+    total_mana = budget[0]
 
     # Hold Eidolon back only if BUG has blockers that would kill it (2/2)
     eidolon_safe = not any(c.power >= 2 for c in opponent.creatures)
