@@ -35,3 +35,5 @@
 - _strategy_boros: 8 casts converted, tests 147/0, commit a492d31
 - _strategy_mardu: 6 casts converted (T1 grief+ephemerate combo left as-is), tests 147/0, commit d74ee91
 - _strategy_doomsday: SKIPPED (complex DD+VoS+Oracle sequence with intertwined counter checks; conversion risk too high given remaining time)
+- _strategy_prison: 8 casts converted, tests 147/0, commit 2cc4fd7
+- _strategy_oops: SKIPPED (complex combo with Veil+Mindbreak+Dread Return nested counter logic)

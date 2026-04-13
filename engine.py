@@ -3488,13 +3488,11 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Cantrips ──
     can = next((c for c in player.hand if c.is_cantrip and om_eff>=1), None)
     if can:
-        player.remove_from_hand(can); player.add_to_grave(can)
-        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-        player.draw(draws)
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(draws, gs, ctr)
-            for m in ctr: log_entries.append(m)
+        _budget_can = [total_mana]
+        cast_spell(player, opponent, gs, can, _budget_can, log_fn, log_entries,
+                   on_resolve=lambda c: (player.add_to_grave(c),
+                                         resolve_cantrip(player, c, gs, log_fn, log_entries)))
+        total_mana = _budget_can[0]
 
     # ── Show and Tell (costs 3 generic: UU1) ──
     sat = player.find_tag('sat')
@@ -3601,12 +3599,13 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
         if sat2 and win_card:
             pass  # Will handle via Show next gs.turn
         elif not sneak_perm:
-            player.remove_from_hand(sneak_card)
-            if not _try_counter_any(player, opponent, gs, sneak_card, log_entries):
-                player.put_artifact_in_play(sneak_card)
+            _budget_sn = [total_mana]
+            def _resolve_sneak(c):
+                player.put_artifact_in_play(c)
                 log_fn("Sneak Attack enters play")
-            else:
-                player.add_to_grave(sneak_card)
+            cast_spell(player, opponent, gs, sneak_card, _budget_sn, log_fn, log_entries,
+                       on_resolve=_resolve_sneak)
+            total_mana = _budget_sn[0]
 
 
 
