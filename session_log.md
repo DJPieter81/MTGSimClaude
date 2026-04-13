@@ -42,3 +42,19 @@
 - decks/dimir_flash: 5 casts converted, tests 147/0, commit c43479c
 - decks/eldrazi: 6 casts converted, tests 147/0, commit e530709
 - decks/ur_delver: 7 casts converted, tests 147/0, commit cf886ec
+- decks/ur_tempo: 7 casts converted, tests 147/0, commit d73e8a8
+- decks/uwx: 7 casts converted, tests 147/0, commit b4613a0
+- decks/wan_shi_tong: 8 casts converted, tests 147/0, commit fc4f711
+- decks/sneak_a: cantrips only (3 casts); SaT combo left as-is, tests 147/0, commit 101f22a
+- decks/eight_cast: 6 casts converted, tests 147/0, commit a2a9995
+- decks/cephalid: 10 casts converted, tests 147/0, commit 5009acb
+- decks/sneak_b: cantrips only (3 casts); SaT combo left as-is, tests 147/0, commit 7a2f53f
+- decks/dimir_c: 10 casts converted (also fixed latent indent bug), tests 148/0, commit d40f007
+- decks/dimir_d: 11 casts converted (also fixed latent indent bug), tests 149/0, commit 70929ec
+- decks/depths: 7 casts converted; Crop/GSZ combo-rebuttal left as-is, tests 149/0, commit 8822eec
+- decks/cloudpost: 9 casts converted; Crop Rotation left as-is, tests 149/0, commit 0617f26
+- decks/goblins: 9 casts converted; Chrome Mox/Fury evoke/Lackey-trigger left as-is, tests 149/0, commit 46c2337
+- decks/infect: 5 casts converted; pump spells left as-is, tests 149/0, commit 2d9046d
+- decks/affinity: 7 casts converted; free artifacts/equipment/Saga left as-is, tests 149/0, commit 9b37ce6
+- decks/belcher: SKIPPED — defines local `cast_spell` helper that conflicts with engine.cast_spell; intricate storm chain with LED crack/rituals; risk too high
+- decks/tes: SKIPPED — 33 casts, also defines local `cast_spell` helper; complex storm chain with Veil/Mindbreak/LED/Echo of Eons rebuttal logic; risk too high
