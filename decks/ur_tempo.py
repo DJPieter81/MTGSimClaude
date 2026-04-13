@@ -104,9 +104,9 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
     6. Combat — attack with all non-summoning-sick creatures
     7. Daze / FoW held reactively (via _try_counter_any)
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
+    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
 
-    mana = total_mana
+    budget = [total_mana]
 
     # ── 1. Deploy cheap threats ──────────────────────────────────────────────
 
@@ -115,28 +115,24 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
     # T1: DRC or Tamiyo (both 1 mana)
     for tag in ('drc', 'tamiyo'):
         threat = player.find_tag(tag)
-        if threat and mana >= 1:
-            player.remove_from_hand(threat)
-            if not _try_counter_any(player, opponent, gs, threat, log_entries):
-                player.put_creature_in_play(threat)
-                mana -= 1
-                log_fn(f"{threat.name}")
-            else:
-                player.add_to_grave(threat)
+        if threat and budget[0] >= 1:
+            def _resolve_threat(c):
+                player.put_creature_in_play(c)
+                log_fn(f"{c.name}")
+            cast_spell(player, opponent, gs, threat, budget, log_fn, log_entries,
+                       on_resolve=_resolve_threat, cost_override=1)
             deployed_threat = True
             break
 
     # T2: Cori-Steel Cutter (3/1 haste — attacks immediately)
     if not deployed_threat:
         cutter = player.find_tag('cutter')
-        if cutter and mana >= 2:
-            player.remove_from_hand(cutter)
-            if not _try_counter_any(player, opponent, gs, cutter, log_entries):
-                player.put_creature_in_play(cutter)
-                mana -= 2
+        if cutter and budget[0] >= 2:
+            def _resolve_cutter(c):
+                player.put_creature_in_play(c)
                 log_fn("Cori-Steel Cutter (3/1 haste)")
-            else:
-                player.add_to_grave(cutter)
+            cast_spell(player, opponent, gs, cutter, budget, log_fn, log_entries,
+                       on_resolve=_resolve_cutter, cost_override=2)
             deployed_threat = True
 
     # Murktide Regent — delve makes it effectively 2 mana with 5+ cards in GY
@@ -146,46 +142,47 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
             gy_count = len(player.graveyard)
             delve_amount = min(gy_count, 6)
             effective_cost = max(2, 7 - delve_amount)
-            if mana >= effective_cost:
-                player.remove_from_hand(murk)
-                if not _try_counter_any(player, opponent, gs, murk, log_entries):
-                    exiled = 0
-                    while exiled < delve_amount and player.graveyard:
-                        card = player.graveyard.pop(0)
-                        if hasattr(player, 'exile'):
-                            player.exile.append(card)
-                        exiled += 1
-                    player.put_creature_in_play(murk)
-                    mana -= effective_cost
-                    log_fn(f"Murktide Regent (delve {exiled}, paid {effective_cost})")
-                else:
-                    player.add_to_grave(murk)
+            if budget[0] >= effective_cost:
+                exiled = 0
+                while exiled < delve_amount and player.graveyard:
+                    card = player.graveyard.pop(0)
+                    if hasattr(player, 'exile'):
+                        player.exile.append(card)
+                    exiled += 1
+                def _resolve_murk(c, _e=exiled, _cost=effective_cost):
+                    player.put_creature_in_play(c)
+                    log_fn(f"Murktide Regent (delve {_e}, paid {_cost})")
+                cast_spell(player, opponent, gs, murk, budget, log_fn, log_entries,
+                           on_resolve=_resolve_murk, cost_override=effective_cost)
                 deployed_threat = True
 
     # ── 2. Cantrips — find action ────────────────────────────────────────────
 
-    # Mishra's Bauble first (free)
+    # Mishra's Bauble first (free — but it's an artifact cast)
     bauble = player.find_tag('bauble')
     if bauble:
-        player.remove_from_hand(bauble)
-        player.add_to_grave(bauble)
-        drawn = player.draw(1)
-        log_fn("Mishra's Bauble — cantrip")
-        bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.p1 else 'b')
+        def _resolve_bauble(c):
+            player.add_to_grave(c)
+            player.draw(1)
+            log_fn("Mishra's Bauble — cantrip")
+            bowmasters_triggers(1, gs, log_entries,
+                                controller='o' if player is gs.p1 else 'b')
+        cast_spell(player, opponent, gs, bauble, budget, log_fn, log_entries,
+                   on_resolve=_resolve_bauble, cost_override=0)
         if gs.game_over:
             return
 
     for cantrip_tag in ('bs', 'ponder'):
         cantrip = player.find_tag(cantrip_tag)
-        if cantrip and mana >= 1:
-            player.remove_from_hand(cantrip)
-            player.add_to_grave(cantrip)
-            mana -= 1
-            drawn = player.draw(1)
-            log_fn(f"{cantrip.name} — cantrip")
-            bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.p1 else 'b')
+        if cantrip and budget[0] >= 1:
+            def _resolve_cant(c):
+                player.add_to_grave(c)
+                player.draw(1)
+                log_fn(f"{c.name} — cantrip")
+                bowmasters_triggers(1, gs, log_entries,
+                                    controller='o' if player is gs.p1 else 'b')
+            cast_spell(player, opponent, gs, cantrip, budget, log_fn, log_entries,
+                       on_resolve=_resolve_cant, cost_override=1)
             if gs.game_over:
                 return
             break  # one cantrip per turn
@@ -193,7 +190,7 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── 3. Lightning Bolt — removal or face burn ─────────────────────────────
 
     bolt = player.find_tag('bolt')
-    if bolt and mana >= 1:
+    if bolt and budget[0] >= 1:
         def bolt_priority(c):
             if c.card.tag == 'tamiyo':  return 0
             if c.card.tag == 'bowm':    return 1
@@ -207,22 +204,18 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
                    and len(player.creatures) > 0)
 
         if target or go_face:
-            player.remove_from_hand(bolt)
-            player.add_to_grave(bolt)
-            mana -= 1
-            if target:
-                if target.toughness <= 3:
-                    opponent.remove_creature(target)
-                    log_fn(f"Lightning Bolt -> {target.card.name}", True)
+            def _resolve_bolt(c, _t=target):
+                player.add_to_grave(c)
+                if _t and _t.toughness <= 3:
+                    opponent.remove_creature(_t)
+                    log_fn(f"Lightning Bolt -> {_t.card.name}", True)
                     update_goyf(gs)
                 else:
                     opponent.life -= 3
                     log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
                     gs.check_life_totals()
-            else:
-                opponent.life -= 3
-                log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
-                gs.check_life_totals()
+            cast_spell(player, opponent, gs, bolt, budget, log_fn, log_entries,
+                       on_resolve=_resolve_bolt, cost_override=1)
 
     if gs.game_over:
         return
@@ -230,7 +223,7 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── 4. Unholy Heat — bigger removal (delirium = 6 dmg) ──────────────────
 
     heat = player.find_tag('heat')
-    if heat and mana >= 1:
+    if heat and budget[0] >= 1:
         gy_types = set()
         for c in player.graveyard:
             gy_types.add(getattr(c, 'gy_type', 'unknown'))
@@ -242,12 +235,13 @@ def _strategy_ur_tempo(player, opponent, gs, total_mana, log_fn, log_entries):
 
         if heat_targets:
             target = heat_targets[0]
-            player.remove_from_hand(heat)
-            player.add_to_grave(heat)
-            mana -= 1
-            opponent.remove_creature(target)
-            log_fn(f"Unholy Heat ({heat_dmg} dmg) -> {target.card.name}", True)
-            update_goyf(gs)
+            def _resolve_heat(c, _t=target, _d=heat_dmg):
+                player.add_to_grave(c)
+                opponent.remove_creature(_t)
+                log_fn(f"Unholy Heat ({_d} dmg) -> {_t.card.name}", True)
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, heat, budget, log_fn, log_entries,
+                       on_resolve=_resolve_heat, cost_override=1)
 
     if gs.game_over:
         return
