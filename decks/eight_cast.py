@@ -221,7 +221,7 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
     7. Karn — tutor answer or lock piece
     8. Combat
     """
-    from engine import resolve_combat, update_goyf, _try_counter_any
+    from engine import resolve_combat, update_goyf, _try_counter_any, cast_spell
     # Recalculate mana accounting for Ancient Tomb/City (produce 2 each, not 1)
     mana = sum(getattr(l.card,'taps_for',1) for l in player.lands
                if not l.tapped and l.effective_produces())
@@ -237,17 +237,16 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
     # Best T1 play with Ancient Tomb / City (provides 2 colorless)
     chalice = player.find_tag('chalice')
     chalice_active = getattr(gs, 'chalice_x', None) == 1
-    if chalice and not chalice_active and mana >= 0:  # X=1 costs 2 mana (XX where X=1)
-        if mana >= 2:
-            player.remove_from_hand(chalice)
-            if not _try_counter_any(player, opponent, gs, chalice, log_entries):
-                player.put_artifact_in_play(chalice)
-                gs.chalice_x = 1
-                mana -= 2
-                art_count += 1
-                log_fn("★ Chalice of the Void on 1 — all CMC-1 spells countered", True)
-            else:
-                player.add_to_grave(chalice)
+    if chalice and not chalice_active and mana >= 2:
+        _b = [mana]
+        def _resolve_ch(c):
+            player.put_artifact_in_play(c)
+            gs.chalice_x = 1
+            log_fn("★ Chalice of the Void on 1 — all CMC-1 spells countered", True)
+        if cast_spell(player, opponent, gs, chalice, _b, log_fn, log_entries,
+                      on_resolve=_resolve_ch, cost_override=2):
+            art_count += 1
+        mana = _b[0]
 
     # ── Free mana: Lotus Petal ───────────────────────────────────────────────
     for petal in [c for c in player.hand if c.tag == 'petal']:
@@ -272,24 +271,19 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
     if emry and not emry_on_board:
         eff_cost = _affinity_cost(4, player)
         if mana >= eff_cost:
-            player.remove_from_hand(emry)
-            if not _try_counter_any(player, opponent, gs, emry, log_entries):
-                player.put_creature_in_play(emry)
-                mana -= eff_cost
-                art_count += 1
-                # Self-mill 4
+            _b = [mana]
+            def _resolve_emry(c):
+                player.put_creature_in_play(c)
                 milled = []
                 for _ in range(min(4, len(player.library))):
                     card = player.library.pop(0)
-                    if card.card_type in (_CT.ARTIFACT,):
-                        player.graveyard.append(card)
-                        milled.append(card.name)
-                    else:
-                        player.graveyard.append(card)
-                        milled.append(card.name)
+                    player.graveyard.append(card)
+                    milled.append(card.name)
                 log_fn(f"Emry, Lurker of the Loch — mills: {milled[:3]}")
-            else:
-                player.add_to_grave(emry)
+            if cast_spell(player, opponent, gs, emry, _b, log_fn, log_entries,
+                          on_resolve=_resolve_emry, cost_override=eff_cost):
+                art_count += 1
+            mana = _b[0]
 
     # ── Priority 3: Urza's Saga — tick and generate Karnstruct ──────────────
     # Each Saga land gets a chapter counter each turn
@@ -338,49 +332,48 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
     sai = player.find_tag('sai')
     sai_on = any(c.card.tag == 'sai' for c in player.creatures)
     if sai and not sai_on and mana >= 3:
-        player.remove_from_hand(sai)
-        if not _try_counter_any(player, opponent, gs, sai, log_entries):
-            player.put_creature_in_play(sai)
-            mana -= 3
+        _b = [mana]
+        def _resolve_sai(c):
+            player.put_creature_in_play(c)
             log_fn("Sai, Master Thopterist (1/4) — 1/1 thopter on each artifact cast")
-        else:
-            player.add_to_grave(sai)
+        cast_spell(player, opponent, gs, sai, _b, log_fn, log_entries,
+                   on_resolve=_resolve_sai, cost_override=3)
+        mana = _b[0]
 
     # ── Priority 5: Thought Monitor ──────────────────────────────────────────
     monitor = player.find_tag('monitor')
     if monitor and not any(c.card.tag == 'monitor' for c in player.creatures):
         eff_cost = _affinity_cost(6, player)
         if mana >= eff_cost:
-            player.remove_from_hand(monitor)
-            if not _try_counter_any(player, opponent, gs, monitor, log_entries):
-                player.put_creature_in_play(monitor)
-                mana -= eff_cost
-                art_count += 1
-                drawn = player.draw(2)
-                log_fn(f"Thought Monitor (2/2 flying, affinity {eff_cost}) — draws 2")
-                from engine import bowmasters_triggers
+            from engine import bowmasters_triggers
+            _b = [mana]
+            def _resolve_mon(c, _ec=eff_cost):
+                player.put_creature_in_play(c)
+                player.draw(2)
+                log_fn(f"Thought Monitor (2/2 flying, affinity {_ec}) — draws 2")
                 bowmasters_triggers(2, gs, log_entries,
                                     controller='o' if player is gs.p1 else 'b')
-            else:
-                player.add_to_grave(monitor)
+            if cast_spell(player, opponent, gs, monitor, _b, log_fn, log_entries,
+                          on_resolve=_resolve_mon, cost_override=eff_cost):
+                art_count += 1
+            mana = _b[0]
 
     # ── Priority 6: Karn, The Great Creator ──────────────────────────────────
     karn = player.find_tag('karn')
     if karn and mana >= 4 and not any(c.card.tag == 'karn' for c in player.artifacts):
-        player.remove_from_hand(karn)
-        if not _try_counter_any(player, opponent, gs, karn, log_entries):
-            player.put_artifact_in_play(karn)
-            mana -= 4
-            # Karn -2: fetch Ensnaring Bridge (vs creature decks) or Tormod's Crypt (vs GY)
+        _b = [mana]
+        def _resolve_karn(c):
+            player.put_artifact_in_play(c)
             opp_has_creatures = len(opponent.creatures) > 0
             fetch_tag = 'bridge' if opp_has_creatures else 'lantern'
-            fetched = next((c for c in player.library if c.tag == fetch_tag), None)
+            fetched = next((cc for cc in player.library if cc.tag == fetch_tag), None)
             if fetched:
                 player.library.remove(fetched)
                 player.hand.append(fetched)
                 log_fn(f"★ Karn, The Great Creator — fetches {fetched.name}", True)
-        else:
-            player.add_to_grave(karn)
+        cast_spell(player, opponent, gs, karn, _b, log_fn, log_entries,
+                   on_resolve=_resolve_karn, cost_override=4)
+        mana = _b[0]
 
     # ── Equip Shadowspear — +1/+1, trample, lifelink ────────────────────────
     # Cast first if in hand (1 mana), then attach to highest-power creature.
@@ -388,10 +381,13 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
     # resolve_combat (which reads atk.card.lifelink) sees the keyword.
     shadowspear = player.find_tag('shadowspear')
     if shadowspear and mana >= 1:
-        player.remove_from_hand(shadowspear)
-        player.put_artifact_in_play(shadowspear)
-        mana -= 1
-        log_fn("Shadowspear")
+        _b = [mana]
+        def _resolve_spear(c):
+            player.put_artifact_in_play(c)
+            log_fn("Shadowspear")
+        cast_spell(player, opponent, gs, shadowspear, _b, log_fn, log_entries,
+                   on_resolve=_resolve_spear, cost_override=1)
+        mana = _b[0]
 
     spear_in_play = next((a for a in player.artifacts if a.card.tag == 'shadowspear'), None)
     if spear_in_play:
