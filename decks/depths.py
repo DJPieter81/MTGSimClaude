@@ -251,7 +251,7 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
     5. Deploy backup creatures (Knight, Endurance)
     6. Attack with whatever is available (Marit Lage, Knight, etc.)
     """
-    from engine import _try_counter_any, bowmasters_triggers, combat_declare
+    from engine import _try_counter_any, bowmasters_triggers, combat_declare, cast_spell
     from rules import LandPermanent
 
     mana = total_mana
@@ -286,62 +286,64 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
         marit_in_play = [perm]
 
     # ── Step 2: Mox Diamond (discard a land for fast mana) ───────────────────
+    # Mox Diamond is an artifact spell (cmc 0) but requires discarding a land as additional cost.
     mox = player.find_tag('mox_diamond')
     if mox:
-        # Need a land to discard
         land_to_discard = next((c for c in player.hand
                                 if c.is_land() and c is not mox
                                 and c.tag not in ('depths', 'stage')), None)
         if not land_to_discard:
-            # Desperate: discard a combo piece if we have a duplicate
             land_to_discard = next((c for c in player.hand
                                     if c.is_land() and c is not mox), None)
         if land_to_discard:
-            player.remove_from_hand(mox)
-            player.put_artifact_in_play(mox)
-            player.remove_from_hand(land_to_discard)
-            player.graveyard.append(land_to_discard)
-            mana += 1
-            log_fn(f"Mox Diamond (discard {land_to_discard.name}) → mana={mana}")
+            _b = [mana]
+            _ltd = land_to_discard
+            def _resolve_mox(c, _l=_ltd):
+                player.put_artifact_in_play(c)
+                if _l in player.hand:
+                    player.remove_from_hand(_l)
+                    player.graveyard.append(_l)
+                log_fn(f"Mox Diamond (discard {_l.name})")
+            if cast_spell(player, opponent, gs, mox, _b, log_fn, log_entries,
+                          on_resolve=_resolve_mox, cost_override=0):
+                mana = _b[0] + 1  # Mox produces +1
+            else:
+                mana = _b[0]
 
-    # ── Step 3: Exploration (extra land drops) ───────────────────────────────
+    # ── Step 3: Exploration ───────────────────────────────────────────────────
     expl = player.find_tag('exploration')
     if expl and mana >= 1:
-        if not _try_counter_any(player, opponent, gs, expl, log_entries):
-            player.remove_from_hand(expl)
-            player.put_enchantment_in_play(expl)
-            mana -= 1
+        _b = [mana]
+        def _resolve_expl(c):
+            player.put_enchantment_in_play(c)
             log_fn("Exploration → extra land drops")
-            # Play an extra land if we have one
-            extra_land = next((c for c in player.hand if c.is_land()), None)
+            extra_land = next((cc for cc in player.hand if cc.is_land()), None)
             if extra_land:
                 player.remove_from_hand(extra_land)
-                perm = LandPermanent(card=extra_land, controller=player.name,
-                                     tapped=False)
+                perm = LandPermanent(card=extra_land, controller=player.name, tapped=False)
                 player.lands.append(perm)
-                if extra_land.produces:
-                    mana += 1
                 log_fn(f"  Extra land: {extra_land.name}")
-        else:
-            player.add_to_grave(expl)
-            log_fn("Exploration countered")
+        cast_spell(player, opponent, gs, expl, _b, log_fn, log_entries,
+                   on_resolve=_resolve_expl)
+        mana = _b[0]
 
-    # ── Step 4: Once Upon a Time (cantrip / dig for combo pieces) ────────────
+    # ── Step 4: Once Upon a Time ────────────────────────────────────────────
     once = player.find_tag('once')
     if once:
         spells_cast = getattr(player, 'spells_cast_this_turn', 0)
-        cost = 0 if spells_cast == 0 else 2  # free if first spell
+        cost = 0 if spells_cast == 0 else 2
         if mana >= cost:
-            player.remove_from_hand(once)
-            player.add_to_grave(once)
-            mana -= cost
-            player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
-            # Simulate: look at top 5, take best creature or land
-            player.draw(1)
-            log_fn(f"Once Upon a Time ({'free' if cost == 0 else 'paid'}) → dig")
-            if gs.bowmasters_on_board:
-                bowmasters_triggers(1, gs, log_entries,
-                                    controller='o' if player is gs.p1 else 'b')
+            _b = [mana]
+            def _resolve_once(c):
+                player.add_to_grave(c)
+                player.draw(1)
+                log_fn(f"Once Upon a Time → dig")
+                if gs.bowmasters_on_board:
+                    bowmasters_triggers(1, gs, log_entries,
+                                        controller='o' if player is gs.p1 else 'b')
+            cast_spell(player, opponent, gs, once, _b, log_fn, log_entries,
+                       on_resolve=_resolve_once, cost_override=cost)
+            mana = _b[0]
 
     # ── Step 5: Sylvan Scrying — sorcery land tutor to hand (primary tutor) ──
     # Scrying is the main tutor: sorcery speed, gets piece to hand (not play).
@@ -350,20 +352,17 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
     missing = _missing_combo_piece_tag(player)
     scrying_resolved = False
     if scrying and missing and mana >= 2 and not marit_lage_created:
-        # Check if we already have the missing piece in hand
         has_in_hand = any(c.tag == missing for c in player.hand)
         if not has_in_hand:
-            if not _try_counter_any(player, opponent, gs, scrying, log_entries):
-                player.remove_from_hand(scrying)
-                player.add_to_grave(scrying)
-                mana -= 2
-                player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
-                log_fn(f"Sylvan Scrying → find {missing}")
-                _tutor_land_to_hand(player, missing, log_fn)
+            _b = [mana]
+            def _resolve_scry(c, _m=missing):
+                player.add_to_grave(c)
+                log_fn(f"Sylvan Scrying → find {_m}")
+                _tutor_land_to_hand(player, _m, log_fn)
+            if cast_spell(player, opponent, gs, scrying, _b, log_fn, log_entries,
+                          on_resolve=_resolve_scry, cost_override=2):
                 scrying_resolved = True
-            else:
-                player.add_to_grave(scrying)
-                log_fn("Sylvan Scrying countered")
+            mana = _b[0]
 
     # ── Step 6: Crop Rotation — instant land tutor (backup) ─────────────────
     # Crop Rotation is the backup: only fire if Scrying didn't resolve this turn
@@ -482,41 +481,34 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Step 9: Sylvan Library (draw engine) ─────────────────────────────────
     sylvan = player.find_tag('sylvan')
     if sylvan and mana >= 2 and not marit_lage_created:
-        if not _try_counter_any(player, opponent, gs, sylvan, log_entries):
-            player.remove_from_hand(sylvan)
-            player.put_enchantment_in_play(sylvan)
-            mana -= 2
+        _b = [mana]
+        def _resolve_syl(c):
+            player.put_enchantment_in_play(c)
             log_fn("Sylvan Library → draw engine online")
-        else:
-            player.add_to_grave(sylvan)
-            log_fn("Sylvan Library countered")
+        cast_spell(player, opponent, gs, sylvan, _b, log_fn, log_entries,
+                   on_resolve=_resolve_syl, cost_override=2)
+        mana = _b[0]
 
     # ── Step 10: Deploy backup creatures ─────────────────────────────────────
-    # Knight of the Reliquary (4/4 beater + land tutor)
     knight = player.find_tag('knight')
     if knight and mana >= 3 and not marit_lage_created:
-        if not _try_counter_any(player, opponent, gs, knight, log_entries):
-            player.remove_from_hand(knight)
-            player.put_creature_in_play(knight)
-            mana -= 3
-            player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
+        _b = [mana]
+        def _resolve_kn(c):
+            player.put_creature_in_play(c)
             log_fn("Knight of the Reliquary (4/4)")
-        else:
-            player.add_to_grave(knight)
-            log_fn("Knight of the Reliquary countered")
+        cast_spell(player, opponent, gs, knight, _b, log_fn, log_entries,
+                   on_resolve=_resolve_kn, cost_override=3)
+        mana = _b[0]
 
-    # Endurance (flash 3/4, graveyard hate)
     endurance = player.find_tag('endurance')
     if endurance and mana >= 3 and not marit_lage_created:
-        if not _try_counter_any(player, opponent, gs, endurance, log_entries):
-            player.remove_from_hand(endurance)
-            player.put_creature_in_play(endurance)
-            mana -= 3
-            player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
+        _b = [mana]
+        def _resolve_end(c):
+            player.put_creature_in_play(c)
             log_fn("Endurance (3/4)")
-        else:
-            player.add_to_grave(endurance)
-            log_fn("Endurance countered")
+        cast_spell(player, opponent, gs, endurance, _b, log_fn, log_entries,
+                   on_resolve=_resolve_end, cost_override=3)
+        mana = _b[0]
 
     # ── Step 11: Combat — attack with everything available ───────────────────
     if not gs.game_over:
