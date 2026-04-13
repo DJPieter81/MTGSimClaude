@@ -2790,65 +2790,66 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
                 f"creatures_in_hand={creature_tags_in_hand}, "
                 f"opp_creatures={len(opponent.creatures)}"))
 
+    budget = [total_mana]
+
     # ── 1. Grief (evoke) T1 — exile opp's best nonland ──
     grief = player.find_tag('grief')
     if grief and gs.turn == 1 and opponent.hand:
         blacks = [c for c in player.hand if 'B' in c.colors and c.tag != 'grief']
         if blacks:
             pitch = blacks[0]
-            player.remove_from_hand(grief); player.remove_from_hand(pitch)
-            player.add_to_grave(pitch)
-            if not _try_counter_any(player, opponent, gs, grief, log_entries):
-                nonlands = [c for c in opponent.hand if not c.is_land()]
-                target = (next((c for c in nonlands if c.free_cast_if_blue), None)
-                          or (max(nonlands, key=lambda c: c.cmc) if nonlands else None))
+            player.remove_from_hand(pitch); player.add_to_grave(pitch)
+            def _resolve_grief(c, _p=pitch):
+                nonlands = [cc for cc in opponent.hand if not cc.is_land()]
+                target = (next((cc for cc in nonlands if cc.free_cast_if_blue), None)
+                          or (max(nonlands, key=lambda cc: cc.cmc) if nonlands else None))
                 if target:
                     opponent.remove_from_hand(target); opponent.add_to_grave(target)
-                    log_fn(f"★ Grief (evoke, pitch {pitch.name}) exiles {target.name}")
-                player.exile.append(grief)  # evoke exiles Grief
-            else:
-                player.add_to_grave(grief)
+                    log_fn(f"★ Grief (evoke, pitch {_p.name}) exiles {target.name}")
+                player.exile.append(c)
+            cast_spell(player, opponent, gs, grief, None, log_fn, log_entries,
+                       on_resolve=_resolve_grief)
 
     # ── 2. Thoughtseize — T1 priority only; otherwise save mana for threats/Hymn ──
     ts = player.find_tag('ts')
     threat_in_hand = next((c for c in player.hand
                            if c.is_creature() and c.tag != 'grief'
-                           and opp_can_cast(c, total_mana, gs, caster=player)), None)
-    if ts and opp_can_cast(ts, total_mana, gs, caster=player) \
+                           and opp_can_cast(c, budget[0], gs, caster=player)), None)
+    if ts and opp_can_cast(ts, budget[0], gs, caster=player) \
             and opponent.hand and player.life > 8:
         nonlands = [c for c in opponent.hand if not c.is_land()]
         has_priority_target = any(
             c.free_cast_if_blue or c.tag in ('daze', 'fow')
             or c.is_removal or c.engine or c.cmc >= 3
             for c in nonlands)
-        # Cast TS when: (a) T1 + opp has real target, or
-        # (b) we have no castable threat AND no Hymn castable AND priority target exists
         hymn_castable = (player.find_tag('hymn')
-                         and opp_can_cast(player.find_tag('hymn'), total_mana, gs, caster=player)
+                         and opp_can_cast(player.find_tag('hymn'), budget[0], gs, caster=player)
                          and len(opponent.hand) >= 2)
         cast_ts = False
         if gs.turn <= 2 and nonlands:
             cast_ts = True
         elif not threat_in_hand and not hymn_castable and has_priority_target:
             cast_ts = True
-        # Don't TS if we could cast threat AND Hymn instead (both are better tempo)
         if cast_ts and threat_in_hand and hymn_castable:
             cast_ts = False
         if cast_ts:
-            total_mana -= ts.cmc
-            player.cast_spell(ts, log_fn=log_fn)
-            target = (next((c for c in nonlands if c.free_cast_if_blue), None)
-                      or next((c for c in nonlands if c.tag in ('daze', 'bs', 'ponder')), None)
-                      or next((c for c in nonlands if c.is_removal), None)
-                      or next((c for c in nonlands if c.engine), None)
-                      or (max(nonlands, key=lambda c: c.cmc) if nonlands else None))
-            if target:
-                opponent.remove_from_hand(target); opponent.add_to_grave(target)
-                log_fn(f"★ Thoughtseize strips {target.name}")
+            def _resolve_ts(c):
+                player.add_to_grave(c)
+                nl = [cc for cc in opponent.hand if not cc.is_land()]
+                target = (next((cc for cc in nl if cc.free_cast_if_blue), None)
+                          or next((cc for cc in nl if cc.tag in ('daze', 'bs', 'ponder')), None)
+                          or next((cc for cc in nl if cc.is_removal), None)
+                          or next((cc for cc in nl if cc.engine), None)
+                          or (max(nl, key=lambda cc: cc.cmc) if nl else None))
+                if target:
+                    opponent.remove_from_hand(target); opponent.add_to_grave(target)
+                    log_fn(f"★ Thoughtseize strips {target.name}")
+            cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ts)
 
     # ── 3. Fatal Push — kill opp's threats pre-combat ──
     push = player.find_tag('push')
-    if push and opponent.creatures and opp_can_cast(push, total_mana, gs, caster=player):
+    if push and opponent.creatures and opp_can_cast(push, budget[0], gs, caster=player):
         push_targets = [c for c in opponent.creatures
                         if MTGRules.fatal_push_valid_target(c, player.revolt_this_turn)]
         if push_targets:
@@ -2858,13 +2859,14 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
                 or max(push_targets, key=lambda c: c.power, default=None)
             )
             if target:
-                total_mana -= push.cmc
-                player.remove_from_hand(push); player.add_to_grave(push)
-                if not _try_counter_any(player, opponent, gs, push, log_entries):
-                    opponent.remove_creature(target)
+                def _resolve_push(c, _t=target):
+                    player.add_to_grave(c)
+                    opponent.remove_creature(_t)
                     rev = " [revolt CMC≤4]" if player.revolt_this_turn else " [CMC≤2]"
-                    log_fn(f"Fatal Push{rev} → kills {target.card.name} (CMC {target.card.cmc})")
+                    log_fn(f"Fatal Push{rev} → kills {_t.card.name} (CMC {_t.card.cmc})")
                     update_goyf(gs)
+                cast_spell(player, opponent, gs, push, budget, log_fn, log_entries,
+                           on_resolve=_resolve_push)
 
     # ── 4. Snuff Out — free (pay 4 life) vs nonblack creatures ──
     snuff = player.find_tag('snuffout')
@@ -2875,37 +2877,40 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
         if has_swamp and snuff_targets:
             target = max(snuff_targets, key=lambda c: (c.cmc, c.power))
             if target.cmc >= 3 or target.power >= 3 or target.toughness >= 3:
-                player.remove_from_hand(snuff); player.add_to_grave(snuff)
-                player.life -= 4
-                if not _try_counter_any(player, opponent, gs, snuff, log_entries):
-                    opponent.remove_creature(target)
+                def _resolve_snuff(c, _t=target):
+                    player.add_to_grave(c)
+                    player.life -= c.life_cost
+                    opponent.remove_creature(_t)
                     player.revolt_this_turn = True
-                    log_fn(f"Snuff Out (free, −4 life → {player.life}) "
-                           f"→ kills {target.card.name} (CMC {target.card.cmc})")
+                    log_fn(f"Snuff Out (free, −{c.life_cost} life → {player.life}) "
+                           f"→ kills {_t.card.name} (CMC {_t.card.cmc})")
                     update_goyf(gs)
+                cast_spell(player, opponent, gs, snuff, None, log_fn, log_entries,
+                           on_resolve=_resolve_snuff)
 
-    # ── 5. Hymn to Tourach — T2+, when opp has 2+ cards ──
+    # ── 5. Hymn to Tourach ──
     hymn = player.find_tag('hymn')
-    if hymn and opp_can_cast(hymn, total_mana, gs, caster=player) \
+    if hymn and opp_can_cast(hymn, budget[0], gs, caster=player) \
             and gs.turn >= 2 and len(opponent.hand) >= 2:
-        total_mana -= hymn.cmc
-        player.remove_from_hand(hymn); player.add_to_grave(hymn)
-        if not _try_counter_any(player, opponent, gs, hymn, log_entries):
+        def _resolve_hymn(c):
+            player.add_to_grave(c)
             discards = random.sample(list(opponent.hand), min(2, len(opponent.hand)))
-            for c in discards:
-                opponent.remove_from_hand(c); opponent.add_to_grave(c)
+            for cc in discards:
+                opponent.remove_from_hand(cc); opponent.add_to_grave(cc)
             log_fn(f"Hymn to Tourach — opponent discards "
-                   f"{', '.join(c.name for c in discards)}")
+                   f"{', '.join(cc.name for cc in discards)}")
+        cast_spell(player, opponent, gs, hymn, budget, log_fn, log_entries,
+                   on_resolve=_resolve_hymn)
 
-    # ── 6. Deploy creatures — priority order ──
+    # ── 6. Deploy creatures ──
     deploy_priority = ['dauthi', 'braids', 'carnage', 'bowm', 'grief']
-    max_deploys = 2 if total_mana >= 4 else 1
+    max_deploys = 2 if budget[0] >= 4 else 1
     deployed = 0
     for tag in deploy_priority:
         if deployed >= max_deploys:
             break
         crea = player.find_tag(tag)
-        if not crea or not opp_can_cast(crea, total_mana, gs, caster=player):
+        if not crea or not opp_can_cast(crea, budget[0], gs, caster=player):
             continue
         if tag == 'braids' and (gs.turn < 3 or not player.creatures):
             continue
@@ -2913,15 +2918,14 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.turn, 'mono_black',
             candidates=deploy_priority,
             chosen=tag,
-            reason=f"mana={total_mana}, deployed={deployed}, board={len(player.creatures)}")
-        player.remove_from_hand(crea)
-        if not _try_counter_any(player, opponent, gs, crea, log_entries):
-            player.put_creature_in_play(crea)
-            total_mana -= crea.cmc
+            reason=f"mana={budget[0]}, deployed={deployed}, board={len(player.creatures)}")
+        def _resolve_crea_mb(c):
+            player.put_creature_in_play(c)
+            log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+        if cast_spell(player, opponent, gs, crea, budget, log_fn, log_entries,
+                      on_resolve=_resolve_crea_mb):
             deployed += 1
-            log_fn(f"{crea.name} ({crea.base_power}/{crea.base_toughness})")
-        else:
-            player.add_to_grave(crea)
+    total_mana = budget[0]
 
     # ── 7. Wasteland — disrupt opp's nonbasic ──
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)

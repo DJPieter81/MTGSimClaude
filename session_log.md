@@ -30,3 +30,4 @@
 - _strategy_painter: 7 casts converted, tests 147/0, commit e457f38
 - _strategy_storm: 2 casts converted (partial; kill_spell skipped due to fluster rebuttal logic), tests 147/0, commit 0f1453a
 - _strategy_reanimator: 7 casts converted, tests 147/0, commit cf6ba61
+- _strategy_ocelot: 7 casts converted, tests 147/0, commit 73d33f0
