@@ -125,7 +125,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     5. Attack with infect creature + all free pump spells
     6. Track poison counters — 10 = lethal
     """
-    from engine import _try_counter_any, bowmasters_triggers
+    from engine import _try_counter_any, bowmasters_triggers, cast_spell
     from rules import Permanent
 
     mana = total_mana
@@ -146,13 +146,13 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Phase 2: Cast Noble Hierarch (exalted mana dork) ────────────────────
     hierarch = player.find_tag('hierarch')
     if hierarch and mana >= 1:
-        player.remove_from_hand(hierarch)
-        if not _try_counter_any(player, opponent, gs, hierarch, log_entries):
-            player.put_creature_in_play(hierarch)
+        _b = [mana]
+        def _resolve_hie(c):
+            player.put_creature_in_play(c)
             log_fn("Noble Hierarch (exalted)")
-        else:
-            player.add_to_grave(hierarch)
-        mana -= 1
+        cast_spell(player, opponent, gs, hierarch, _b, log_fn, log_entries,
+                   on_resolve=_resolve_hie, cost_override=1)
+        mana = _b[0]
 
     if gs.game_over:
         return
@@ -165,21 +165,21 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     blighted = player.find_tag('blighted')
 
     if blighted and mana >= 2:
-        player.remove_from_hand(blighted)
-        if not _try_counter_any(player, opponent, gs, blighted, log_entries):
-            player.put_creature_in_play(blighted)
+        _b = [mana]
+        def _resolve_bl(c):
+            player.put_creature_in_play(c)
             log_fn("Blighted Agent (infect, unblockable)")
-        else:
-            player.add_to_grave(blighted)
-        mana -= 2
+        cast_spell(player, opponent, gs, blighted, _b, log_fn, log_entries,
+                   on_resolve=_resolve_bl, cost_override=2)
+        mana = _b[0]
     elif glistener and mana >= 1:
-        player.remove_from_hand(glistener)
-        if not _try_counter_any(player, opponent, gs, glistener, log_entries):
-            player.put_creature_in_play(glistener)
+        _b = [mana]
+        def _resolve_gl(c):
+            player.put_creature_in_play(c)
             log_fn("Glistener Elf (infect)")
-        else:
-            player.add_to_grave(glistener)
-        mana -= 1
+        cast_spell(player, opponent, gs, glistener, _b, log_fn, log_entries,
+                   on_resolve=_resolve_gl, cost_override=1)
+        mana = _b[0]
 
     if gs.game_over:
         return
@@ -188,19 +188,19 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     for _ in range(4):
         cantrip = player.find_tag('bs') or player.find_tag('ponder')
         if cantrip and mana >= 1:
-            player.remove_from_hand(cantrip)
-            if not _try_counter_any(player, opponent, gs, cantrip, log_entries):
-                # Draw a card
+            _b = [mana]
+            def _resolve_cant(c):
+                player.add_to_grave(c)
                 if player.library:
                     drawn = player.library.pop(0)
                     player.hand.append(drawn)
-                    log_fn(f"{cantrip.name} — draw")
+                    log_fn(f"{c.name} — draw")
                     bowmasters_triggers(1, gs, log_entries, controller='o' if player is gs.p1 else 'b')
                 else:
-                    log_fn(f"{cantrip.name} — library empty")
-            else:
-                player.add_to_grave(cantrip)
-            mana -= 1
+                    log_fn(f"{c.name} — library empty")
+            cast_spell(player, opponent, gs, cantrip, _b, log_fn, log_entries,
+                       on_resolve=_resolve_cant, cost_override=1)
+            mana = _b[0]
         else:
             break
 
@@ -213,28 +213,27 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
                        if c.card.tag in INFECT_TAGS and not c.summoning_sick]
     crop = player.find_tag('crop')
     if crop and not infect_on_board and mana >= 1 and player.lands:
-        player.remove_from_hand(crop)
-        if not _try_counter_any(player, opponent, gs, crop, log_entries):
-            # Sacrifice a land
-            sac_land = player.lands[-1]
-            player.lands.remove(sac_land)
-            player.graveyard.append(sac_land.card)
-            # Tutor Inkmoth Nexus from library
-            inkmoth_cards = [c for c in player.library if c.tag == 'inkmoth']
+        # Sacrifice is a cost — do it before casting (for counter-fail path, the sac still happens)
+        sac_land = player.lands[-1]
+        player.lands.remove(sac_land)
+        player.graveyard.append(sac_land.card)
+        _b = [mana]
+        def _resolve_crop(c, _s=sac_land):
+            player.add_to_grave(c)
+            inkmoth_cards = [cc for cc in player.library if cc.tag == 'inkmoth']
             if inkmoth_cards:
                 found = inkmoth_cards[0]
                 player.library.remove(found)
-                # Put directly into play as a land
                 from rules import LandPermanent
                 lp = LandPermanent(card=found,
                                    controller='b' if player is gs.p1 else 'o')
                 player.lands.append(lp)
-                log_fn(f"Crop Rotation — sac {sac_land.card.name}, tutor Inkmoth Nexus", True)
+                log_fn(f"Crop Rotation — sac {_s.card.name}, tutor Inkmoth Nexus", True)
             else:
                 log_fn("Crop Rotation — no Inkmoth in library")
-        else:
-            player.add_to_grave(crop)
-        mana -= 1
+        cast_spell(player, opponent, gs, crop, _b, log_fn, log_entries,
+                   on_resolve=_resolve_crop, cost_override=1)
+        mana = _b[0]
 
     if gs.game_over:
         return
