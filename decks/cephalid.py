@@ -218,9 +218,9 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
     8. Fair creatures as backup plan
     9. Combat with available creatures
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
+    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
 
-    mana = total_mana
+    budget = [total_mana]
 
     # ── Track Shuko in play via attribute ────────────────────────────────────
     if not hasattr(gs, 'shuko_in_play'):
@@ -248,161 +248,135 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
         (illusionist_in_play and enabler_in_hand) or
         (illusionist_in_hand and (nomads_in_play or shuko_in_play))
     )
-    if chant and mana >= 1 and need_protection:
-        player.remove_from_hand(chant)
-        player.add_to_grave(chant)
-        mana -= 1
-        log_fn("Orim's Chant — opponent can't cast spells this turn", True)
+    if chant and budget[0] >= 1 and need_protection:
+        def _resolve_chant(c):
+            player.add_to_grave(c)
+            log_fn("Orim's Chant — opponent can't cast spells this turn", True)
+        cast_spell(player, opponent, gs, chant, budget, log_fn, log_entries,
+                   on_resolve=_resolve_chant)
 
     # ── Cantrips — dig for combo pieces ─────────────────────────────────────
     for cantrip_tag in ('bs', 'ponder'):
         cantrip = player.find_tag(cantrip_tag)
-        if cantrip and mana >= 1:
-            player.remove_from_hand(cantrip)
-            player.add_to_grave(cantrip)
-            mana -= 1
-            player.draw(1)
-            log_fn(f"{cantrip.name} — dig for combo")
-            if hasattr(gs, 'bowmasters_on_board') and gs.bowmasters_on_board:
-                bowmasters_triggers(1, gs, log_entries,
-                                    controller='o' if player is gs.p1 else 'b')
+        if cantrip and budget[0] >= 1:
+            def _resolve_cant(c):
+                player.add_to_grave(c)
+                player.draw(1)
+                log_fn(f"{c.name} — dig for combo")
+                if hasattr(gs, 'bowmasters_on_board') and gs.bowmasters_on_board:
+                    bowmasters_triggers(1, gs, log_entries,
+                                        controller='o' if player is gs.p1 else 'b')
+            cast_spell(player, opponent, gs, cantrip, budget, log_fn, log_entries,
+                       on_resolve=_resolve_cant)
             gs.check_life_totals()
             if gs.game_over:
                 return
 
     # ── Step Through — wizardcycling to tutor Illusionist ───────────────────
     step = player.find_tag('step')
-    if step and mana >= 3 and not illusionist_in_play:
-        # Wizardcycling: discard Step Through, pay 3, search for Wizard
-        player.remove_from_hand(step)
-        player.add_to_grave(step)
-        mana -= 3
-        target = next((c for c in player.library if c.tag == 'illusionist'),
-                      None)
-        if target:
-            player.library.remove(target)
-            player.hand.append(target)
-            log_fn("Step Through (wizardcycling) → Cephalid Illusionist to hand")
-        else:
-            log_fn("Step Through (wizardcycling) — no Illusionist in library")
+    if step and budget[0] >= 3 and not illusionist_in_play:
+        def _resolve_step(c):
+            player.add_to_grave(c)
+            target = next((cc for cc in player.library if cc.tag == 'illusionist'), None)
+            if target:
+                player.library.remove(target)
+                player.hand.append(target)
+                log_fn("Step Through (wizardcycling) → Cephalid Illusionist to hand")
+            else:
+                log_fn("Step Through (wizardcycling) — no Illusionist in library")
+        cast_spell(player, opponent, gs, step, budget, log_fn, log_entries,
+                   on_resolve=_resolve_step, cost_override=3)
 
     # ── Deploy Cephalid Illusionist (2 mana) ────────────────────────────────
     illusionist = player.find_tag('illusionist')
-    if illusionist and mana >= 2:
-        if not _try_counter_any(player, opponent, gs, illusionist, log_entries):
-            player.remove_from_hand(illusionist)
-            player.put_creature_in_play(illusionist)
-            mana -= 2
+    if illusionist and budget[0] >= 2:
+        def _resolve_ill(c):
+            player.put_creature_in_play(c)
             log_fn("★ Cephalid Illusionist (combo piece)", True)
-
-            # Re-check combo after deploying
-            nomads_in_play = any(c.card.tag == 'nomads'
-                                for c in player.creatures)
+        if cast_spell(player, opponent, gs, illusionist, budget, log_fn, log_entries,
+                      on_resolve=_resolve_ill, cost_override=2):
+            nomads_in_play = any(c.card.tag == 'nomads' for c in player.creatures)
             if nomads_in_play or gs.shuko_in_play:
                 log_fn("★ Combo assembled!", True)
                 _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries)
                 if gs.game_over:
                     return
-        else:
-            player.add_to_grave(illusionist)
-            mana -= 2
-            log_fn("Cephalid Illusionist countered")
 
     # ── Deploy Nomads en-Kor (1 mana) ──────────────────────────────────────
     nomads = player.find_tag('nomads')
-    if nomads and mana >= 1:
-        if not _try_counter_any(player, opponent, gs, nomads, log_entries):
-            player.remove_from_hand(nomads)
-            player.put_creature_in_play(nomads)
-            mana -= 1
+    if nomads and budget[0] >= 1:
+        def _resolve_nom(c):
+            player.put_creature_in_play(c)
             log_fn("Nomads en-Kor (combo enabler)")
-
-            # Re-check combo after deploying
-            illusionist_in_play = any(c.card.tag == 'illusionist'
-                                     for c in player.creatures)
+        if cast_spell(player, opponent, gs, nomads, budget, log_fn, log_entries,
+                      on_resolve=_resolve_nom):
+            illusionist_in_play = any(c.card.tag == 'illusionist' for c in player.creatures)
             if illusionist_in_play:
                 log_fn("★ Combo assembled!", True)
                 _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries)
                 if gs.game_over:
                     return
-        else:
-            player.add_to_grave(nomads)
-            mana -= 1
-            log_fn("Nomads en-Kor countered")
 
     # ── Cast Shuko (1 mana artifact) ───────────────────────────────────────
     shuko = player.find_tag('shuko')
-    if shuko and mana >= 1:
-        if not _try_counter_any(player, opponent, gs, shuko, log_entries):
-            player.remove_from_hand(shuko)
-            player.add_to_grave(shuko)  # proxy for "in play"
+    if shuko and budget[0] >= 1:
+        def _resolve_shuko(c):
+            player.add_to_grave(c)  # proxy for "in play"
             gs.shuko_in_play = True
-            mana -= 1
             log_fn("Shuko (equip 0 — combo enabler)")
-
-            # Re-check combo after deploying
-            illusionist_in_play = any(c.card.tag == 'illusionist'
-                                     for c in player.creatures)
+        if cast_spell(player, opponent, gs, shuko, budget, log_fn, log_entries,
+                      on_resolve=_resolve_shuko):
+            illusionist_in_play = any(c.card.tag == 'illusionist' for c in player.creatures)
             if illusionist_in_play:
                 log_fn("★ Combo assembled!", True)
                 _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries)
                 if gs.game_over:
                     return
-        else:
-            player.add_to_grave(shuko)
-            mana -= 1
-            log_fn("Shuko countered")
 
     # ── Swords to Plowshares — removal ──────────────────────────────────────
     stp = player.find_tag('stp')
-    if stp and mana >= 1 and opponent.creatures:
+    if stp and budget[0] >= 1 and opponent.creatures:
         target = max(opponent.creatures, key=lambda c: c.card.base_power)
         if target.card.base_power >= 2:
-            player.remove_from_hand(stp)
-            player.add_to_grave(stp)
-            mana -= 1
-            opponent.creatures.remove(target)
-            opponent.life += target.card.base_power
-            log_fn(f"Swords to Plowshares → exile {target.card.name}")
-            update_goyf(gs)
+            def _resolve_stp(c, _t=target):
+                player.add_to_grave(c)
+                if _t in opponent.creatures:
+                    opponent.creatures.remove(_t)
+                    opponent.life += _t.card.base_power
+                    log_fn(f"Swords to Plowshares → exile {_t.card.name}")
+                    update_goyf(gs)
+            cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
+                       on_resolve=_resolve_stp)
 
     # ── Cabal Therapy — discard ─────────────────────────────────────────────
     therapy = player.find_tag('therapy')
-    if therapy and mana >= 1:
-        player.remove_from_hand(therapy)
-        player.add_to_grave(therapy)
-        mana -= 1
-        # Name Force of Will (most common threat to combo)
-        discarded = [c for c in opponent.hand if c.tag == 'fow']
-        for c in discarded:
-            opponent.hand.remove(c)
-            opponent.graveyard.append(c)
-        log_fn(f"Cabal Therapy naming Force of Will — hit {len(discarded)}")
+    if therapy and budget[0] >= 1:
+        def _resolve_therapy(c):
+            player.add_to_grave(c)
+            discarded = [cc for cc in opponent.hand if cc.tag == 'fow']
+            for cc in discarded:
+                opponent.hand.remove(cc)
+                opponent.graveyard.append(cc)
+            log_fn(f"Cabal Therapy naming Force of Will — hit {len(discarded)}")
+        cast_spell(player, opponent, gs, therapy, budget, log_fn, log_entries,
+                   on_resolve=_resolve_therapy)
 
     # ── Deploy fair creatures ───────────────────────────────────────────────
-    # Tamiyo (1 mana)
     tamiyo = player.find_tag('tamiyo')
-    if tamiyo and mana >= 1:
-        if not _try_counter_any(player, opponent, gs, tamiyo, log_entries):
-            player.remove_from_hand(tamiyo)
-            player.put_creature_in_play(tamiyo)
-            mana -= 1
+    if tamiyo and budget[0] >= 1:
+        def _resolve_tam(c):
+            player.put_creature_in_play(c)
             log_fn("Tamiyo, Inquisitive Student (0/3)")
-        else:
-            player.add_to_grave(tamiyo)
-            mana -= 1
+        cast_spell(player, opponent, gs, tamiyo, budget, log_fn, log_entries,
+                   on_resolve=_resolve_tam)
 
-    # Voice of Victory (2 mana)
     voice = player.find_tag('voice')
-    if voice and mana >= 2:
-        if not _try_counter_any(player, opponent, gs, voice, log_entries):
-            player.remove_from_hand(voice)
-            player.put_creature_in_play(voice)
-            mana -= 2
+    if voice and budget[0] >= 2:
+        def _resolve_voice(c):
+            player.put_creature_in_play(c)
             log_fn("Voice of Victory (2/1)")
-        else:
-            player.add_to_grave(voice)
-            mana -= 2
+        cast_spell(player, opponent, gs, voice, budget, log_fn, log_entries,
+                   on_resolve=_resolve_voice, cost_override=2)
 
     # ── Combat ──────────────────────────────────────────────────────────────
     if not gs.game_over:
