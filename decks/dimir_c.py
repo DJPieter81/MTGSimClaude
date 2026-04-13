@@ -136,183 +136,163 @@ def _strategy_dimir_c(player, opponent, gs, total_mana, log_fn, log_entries):
     7. Brazen Borrower as flash threat (3 mana)
     """
     from config import CombatThresholds as CT
-from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
+    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
 
-    mana = total_mana
+    budget = [total_mana]
 
-    # ── 1. Thoughtseize — strip key cards from opponent ─────────────────────
-
+    # ── 1. Thoughtseize ─────────────────────────────────────────────────────
     seize = player.find_tag('seize')
-    if seize and mana >= 1:
-        player.remove_from_hand(seize)
-        player.add_to_grave(seize)
-        mana -= 1
-        player.life -= 2
-        log_fn("Thoughtseize (pay 2 life)")
+    if seize and budget[0] >= 1:
+        def _resolve_seize(c):
+            player.add_to_grave(c)
+            player.life -= 2
+            log_fn("Thoughtseize (pay 2 life)")
+            if opponent.hand:
+                target = opponent.hand[0]
+                opponent.hand.remove(target)
+                opponent.add_to_grave(target)
+                log_fn(f"  Thoughtseize takes {target.name}")
+                update_goyf(gs)
+        cast_spell(player, opponent, gs, seize, budget, log_fn, log_entries,
+                   on_resolve=_resolve_seize)
         gs.check_life_totals()
         if gs.game_over:
             return
-        # Discard best card from opponent's hand
-        if opponent.hand:
-            # Prioritize: combo pieces, threats, removal
-            target = opponent.hand[0]
-            opponent.hand.remove(target)
-            opponent.add_to_grave(target)
-            log_fn(f"  Thoughtseize takes {target.name}")
-            update_goyf(gs)
-
-    if gs.game_over:
-        return
 
     # ── 2. Deploy threats ───────────────────────────────────────────────────
-
     deployed_threat = False
 
-    # Tamiyo — best T1 play (0/3, flips to planeswalker)
     tamiyo = player.find_tag('tamiyo')
-    if tamiyo and mana >= 1:
-        player.remove_from_hand(tamiyo)
-        if not _try_counter_any(player, opponent, gs, tamiyo, log_entries):
-            player.put_creature_in_play(tamiyo)
-            mana -= 1
+    if tamiyo and budget[0] >= 1:
+        def _resolve_tam(c):
+            player.put_creature_in_play(c)
             log_fn("Tamiyo, Inquisitive Student (0/3)")
-        else:
-            player.add_to_grave(tamiyo)
+        cast_spell(player, opponent, gs, tamiyo, budget, log_fn, log_entries,
+                   on_resolve=_resolve_tam)
         deployed_threat = True
 
-    # Orcish Bowmasters — flash, hold for opponent's draw triggers
     if not deployed_threat:
         bowm = player.find_tag('bowm')
-        if bowm and mana >= 2:
-            player.remove_from_hand(bowm)
-            if not _try_counter_any(player, opponent, gs, bowm, log_entries):
-                player.put_creature_in_play(bowm)
+        if bowm and budget[0] >= 2:
+            def _resolve_bowm(c):
+                player.put_creature_in_play(c)
                 gs.bowmasters_on_board = True
-                mana -= 2
                 log_fn("Orcish Bowmasters")
-                # ETB: deal 1 damage, create 1/1 orc army
                 if opponent.creatures:
-                    target = min(opponent.creatures, key=lambda c: c.toughness)
+                    target = min(opponent.creatures, key=lambda cc: cc.toughness)
                     target.damage_marked += 1
                     log_fn(f"  Bowmasters ETB -> 1 damage to {target.card.name}")
                     gs.state_based_actions()
-            else:
-                player.add_to_grave(bowm)
+            cast_spell(player, opponent, gs, bowm, budget, log_fn, log_entries,
+                       on_resolve=_resolve_bowm, cost_override=2)
             deployed_threat = True
 
-    # Nethergoyf / Barrowgoyf — GY-scaling 2-drops
     if not deployed_threat:
         for goyf_tag in ('nether', 'barro'):
             goyf = player.find_tag(goyf_tag)
-            if goyf and mana >= 2:
-                player.remove_from_hand(goyf)
-                if not _try_counter_any(player, opponent, gs, goyf, log_entries):
-                    player.put_creature_in_play(goyf)
-                    mana -= 2
-                    log_fn(f"{goyf.name}")
+            if goyf and budget[0] >= 2:
+                def _resolve_goyf(c):
+                    player.put_creature_in_play(c)
+                    log_fn(f"{c.name}")
                     update_goyf(gs)
-                else:
-                    player.add_to_grave(goyf)
+                cast_spell(player, opponent, gs, goyf, budget, log_fn, log_entries,
+                           on_resolve=_resolve_goyf, cost_override=2)
                 deployed_threat = True
                 break
 
-    # Murktide Regent — delve makes it effectively 2 mana with 5+ cards in GY
     if not deployed_threat:
         murk = player.find_tag('murk')
         if murk:
             gy_count = len(player.graveyard)
             delve_amount = min(gy_count, 6)
             effective_cost = max(2, 7 - delve_amount)
-            if mana >= effective_cost:
-                player.remove_from_hand(murk)
-                if not _try_counter_any(player, opponent, gs, murk, log_entries):
-                    exiled = 0
-                    while exiled < delve_amount and player.graveyard:
-                        player.graveyard.pop(0)
-                        exiled += 1
-                    player.put_creature_in_play(murk)
-                    mana -= effective_cost
-                    log_fn(f"Murktide Regent (delve {exiled}, paid {effective_cost})")
-                else:
-                    player.add_to_grave(murk)
+            if budget[0] >= effective_cost:
+                exiled = 0
+                while exiled < delve_amount and player.graveyard:
+                    player.graveyard.pop(0)
+                    exiled += 1
+                def _resolve_murk(c, _e=exiled, _cost=effective_cost):
+                    player.put_creature_in_play(c)
+                    log_fn(f"Murktide Regent (delve {_e}, paid {_cost})")
+                cast_spell(player, opponent, gs, murk, budget, log_fn, log_entries,
+                           on_resolve=_resolve_murk, cost_override=effective_cost)
                 deployed_threat = True
 
-    # Brazen Borrower — flash threat, deploy if no other plays
     if not deployed_threat:
         borrow = player.find_tag('borrow')
-        if borrow and mana >= 3:
-            player.remove_from_hand(borrow)
-            if not _try_counter_any(player, opponent, gs, borrow, log_entries):
-                player.put_creature_in_play(borrow)
-                mana -= 3
+        if borrow and budget[0] >= 3:
+            def _resolve_borrow(c):
+                player.put_creature_in_play(c)
                 log_fn("Brazen Borrower (3/1 flash flyer)")
-            else:
-                player.add_to_grave(borrow)
+            cast_spell(player, opponent, gs, borrow, budget, log_fn, log_entries,
+                       on_resolve=_resolve_borrow, cost_override=3)
 
     if gs.game_over:
         return
 
-    # ── 3. Cantrips — find action ───────────────────────────────────────────
-
+    # ── 3. Cantrips ─────────────────────────────────────────────────────────
     for cantrip_tag in ('bs', 'ponder'):
         cantrip = player.find_tag(cantrip_tag)
-        if cantrip and mana >= 1:
-            player.remove_from_hand(cantrip)
-            player.add_to_grave(cantrip)
-            mana -= 1
-            drawn = player.draw(1)
-            log_fn(f"{cantrip.name} — cantrip")
-            bowmasters_triggers(1, gs, log_entries,
-                                controller='o' if player is gs.p1 else 'b')
-            break  # one cantrip per turn
+        if cantrip and budget[0] >= 1:
+            def _resolve_cant(c):
+                player.add_to_grave(c)
+                player.draw(1)
+                log_fn(f"{c.name} — cantrip")
+                bowmasters_triggers(1, gs, log_entries,
+                                    controller='o' if player is gs.p1 else 'b')
+            cast_spell(player, opponent, gs, cantrip, budget, log_fn, log_entries,
+                       on_resolve=_resolve_cant)
+            break
 
-    # Mishra's Bauble — free cantrip (delayed draw, modeled as immediate)
     bauble = player.find_tag('bauble')
     if bauble:
-        player.remove_from_hand(bauble)
-        player.add_to_grave(bauble)
-        drawn = player.draw(1)
-        log_fn("Mishra's Bauble — cantrip")
-        bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.p1 else 'b')
-        update_goyf(gs)
+        def _resolve_bauble(c):
+            player.add_to_grave(c)
+            player.draw(1)
+            log_fn("Mishra's Bauble — cantrip")
+            bowmasters_triggers(1, gs, log_entries,
+                                controller='o' if player is gs.p1 else 'b')
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, bauble, budget, log_fn, log_entries,
+                   on_resolve=_resolve_bauble, cost_override=0)
 
     if gs.game_over:
         return
 
     # ── 4. Removal ──────────────────────────────────────────────────────────
-
-    # Snuff Out — free removal by paying 4 life
     snuff = player.find_tag('snuff')
     if snuff and player.life > CT.SNUFF_LIFE_BUFFER:
         targets = [c for c in opponent.creatures if c.toughness <= 4]
         if targets:
             target = targets[0]
-            player.remove_from_hand(snuff)
-            player.add_to_grave(snuff)
-            player.life -= 4
-            opponent.remove_creature(target)
-            log_fn(f"Snuff Out (pay 4 life) -> {target.card.name}", True)
-            update_goyf(gs)
+            def _resolve_snuff(c, _t=target):
+                player.add_to_grave(c)
+                player.life -= 4
+                if _t in opponent.creatures:
+                    opponent.remove_creature(_t)
+                    log_fn(f"Snuff Out (pay 4 life) -> {_t.card.name}", True)
+                    update_goyf(gs)
+            cast_spell(player, opponent, gs, snuff, None, log_fn, log_entries,
+                       on_resolve=_resolve_snuff)
 
     if gs.game_over:
         return
 
-    # Fatal Push — kills CMC ≤2 (or ≤4 with revolt from fetchlands)
     push = player.find_tag('push')
-    if push and mana >= 1 and opponent.creatures:
-        # Check for revolt (fetchland cracked this turn)
+    if push and budget[0] >= 1 and opponent.creatures:
         revolt = getattr(gs, 'revolt_active', False)
         max_cmc = 4 if revolt else 2
         push_targets = [c for c in opponent.creatures if c.card.cmc <= max_cmc]
         if push_targets:
             target = max(push_targets, key=lambda c: c.power)
-            player.remove_from_hand(push)
-            player.add_to_grave(push)
-            mana -= 1
-            opponent.remove_creature(target)
-            log_fn(f"Fatal Push -> {target.card.name}", True)
-            update_goyf(gs)
+            def _resolve_push(c, _t=target):
+                player.add_to_grave(c)
+                if _t in opponent.creatures:
+                    opponent.remove_creature(_t)
+                    log_fn(f"Fatal Push -> {_t.card.name}", True)
+                    update_goyf(gs)
+            cast_spell(player, opponent, gs, push, budget, log_fn, log_entries,
+                       on_resolve=_resolve_push)
 
     if gs.game_over:
         return
