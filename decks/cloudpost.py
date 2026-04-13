@@ -180,7 +180,7 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
      7. Stock Up for card draw
      8. Combat with creatures
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf
+    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
     from rules import Card as _Card, CardType as _CT, LandPermanent
 
     mana = _calc_effective_mana(player, total_mana)
@@ -291,165 +291,153 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
         mana += 1
         log_fn("Lotus Petal → +1 mana")
 
-    # ── Expedition Map (1 to cast + 2 to activate = 3 total) ───────────────
+    # ── Expedition Map ─────────────────────────────────────────────────────
     exp_map = player.find_tag('map')
     if exp_map and mana >= 3:
-        player.remove_from_hand(exp_map)
-        player.add_to_grave(exp_map)
-        mana -= 3
-        target = (
-            next((c for c in player.library if c.tag == 'post'), None)
-            or next((c for c in player.library
-                     if c.tag in ('tower', 'mine', 'plant', 'nexus')), None)
-        )
-        if target:
-            player.library.remove(target)
-            player.hand.append(target)
-            log_fn(f"Expedition Map → {target.name} to hand")
-        else:
-            log_fn("Expedition Map — no useful land in library")
+        _b = [mana]
+        def _resolve_map(c):
+            player.add_to_grave(c)
+            target = (
+                next((cc for cc in player.library if cc.tag == 'post'), None)
+                or next((cc for cc in player.library
+                         if cc.tag in ('tower', 'mine', 'plant', 'nexus')), None)
+            )
+            if target:
+                player.library.remove(target)
+                player.hand.append(target)
+                log_fn(f"Expedition Map → {target.name} to hand")
+            else:
+                log_fn("Expedition Map — no useful land in library")
+        cast_spell(player, opponent, gs, exp_map, _b, log_fn, log_entries,
+                   on_resolve=_resolve_map, cost_override=3)
+        mana = _b[0]
     elif exp_map and mana >= 1:
-        # Just cast it, activate later
-        player.remove_from_hand(exp_map)
-        player.add_to_grave(exp_map)
-        mana -= 1
-        log_fn("Expedition Map cast (will activate later)")
+        _b = [mana]
+        def _resolve_map1(c):
+            player.add_to_grave(c)
+            log_fn("Expedition Map cast (will activate later)")
+        cast_spell(player, opponent, gs, exp_map, _b, log_fn, log_entries,
+                   on_resolve=_resolve_map1, cost_override=1)
+        mana = _b[0]
 
-    # ── Deploy haymakers by mana threshold ──────────────────────────────────
-
-    # Ulamog (10 mana) — ultimate finisher, try first
+    # Ulamog (10 mana)
     ulamog = player.find_tag('ulamog')
     if ulamog and mana >= 10:
-        player.remove_from_hand(ulamog)
-        if not _try_counter_any(player, opponent, gs, ulamog, log_entries):
-            player.put_creature_in_play(ulamog)
-            mana -= 10
+        _b = [mana]
+        def _resolve_ul(c):
+            player.put_creature_in_play(c)
             exiled = 0
-            for c in list(opponent.creatures[:2]):
-                opponent.creatures.remove(c)
-                exiled += 1
-            # Also exile lands
+            for cc in list(opponent.creatures[:2]):
+                opponent.creatures.remove(cc); exiled += 1
             while exiled < 2 and opponent.lands:
                 lnd = opponent.lands[-1]
-                opponent.lands.remove(lnd)
-                exiled += 1
-            log_fn(f"★ Ulamog — exile {exiled} permanents, 10/10 indestructible",
-                   True)
+                opponent.lands.remove(lnd); exiled += 1
+            log_fn(f"★ Ulamog — exile {exiled} permanents, 10/10 indestructible", True)
             update_goyf(gs)
-        else:
-            player.add_to_grave(ulamog)
-            mana -= 10
-            log_fn("Ulamog countered")
+        cast_spell(player, opponent, gs, ulamog, _b, log_fn, log_entries,
+                   on_resolve=_resolve_ul, cost_override=10)
+        mana = _b[0]
 
-    # Ugin (6 mana) — board wipe, fires when opponent has creatures
+    # Ugin (6 mana)
     ugin = player.find_tag('ugin')
     if ugin and mana >= 6 and opponent.creatures:
-        player.remove_from_hand(ugin)
-        if not _try_counter_any(player, opponent, gs, ugin, log_entries):
-            player.add_to_grave(ugin)
-            mana -= 6
-            colored = [c for c in opponent.creatures if c.card.colors]
-            for c in list(colored):
-                opponent.creatures.remove(c)
+        _b = [mana]
+        def _resolve_ug(c):
+            player.add_to_grave(c)
+            colored = [cc for cc in opponent.creatures if cc.card.colors]
+            for cc in list(colored):
+                opponent.creatures.remove(cc)
             gs.cloudpost_ugin_active = True
-            log_fn(f"★ Ugin — exile {len(colored)} colored creatures + ongoing value",
-                   True)
+            log_fn(f"★ Ugin — exile {len(colored)} colored creatures + ongoing value", True)
             update_goyf(gs)
-        else:
-            player.add_to_grave(ugin)
-            mana -= 6
+        cast_spell(player, opponent, gs, ugin, _b, log_fn, log_entries,
+                   on_resolve=_resolve_ug, cost_override=6)
+        mana = _b[0]
 
-    # The One Ring (4 mana) — protection this turn + draw engine
+    # The One Ring (4 mana)
     ring = player.find_tag('ring')
     if ring and mana >= 4 and gs.cloudpost_ring_counters == 0:
-        player.remove_from_hand(ring)
-        if not _try_counter_any(player, opponent, gs, ring, log_entries):
-            player.add_to_grave(ring)
-            mana -= 4
-            gs.cloudpost_ring_counters = 1  # starts drawing next turn
-            player.life += 8  # proxy for protection-from-everything (BUG can't attack)
-            log_fn(f"★ The One Ring — protection (life→{player.life}), draw engine on",
-                   True)
-        else:
-            player.add_to_grave(ring)
-            mana -= 4
+        _b = [mana]
+        def _resolve_ring(c):
+            player.add_to_grave(c)
+            gs.cloudpost_ring_counters = 1
+            player.life += 8
+            log_fn(f"★ The One Ring — protection (life→{player.life}), draw engine on", True)
+        cast_spell(player, opponent, gs, ring, _b, log_fn, log_entries,
+                   on_resolve=_resolve_ring, cost_override=4)
+        mana = _b[0]
 
-    # Karn (4 mana) — persistent threat factory
+    # Karn (4 mana)
     karn = player.find_tag('karn')
     if karn and mana >= 4 and not gs.cloudpost_karn_active:
-        player.remove_from_hand(karn)
-        if not _try_counter_any(player, opponent, gs, karn, log_entries):
-            player.add_to_grave(karn)
-            mana -= 4
+        _b = [mana]
+        def _resolve_karn(c):
+            player.add_to_grave(c)
             gs.cloudpost_karn_active = True
             log_fn("★ Karn, the Great Creator — creates 4/4 each turn", True)
-        else:
-            player.add_to_grave(karn)
-            mana -= 4
+        cast_spell(player, opponent, gs, karn, _b, log_fn, log_entries,
+                   on_resolve=_resolve_karn, cost_override=4)
+        mana = _b[0]
 
-    # Kozilek's Command (4 mana) — removal + token or draw
+    # Kozilek's Command (4 mana)
     koz = player.find_tag('koz_cmd')
     if koz and mana >= 4:
-        player.remove_from_hand(koz)
-        if not _try_counter_any(player, opponent, gs, koz, log_entries):
-            player.add_to_grave(koz)
-            mana -= 4
-            # Mode 1: kill a small creature + create spawn token
-            small = [c for c in opponent.creatures if c.card.base_toughness <= 3]
+        _b = [mana]
+        def _resolve_koz(c):
+            player.add_to_grave(c)
+            small = [cc for cc in opponent.creatures if cc.card.base_toughness <= 3]
             if small:
-                target = max(small, key=lambda c: c.card.base_power)
+                target = max(small, key=lambda cc: cc.card.base_power)
                 opponent.creatures.remove(target)
-                # Create a 1/1 Eldrazi Spawn token
                 from cards import creature as _creature
                 spawn = _creature('Eldrazi Spawn', 0, {}, set(), 1, 1, tag='spawn')
                 player.put_creature_in_play(spawn)
-                log_fn(f"Kozilek's Command — kill {target.card.name} + Spawn token",
-                       True)
+                log_fn(f"Kozilek's Command — kill {target.card.name} + Spawn token", True)
                 update_goyf(gs)
             else:
-                # Mode 2: draw 2 cards
                 player.draw(2)
                 log_fn("Kozilek's Command — draw 2", True)
                 _bowm_check(2)
-                gs.check_life_totals()
-                if gs.game_over:
-                    return
-        else:
-            player.add_to_grave(koz)
-            mana -= 4
+        cast_spell(player, opponent, gs, koz, _b, log_fn, log_entries,
+                   on_resolve=_resolve_koz, cost_override=4)
+        mana = _b[0]
+        gs.check_life_totals()
+        if gs.game_over:
+            return
 
-    # ── Lock pieces in spare mana slots ─────────────────────────────────────
+    # ── Lock pieces ─────────────────────────────────────────────────────────
     flute = player.find_tag('flute')
     if flute and mana >= 2:
-        player.remove_from_hand(flute)
-        if not _try_counter_any(player, opponent, gs, flute, log_entries):
-            player.add_to_grave(flute)
-            mana -= 2
+        _b = [mana]
+        def _resolve_flute(c):
+            player.add_to_grave(c)
             log_fn("Disruptor Flute — naming key card", True)
-        else:
-            player.add_to_grave(flute)
-            mana -= 2
+        cast_spell(player, opponent, gs, flute, _b, log_fn, log_entries,
+                   on_resolve=_resolve_flute, cost_override=2)
+        mana = _b[0]
 
     needle = player.find_tag('needle')
     if needle and mana >= 1:
-        player.remove_from_hand(needle)
-        if not _try_counter_any(player, opponent, gs, needle, log_entries):
-            player.add_to_grave(needle)
-            mana -= 1
+        _b = [mana]
+        def _resolve_needle(c):
+            player.add_to_grave(c)
             log_fn("Pithing Needle — naming key card", True)
-        else:
-            player.add_to_grave(needle)
-            mana -= 1
+        cast_spell(player, opponent, gs, needle, _b, log_fn, log_entries,
+                   on_resolve=_resolve_needle, cost_override=1)
+        mana = _b[0]
 
-    # ── Stock Up (2 mana) — draw 2 ─────────────────────────────────────────
+    # ── Stock Up ────────────────────────────────────────────────────────────
     stock = player.find_tag('stock')
     if stock and mana >= 2:
-        player.remove_from_hand(stock)
-        player.add_to_grave(stock)
-        mana -= 2
-        player.draw(2)
-        log_fn("Stock Up — draw 2")
-        _bowm_check(2)
+        _b = [mana]
+        def _resolve_stock(c):
+            player.add_to_grave(c)
+            player.draw(2)
+            log_fn("Stock Up — draw 2")
+            _bowm_check(2)
+        cast_spell(player, opponent, gs, stock, _b, log_fn, log_entries,
+                   on_resolve=_resolve_stock, cost_override=2)
+        mana = _b[0]
         gs.check_life_totals()
         if gs.game_over:
             return
