@@ -163,7 +163,7 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     6. Munitions Expert ETB → removal
     7. Attack with everything
     """
-    from engine import _try_counter_any, bowmasters_triggers, combat_declare
+    from engine import _try_counter_any, bowmasters_triggers, combat_declare, cast_spell
 
     rem = total_mana
     goblin_count = len(player.creatures)
@@ -172,14 +172,15 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     vial = player.find_tag('vial')
     vial_on_board = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
     if vial and not vial_on_board and rem >= 1 and gs.turn <= 3:
-        player.remove_from_hand(vial)
-        if not _try_counter_any(player, opponent, gs, vial, log_entries):
-            player.put_artifact_in_play(vial)
+        _b = [rem]
+        def _resolve_vial(c):
+            player.put_artifact_in_play(c)
             gs.vial_counters = 0
             gs._vial_entered_last_turn = True
             log_fn("Aether Vial enters play")
-        else:
-            player.add_to_grave(vial)
+        cast_spell(player, opponent, gs, vial, _b, log_fn, log_entries,
+                   on_resolve=_resolve_vial, cost_override=1)
+        rem = _b[0]
 
     # ── Vial tick (upkeep) ──────────────────────────────────────────────────
     vial_on_board = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
@@ -207,73 +208,68 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Thoughtseize T1-T2 (if no Lackey/Vial) ─────────────────────────────
     ts = player.find_tag('ts')
     if ts and rem >= 1 and gs.turn <= 2 and not player.find_tag('lackey'):
-        player.remove_from_hand(ts)
-        if not _try_counter_any(player, opponent, gs, ts, log_entries):
-            player.add_to_grave(ts)
+        _b = [rem]
+        def _resolve_ts(c):
+            player.add_to_grave(c)
             player.life -= 2
-            target = (opponent.find_any(lambda c: c.free_cast_if_blue) or
-                      opponent.find_any(lambda c: c.is_creature()) or
-                      next((c for c in opponent.hand if not c.is_land()), None))
+            target = (opponent.find_any(lambda cc: cc.free_cast_if_blue) or
+                      opponent.find_any(lambda cc: cc.is_creature()) or
+                      next((cc for cc in opponent.hand if not cc.is_land()), None))
             if target:
                 opponent.hand.remove(target)
                 log_fn(f"Thoughtseize strips {target.name}", True)
-            rem -= 1
-        else:
-            player.add_to_grave(ts)
-            rem -= 1
+        cast_spell(player, opponent, gs, ts, _b, log_fn, log_entries,
+                   on_resolve=_resolve_ts, cost_override=1)
+        rem = _b[0]
 
     # ── Goblin Lackey T1 ───────────────────────────────────────────────────
     lackey = player.find_tag('lackey')
     lackey_in_play = any(c.card.tag == 'lackey' for c in player.creatures)
     if lackey and not lackey_in_play and rem >= 1:
-        player.remove_from_hand(lackey)
-        if not _try_counter_any(player, opponent, gs, lackey, log_entries):
-            player.put_creature_in_play(lackey)
-            goblin_count += 1
+        _b = [rem]
+        def _resolve_lackey(c):
+            player.put_creature_in_play(c)
             log_fn("Goblin Lackey (attacks next turn)")
-            rem -= 1
-        else:
-            player.add_to_grave(lackey)
-            rem -= 1
+        if cast_spell(player, opponent, gs, lackey, _b, log_fn, log_entries,
+                      on_resolve=_resolve_lackey, cost_override=1):
+            goblin_count += 1
+        rem = _b[0]
 
     # ── Deploy creatures (Matron, Cratermaker, Warchief, etc.) ──────────────
     # Matron: tutor Muxus on ETB
     matron = player.find_tag('matron')
     if matron and rem >= 3 and not player.find_tag('muxus'):
-        player.remove_from_hand(matron)
-        if not _try_counter_any(player, opponent, gs, matron, log_entries):
-            player.put_creature_in_play(matron)
-            goblin_count += 1
-            rem -= 3
-            # ETB: tutor Muxus from library
-            muxus_lib = next((c for c in player.library if c.tag == 'muxus'), None)
+        _b = [rem]
+        def _resolve_matron(c):
+            player.put_creature_in_play(c)
+            muxus_lib = next((cc for cc in player.library if cc.tag == 'muxus'), None)
             if muxus_lib:
                 player.library.remove(muxus_lib)
                 player.hand.append(muxus_lib)
                 log_fn("Goblin Matron → tutors Muxus!", True)
             else:
-                ringleader = next((c for c in player.library if c.tag == 'ringleader'), None)
+                ringleader = next((cc for cc in player.library if cc.tag == 'ringleader'), None)
                 if ringleader:
                     player.library.remove(ringleader)
                     player.hand.append(ringleader)
                     log_fn("Goblin Matron → tutors Ringleader", True)
                 else:
                     log_fn("Goblin Matron ETB (no target)")
-        else:
-            player.add_to_grave(matron)
-            rem -= 3
+        if cast_spell(player, opponent, gs, matron, _b, log_fn, log_entries,
+                      on_resolve=_resolve_matron, cost_override=3):
+            goblin_count += 1
+        rem = _b[0]
 
     # ── Muxus (the payoff) ─────────────────────────────────────────────────
     muxus = player.find_tag('muxus')
     warchief_discount = 1 if any(c.card.tag == 'warchief' for c in player.creatures) else 0
     muxus_cost = max(1, 6 - warchief_discount)
     if muxus and rem >= muxus_cost:
-        player.remove_from_hand(muxus)
-        if not _try_counter_any(player, opponent, gs, muxus, log_entries):
-            player.put_creature_in_play(muxus)
+        _b = [rem]
+        def _resolve_muxus(c, _mc=muxus_cost):
+            nonlocal goblin_count
+            player.put_creature_in_play(c)
             goblin_count += 1
-            rem -= muxus_cost
-            # ETB: reveal top 6, put all Goblins into play (avg ~3 hits)
             hits = 0
             revealed = player.library[:6]
             for card in revealed:
@@ -282,25 +278,22 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
                     'prospector', 'fury'):
                     player.library.remove(card)
                     perm = player.put_creature_in_play(card)
-                    perm.summoning_sick = False  # Warchief gives haste
+                    perm.summoning_sick = False
                     goblin_count += 1
                     hits += 1
-            # Munitions Expert ETB from Muxus hits
             if hits > 0:
-                expert_perm = next((c for c in player.creatures
-                                    if c.card.tag == 'expert'), None)
+                expert_perm = next((cc for cc in player.creatures
+                                    if cc.card.tag == 'expert'), None)
                 if expert_perm:
                     expert_dmg = goblin_count
-                    # Kill biggest opponent creature
-                    target = max(opponent.creatures, key=lambda c: c.power,
-                                 default=None)
+                    target = max(opponent.creatures, key=lambda cc: cc.power, default=None)
                     if target and expert_dmg >= target.toughness:
                         opponent.remove_creature(target)
                         log_fn(f"Munitions Expert deals {expert_dmg} → kills {target.card.name}", True)
             log_fn(f"★ Muxus reveals {hits} Goblins — {goblin_count} total!", True)
-        else:
-            player.add_to_grave(muxus)
-            rem -= muxus_cost
+        cast_spell(player, opponent, gs, muxus, _b, log_fn, log_entries,
+                   on_resolve=_resolve_muxus, cost_override=muxus_cost)
+        rem = _b[0]
 
     # ── Vial deploy (flash in creatures at vial_counters CMC) ──────────────
     vial_on_board = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
@@ -318,15 +311,14 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     for tag in ('cratermaker', 'warchief', 'expert', 'prospector'):
         crea = player.find_tag(tag)
         if crea and rem >= crea.cmc:
-            player.remove_from_hand(crea)
-            if not _try_counter_any(player, opponent, gs, crea, log_entries):
-                player.put_creature_in_play(crea)
+            _b = [rem]
+            def _resolve_crea(c):
+                player.put_creature_in_play(c)
+                log_fn(f"{c.name}")
+            if cast_spell(player, opponent, gs, crea, _b, log_fn, log_entries,
+                          on_resolve=_resolve_crea):
                 goblin_count += 1
-                rem -= crea.cmc
-                log_fn(f"{crea.name}")
-            else:
-                player.add_to_grave(crea)
-                rem -= crea.cmc
+            rem = _b[0]
 
     # ── Fury evoke (free removal) ──────────────────────────────────────────
     fury = player.find_tag('fury')
