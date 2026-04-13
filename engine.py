@@ -5258,40 +5258,41 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
         reason=(f"mana={total_mana}, creatures={len(player.creatures)}, "
                 f"opp_life={opponent.life}, our_clock={our_clock}, their_clock={their_clock}"))
 
+    budget = [total_mana]
+
     # Cantrips — dig for threats early
-    can = next((c for c in player.hand if c.is_cantrip and total_mana >= 1), None)
+    can = next((c for c in player.hand if c.is_cantrip and budget[0] >= 1), None)
     if can and len(player.creatures) < 2:
-        player.remove_from_hand(can); player.add_to_grave(can)
-        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-        player.draw(draws)
-        total_mana -= 1
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(draws, gs, ctr)
-            for m in ctr: log_entries.append(m)
+        def _resolve_cantrip_inline(c):
+            player.add_to_grave(c)
+            draws = MTGRules.brainstorm_draws() if c.tag == 'bs' else 1
+            log_fn(f"{c.name} ({draws} draw{'s' if draws > 1 else ''})")
+            player.draw(draws)
+            if gs.bowmasters_on_board:
+                ctr = []; bowmasters_triggers(draws, gs, ctr)
+                for m in ctr: log_entries.append(m)
+        cast_spell(player, opponent, gs, can, budget, log_fn, log_entries,
+                   on_resolve=_resolve_cantrip_inline)
 
     # Ragavan — haste, highest priority T1
     rag = player.find_tag('ragavan')
     if rag and not any(c.card.tag == 'ragavan' for c in player.creatures):
-        player.remove_from_hand(rag)
-        if not _try_counter_any(player, opponent, gs, rag, log_entries):
-            player.put_creature_in_play(rag)
-            total_mana -= 1
+        def _resolve_rag(c):
+            player.put_creature_in_play(c)
             log_fn("Ragavan, Nimble Pilferer (haste)")
-        else:
-            player.add_to_grave(rag)
+        cast_spell(player, opponent, gs, rag, budget, log_fn, log_entries,
+                   on_resolve=_resolve_rag)
 
     # Deploy ALL affordable threats (no break — deploy as many as mana allows)
     for tag in ('drc', 'delver', 'murk'):
         threat = player.find_tag(tag)
-        if threat and opp_can_cast(threat, total_mana, gs, caster=player):
-            player.remove_from_hand(threat)
-            if not _try_counter_any(player, opponent, gs, threat, log_entries):
-                player.put_creature_in_play(threat)
-                total_mana -= threat.cmc
-                log_fn(f"{threat.name}")
-            else:
-                player.add_to_grave(threat)
+        if threat and opp_can_cast(threat, budget[0], gs, caster=player):
+            def _resolve_threat(c):
+                player.put_creature_in_play(c)
+                log_fn(f"{c.name}")
+            cast_spell(player, opponent, gs, threat, budget, log_fn, log_entries,
+                       on_resolve=_resolve_threat)
+    total_mana = budget[0]
 
     # Lightning Bolt — kill key blockers (Bowmasters, Goyf) or go face
     bolt = player.find_tag('bolt')
@@ -5320,14 +5321,17 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
             and bolt_priority(target) >= 3  # only skip removal of low-priority blockers
         )
         if target or go_face:
-            player.remove_from_hand(bolt); player.add_to_grave(bolt)
-            if target:
-                opponent.remove_creature(target)
-                log_fn(f"Lightning Bolt → {target.card.name}", True); update_goyf(gs)
-            else:
-                opponent.life -= 3
-                log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
-                gs.check_life_totals()
+            def _resolve_bolt(c, _t=target):
+                player.add_to_grave(c)
+                if _t:
+                    opponent.remove_creature(_t)
+                    log_fn(f"Lightning Bolt → {_t.card.name}", True); update_goyf(gs)
+                else:
+                    opponent.life -= 3
+                    log_fn(f"Lightning Bolt face — opponent at {opponent.life}")
+                    gs.check_life_totals()
+            cast_spell(player, opponent, gs, bolt, budget, log_fn, log_entries,
+                       on_resolve=_resolve_bolt)
 
     # Daze — hold up on key turns
     # (handled reactively by _try_counter_any)
