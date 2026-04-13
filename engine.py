@@ -4520,45 +4520,47 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     stp = player.find_tag('stp')
     if stp and opponent.creatures and mana_ref[0] >= 1:
         target = max(opponent.creatures, key=lambda c: c.power)
-        if target.power >= 2:   # only exile real threats (2+ power)
-            player.remove_from_hand(stp); player.add_to_grave(stp)
-            life_gain = MTGRules.stp_life_gain(target)
-            opponent.remove_creature(target, to_exile=True)
-            opponent.life += life_gain
-            spend(stp)
-            log_fn(f"Swords to Plowshares → exiles {target.card.name}, opp gains {life_gain} life")
-            update_goyf(gs)
-            mentor_trigger()
+        if target.power >= 2:
+            def _resolve_stp(c, _t=target):
+                player.add_to_grave(c)
+                life_gain = MTGRules.stp_life_gain(_t)
+                opponent.remove_creature(_t, to_exile=True)
+                opponent.life += life_gain
+                log_fn(f"Swords to Plowshares → exiles {_t.card.name}, opp gains {life_gain} life")
+                update_goyf(gs)
+                mentor_trigger()
+            cast_spell(player, opponent, gs, stp, mana_ref, log_fn, log_entries,
+                       on_resolve=_resolve_stp)
 
-    # ── Terminus — wrath when opp has 2+ creatures AND we don't have Mentor on board ──
+    # ── Terminus — wrath when opp has 2+ creatures ──
     mentor_on_board = any(c.card.tag == 'mentor' for c in player.creatures)
     opp_threat = sum(c.power for c in opponent.creatures)
-    # Only Terminus if: opp has 2+ creatures, AND (no Mentor on board OR opp is lethal)
     if len(opponent.creatures) >= 2 and (not mentor_on_board or opp_threat >= player.life):
         term = player.find_tag('terminus')
         if term:
-            player.remove_from_hand(term); player.add_to_grave(term)
-            for c in list(opponent.creatures):
-                opponent.exile.append(c.card); opponent.revolt_this_turn = True
-            opponent.creatures.clear()
-            for c in list(player.creatures): player.library.append(c.card)
-            player.creatures.clear()
-            log_fn("★ Terminus (Miracle {W}) — all creatures on bottom of library", True)
-            update_goyf(gs)
+            def _resolve_term(c):
+                player.add_to_grave(c)
+                for cc in list(opponent.creatures):
+                    opponent.exile.append(cc.card); opponent.revolt_this_turn = True
+                opponent.creatures.clear()
+                for cc in list(player.creatures): player.library.append(cc.card)
+                player.creatures.clear()
+                log_fn("★ Terminus (Miracle {W}) — all creatures on bottom of library", True)
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, term, mana_ref, log_fn, log_entries,
+                       on_resolve=_resolve_term)
 
-    # ── Monastery Mentor — primary win condition, deploy aggressively ──
+    # ── Monastery Mentor ──
     mentor_on_board = any(c.card.tag == 'mentor' for c in player.creatures)
     mentor = player.find_tag('mentor')
     if mentor and not mentor_on_board and can_cast(mentor):
-        player.remove_from_hand(mentor)
-        if not _try_counter_any(player, opponent, gs, mentor, log_entries):
-            player.put_creature_in_play(mentor)
-            spend(mentor)
+        def _resolve_mentor(c):
+            player.put_creature_in_play(c)
             log_fn("★ Monastery Mentor (2/2 prowess — tokens on noncreature spells)", True)
-        else:
-            player.add_to_grave(mentor)
+        cast_spell(player, opponent, gs, mentor, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_mentor)
 
-    # ── Snapcaster Mage — flashback value ──
+    # ── Snapcaster Mage ──
     snap = player.find_tag('snap')
     if snap and can_cast(snap):
         stp_fb  = next((c for c in player.graveyard
@@ -4568,67 +4570,64 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
         bs_fb   = next((c for c in player.graveyard if c.is_cantrip), None)
         fb = stp_fb or term_fb or bs_fb
         if fb:
-            player.remove_from_hand(snap)
-            if not _try_counter_any(player, opponent, gs, snap, log_entries):
-                player.put_creature_in_play(snap); spend(snap)
-                log_fn(f"Snapcaster Mage (2/1) — flashback {fb.name}")
-                if fb == stp_fb and opponent.creatures:
-                    t = max(opponent.creatures, key=lambda c: c.power)
+            def _resolve_snap(c, _fb=fb, _stp_fb=stp_fb, _term_fb=term_fb, _bs_fb=bs_fb):
+                player.put_creature_in_play(c)
+                log_fn(f"Snapcaster Mage (2/1) — flashback {_fb.name}")
+                if _fb == _stp_fb and opponent.creatures:
+                    t = max(opponent.creatures, key=lambda cc: cc.power)
                     lg = MTGRules.stp_life_gain(t)
                     opponent.remove_creature(t, to_exile=True); opponent.life += lg
-                    player.graveyard.remove(fb); player.exile.append(fb)
+                    player.graveyard.remove(_fb); player.exile.append(_fb)
                     log_fn(f"  Snapcaster flashback STP → exiles {t.card.name}", True)
                     update_goyf(gs)
-                elif fb == term_fb and opponent.creatures:
-                    for c in list(opponent.creatures): opponent.exile.append(c.card); opponent.revolt_this_turn = True
+                elif _fb == _term_fb and opponent.creatures:
+                    for cc in list(opponent.creatures): opponent.exile.append(cc.card); opponent.revolt_this_turn = True
                     opponent.creatures.clear()
-                    for c in list(player.creatures): player.library.append(c.card)
+                    for cc in list(player.creatures): player.library.append(cc.card)
                     player.creatures.clear()
-                    player.graveyard.remove(fb); player.exile.append(fb)
+                    player.graveyard.remove(_fb); player.exile.append(_fb)
                     log_fn("  Snapcaster flashback Terminus", True); update_goyf(gs)
-                elif fb == bs_fb:
-                    player.graveyard.remove(fb); player.exile.append(fb)
+                elif _fb == _bs_fb:
+                    player.graveyard.remove(_fb); player.exile.append(_fb)
                     drawn = player.draw(MTGRules.brainstorm_draws())
                     log_fn(f"  Snapcaster flashback Brainstorm ({len(drawn)} draw)")
                     bowmasters_triggers(len(drawn), gs, log_entries, controller='o' if player is gs.p1 else 'b')
-            else:
-                player.add_to_grave(snap)
+            cast_spell(player, opponent, gs, snap, mana_ref, log_fn, log_entries,
+                       on_resolve=_resolve_snap)
 
-    # ── Back to Basics — deploy BEFORE cantrips (lock BUG out of mana early) ──
+    # ── Back to Basics ──
     b2b = player.find_tag('b2b')
     if b2b and not gs.b2b_on_board and can_cast(b2b):
-        player.remove_from_hand(b2b)
-        if not _try_counter_any(player, opponent, gs, b2b, log_entries):
-            player.put_enchantment_in_play(b2b); spend(b2b)
+        def _resolve_b2b(c):
+            player.put_enchantment_in_play(c)
             gs.set_b2b(True)
             log_fn("★ Back to Basics — nonbasic lands don't untap", True)
             mentor_trigger()
-        else:
-            player.add_to_grave(b2b)
+        cast_spell(player, opponent, gs, b2b, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_b2b)
 
-    # ── Narset — lock piece, deploy before cantrips to restrict BUG draws ──
+    # ── Narset ──
     narset = player.find_tag('narset')
     narset_on_board = any(p.card.tag == 'narset' for p in player.planeswalkers)
     if narset and not narset_on_board and can_cast(narset):
-        player.remove_from_hand(narset)
-        if not _try_counter_any(player, opponent, gs, narset, log_entries):
-            player.put_planeswalker_in_play(narset); spend(narset)
+        def _resolve_narset(c):
+            player.put_planeswalker_in_play(c)
             log_fn("★ Narset, Parter of Veils — opponent can only draw one card per turn", True)
             mentor_trigger()
-        else:
-            player.add_to_grave(narset)
+        cast_spell(player, opponent, gs, narset, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_narset)
 
-    # ── Cantrips — cast up to 2 per turn (hold mana for reactive counters) ──
+    # ── Cantrips ──
     for _ in range(2):
         if mana_ref[0] < 1: break
         can_c = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
         if not can_c: break
-        player.remove_from_hand(can_c); player.add_to_grave(can_c); spend(can_c)
-        draws = MTGRules.brainstorm_draws() if can_c.tag == 'bs' else 1
-        log_fn(f"{can_c.name} ({draws} draw{'s' if draws>1 else ''})")
-        player.draw(draws)
-        bowmasters_triggers(draws, gs, log_entries, controller='o' if player is gs.p1 else 'b')
-        mentor_trigger()
+        def _resolve_cantrip_uwx(c):
+            player.add_to_grave(c)
+            resolve_cantrip(player, c, gs, log_fn, log_entries)
+            mentor_trigger()
+        cast_spell(player, opponent, gs, can_c, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_cantrip_uwx)
 
     # ── Combat ──
     bug_max_t = max((c.toughness for c in opponent.creatures), default=0)
