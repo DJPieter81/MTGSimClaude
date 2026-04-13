@@ -4799,24 +4799,22 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
 
+    budget = [total_mana]
+
     # Cantrips: cast ALL affordable cantrips to dig for pieces.
-    # Under Thalia, cantrips cost 2 instead of 1 — still worth casting to find rituals/kill.
     while not gs.game_over:
         can = next((c for c in player.hand
-                    if c.is_cantrip and opp_can_cast(c, total_mana, gs, caster=player)), None)
+                    if c.is_cantrip and opp_can_cast(c, budget[0], gs, caster=player)), None)
         if not can:
             break
         cost = max(sum(can.mana_cost.values()), can.cmc)
-        if cost > total_mana:
+        if cost > budget[0]:
             break
-        total_mana -= cost
-        player.remove_from_hand(can); player.add_to_grave(can)
-        draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-        log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-        player.draw(draws)
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(draws, gs, ctr)
-            for m in ctr: log_entries.append(m)
+        cast_spell(player, opponent, gs, can, budget, log_fn, log_entries,
+                   on_resolve=lambda c: (player.add_to_grave(c),
+                                         resolve_cantrip(player, c, gs, log_fn, log_entries)),
+                   cost_override=cost)
+    total_mana = budget[0]
     # Rituals: affordable from total_mana + ritual chaining.
     # IMPORTANT: rituals generate mana — so cascade:
     # with 1 land (1 mana): cast Dark Ritual (costs 1) → +2 net → now have 3 mana
@@ -4964,13 +4962,12 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
         veil_up = False
         opp_has_blue = any('U' in str(l.effective_produces()) for l in opponent.lands)
         if vos and opp_has_blue and sim_mana >= 1:
-            if not _try_counter_any(player, opponent, gs, vos, log_entries):
-                player.remove_from_hand(vos); player.add_to_grave(vos)
+            def _resolve_vos(c):
+                player.add_to_grave(c)
                 gs.veil_active = True
                 log_fn("Veil of Summer — opponent's blue interaction blanked this turn", True)
-                veil_up = True
-            else:
-                player.add_to_grave(vos)
+            veil_up = cast_spell(player, opponent, gs, vos, None, log_fn, log_entries,
+                                  on_resolve=_resolve_vos)
 
         # ── Mindbreak Trap check (colorless — goes through Veil) ────────────
         mindbreak = opponent.find_tag('mindbreak')

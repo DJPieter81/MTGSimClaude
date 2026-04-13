@@ -27,3 +27,4 @@
 - _strategy_dnt: 4 casts converted, tests 147/0, commit 220a6c8
 - _strategy_dimir: 7 casts converted, tests 147/0, commit 659fdb8
 - _strategy_uwx: 7 casts converted, tests 147/0, commit 9a32094
+- _strategy_painter: 7 casts converted, tests 147/0, commit e457f38
