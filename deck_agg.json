@@ -99,6 +99,26 @@
     "uses_graveyard": false,
     "uses_veil": false
   },
+  "dimir_c": {
+    "type": "tempo",
+    "plan": "Curve threats into disruption; win on tempo margins.",
+    "speed": 4,
+    "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "dimir_d": {
+    "type": "tempo",
+    "plan": "Curve threats into disruption; win on tempo margins.",
+    "speed": 4,
+    "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
   "dimir_flash": {
     "type": "other",
     "plan": "Play to the deck's strengths.",
@@ -298,26 +318,6 @@
     "soft_to_wasteland": false,
     "uses_graveyard": true,
     "uses_veil": true
-  },
-  "tes": {
-    "type": "combo",
-    "plan": "Protect the combo, dig with cantrips, go off when safe.",
-    "speed": 2,
-    "resilience": 2,
-    "creature_based": false,
-    "soft_to_wasteland": false,
-    "uses_graveyard": false,
-    "uses_veil": true
-  },
-  "ur_aggro": {
-    "type": "aggro",
-    "plan": "Deploy threats, trade efficiently, close out with reach.",
-    "speed": 2,
-    "resilience": 5,
-    "creature_based": true,
-    "soft_to_wasteland": false,
-    "uses_graveyard": false,
-    "uses_veil": false
   },
   "ur_delver": {
     "type": "aggro",

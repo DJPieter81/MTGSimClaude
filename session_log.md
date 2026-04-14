@@ -58,3 +58,10 @@
 - decks/affinity: 7 casts converted; free artifacts/equipment/Saga left as-is, tests 149/0, commit 9b37ce6
 - decks/belcher: SKIPPED — defines local `cast_spell` helper that conflicts with engine.cast_spell; intricate storm chain with LED crack/rituals; risk too high
 - decks/tes: SKIPPED — 33 casts, also defines local `cast_spell` helper; complex storm chain with Veil/Mindbreak/LED/Echo of Eons rebuttal logic; risk too high
+
+## Phase C: n=500 Re-sim (2026-04-14)
+- refresh_all.py --resim 500 completed (345s total)
+- New matrix: results/matrix_20260414_172128.json (36 decks, 1260 matchups)
+- All 36 guides regenerated (500 games/deck, 129s)
+- Matrix HTML rebuilt (meta_matrix_20260414_172128.html, 719KB)
+- verify.py: 147/1 (only flaky symmetry storm vs bug 30%+37%=67%, stochastic noise)
