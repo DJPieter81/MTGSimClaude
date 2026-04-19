@@ -144,7 +144,7 @@ All P0 accuracy blockers are addressed. Next session priorities are P1/P2.
 
 1. **Finish skipped `cast_spell()` conversions** — close the Eidolon-coverage gap left by Phase B SKIPs: `_strategy_doomsday`, `_strategy_oops`, `_strategy_bug` (23 casts), `decks/belcher`, `decks/tes` (33 casts), and partial-conversion residue in storm/show/mardu/sneak_a/sneak_b. Each is its own commit; pattern documented in `docs/ARCHIVED_SESSION_TASK_2026-04-13.md`. Risk per-strategy: medium (intricate combo logic).
 
-2. **Mardu proxy re-audit** (was P2 #4) — old "7 appearances in top-60 outliers" claim predates PR #82 TS-skip fix and PR #84 turn unification. Regenerate the outlier report from `matrix_20260414_172128.json` before scoping any proxy work. If Mardu still sits in the top-60 outliers, then upgrade to a real Legacy Mardu list.
+2. ~~**Mardu proxy re-audit**~~ — ✅ DONE (2026-04-19 audit of `matrix_20260414_172128.json`): Mardu appears in **1** of the top-60 symmetry outliers (was "7" per the old claim, from a pre-PR-#84 matrix). Average |deviation| across all 630 pairs is 2.6pp. The one residual is `doomsday vs mardu: 36% + 72% = 107%` (Δ +7pp) — on the top-60 boundary, not a standout. Mardu's tier-based WR is 40.4% (rank 31/36, within T2 bounds 40-70%). No proxy-upgrade warranted on symmetry grounds. *Low meta-WR remains as a separate signal (see P2 #6 below).*
 
 3. **Storm vs D&T accuracy** — flagged in old "Remaining P0" block (line ~276): Storm 43% vs expected 55-80%. Needs ritual chain under Thalia tax + bounce-Thalia priority. May already be partially closed by `_strategy_storm` cast_spell conversion + `dc1c1af` response unification — re-measure first.
 
@@ -153,6 +153,8 @@ All P0 accuracy blockers are addressed. Next session priorities are P1/P2.
 4. **Clock-based evaluation — UR Delver only** — `board_clock()` already adopted in `_strategy_burn` (PR #91) and `_strategy_ur_aggro` (PR #91); still TODO in `decks/ur_delver.py` for go-face-vs-remove-blocker decisions.
 
 5. **Bo3 matrix in `refresh_all.py`** — `run_meta_matrix_bo3` works (PR #87), but isn't part of the standard `refresh_all.py --resim` pipeline; only one Bo3 run exists (`matrix_bo3_20260412_122609.json`). Wire it in so Bo3 swings stay fresh alongside Bo1.
+
+6. **Low-WR outlier investigation (not symmetry — accuracy)** — bottom-5 meta-weighted WRs in the n=500 matrix: `doomsday 35%`, `painter 36%`, `belcher 37%`, `wan_shi_tong 38%`, `goblins 40%`, `mardu 40%`. These are within T2/T3 tier bounds so not auto-flagged as outliers, but clustered low enough to suggest proxy-quality or strategy-deployment issues. Candidates for dedicated audit/upgrade sessions (cf. still-skipped `_strategy_doomsday` + `_strategy_oops` + `decks/belcher` cast_spell conversions, which may partially close this gap).
 
 6. **More hand-crafted guides** — ✅ DONE via PR #82: UR Delver, Infect, Depths, Doomsday, Sneak & Show, Eldrazi (sentinel markers survive `gen_guides.py` regen).
 
