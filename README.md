@@ -1,14 +1,14 @@
 # MTGSimClaude — Legacy Format Monte Carlo Simulator
 
 Python Monte Carlo simulator for Legacy MTG metagame analysis.
-38 decks, 1,260 matchups, 63,000+ games per matrix run.
+36 decks, 1,260 matchups, 630,000 games per matrix run (n=500).
 
 ## Products
 
 | Product | Command | Output |
 |---------|---------|--------|
 | **Meta Matrix** | Template swap in `templates/reference_meta_matrix.html` | 749KB interactive HTML heatmap |
-| **Deck Guides** | `python3 gen_guides.py` | 37 HTML guides (~34KB each) |
+| **Deck Guides** | `python3 gen_guides.py` | 38 HTML guides (~34KB each) |
 | **Bo3 Replays** | `python3 game_replay.py opp --pro deck --bo3 42 99 7` | Interactive HTML replay |
 
 ## Quick Start
@@ -38,9 +38,9 @@ python3 game_replay.py ur_delver --pro burn --bo3 42 99 7
 | File | Purpose |
 |------|---------|
 | `sim.py` | Game runner, sweep, meta matrix, rules tests |
-| `cards.py` | Card definitions, all 38 deck functions, DECKS dict |
+| `cards.py` | Card definitions, all 36 deck functions, DECKS dict |
 | `game_replay.py` | Bo3 HTML replayer with 17 play categories |
-| `gen_guides.py` | Generates all 37 deck guides from sim data |
+| `gen_guides.py` | Generates all 38 deck guides from sim data |
 | `refresh_all.py` | Single command: rebuild matrix HTML + guides + verify |
 | `CLAUDE.md` | Session instructions — read this first every session |
 | `PLANNING.md` | Known issues, stale data warnings, next session priorities |
@@ -51,12 +51,12 @@ python3 game_replay.py ur_delver --pro burn --bo3 42 99 7
 ## Architecture
 
 ```
-cards.py (38 decks) → sim.py (run_game) → meta_fresh.json (matrix)
+cards.py (36 decks) → sim.py (run_game) → meta_fresh.json (matrix)
                                         → deck_agg.json (profiles)
                                         → card_trimmed.json (card stats)
                                         → interact_v3.json (events)
                                         ↓
-                              gen_guides.py → 37 HTML guides
+                              gen_guides.py → 38 HTML guides
                               game_replay.py → Bo3 HTML replays
                               template swap → meta matrix HTML
 ```

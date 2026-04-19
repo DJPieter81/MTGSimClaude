@@ -5,14 +5,14 @@ This file has: current state, known issues, what to do next.
 
 ---
 
-## Current State (April 12, 2026 — Evening)
+## Current State (April 19, 2026)
 
 ### Matrix
-- **36 decks**, 1,260 matchups, n=100 games/pair
-- Latest: `results/matrix_20260412_192239.json`
+- **36 decks**, 1,260 matchups, **n=500 games/pair** (Bo1) — Bo3 matrix exists at n=100 matches/pair
+- Latest Bo1: `results/matrix_20260414_172128.json` (commit `4f36d33`, Apr 14 — n=500 re-sim)
+- Latest Bo3: `results/matrix_bo3_20260412_122609.json` (PR #87, n=100 matches × 542 sideboarded pairs)
 - `build_meta_inputs.py` uses `max(files, key=os.path.getmtime)` — always picks latest
-- Includes all 18 strategy fixes from this session (combo gate, Eidolon, Rift Bolt, FoW pitch, Depths, Affinity, Elves, etc.)
-- **✓ FRESH** — 13 matrix runs this session
+- Includes turn unification (PR #84), response-function unification (commit `dc1c1af`), Bo3 sideboard plans (PR #87), clock+BHI decisional adoption (PR #91), and ~30 cast_spell() pipeline conversions
 
 ### Deck Guides
 - **36 guides** in `guides/` folder (ALL decks including Burn)
@@ -121,50 +121,54 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 - Static lock persistence verified + 7 regression tests
 - refresh_all.py full pipeline with `--decks 36`, hand-craft sentinel
 
+### Shipped in PR #84 / #87 / #88 / #90 / #91 (April 12, 2026)
+
+- **PR #84** — Unified `protagonist_turn` + `opp_turn` → `_execute_turn` (sim.py:357). Both wrappers thin (`sim.py:735` / `sim.py:740`). Avg pairwise asymmetry 12.5pp → 7.8pp.
+- **PR #87** — Full Bo3 matrix with sideboard plans for all 36 decks. New `run_meta_matrix_bo3` + `parallel_meta_matrix_bo3` + CLI `--bo3-matrix`. Artifacts: `results/matrix_bo3_20260412_122609.json`, `results/meta_matrix_bo3_20260412.html`. 1m16s on 8 workers.
+- **PR #88** — Cowork briefs A-E in `docs/`.
+- **PR #90** — 41 game traces under `results/traces/` + LLM grading prompts/results + expanded `results/llm_audit_report.md`. `scripts/grade_traces.py` (510 lines) is the executor.
+- **PR #91** — Clock + BHI decisional adoption: `board_clock()` wired into `_strategy_burn` (engine.py ~3080) and `_strategy_ur_aggro` (engine.py ~5276). `BHI_FREE_COUNTER_THRESHOLD` lifted to `config.InteractionParams`. Removes 3 magic constants.
+
+### Shipped on `main` after April 12 (architecture refactor + n=500 re-sim + PR #92)
+
+- **commit `dc1c1af` (Apr 13)** — Phase A: unified `_respond_on_opponent_turn` (engine.py:1952) + symmetric `_force_of_vigor_generic`. `_p1_respond_on_opp_turn` / `_p2_respond_on_pro_turn` kept as deprecated wrappers (engine.py:2073-2080). Closes the residual response-function asymmetry left after PR #84.
+- **Phase B partial (Apr 13-14)** — ~30 strategies routed through `cast_spell()` (engine.py + decks/*.py). Eidolon + counter window now fire on the converted spells. SKIPs documented in `session_log.md`: `_strategy_doomsday`, `_strategy_oops`, `_strategy_bug`, `decks/belcher`, `decks/tes`; partials in storm/show/mardu/sneak_a/sneak_b.
+- **commit `4f36d33` (Apr 14)** — Phase C: n=500 re-sim refresh (36 decks, 1260 matchups). Latest matrix `results/matrix_20260414_172128.json`. ±3.9pp → ±2.5pp.
+- **commit `cfcf531` + PR #92 (Apr 19)** — Ported 3 missing deck-guide sections from Modern (Stars / Bo3 Swing / What Kills You); refactored `gen_guides.py` to extract 6 section builders (`section_archetype_wr`, `section_tournament_sim`, `section_tier_triptych`, `section_tournament_arc`, `section_delta_proof`, `section_danger_cards`).
+
 ### P0 — Must Do (none currently)
 
 All P0 accuracy blockers are addressed. Next session priorities are P1/P2.
 
-### P1 — Should Do (each a dedicated cowork PR — briefs in `docs/`)
+### P1 — Should Do
 
-1. **Unify `protagonist_turn` + `opp_turn`** — the REAL root cause of
-   tempo-mirror asymmetry. P1 goes through a 294-line function; P2
-   through a 155-line function with less feature coverage. See
-   `results/tempo_mirror_root_cause.md` and
-   `docs/cowork_brief_turn_unification.md`. Expected: 106 outlier pairs
-   → ≤60, dimir-mirror sum 145% → ≤115%.
+1. **Finish skipped `cast_spell()` conversions** — close the Eidolon-coverage gap left by Phase B SKIPs: `_strategy_doomsday`, `_strategy_oops`, `_strategy_bug` (23 casts), `decks/belcher`, `decks/tes` (33 casts), and partial-conversion residue in storm/show/mardu/sneak_a/sneak_b. Each is its own commit; pattern documented in `docs/ARCHIVED_SESSION_TASK_2026-04-13.md`. Risk per-strategy: medium (intricate combo logic).
 
-2. **Full Bo3 matrix** (PLANNING_REFERENCE §9 #5) — wire `run_any_bo3`
-   into `run_meta_matrix`. Needs sideboard plans for ~22 full-strategy
-   decks. Single-matchup `--bo3` CLI is the prototype (commit 4ef0c55).
-   See `docs/cowork_brief_bo3_matrix.md`.
+2. **Mardu proxy re-audit** (was P2 #4) — old "7 appearances in top-60 outliers" claim predates PR #82 TS-skip fix and PR #84 turn unification. Regenerate the outlier report from `matrix_20260414_172128.json` before scoping any proxy work. If Mardu still sits in the top-60 outliers, then upgrade to a real Legacy Mardu list.
 
-3. **LLM judge execution** (PLANNING_REFERENCE §9 #7) — scaffold is
-   in `llm_judge.py`; needs `scripts/grade_traces.py` that hits the
-   Anthropic API and produces a markdown report. Needs API credentials.
-   See `docs/cowork_brief_llm_judge.md`.
+3. **Storm vs D&T accuracy** — flagged in old "Remaining P0" block (line ~276): Storm 43% vs expected 55-80%. Needs ritual chain under Thalia tax + bounce-Thalia priority. May already be partially closed by `_strategy_storm` cast_spell conversion + `dc1c1af` response unification — re-measure first.
 
 ### P2 — Nice to Have
 
-4. **Remaining proxy upgrades** — Mardu (7 appearances in top-60 outliers)
-   and Elves (was already-real but underperforms vs aggro). Note: Mardu
-   got +3pp vs Burn from TS-skip fix in PR #82.
-5. ~~**More hand-crafted guides**~~ — ✅ DONE via PR #82: UR Delver,
-   Infect, Depths, Doomsday, Sneak & Show, Eldrazi (6 total; sentinel
-   markers survive `gen_guides.py` regen).
-6. ~~**Full BHI adoption**~~ — ✅ DONE via PR #82: `_strategy_storm`,
-   `_strategy_oops`, `_strategy_doomsday` all consult `HandBelief`.
-7. **Clock-based evaluation adoption** — use `board_clock()` in
-   go-face-vs-remove-blocker decisions for Burn, UR Aggro, UR Delver.
-8. **Matrix N bump** — n=200 → n=500 for tighter statistical power
-   (±3.9% → ±2.5%). Needs ~10 min at current speed.
-9. ~~**Symmetry audit**~~ — ✅ FIXED by this PR: turn-function unification
-   (`_execute_turn`) merged `protagonist_turn` + `opp_turn` into single
-   code path. Avg asymmetry 12.5pp → 7.8pp. Remaining asymmetry from
-   `_p1_respond_on_opp_turn` / `_p2_respond_on_pro_turn` response
-   functions (different instant-speed options per slot).
-10. ~~**Worst outlier**~~ — ✅ FIXED by this PR: Dimir vs Dimir_flash
-    dropped from 145% sum to ~126%.
+4. **Clock-based evaluation — UR Delver only** — `board_clock()` already adopted in `_strategy_burn` (PR #91) and `_strategy_ur_aggro` (PR #91); still TODO in `decks/ur_delver.py` for go-face-vs-remove-blocker decisions.
+
+5. **Bo3 matrix in `refresh_all.py`** — `run_meta_matrix_bo3` works (PR #87), but isn't part of the standard `refresh_all.py --resim` pipeline; only one Bo3 run exists (`matrix_bo3_20260412_122609.json`). Wire it in so Bo3 swings stay fresh alongside Bo1.
+
+6. **More hand-crafted guides** — ✅ DONE via PR #82: UR Delver, Infect, Depths, Doomsday, Sneak & Show, Eldrazi (sentinel markers survive `gen_guides.py` regen).
+
+7. **Full BHI adoption** — ✅ DONE via PR #82: `_strategy_storm`, `_strategy_oops`, `_strategy_doomsday` all consult `HandBelief`.
+
+8. ~~**Symmetry audit**~~ — ✅ DONE: turn-function unification (PR #84) + response-function unification (`dc1c1af`) close both halves. Avg asymmetry 12.5pp → 7.8pp.
+
+9. ~~**Worst outlier (Dimir vs Dimir_flash)**~~ — ✅ FIXED by PR #84: dropped from 145% sum to ~126%.
+
+10. ~~**Matrix N bump n=200 → n=500**~~ — ✅ DONE 2026-04-14 (commit `4f36d33`).
+
+11. ~~**Unify `protagonist_turn` + `opp_turn`**~~ — ✅ DONE PR #84 (`_execute_turn`).
+
+12. ~~**Full Bo3 matrix wire**~~ — ✅ DONE PR #87 (single Bo3 run only; see P2 #5 above for refresh-pipeline integration).
+
+13. ~~**LLM judge execution**~~ — ✅ DONE PR #90 (`scripts/grade_traces.py`, 41 traces, `results/llm_audit_report.md` regenerated).
 
 ---
 
@@ -211,7 +215,11 @@ Individual steps (chained by refresh_all.py):
 
 | Date | Key Changes |
 |---|---|
-| Apr 19 2026 (Claude.ai) | Ported 3 missing deck-guide sections from Modern: **Stars of the Sim** (MVP finisher/caster/attacker + overperformer, w/ Scryfall images), **Bo3 Swing** (G1 WR vs Bo3 match WR ± pp bar chart), **What Kills You** (opponent finisher aggregation, removal blind-spot analysis). Added `_is_real_card()` token/log filter, `aggregate_stars()`, `aggregate_what_kills()`, `compute_bo3_swings()` helpers. Loaded `card_trimmed.json` + latest `matrix_bo3_*.json` with graceful fallback. Also copied `templates/reference_replay.html` and `templates/reference_showcase.html` from MTGSimManu for future port. All 36 guides regenerated — 36/36 have Stars and What-Kills; 32/36 have Bo3 Swing (4 blocked by deck-list drift: dimir_c/d not in bo3 matrix, tes/ur_aggro not in bo1 matrix — fallback gracefully skips). |
+| Apr 19 2026 (PR #92) | `gen_guides.py` refactored: extracted 6 section builders (`section_archetype_wr`, `section_tournament_sim`, `section_tier_triptych`, `section_tournament_arc`, `section_delta_proof`, `section_danger_cards`) plus `D_CTX` data-context dict; replaced ~150 lines of inline HTML. Pure refactor, output identical. Also Python 3.11 f-string compat fix. |
+| Apr 19 2026 (Claude.ai) | Ported 3 missing deck-guide sections from Modern: **Stars of the Sim** (MVP finisher/caster/attacker + overperformer, w/ Scryfall images), **Bo3 Swing** (G1 WR vs Bo3 match WR ± pp bar chart), **What Kills You** (opponent finisher aggregation, removal blind-spot analysis). Added `_is_real_card()` token/log filter, `aggregate_stars()`, `aggregate_what_kills()`, `compute_bo3_swings()` helpers. Loaded `card_trimmed.json` + latest `matrix_bo3_*.json` with graceful fallback. Also copied `templates/reference_replay.html` and `templates/reference_showcase.html` from MTGSimManu for future port. All guides regenerated — 36/36 have Stars and What-Kills; 32/36 have Bo3 Swing (4 blocked by deck-list drift: dimir_c/d not in bo3 matrix, tes/ur_aggro not in bo1 matrix — fallback gracefully skips). |
+| Apr 14 2026 | **Phase C**: n=500 matrix re-sim (commit `4f36d33`). 36 decks × 1260 matchups, ±2.5pp CIs. All outputs rebuilt. Latest matrix `results/matrix_20260414_172128.json`. |
+| Apr 13 2026 | **Phase A** (commit `dc1c1af`): unified `_respond_on_opponent_turn` (engine.py:1952) closes the residual response-function asymmetry left after PR #84. **Phase B partial**: ~30 strategies routed through `cast_spell()` over ~25 commits (engine.py + decks/*.py). SKIPs: doomsday, oops, bug, belcher, tes; partials in storm/show/mardu/sneak_a/sneak_b. Tests held at 147-149/0 throughout. |
+| Apr 12 2026 (PR #84/#87/#88/#90/#91) | Five merged PRs: **#84** turn-function unification (`_execute_turn`, asymmetry 12.5pp → 7.8pp); **#87** full Bo3 matrix with 36-deck sideboard plans (`run_meta_matrix_bo3`, `--bo3-matrix` CLI, 1m16s on 8 workers); **#88** cowork briefs A-E in `docs/`; **#90** 41 game traces + `scripts/grade_traces.py` + expanded `llm_audit_report.md`; **#91** `board_clock()` + `BHI_FREE_COUNTER_THRESHOLD` adopted in `_strategy_burn`/`_strategy_ur_aggro`, removing 3 magic constants. |
 | Apr 12 2026 (Claude Code) | P0 items: symmetrise_matrix() n=200, 36 guides regenerated, matrix HTML rebuilt. Static locks verified (+7 tests). StrategicLogger, verify.py, build_meta_inputs.py, build_matrix_html.py added. Storm vs D&T Thalia fix. |
 | Apr 12 2026 (Claude.ai) | Thoughtseize P2 bug fix, 37 deck guides, gen_guides.py, classify_play 17 categories, pills() fix, CLAUDE.md + PLANNING.md + README + all 3 skills updated, outlier replays, merged Amulet+Legacy design, Scryfall hovers |
 | Apr 10 2026 | 38-deck matrix, card-level data, interaction events, 9 deck guides, Bo3 replayer with 6 zones + mulligan + narrative |

@@ -1,5 +1,14 @@
 # SESSION_TASK.md — Full Architecture Session: Turn Unification + Cast Pipeline + Re-sim
 
+> **ARCHIVED 2026-04-19.** All three phases shipped:
+> - Phase A unified `_respond_on_opponent_turn` (commit `dc1c1af`, 2026-04-13). Turn unification (`_execute_turn`) shipped earlier in PR #84 (2026-04-12).
+> - Phase B routed ~30 strategies through `cast_spell()`; ~6 explicit SKIPs remain (doomsday, oops, bug, belcher, tes; partials for storm/show/mardu/sneak_a/sneak_b). See `session_log.md` for per-strategy commits.
+> - Phase C n=500 re-sim shipped 2026-04-14 (commit `4f36d33`, matrix `results/matrix_20260414_172128.json`).
+>
+> Kept for historical context only — do not treat as a live TODO.
+
+---
+
 ## Overview
 
 Three phases, in order. Each builds on the previous.
