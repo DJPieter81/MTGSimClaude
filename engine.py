@@ -5354,19 +5354,47 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     grief = player.find_tag('grief')
     ephemerate = player.find_tag('ephemerate')
 
-    # T1 Grief+Ephemerate: strip 2 cards
+    # T1 Grief+Ephemerate: cast Grief (evoke — exile a black pitch), ETB
+    # strips 1, then Ephemerate blinks Grief for a 2nd ETB strip.
+    # Both spells route through cast_spell so Eidolon + counter window apply.
+    # Requires a non-Grief black card in hand for evoke cost (was implicitly
+    # cheated in the prior direct-manipulation code).
     if grief and ephemerate and gs.turn == 1:
-        player.remove_from_hand(grief); player.remove_from_hand(ephemerate)
-        player.add_to_grave(ephemerate)
-        for _ in range(2):
-            if opponent.hand:
-                t = (opponent.find_any(lambda c: c.free_cast_if_blue) or
-                     opponent.find_any(lambda c: c.is_creature()) or
-                     (next((c for c in opponent.hand if not c.is_land()), None)))
+        blacks = [c for c in player.hand
+                  if 'B' in getattr(c, 'colors', set())
+                  and c is not grief and c is not ephemerate]
+        if blacks:
+            pitch = blacks[0]
+            player.remove_from_hand(pitch); player.exile.append(pitch)
+            t1_budget = [total_mana]
+
+            def _strip_one(label):
+                if not opponent.hand:
+                    return
+                t = (opponent.find_any(lambda cc: cc.free_cast_if_blue) or
+                     opponent.find_any(lambda cc: cc.is_creature()) or
+                     (next((cc for cc in opponent.hand if not cc.is_land()), None)))
                 if t:
                     opponent.hand.remove(t)
-                    log_fn(f"★ Grief ETB — strips {t.name}", True)
-        player.put_creature_in_play(grief)
+                    log_fn(f"★ {label} — strips {t.name}", True)
+
+            def _resolve_grief_t1(c):
+                _strip_one("Grief ETB")
+                player.put_creature_in_play(c)
+
+            grief_resolved = cast_spell(player, opponent, gs, grief, None,
+                                        log_fn, log_entries,
+                                        on_resolve=_resolve_grief_t1)
+
+            if grief_resolved:
+                def _resolve_ephem_t1(c):
+                    player.add_to_grave(c)
+                    _strip_one("Grief re-ETB (Ephemerate blink)")
+                cast_spell(player, opponent, gs, ephemerate, t1_budget,
+                           log_fn, log_entries,
+                           on_resolve=_resolve_ephem_t1)
+
+            total_mana = t1_budget[0]
 
     # Evoke Grief T1-2 (no Ephemerate)
     elif grief and gs.turn <= 2:
