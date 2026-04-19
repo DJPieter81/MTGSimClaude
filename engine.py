@@ -3505,39 +3505,50 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
         for p in petals[:mana_needed]:
             player.remove_from_hand(p); player.add_to_grave(p)
 
+        # Optional Veil protection first — routes through cast_spell so Eidolon
+        # + counter window apply. On resolve, gs.veil_active is set, which
+        # try_reactive_counter (engine.py:854) respects — so SaT can't be
+        # countered when Veil lives through the stack.
         vos = player.find_tag('vos')
         if vos and can_afford(player, vos.mana_cost):
-            # Cast Veil first — but opponent gets a counter window
-            if not _try_counter_any(player, opponent, gs, vos, log_entries):
-                player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
+            _budget_vos = [total_mana]
+            def _resolve_veil(c):
+                player.add_to_grave(c)
+                gs.veil_active = True
                 log_fn("Veil of Summer — BUG blue/black counters blanked this gs.turn")
-            else:
-                player.remove_from_hand(vos); player.add_to_grave(vos)
+            if not cast_spell(player, opponent, gs, vos, _budget_vos,
+                              log_fn, log_entries, on_resolve=_resolve_veil):
                 log_fn("Veil of Summer countered")
-            player.remove_from_hand(sat); player.add_to_grave(sat)
+            total_mana = _budget_vos[0]
+
+        # Cast Show and Tell. cast_spell handles counter window (skipped under
+        # active Veil), Eidolon trigger, and grave disposition on counter.
+        _budget_sat = [total_mana]
+        sat_resolved = cast_spell(player, opponent, gs, sat, _budget_sat,
+                                  log_fn, log_entries)
+        total_mana = _budget_sat[0]
+
+        if sat_resolved:
             player.remove_from_hand(win_card)
             # BUG gets to put its best permanent in play too
             bug_put = opponent.find_any(lambda c: c.is_creature() and not c.is_land())
             if bug_put:
                 opponent.remove_from_hand(bug_put); opponent.put_creature_in_play(bug_put)
                 log_fn(f"  BUG puts {bug_put.name} in play")
-            log_fn(f"★ {win_card.name} enters through Veil (haste)" if getattr(win_card,'haste',False) else f"★ {win_card.name} enters through Veil", True)
-            if win_card.is_creature():
-                player.put_creature_in_play(win_card)
-            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-            gs.kill_turn = gs.turn
-            gs.win_reason = f"Show+Veil: {win_card.name}"
-        else:
-            player.remove_from_hand(sat)
-            if not _try_counter_any(player, opponent, gs, sat, log_entries):
-                player.add_to_grave(sat)
-                player.remove_from_hand(win_card)
-                bug_put = opponent.find_any(lambda c: c.is_creature() and not c.is_land())
-                if bug_put:
-                    opponent.remove_from_hand(bug_put); opponent.put_creature_in_play(bug_put)
-                    log_fn(f"  BUG puts {bug_put.name} in play")
+
+            if gs.veil_active:
+                # Veil branch: SaT is uncounterable, so win_card resolves safely.
+                log_fn(f"★ {win_card.name} enters through Veil (haste)"
+                       if getattr(win_card,'haste',False)
+                       else f"★ {win_card.name} enters through Veil", True)
+                if win_card.is_creature():
+                    player.put_creature_in_play(win_card)
+                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
+                gs.kill_turn = gs.turn
+                gs.win_reason = f"Show+Veil: {win_card.name}"
+            else:
+                # No Veil: normal SaT resolution with combat/omniscience chain.
                 log_fn(f"★ Show+Tell resolves: {win_card.name} enters play", True)
-                # Emrakul/Omniscience wins via combat — put creature in play and let combat happen
                 if win_card.is_creature():
                     player.put_creature_in_play(win_card)
                     # Emrakul has haste — attack immediately for lethal
@@ -3578,8 +3589,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
                                 gs.win_reason = f"Omniscience+{chain_target.name}"
                         else:
                             gs.show_creature_in_play = chain_target.name
-            else:
-                player.add_to_grave(sat)
+        # (Countered SaT is already in graveyard via cast_spell's default)
 
     # ── Sneak Attack activation (if Sneak on board and has Emrakul in hand) ──
     sneak_perm = next((p for p in player.artifacts if p.card.tag == 'sneak'), None)
