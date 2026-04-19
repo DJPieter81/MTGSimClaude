@@ -273,6 +273,97 @@ def _is_handcrafted(guide_path):
     except FileNotFoundError:
         return False
 
+
+# ------------------------------------------------------------------
+# Pure section builders — each returns a complete HTML fragment
+# (wrapper + content) given the subject deck key `i`, a data context
+# `D` with keys {'decks', 'A', 'W', 'M'}, and the archetype map `arch`.
+# These mirror the section_* architecture in MTGSimManu's build_guide.py
+# so blocks can be lifted across repos without modification.
+# ------------------------------------------------------------------
+
+def section_archetype_wr(i, D, arch):
+    decks, M = D['decks'], D['M']
+    ag = {}
+    for x in decks:
+        if x == i: continue
+        a = arch.get(x, {}).get('type', '?')
+        if a not in ag: ag[a] = []
+        ag[a].append(M.get(i+'|'+x, [50])[0])
+    awd = {a: round(sum(v)/len(v), 1) for a, v in ag.items()}
+    bars = ''.join(f'<div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">{a}</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:{w}%;height:100%;background:{muc(w)};border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:{muc(w)}">{w:.0f}%</span></div>\n' for a,w in sorted(awd.items(),key=lambda x:-x[1]))
+    return '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Win Rate by Archetype</div>'+bars+'</div>\n'
+
+
+def section_tournament_sim(i, D, arch):
+    decks, A, M = D['decks'], D['A'], D['M']
+    random.seed(42)
+    wd = []
+    for _ in range(10000):
+        w = 0
+        for _rd in range(8):
+            opps2 = [x for x in decks if x != i]; wts = [max(0.1, A.get(x, 30)) for x in opps2]
+            opp = random.choices(opps2, weights=wts, k=1)[0]
+            if random.random() < M.get(i+'|'+opp, [50])[0]/100: w += 1
+        wd.append(w)
+    c2 = Counter(wd); avg = sum(wd)/len(wd); top8 = sum(1 for w in wd if w >= 6)/len(wd)*100
+    hist = {w: round(c2[w]/10000*100, 1) for w in range(9)}
+    th = ''.join(f'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:{"#1f7040" if w>=6 else "#854f0b" if w>=4 else "#b02020"}">{hist.get(w,0):.0f}%</div><div style="width:100%;background:{"#1f7040" if hist.get(w,0)==max(hist.get(_i,0) for _i in range(2,9)) else "#d0f0d0" if w>=6 else "#fff0e0" if w>=4 else "#fde8e8"};border-radius:2px 2px 0 0;height:{hist.get(w,0)}%"></div><div style="font-size:8px;color:#aaa">{w}-{8-w}</div></div>\n' for w in range(2,9))
+    out = '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">8-Round Tournament Sim</div>'
+    out += '<div style="display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:4px">'+th+'</div>'
+    out += '<div style="display:flex;justify-content:space-between;margin-top:8px;padding:6px 8px;background:#f0faf0;border-radius:3px"><span style="font-size:11px;color:#555">Avg: <b style="color:#1f7040">'+str(round(avg,1))+'</b></span><span style="font-size:11px;color:#555">Top 8: <b style="color:#1f7040">'+str(round(top8,1))+'%</b></span></div></div>\n'
+    return out
+
+
+def section_tournament_arc(i, D, arch):
+    return '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Tournament Arc</div><div style="display:flex;gap:2px;height:24px;border-radius:3px;overflow:hidden"><div style="flex:3;background:#d0f0d0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1f7040">R1-3 Bank</div><div style="flex:3;background:#fff0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#854f0b">R4-6 Gauntlet</div><div style="flex:2;background:#fde8e8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#b02020">R7-8 Top</div></div></div>\n'
+
+
+def section_danger_cards(i, D, arch):
+    decks, M = D['decks'], D['M']
+    dangers = sorted([(M.get(i+'|'+x, [50])[0], x, arch.get(x, {}).get('type', '?')) for x in decks if x != i and M.get(i+'|'+x, [50])[0] < 50])[:3]
+    if not dangers:
+        return ''
+    out = '<div style="display:grid;grid-template-columns:'+' '.join(['1fr']*len(dangers))+';gap:12px;margin:12px 0">\n'
+    for wr, nm, ar in dangers:
+        out += '<div style="border:1px solid #e8d0d0;border-radius:6px;overflow:hidden"><div style="background:linear-gradient(135deg,#b02020,#801818);padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:700;color:#fff">'+nm+'</div><div style="font-size:9px;color:#ffb0b0;text-transform:uppercase">'+ar+'</div></div><div style="font-size:28px;font-weight:700;color:#fff">'+str(int(wr))+'%</div></div></div>\n'
+    out += '</div>\n'
+    return out
+
+
+def section_delta_proof(i, D, arch):
+    decks, W = D['decks'], D['W']
+    wtd = W.get(i, 50)
+    rank = sorted(decks, key=lambda x: -W.get(x, 0)).index(i)+1 if i in decks else 99
+    out = '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0">'
+    out += f'<div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Why {i.replace("_"," ").title()} is #{rank} — The Delta Proof</div>'
+    out += '<div style="display:flex;flex-direction:column;gap:3px">'
+    ref_decks = sorted(decks, key=lambda x: -W.get(x, 0))
+    ref_decks = [x for x in ref_decks if x != i][:5] + [x for x in reversed(ref_decks) if x != i][:2]
+    for rd in ref_decks:
+        rd_wr = round(W.get(rd, 50), 1)
+        rd_delta = round(wtd - rd_wr, 1)
+        col = '#1f7040' if rd_delta > 0 else '#b02020' if rd_delta < -5 else '#854f0b'
+        bar_w = min(100, max(5, rd_wr))
+        out += f'<div style="display:flex;align-items:center;gap:6px"><span style="width:70px;font-size:11px;color:#555;text-align:right">{rd.replace("_"," ").title()}</span><div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;max-width:120px"><div style="width:{bar_w}%;height:100%;background:{col};border-radius:2px"></div></div><span style="font-size:11px;font-weight:700;color:{col}">{rd_delta:+.1f}pp</span></div>'
+    out += '</div></div>\n'
+    return out
+
+
+def section_tier_triptych(i, D, arch):
+    decks, M = D['decks'], D['M']
+    prey = len([x for x in decks if x != i and M.get(i+'|'+x, [50])[0] >= 80])
+    comp = len([x for x in decks if x != i and 50 <= M.get(i+'|'+x, [50])[0] < 80])
+    dng = len([x for x in decks if x != i and M.get(i+'|'+x, [50])[0] < 50])
+    out = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0">'
+    out += '<div style="border:1px solid #e0e0e0;border-left:3px solid #1f7040;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#1f7040;font-weight:700;margin-bottom:6px">✓ Prey ('+str(prey)+')</div><div style="font-size:22px;font-weight:700;color:#1f7040">80%+</div></div>'
+    out += '<div style="border:1px solid #e0e0e0;border-left:3px solid #854f0b;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#854f0b;font-weight:700;margin-bottom:6px">⚖ Competitive ('+str(comp)+')</div><div style="font-size:22px;font-weight:700;color:#854f0b">50-80%</div></div>'
+    out += '<div style="border:1px solid #e0e0e0;border-left:3px solid #b02020;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#b02020;font-weight:700;margin-bottom:6px">⚠ Danger ('+str(dng)+')</div><div style="font-size:22px;font-weight:700;color:#b02020">&lt;50%</div></div></div>\n'
+    return out
+
+
+D_CTX = {'decks': decks, 'A': A, 'W': W, 'M': M}
+
 for dk in sorted(DECKS.keys()):
     _guide_fn = os.path.join(OUT_DIR, 'guide_'+dk+'.html')
     d=dk; flat=A.get(d,50); wtd=W.get(d,50); delta=round(wtd-flat,1)
@@ -324,60 +415,12 @@ for dk in sorted(DECKS.keys()):
     findings_html+=f'<div class="finding"><span class="finding-label">Best: {best[1]}</span><span class="finding-val g">{best[0]:.0f}%</span></div>\n'
     findings_html+=f'<div class="finding"><span class="finding-label">Worst: {worst[1]}</span><span class="finding-val r">{worst[0]:.0f}%</span></div>\n'
     
-    # Tournament sim
-    random.seed(42)
-    wd=[]
-    for _ in range(10000):
-        w=0
-        for rd in range(8):
-            opps2=[x for x in decks if x!=d];wts=[max(0.1,A.get(x,30)) for x in opps2]
-            opp=random.choices(opps2,weights=wts,k=1)[0]
-            if random.random()<M.get(d+'|'+opp,[50])[0]/100: w+=1
-        wd.append(w)
-    c2=Counter(wd);avg=sum(wd)/len(wd);top8=sum(1 for w in wd if w>=6)/len(wd)*100
-    hist={w:round(c2[w]/10000*100,1) for w in range(9)}
-    
-    # Archetype WR bars
-    ag={}
-    for x in decks:
-        if x==d: continue
-        a=agg.get(x,{}).get('type','?')
-        if a not in ag: ag[a]=[]
-        ag[a].append(M.get(d+'|'+x,[50])[0])
-    awd={a:round(sum(v)/len(v),1) for a,v in ag.items()}
-    ab=''.join(f'<div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">{a}</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:{w}%;height:100%;background:{muc(w)};border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:{muc(w)}">{w:.0f}%</span></div>\n' for a,w in sorted(awd.items(),key=lambda x:-x[1]))
-    
-    # Tournament histogram
-    th=''.join(f'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:{"#1f7040" if w>=6 else "#854f0b" if w>=4 else "#b02020"}">{hist.get(w,0):.0f}%</div><div style="width:100%;background:{"#1f7040" if hist.get(w,0)==max(hist.get(i,0) for i in range(2,9)) else "#d0f0d0" if w>=6 else "#fff0e0" if w>=4 else "#fde8e8"};border-radius:2px 2px 0 0;height:{hist.get(w,0)}%"></div><div style="font-size:8px;color:#aaa">{w}-{8-w}</div></div>\n' for w in range(2,9))
-    
-    # Triptych
-    prey=len([x for x in decks if x!=d and M.get(d+'|'+x,[50])[0]>=80])
-    comp=len([x for x in decks if x!=d and 50<=M.get(d+'|'+x,[50])[0]<80])
-    dng=len([x for x in decks if x!=d and M.get(d+'|'+x,[50])[0]<50])
-    
-    # Danger cards
-    dangers=sorted([(M.get(d+'|'+x,[50])[0],x,agg.get(x,{}).get('type','?')) for x in decks if x!=d and M.get(d+'|'+x,[50])[0]<50])[:3]
-    dc=''
-    if dangers:
-        dc='<div style="display:grid;grid-template-columns:'+' '.join(['1fr']*len(dangers))+';gap:12px;margin:12px 0">\n'
-        for wr,nm,ar in dangers:
-            dc+='<div style="border:1px solid #e8d0d0;border-radius:6px;overflow:hidden"><div style="background:linear-gradient(135deg,#b02020,#801818);padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:700;color:#fff">'+nm+'</div><div style="font-size:9px;color:#ffb0b0;text-transform:uppercase">'+ar+'</div></div><div style="font-size:28px;font-weight:700;color:#fff">'+str(int(wr))+'%</div></div></div>\n'
-        dc+='</div>\n'
-    
-    # Delta proof: compare deck WR against top 5 and bottom 3, show ±pp
-    dp_html = '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0">'
-    tier_label = 'S' if rank<=4 else 'A' if rank<=8 else 'B' if rank<=16 else 'C'
-    dp_html += f'<div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Why {d.replace("_"," ").title()} is #{rank} — The Delta Proof</div>'
-    dp_html += '<div style="display:flex;flex-direction:column;gap:3px">'
-    ref_decks = sorted(decks, key=lambda x: -W.get(x,0))
-    ref_decks = [x for x in ref_decks if x != d][:5] + [x for x in reversed(ref_decks) if x != d][:2]
-    for rd in ref_decks:
-        rd_wr = round(W.get(rd, 50), 1)
-        rd_delta = round(wtd - rd_wr, 1)
-        col = '#1f7040' if rd_delta > 0 else '#b02020' if rd_delta < -5 else '#854f0b'
-        bar_w = min(100, max(5, rd_wr))
-        dp_html += f'<div style="display:flex;align-items:center;gap:6px"><span style="width:70px;font-size:11px;color:#555;text-align:right">{rd.replace("_"," ").title()}</span><div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;max-width:120px"><div style="width:{bar_w}%;height:100%;background:{col};border-radius:2px"></div></div><span style="font-size:11px;font-weight:700;color:{col}">{rd_delta:+.1f}pp</span></div>'
-    dp_html += '</div></div>\n'
+    archetype_wr_html = section_archetype_wr(d, D_CTX, agg)
+    tournament_sim_html = section_tournament_sim(d, D_CTX, agg)
+    tier_triptych_html = section_tier_triptych(d, D_CTX, agg)
+    tournament_arc_html = section_tournament_arc(d, D_CTX, agg)
+    delta_proof_html = section_delta_proof(d, D_CTX, agg)
+    danger_cards_html = section_danger_cards(d, D_CTX, agg)
 
     # Matchup spread
     mu='';cur_tier=''
@@ -448,9 +491,10 @@ for dk in sorted(DECKS.keys()):
             stars_html = '<div class="section-title">Stars of the Sim — 2,000 Games</div>\n'
             stars_html += '<div class="star-cards">\n'
             for label, name, stat, desc, klass in star_items:
+                fuzzy = name.replace(" ", "+").replace(",", "%2C").replace("'", "%27")
                 stars_html += (f'<div class="star-card">'
                                f'<span class="star-label {klass}">{label}</span>'
-                               f'<img src="https://api.scryfall.com/cards/named?fuzzy={name.replace(" ", "+").replace(",", "%2C").replace("\'", "%27")}&format=image&version=normal" alt="{name}" loading="lazy">'
+                               f'<img src="https://api.scryfall.com/cards/named?fuzzy={fuzzy}&format=image&version=normal" alt="{name}" loading="lazy">'
                                f'<div class="star-name">{name}</div>'
                                f'<div class="star-stat">{stat}</div>'
                                f'<div class="star-desc">{desc}</div>'
@@ -625,24 +669,18 @@ for dk in sorted(DECKS.keys()):
         # Metagame strategy
         f.write('<div class="section-title">Metagame Strategy</div>\n')
         f.write('<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0">\n')
-        f.write('<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Win Rate by Archetype</div>'+ab+'</div>\n')
-        f.write('<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">8-Round Tournament Sim</div>')
-        f.write('<div style="display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:4px">'+th+'</div>')
-        f.write('<div style="display:flex;justify-content:space-between;margin-top:8px;padding:6px 8px;background:#f0faf0;border-radius:3px"><span style="font-size:11px;color:#555">Avg: <b style="color:#1f7040">'+str(round(avg,1))+'</b></span><span style="font-size:11px;color:#555">Top 8: <b style="color:#1f7040">'+str(round(top8,1))+'%</b></span></div></div></div>\n')
+        f.write(archetype_wr_html)
+        f.write(tournament_sim_html)
+        f.write('</div>\n')
         
-        # Triptych
-        f.write('<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0">')
-        f.write('<div style="border:1px solid #e0e0e0;border-left:3px solid #1f7040;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#1f7040;font-weight:700;margin-bottom:6px">✓ Prey ('+str(prey)+')</div><div style="font-size:22px;font-weight:700;color:#1f7040">80%+</div></div>')
-        f.write('<div style="border:1px solid #e0e0e0;border-left:3px solid #854f0b;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#854f0b;font-weight:700;margin-bottom:6px">⚖ Competitive ('+str(comp)+')</div><div style="font-size:22px;font-weight:700;color:#854f0b">50-80%</div></div>')
-        f.write('<div style="border:1px solid #e0e0e0;border-left:3px solid #b02020;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#b02020;font-weight:700;margin-bottom:6px">⚠ Danger ('+str(dng)+')</div><div style="font-size:22px;font-weight:700;color:#b02020">&lt;50%</div></div></div>\n')
+        f.write(tier_triptych_html)
         
-        f.write(dc)
+        f.write(danger_cards_html)
         
-        # Tournament arc
-        f.write('<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Tournament Arc</div><div style="display:flex;gap:2px;height:24px;border-radius:3px;overflow:hidden"><div style="flex:3;background:#d0f0d0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1f7040">R1-3 Bank</div><div style="flex:3;background:#fff0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#854f0b">R4-6 Gauntlet</div><div style="flex:2;background:#fde8e8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#b02020">R7-8 Top</div></div></div>\n')
+        f.write(tournament_arc_html)
         
         # Delta proof
-        f.write(dp_html)
+        f.write(delta_proof_html)
         
         # Bo3 Swing (NEW — match_wr vs bo1 wr per matchup)
         if bo3_swing_html:
