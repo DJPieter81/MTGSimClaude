@@ -102,7 +102,7 @@ def make_affinity_deck() -> List[Card]:
         d.append(c)
 
     # Thought Monitor: affinity for artifacts, draws 2 on ETB
-    for _ in range(3):
+    for _ in range(4):
         c = creature('Thought Monitor', 7, {'U': 1, 'generic': 6}, {'U'},
                      2, 2, tag='monitor', flying=True)
         c.affinity_artifacts = True
@@ -118,9 +118,7 @@ def make_affinity_deck() -> List[Card]:
         c.ward = 4
         d.append(c)
 
-    # Krang, Master Mind
-    d += [creature('Krang, Master Mind', 5, {'U': 1, 'B': 1, 'generic': 3},
-                   {'U', 'B'}, 4, 5, tag='krang')]
+    # Krang, Master Mind removed (8% cast rate, UB cost impractical)
 
     # Tamiyo, Inquisitive Student — NOT in this deck, that's UR Tempo
 
@@ -873,8 +871,8 @@ def test_affinity():
 
     expected = {
         'tomb': 4, 'seat': 4, 'saga': 4, 'otawara': 1, 'basic': 2,
-        'emry': 4, 'automaton': 4, 'emissary': 4, 'monitor': 3,
-        'cannoneer': 2, 'krang': 1,
+        'emry': 4, 'automaton': 4, 'emissary': 4, 'monitor': 4,
+        'cannoneer': 2,
         'petal': 4, 'bauble': 4, 'ubauble': 4, 'opal': 4,
         'fow': 4, 'cast': 4,
         'boots': 1, 'spear': 1, 'sink': 1,
