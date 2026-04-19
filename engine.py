@@ -3800,13 +3800,18 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         for _ in range(10):
             rit = next((c for c in player.hand if c.tag in ('darkrit', 'cabalrit')
                          and c.cmc <= total_mana), None)
-            if rit:
-                player.remove_from_hand(rit); player.add_to_grave(rit)
-                total_mana -= rit.cmc
-                total_mana += 3  # Dark Ritual/Cabal Ritual produce BBB/BBBBB
-                log_fn(f"{rit.name} → mana now {total_mana}")
-            else:
+            if not rit:
                 break
+            # Route through cast_spell: fires Eidolon, opens counter window,
+            # deducts cmc (respects Thalia) and adds +3 net on resolve.
+            budget = [total_mana]
+            def _resolve_rit(c):
+                player.add_to_grave(c)
+                budget[0] += 3  # Dark/Cabal Ritual produce BBB / BBBBB
+                log_fn(f"{c.name} → mana now {budget[0]}")
+            cast_spell(player, opponent, gs, rit, budget, log_fn, log_entries,
+                       on_resolve=_resolve_rit)
+            total_mana = budget[0]
 
     # ── 2b. Summoner's Pact: free tutor for green creature (Spy) ──
     # Pact costs 0 now, pay {2}{G}{G} next upkeep (or lose the game).
@@ -3881,15 +3886,15 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         # Try Veil protection first
         vos = player.find_tag('vos')
         if vos and total_mana >= combo_cost + 1:
-            if not _try_counter_any(player, opponent, gs, vos, log_entries):
-                player.remove_from_hand(vos); player.add_to_grave(vos)
+            budget = [total_mana]
+            def _resolve_veil(c):
+                player.add_to_grave(c)
                 gs.veil_active = True
-                total_mana -= 1
                 log_fn("Veil of Summer — blue interaction blanked")
-            else:
-                player.remove_from_hand(vos); player.add_to_grave(vos)
-                total_mana -= 1
+            if not cast_spell(player, opponent, gs, vos, budget,
+                              log_fn, log_entries, on_resolve=_resolve_veil):
                 log_fn("Veil of Summer countered")
+            total_mana = budget[0]
 
         # Mindbreak Trap check
         mindbreak_o = opponent.find_tag('mindbreak')
@@ -3900,9 +3905,12 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ Mindbreak Trap — {combo_card.name} exiled, combo fizzles", True)
             return
 
-        player.remove_from_hand(combo_card)
-        if not _try_counter_any(player, opponent, gs, combo_card, log_entries):
-            player.add_to_grave(combo_card)
+        # Cast combo card (Spy/Informer) — cast_spell fires Eidolon + counter window.
+        budget = [total_mana]
+        combo_resolved = cast_spell(player, opponent, gs, combo_card, budget,
+                                    log_fn, log_entries)
+        total_mana = budget[0]
+        if combo_resolved:
             # Mill entire library (no lands to stop it)
             milled = list(player.library)
             player.graveyard.extend(milled)
@@ -3940,8 +3948,7 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
                     log_fn("  Dread Return countered — combo fizzles")
             else:
                 log_fn(f"  Missing pieces for Oracle win (oracle={oracle_in_gy is not None}, dread={dread_in_gy is not None}, creatures={len(player.creatures)})")
-        else:
-            player.add_to_grave(combo_card)
+        # (Countered combo_card is already in graveyard via cast_spell's default)
 
 
 
