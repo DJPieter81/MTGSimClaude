@@ -273,6 +273,30 @@ def _is_handcrafted(guide_path):
     except FileNotFoundError:
         return False
 
+
+# ------------------------------------------------------------------
+# Pure section builders — each returns a complete HTML fragment
+# (wrapper + content) given the subject deck key `i`, a data context
+# `D` with keys {'decks', 'A', 'W', 'M'}, and the archetype map `arch`.
+# These mirror the section_* architecture in MTGSimManu's build_guide.py
+# so blocks can be lifted across repos without modification.
+# ------------------------------------------------------------------
+
+def section_archetype_wr(i, D, arch):
+    decks, M = D['decks'], D['M']
+    ag = {}
+    for x in decks:
+        if x == i: continue
+        a = arch.get(x, {}).get('type', '?')
+        if a not in ag: ag[a] = []
+        ag[a].append(M.get(i+'|'+x, [50])[0])
+    awd = {a: round(sum(v)/len(v), 1) for a, v in ag.items()}
+    bars = ''.join(f'<div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">{a}</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:{w}%;height:100%;background:{muc(w)};border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:{muc(w)}">{w:.0f}%</span></div>\n' for a,w in sorted(awd.items(),key=lambda x:-x[1]))
+    return '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Win Rate by Archetype</div>'+bars+'</div>\n'
+
+
+D_CTX = {'decks': decks, 'A': A, 'W': W, 'M': M}
+
 for dk in sorted(DECKS.keys()):
     _guide_fn = os.path.join(OUT_DIR, 'guide_'+dk+'.html')
     d=dk; flat=A.get(d,50); wtd=W.get(d,50); delta=round(wtd-flat,1)
@@ -337,16 +361,8 @@ for dk in sorted(DECKS.keys()):
     c2=Counter(wd);avg=sum(wd)/len(wd);top8=sum(1 for w in wd if w>=6)/len(wd)*100
     hist={w:round(c2[w]/10000*100,1) for w in range(9)}
     
-    # Archetype WR bars
-    ag={}
-    for x in decks:
-        if x==d: continue
-        a=agg.get(x,{}).get('type','?')
-        if a not in ag: ag[a]=[]
-        ag[a].append(M.get(d+'|'+x,[50])[0])
-    awd={a:round(sum(v)/len(v),1) for a,v in ag.items()}
-    ab=''.join(f'<div style="display:flex;align-items:center;gap:6px"><span style="width:60px;text-align:right;font-size:11px;color:#555">{a}</span><div style="flex:1;height:14px;background:#f5f5f5;border-radius:2px;overflow:hidden"><div style="width:{w}%;height:100%;background:{muc(w)};border-radius:2px"></div></div><span style="width:36px;font-weight:700;font-size:11px;text-align:right;color:{muc(w)}">{w:.0f}%</span></div>\n' for a,w in sorted(awd.items(),key=lambda x:-x[1]))
-    
+    archetype_wr_html = section_archetype_wr(d, D_CTX, agg)
+
     # Tournament histogram
     th=''.join(f'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%"><div style="font-size:8px;color:{"#1f7040" if w>=6 else "#854f0b" if w>=4 else "#b02020"}">{hist.get(w,0):.0f}%</div><div style="width:100%;background:{"#1f7040" if hist.get(w,0)==max(hist.get(i,0) for i in range(2,9)) else "#d0f0d0" if w>=6 else "#fff0e0" if w>=4 else "#fde8e8"};border-radius:2px 2px 0 0;height:{hist.get(w,0)}%"></div><div style="font-size:8px;color:#aaa">{w}-{8-w}</div></div>\n' for w in range(2,9))
     
@@ -626,7 +642,7 @@ for dk in sorted(DECKS.keys()):
         # Metagame strategy
         f.write('<div class="section-title">Metagame Strategy</div>\n')
         f.write('<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0">\n')
-        f.write('<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Win Rate by Archetype</div>'+ab+'</div>\n')
+        f.write(archetype_wr_html)
         f.write('<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">8-Round Tournament Sim</div>')
         f.write('<div style="display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:4px">'+th+'</div>')
         f.write('<div style="display:flex;justify-content:space-between;margin-top:8px;padding:6px 8px;background:#f0faf0;border-radius:3px"><span style="font-size:11px;color:#555">Avg: <b style="color:#1f7040">'+str(round(avg,1))+'</b></span><span style="font-size:11px;color:#555">Top 8: <b style="color:#1f7040">'+str(round(top8,1))+'%</b></span></div></div></div>\n')
