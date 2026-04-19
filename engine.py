@@ -3952,7 +3952,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     Handles both same-turn win and next-turn win after DD resolved previously."""
 
     dd_already_resolved = getattr(gs, '_doomsday_pile_built', False)
-    mana = total_mana  # track remaining mana
+    budget = [total_mana]  # mutable mana pool; deducted by cast_spell on resolve
 
     # Bayesian Hand Inference (§9 #8): estimate P(opp has free counter) from deck
     # identity + observed draws. Informational only here — surfaced in trace for
@@ -3974,8 +3974,8 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     gs.strat_log.log_decision(
         gs.turn, 'doomsday',
         candidates=['cast_doomsday', 'cycle_and_oracle', 'pass'],
-        chosen='cast_doomsday' if not dd_already_resolved and mana >= 3 else 'cycle_and_oracle' if dd_already_resolved else 'pass',
-        reason=f"mana={mana}, dd_resolved={dd_already_resolved}, life={player.life}, "
+        chosen='cast_doomsday' if not dd_already_resolved and budget[0] >= 3 else 'cycle_and_oracle' if dd_already_resolved else 'pass',
+        reason=f"mana={budget[0]}, dd_resolved={dd_already_resolved}, life={player.life}, "
                f"bhi_p_free_counter={belief.p_free_counter:.2f}")
 
     # ── Helper: cycle cards from hand (activated abilities — uncounterable) ──
@@ -4018,12 +4018,8 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         if expected_devotion < len(player.library):
             return False  # don't waste Oracle if it won't win yet
 
-        player.remove_from_hand(oracle)
-        countered = False
-        if not gs.veil_active:
-            countered = _try_counter_any(player, opponent, gs, oracle, log_entries)
-        if not countered:
-            player.put_creature_in_play(oracle)
+        def _resolve_oracle(c):
+            player.put_creature_in_play(c)
             lib_size = len(player.library)
             log_fn(f"  ★ Thassa's Oracle ETB — devotion {expected_devotion}, "
                    f"library {lib_size}", True)
@@ -4032,18 +4028,18 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.winner = 'p1' if player is gs.p1 else 'p2'
             gs.win_reason = (f"Doomsday → Oracle (devotion {expected_devotion} "
                              f"≥ library {lib_size})")
-            gs.kill_turn = gs.turn
-            return True
-        else:
-            player.add_to_grave(oracle)
+
+        resolved = cast_spell(player, opponent, gs, oracle, budget,
+                              log_fn, log_entries, on_resolve=_resolve_oracle)
+        if not resolved:
             log_fn("  Oracle countered — Doomsday pile stranded")
-            return True  # spell was attempted
+        return True  # spell was attempted
 
     # ── Post-DD turns: pile already built, just draw + cast Oracle ──
     if dd_already_resolved:
         _cycle_draw_cards()
         if not gs.game_over:
-            _try_cast_oracle(mana)
+            _try_cast_oracle(budget[0])
         return
 
     # ── Pre-DD: rituals for mana acceleration ──
@@ -4051,18 +4047,23 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     # that dig for DD. Rituals drawn by cantrips are cast inside the cantrip loop.
     dd = player.find_tag('dd')
     if dd:
-        rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
-        extra = 0
+        rits = [c for c in list(player.hand)
+                if c.tag == 'darkrit' and opp_can_cast(c, budget[0], gs, caster=player)]
+        cast_count = 0
         for r in rits:
-            player.remove_from_hand(r); player.add_to_grave(r); extra += 2
-        if extra: log_fn(f"Dark Ritual ×{len(rits)} → +{extra} mana")
-        mana += extra
+            def _resolve_ritual(c):
+                player.add_to_grave(c)
+                budget[0] += 3  # Dark Ritual produces BBB
+            if cast_spell(player, opponent, gs, r, budget, log_fn, log_entries,
+                          on_resolve=_resolve_ritual):
+                cast_count += 1
+        if cast_count: log_fn(f"Dark Ritual ×{cast_count} resolved")
 
     # ── Cantrips (pre-DD: dig for combo pieces) ──
     # If we have DD + enough mana, skip mana cantrips to preserve mana for DD.
     # Free cycling (Wraith, Edge) is always fine. Only skip paid cantrips if DD ready.
     dd = player.find_tag('dd')
-    dd_ready = dd and mana >= 3  # DD costs BBB = 3 mana
+    dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
 
     # Cast free cantrips (cycling) to dig — these don't cost mana
     for _ in range(4):
@@ -4070,7 +4071,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         can = None
         if not dd_ready:
             can = next((c for c in player.hand if c.is_cantrip and c.tag not in ('wraith', 'edge')
-                        and mana >= 1), None)
+                        and budget[0] >= 1), None)
         if not can:
             can = next((c for c in player.hand if c.is_cantrip and c.tag == 'edge'
                         and player.lands), None)
@@ -4079,64 +4080,67 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                         and player.life > 2), None)
         if not can:
             break
-        player.remove_from_hand(can); player.add_to_grave(can)
         if can.tag == 'wraith':
+            # Cycling: activated ability, not a spell cast — bypass cast_spell
+            player.remove_from_hand(can); player.add_to_grave(can)
             player.life -= 2
             gs.check_life_totals()
             if gs.game_over: break
             log_fn(f"Street Wraith cycles (−2 life → {player.life}) — draws 1")
             player.draw(1)
+            if gs.bowmasters_on_board:
+                ctr = []; bowmasters_triggers(1, gs, ctr)
+                for m in ctr: log_entries.append(m)
         elif can.tag == 'edge':
+            # Cycling: activated ability, not a spell cast — bypass cast_spell
+            player.remove_from_hand(can); player.add_to_grave(can)
             if player.lands: sac = player.lands.pop(); player.add_to_grave(sac.card)
             log_fn(f"Edge of Autumn cycles (sac a land) — draws 1")
             player.draw(1)
+            if gs.bowmasters_on_board:
+                ctr = []; bowmasters_triggers(1, gs, ctr)
+                for m in ctr: log_entries.append(m)
         else:
-            draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-            log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-            player.draw(draws)
-            mana -= 1
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(1, gs, ctr)
-            for m in ctr: log_entries.append(m)
+            # Real cantrip (Brainstorm/Ponder/Preordain) — route through cast_spell
+            # resolve_cantrip handles draws + bowmasters trigger + add_to_grave
+            cast_spell(player, opponent, gs, can, budget, log_fn, log_entries,
+                       on_resolve=lambda c: resolve_cantrip(player, c, gs, log_fn, log_entries))
         # Re-check DD readiness after each cantrip (may have drawn DD or ritual)
         dd = player.find_tag('dd')
         # Also check for new rituals drawn by cantrips
-        new_rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
+        new_rits = [c for c in list(player.hand)
+                    if c.tag == 'darkrit' and opp_can_cast(c, budget[0], gs, caster=player)]
         for r in new_rits:
-            player.remove_from_hand(r); player.add_to_grave(r); mana += 2
-            log_fn(f"Dark Ritual → +2 mana")
-        dd_ready = dd and mana >= 3  # DD costs BBB = 3 mana
+            def _resolve_ritual(c):
+                player.add_to_grave(c)
+                budget[0] += 3  # Dark Ritual produces BBB
+            cast_spell(player, opponent, gs, r, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ritual)
+        dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
 
-    # ── Cast Doomsday if we have 5+ mana ──
+    # ── Cast Doomsday if we have 3+ mana (BBB) ──
     dd = player.find_tag('dd')
-    if dd and mana >= 3:  # DD costs BBB = 3 mana
-        dd_resolved = False
+    if dd and budget[0] >= 3:  # DD costs BBB = 3 mana
+        veil_cast = False
         vos = player.find_tag('vos')
         if vos:
-            veil_resolved = not _try_counter_any(player, opponent, gs, vos, log_entries)
-            player.remove_from_hand(vos); player.add_to_grave(vos)
-            if veil_resolved:
+            def _resolve_veil(c):
+                player.add_to_grave(c)
                 gs.veil_active = True
                 log_fn("Veil of Summer — blue interaction blanked")
-            else:
+            veil_cast = cast_spell(player, opponent, gs, vos, budget,
+                                   log_fn, log_entries, on_resolve=_resolve_veil)
+            if not veil_cast:
                 log_fn("Veil of Summer countered")
-            # DD must still pass counter check if Veil was countered
-            player.remove_from_hand(dd)
-            if veil_resolved or not _try_counter_any(player, opponent, gs, dd, log_entries):
-                player.add_to_grave(dd)
-                log_fn("★ Doomsday resolves" + (" through Veil" if veil_resolved else ""), True)
-                dd_resolved = True
-            else:
-                player.add_to_grave(dd)
-                log_fn("Doomsday countered")
+        # DD cast: gs.veil_active (set by _resolve_veil) is respected by
+        # try_reactive_counter (engine.py:854), so no manual bypass needed.
+        dd_resolved = cast_spell(player, opponent, gs, dd, budget,
+                                 log_fn, log_entries)
+        if dd_resolved:
+            log_fn("★ Doomsday resolves" +
+                   (" through Veil" if gs.veil_active else ""), True)
         else:
-            player.remove_from_hand(dd)
-            if not _try_counter_any(player, opponent, gs, dd, log_entries):
-                player.add_to_grave(dd)
-                log_fn("★ Doomsday resolves", True)
-                dd_resolved = True
-            else:
-                player.add_to_grave(dd)
+            log_fn("Doomsday countered")
 
         if dd_resolved:
             # Doomsday: pay half your life (rounded up)
@@ -4170,13 +4174,13 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             gs._doomsday_pile_built = True
             log_fn(f"  Pile built: {len(player.library)} cards in library")
 
-            mana -= 3  # DD costs BBB = 3 mana
+            # DD's 3-mana cost was already deducted by cast_spell.
 
             # Same-turn win attempt: cycle Wraiths from hand to thin pile + draw Oracle
             _cycle_draw_cards()
 
             if not gs.game_over:
-                _try_cast_oracle(mana)
+                _try_cast_oracle(budget[0])
 
 
 
