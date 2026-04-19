@@ -315,6 +315,18 @@ def section_tournament_sim(i, D, arch):
     return out
 
 
+def section_tier_triptych(i, D, arch):
+    decks, M = D['decks'], D['M']
+    prey = len([x for x in decks if x != i and M.get(i+'|'+x, [50])[0] >= 80])
+    comp = len([x for x in decks if x != i and 50 <= M.get(i+'|'+x, [50])[0] < 80])
+    dng = len([x for x in decks if x != i and M.get(i+'|'+x, [50])[0] < 50])
+    out = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0">'
+    out += '<div style="border:1px solid #e0e0e0;border-left:3px solid #1f7040;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#1f7040;font-weight:700;margin-bottom:6px">✓ Prey ('+str(prey)+')</div><div style="font-size:22px;font-weight:700;color:#1f7040">80%+</div></div>'
+    out += '<div style="border:1px solid #e0e0e0;border-left:3px solid #854f0b;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#854f0b;font-weight:700;margin-bottom:6px">⚖ Competitive ('+str(comp)+')</div><div style="font-size:22px;font-weight:700;color:#854f0b">50-80%</div></div>'
+    out += '<div style="border:1px solid #e0e0e0;border-left:3px solid #b02020;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#b02020;font-weight:700;margin-bottom:6px">⚠ Danger ('+str(dng)+')</div><div style="font-size:22px;font-weight:700;color:#b02020">&lt;50%</div></div></div>\n'
+    return out
+
+
 D_CTX = {'decks': decks, 'A': A, 'W': W, 'M': M}
 
 for dk in sorted(DECKS.keys()):
@@ -370,12 +382,8 @@ for dk in sorted(DECKS.keys()):
     
     archetype_wr_html = section_archetype_wr(d, D_CTX, agg)
     tournament_sim_html = section_tournament_sim(d, D_CTX, agg)
+    tier_triptych_html = section_tier_triptych(d, D_CTX, agg)
 
-    # Triptych
-    prey=len([x for x in decks if x!=d and M.get(d+'|'+x,[50])[0]>=80])
-    comp=len([x for x in decks if x!=d and 50<=M.get(d+'|'+x,[50])[0]<80])
-    dng=len([x for x in decks if x!=d and M.get(d+'|'+x,[50])[0]<50])
-    
     # Danger cards
     dangers=sorted([(M.get(d+'|'+x,[50])[0],x,agg.get(x,{}).get('type','?')) for x in decks if x!=d and M.get(d+'|'+x,[50])[0]<50])[:3]
     dc=''
@@ -651,11 +659,7 @@ for dk in sorted(DECKS.keys()):
         f.write(tournament_sim_html)
         f.write('</div>\n')
         
-        # Triptych
-        f.write('<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0">')
-        f.write('<div style="border:1px solid #e0e0e0;border-left:3px solid #1f7040;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#1f7040;font-weight:700;margin-bottom:6px">✓ Prey ('+str(prey)+')</div><div style="font-size:22px;font-weight:700;color:#1f7040">80%+</div></div>')
-        f.write('<div style="border:1px solid #e0e0e0;border-left:3px solid #854f0b;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#854f0b;font-weight:700;margin-bottom:6px">⚖ Competitive ('+str(comp)+')</div><div style="font-size:22px;font-weight:700;color:#854f0b">50-80%</div></div>')
-        f.write('<div style="border:1px solid #e0e0e0;border-left:3px solid #b02020;border-radius:0 4px 4px 0;padding:10px 12px"><div style="font-size:9px;text-transform:uppercase;color:#b02020;font-weight:700;margin-bottom:6px">⚠ Danger ('+str(dng)+')</div><div style="font-size:22px;font-weight:700;color:#b02020">&lt;50%</div></div></div>\n')
+        f.write(tier_triptych_html)
         
         f.write(dc)
         
