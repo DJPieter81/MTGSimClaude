@@ -319,6 +319,18 @@ def section_tournament_arc(i, D, arch):
     return '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Tournament Arc</div><div style="display:flex;gap:2px;height:24px;border-radius:3px;overflow:hidden"><div style="flex:3;background:#d0f0d0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1f7040">R1-3 Bank</div><div style="flex:3;background:#fff0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#854f0b">R4-6 Gauntlet</div><div style="flex:2;background:#fde8e8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#b02020">R7-8 Top</div></div></div>\n'
 
 
+def section_danger_cards(i, D, arch):
+    decks, M = D['decks'], D['M']
+    dangers = sorted([(M.get(i+'|'+x, [50])[0], x, arch.get(x, {}).get('type', '?')) for x in decks if x != i and M.get(i+'|'+x, [50])[0] < 50])[:3]
+    if not dangers:
+        return ''
+    out = '<div style="display:grid;grid-template-columns:'+' '.join(['1fr']*len(dangers))+';gap:12px;margin:12px 0">\n'
+    for wr, nm, ar in dangers:
+        out += '<div style="border:1px solid #e8d0d0;border-radius:6px;overflow:hidden"><div style="background:linear-gradient(135deg,#b02020,#801818);padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:700;color:#fff">'+nm+'</div><div style="font-size:9px;color:#ffb0b0;text-transform:uppercase">'+ar+'</div></div><div style="font-size:28px;font-weight:700;color:#fff">'+str(int(wr))+'%</div></div></div>\n'
+    out += '</div>\n'
+    return out
+
+
 def section_delta_proof(i, D, arch):
     decks, W = D['decks'], D['W']
     wtd = W.get(i, 50)
@@ -408,15 +420,7 @@ for dk in sorted(DECKS.keys()):
     tier_triptych_html = section_tier_triptych(d, D_CTX, agg)
     tournament_arc_html = section_tournament_arc(d, D_CTX, agg)
     delta_proof_html = section_delta_proof(d, D_CTX, agg)
-
-    # Danger cards
-    dangers=sorted([(M.get(d+'|'+x,[50])[0],x,agg.get(x,{}).get('type','?')) for x in decks if x!=d and M.get(d+'|'+x,[50])[0]<50])[:3]
-    dc=''
-    if dangers:
-        dc='<div style="display:grid;grid-template-columns:'+' '.join(['1fr']*len(dangers))+';gap:12px;margin:12px 0">\n'
-        for wr,nm,ar in dangers:
-            dc+='<div style="border:1px solid #e8d0d0;border-radius:6px;overflow:hidden"><div style="background:linear-gradient(135deg,#b02020,#801818);padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:700;color:#fff">'+nm+'</div><div style="font-size:9px;color:#ffb0b0;text-transform:uppercase">'+ar+'</div></div><div style="font-size:28px;font-weight:700;color:#fff">'+str(int(wr))+'%</div></div></div>\n'
-        dc+='</div>\n'
+    danger_cards_html = section_danger_cards(d, D_CTX, agg)
 
     # Matchup spread
     mu='';cur_tier=''
@@ -671,7 +675,7 @@ for dk in sorted(DECKS.keys()):
         
         f.write(tier_triptych_html)
         
-        f.write(dc)
+        f.write(danger_cards_html)
         
         f.write(tournament_arc_html)
         
