@@ -448,9 +448,10 @@ for dk in sorted(DECKS.keys()):
             stars_html = '<div class="section-title">Stars of the Sim — 2,000 Games</div>\n'
             stars_html += '<div class="star-cards">\n'
             for label, name, stat, desc, klass in star_items:
+                fuzzy = name.replace(" ", "+").replace(",", "%2C").replace("'", "%27")
                 stars_html += (f'<div class="star-card">'
                                f'<span class="star-label {klass}">{label}</span>'
-                               f'<img src="https://api.scryfall.com/cards/named?fuzzy={name.replace(" ", "+").replace(",", "%2C").replace("\'", "%27")}&format=image&version=normal" alt="{name}" loading="lazy">'
+                               f'<img src="https://api.scryfall.com/cards/named?fuzzy={fuzzy}&format=image&version=normal" alt="{name}" loading="lazy">'
                                f'<div class="star-name">{name}</div>'
                                f'<div class="star-stat">{stat}</div>'
                                f'<div class="star-desc">{desc}</div>'
