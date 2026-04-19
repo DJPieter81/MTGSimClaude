@@ -211,6 +211,7 @@ Individual steps (chained by refresh_all.py):
 
 | Date | Key Changes |
 |---|---|
+| Apr 19 2026 (Claude.ai) | Ported 3 missing deck-guide sections from Modern: **Stars of the Sim** (MVP finisher/caster/attacker + overperformer, w/ Scryfall images), **Bo3 Swing** (G1 WR vs Bo3 match WR ± pp bar chart), **What Kills You** (opponent finisher aggregation, removal blind-spot analysis). Added `_is_real_card()` token/log filter, `aggregate_stars()`, `aggregate_what_kills()`, `compute_bo3_swings()` helpers. Loaded `card_trimmed.json` + latest `matrix_bo3_*.json` with graceful fallback. Also copied `templates/reference_replay.html` and `templates/reference_showcase.html` from MTGSimManu for future port. All 36 guides regenerated — 36/36 have Stars and What-Kills; 32/36 have Bo3 Swing (4 blocked by deck-list drift: dimir_c/d not in bo3 matrix, tes/ur_aggro not in bo1 matrix — fallback gracefully skips). |
 | Apr 12 2026 (Claude Code) | P0 items: symmetrise_matrix() n=200, 36 guides regenerated, matrix HTML rebuilt. Static locks verified (+7 tests). StrategicLogger, verify.py, build_meta_inputs.py, build_matrix_html.py added. Storm vs D&T Thalia fix. |
 | Apr 12 2026 (Claude.ai) | Thoughtseize P2 bug fix, 37 deck guides, gen_guides.py, classify_play 17 categories, pills() fix, CLAUDE.md + PLANNING.md + README + all 3 skills updated, outlier replays, merged Amulet+Legacy design, Scryfall hovers |
 | Apr 10 2026 | 38-deck matrix, card-level data, interaction events, 9 deck guides, Bo3 replayer with 6 zones + mulligan + narrative |

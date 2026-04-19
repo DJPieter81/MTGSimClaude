@@ -48,6 +48,35 @@ with open(META_PATH) as f: meta = json.load(f)
 with open(AGG_PATH) as f: agg = json.load(f)
 A=meta['a'];W=meta['w'];M=meta['m'];decks=meta['d']
 
+# Optional: card-level data (for Stars of the Sim + What Kills You sections).
+# Graceful fallback to empty dict if missing so guides still generate.
+_CARD_PATH = os.path.join(_HERE, 'card_trimmed.json')
+CARD_DATA = {}
+if os.path.exists(_CARD_PATH):
+    try:
+        with open(_CARD_PATH) as f: CARD_DATA = json.load(f)
+    except Exception as e:
+        print(f"warn: failed to load card_trimmed.json: {e}", flush=True)
+
+# Optional: latest Bo3 matrix (for G1 → Match Swing section).
+# Picks newest matrix_bo3_*.json by filename sort.
+_BO3 = {}
+_bo3_files = sorted([f for f in os.listdir(os.path.join(_HERE, 'results'))
+                     if f.startswith('matrix_bo3_') and f.endswith('.json')]) \
+             if os.path.isdir(os.path.join(_HERE, 'results')) else []
+if _bo3_files:
+    try:
+        with open(os.path.join(_HERE, 'results', _bo3_files[-1])) as f:
+            _bo3raw = json.load(f)
+        # Normalize _vs_ keys to | and store [match_wr_pct, game_wr_pct]
+        for k, v in _bo3raw.get('matchups', {}).items():
+            nk = k.replace('_vs_', '|')
+            if isinstance(v, list) and len(v) >= 2:
+                _BO3[nk] = [round(v[0]*100, 1), round(v[1]*100, 1)]
+        print(f"loaded bo3 matrix: {_bo3_files[-1]} ({len(_BO3)} matchups)", flush=True)
+    except Exception as e:
+        print(f"warn: failed to load bo3 matrix: {e}", flush=True)
+
 def muc(w): return '#1f7040' if w>=65 else '#854f0b' if w>=45 else '#b02020'
 
 def assign_role(card):
@@ -89,6 +118,94 @@ def assign_role(card):
 badge_map={'threat':'b-threat','burn':'b-burn','reach':'b-reach','engine':'b-engine','kill':'b-kill','enabler':'b-enabler','removal':'b-removal','draw':'b-draw','protect':'b-protect','hate':'b-hate','flex':'b-flex'}
 
 JS_HOVER = '<script>\ndocument.addEventListener("DOMContentLoaded",function(){var p=document.createElement("div");p.id="card-popup";p.innerHTML=\'<img id="card-img">\';document.body.appendChild(p);var img=document.getElementById("card-img"),cache={};document.addEventListener("mouseover",function(e){var el=e.target.closest(".card-tip");if(!el)return;var n=el.dataset.card;if(!n)return;var u="https://api.scryfall.com/cards/named?fuzzy="+encodeURIComponent(n)+"&format=image&version=normal";img.src=cache[n]||u;if(!cache[n])cache[n]=u;p.style.display="block"});document.addEventListener("mouseout",function(e){if(e.target.closest(".card-tip"))p.style.display="none"});document.addEventListener("mousemove",function(e){if(p.style.display==="block"){p.style.left=Math.min(e.clientX+16,innerWidth-260)+"px";p.style.top=Math.max(8,Math.min(e.clientY-170,innerHeight-350))+"px"}})});\n</script>'
+
+
+# ------------------------------------------------------------------
+# Card aggregation helpers (Stars of the Sim, What Kills You)
+# ------------------------------------------------------------------
+# CARD_DATA keys: "<deck>|<opp>", values: {f, c1, c2, a1, a2} where
+# each is a list of [card_name, count]. "f" in key "X|Y" is X's
+# finishing cards (when X won). c1/a1 = X's casts/attackers;
+# c2/a2 = Y's (the opponent's).
+#
+# Tokens and sim-bookkeeping strings like "Unknown" should be filtered
+# before displaying — Scryfall can't resolve them.
+_TOKEN_NAMES = {
+    'unknown', 'construct', 'monk token', 'orc army', 'elvish spirit guide',
+    'simian spirit guide', 'eldrazi spawn', 'karn construct', 'karnstruct',
+    'marit lage', 'endurance', 'poison (infect)', 'goblin charbelcher',
+    'dragon\'s rage channeler', 'griselbrand', 'archon of cruelty',
+    'grindstone', 'librarian', 'nimble pilferer', 'inquisitive student',
+    'bane of nightmares', 'guardian of thraben', 'lurker of the loch',
+    'the aeons torn', 'grand unifier', 'master thopterist', 'exuberant shepherd',
+    'the ceaseless hunger', 'arisen nightmare',  # paired-name fragments
+}
+# Sim log strings (not real cards)
+_SIM_LOGS_PREFIXES = ('Hand dump', 'P1 Force', 'OPP Force', 'Cast ', 'Play ',
+                      'Flash ', 'OPP Bow', '-> ', 'Stage copies', 'Marit Lage attacks',
+                      'Dark Depths combo', 'No Borrower', 'Lackey trigger', 'Mentor trigger',
+                      'Rishadan Port taps', 'Urza\'s Saga', 'Street Wraith cycles',
+                      'Edge of Autumn cycles', 'Combo (', 'Inkmoth Nexus', 'LETHAL',
+                      'Storm Ad Nauseam', 'Storm Past', 'Storm Tendrils',
+                      'Oops resolves', 'Once Upon', 'Muxus from', 'Fury evoke',
+                      'Brazen Borrower bounces', 'Grief ETB', 'Emrakul, the Aeons Torn attacks',
+                      'Show and Tell ->')
+
+def _is_real_card(name):
+    """Filter out tokens, sim-log strings, and noise from card lists."""
+    if not name: return False
+    nl = name.lower().strip()
+    if nl in _TOKEN_NAMES: return False
+    if name.startswith(_SIM_LOGS_PREFIXES): return False
+    if 'attacks!' in name or 'cycles' in name.lower() or 'triggers' in name.lower(): return False
+    if name == 'Vial' or name == 'Petal': return False  # fragments of Aether Vial / Lotus Petal
+    if name == 'SSG' or name == 'Tendrils': return False
+    return True
+
+def aggregate_stars(deck):
+    """Aggregate deck's own cards across all matchups it played in.
+    Returns {finishers, casts, attackers} where each is sorted [(card, count)]."""
+    fin = Counter(); cas = Counter(); att = Counter()
+    prefix = deck + '|'
+    for k, v in CARD_DATA.items():
+        if not k.startswith(prefix): continue
+        for name, cnt in v.get('f', []):
+            if _is_real_card(name): fin[name] += cnt
+        for name, cnt in v.get('c1', []):
+            if _is_real_card(name): cas[name] += cnt
+        for name, cnt in v.get('a1', []):
+            if _is_real_card(name): att[name] += cnt
+    return {
+        'finishers': fin.most_common(10),
+        'casts': cas.most_common(10),
+        'attackers': att.most_common(10),
+    }
+
+def aggregate_what_kills(deck):
+    """Aggregate opponent finishers that closed games vs this deck.
+    Returns sorted [(card, count)] from opponent side."""
+    kill = Counter()
+    suffix = '|' + deck
+    for k, v in CARD_DATA.items():
+        if not k.endswith(suffix): continue
+        # In key "Y|deck", f is Y's finishers when Y won → what killed this deck.
+        for name, cnt in v.get('f', []):
+            if _is_real_card(name): kill[name] += cnt
+    return kill.most_common(10)
+
+def compute_bo3_swings(deck):
+    """For each matchup, compute Bo3 match_wr - Bo1 wr.
+    Returns list of (opp, bo1_wr, bo3_match_wr, swing) sorted by |swing|."""
+    out = []
+    for opp in decks:
+        if opp == deck: continue
+        bo1 = M.get(deck + '|' + opp, [None])[0]
+        bo3 = _BO3.get(deck + '|' + opp, [None, None])[0]
+        if bo1 is None or bo3 is None: continue
+        swing = round(bo3 - bo1, 1)
+        out.append((opp, bo1, bo3, swing))
+    out.sort(key=lambda x: -abs(x[3]))
+    return out
 
 # Run sim data collection
 print("Collecting sim data for all decks...", flush=True)
@@ -273,6 +390,137 @@ for dk in sorted(DECKS.keys()):
         wr=M.get(d+'|'+d2,[50])[0];ar=agg.get(d2,{}).get('type','?');col=muc(wr);dpp=round(wr-50,1)
         mu+='<div class="mu-row"><span class="mu-name">'+d2+'</span><span class="mu-type">'+ar+'</span><div class="mu-bar"><div class="mu-fill" style="width:'+str(wr)+'%;background:'+col+'"></div></div><span class="mu-val" style="color:'+col+'">'+str(wr)+'% <span style="font-size:9px;font-weight:400">'+f'{dpp:+.0f}pp'+'</span></span></div>\n'
     
+    # ------------------------------------------------------------------
+    # Stars of the Sim — 4 featured cards w/ Scryfall images.
+    # MVP Finisher, MVP Caster, MVP Attacker, and an Overperformer
+    # (a card that ranks top-3 in casts or attacks but *isn't* in the
+    # deck's obvious "kill" card pool — surfaces role players).
+    # ------------------------------------------------------------------
+    stars_html = ''
+    stars = aggregate_stars(dk) if CARD_DATA else None
+    if stars and (stars['finishers'] or stars['casts'] or stars['attackers']):
+        # Total games sampled (approx): finishers are killing-blows only,
+        # but total casts gives us a richer denominator.
+        total_casts = sum(c for _, c in stars['casts']) or 1
+        # Build 4 star cards
+        cards_used = set()
+        star_items = []
+        if stars['finishers']:
+            n, c = stars['finishers'][0]
+            star_items.append(('MVP — #1 Finisher', n, f'{c} kills',
+                               f'Closed more games than any other card in the deck', 'mvp'))
+            cards_used.add(n.lower())
+        if stars['casts']:
+            # Top caster that isn't already the MVP finisher
+            for n, c in stars['casts']:
+                if n.lower() not in cards_used:
+                    star_items.append(('MVP — #1 Caster', n, f'{c} casts',
+                                       f'The engine — most-played spell across every matchup', 'mvp'))
+                    cards_used.add(n.lower())
+                    break
+        if stars['attackers']:
+            # Top attacker that isn't the MVP finisher / caster
+            for n, c in stars['attackers']:
+                if n.lower() not in cards_used:
+                    star_items.append(('MVP — #1 Attacker', n, f'{c} attacks',
+                                       f'Leads the combat step more than any other creature', 'mvp'))
+                    cards_used.add(n.lower())
+                    break
+        # Overperformer: cast top-3 but NOT in finishers top-3
+        fin_top3 = {n.lower() for n, _ in stars['finishers'][:3]}
+        for n, c in stars['casts'][:5]:
+            if n.lower() in cards_used: continue
+            if n.lower() in fin_top3: continue
+            # Also skip lands (they always top cast counts for fair decks)
+            nl = n.lower()
+            if any(x in nl for x in ['wasteland', 'tarn', 'delta', 'mesa', 'strand',
+                                     'island', 'swamp', 'forest', 'mountain', 'plains',
+                                     'underground sea', 'volcanic', 'tropical', 'tundra',
+                                     'plateau', 'badlands', 'taiga', 'bayou', 'savannah',
+                                     'scrubland']):
+                continue
+            star_items.append(('Overperformer', n, f'{c} casts',
+                               'Not the headliner, but consistently punches above its mana cost', 'surprise'))
+            cards_used.add(n.lower())
+            break
+        star_items = star_items[:4]
+        if star_items:
+            stars_html = '<div class="section-title">Stars of the Sim — 2,000 Games</div>\n'
+            stars_html += '<div class="star-cards">\n'
+            for label, name, stat, desc, klass in star_items:
+                stars_html += (f'<div class="star-card">'
+                               f'<span class="star-label {klass}">{label}</span>'
+                               f'<img src="https://api.scryfall.com/cards/named?fuzzy={name.replace(" ", "+").replace(",", "%2C").replace("\'", "%27")}&format=image&version=normal" alt="{name}" loading="lazy">'
+                               f'<div class="star-name">{name}</div>'
+                               f'<div class="star-stat">{stat}</div>'
+                               f'<div class="star-desc">{desc}</div>'
+                               f'</div>\n')
+            stars_html += '</div>\n'
+
+    # ------------------------------------------------------------------
+    # Bo3 Swing — G1 vs Match WR. Uses Bo3 matrix match_wr - bo1 wr.
+    # Positive = Bo3 compounds your edge; negative = variance-prone.
+    # Sim has no real sideboards, so this is best read as a proxy for
+    # matchup reliability across a 3-game series.
+    # ------------------------------------------------------------------
+    bo3_swing_html = ''
+    if _BO3:
+        swings = compute_bo3_swings(dk)
+        if swings:
+            # Show top 4 positive + top 4 negative swings
+            pos = [s for s in swings if s[3] > 0][:4]
+            neg = sorted([s for s in swings if s[3] < 0], key=lambda x: x[3])[:4]
+            rows = pos + neg
+            if rows:
+                bo3_swing_html = '<div class="section-title">Bo3 Swing — G1 vs Match WR</div>\n'
+                bo3_swing_html += ('<div style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.5">'
+                                   'How the Bo3 match win rate differs from the Bo1 (G1) rate. '
+                                   'Positive = your edge compounds over a series. Negative = variance-prone, can be stolen. '
+                                   '<em>Note: sim has no real sideboards — treat as a reliability proxy.</em></div>\n')
+                bo3_swing_html += '<div style="display:flex;flex-direction:column;gap:4px;margin:8px 0">\n'
+                for opp, bo1, bo3, swing in rows:
+                    swing_col = '#1f7040' if swing > 0 else '#b02020'
+                    bar_dir = 'margin-left:50%' if swing > 0 else f'margin-left:{max(0, 50 + swing):.0f}%'
+                    bar_w = min(50, abs(swing) * 2)  # scale ±25pp to 50% bar width
+                    bo3_swing_html += (f'<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f5f5f5">'
+                                       f'<span style="width:110px;font-size:11px;color:#555;text-align:right">{opp.replace("_"," ").title()}</span>'
+                                       f'<span style="width:62px;font-size:10px;color:#888;text-align:right">G1 {bo1:.0f}%</span>'
+                                       f'<div style="flex:1;height:10px;background:#f0f0f0;border-radius:2px;overflow:hidden;position:relative;max-width:180px">'
+                                       f'<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#ccc"></div>'
+                                       f'<div style="height:100%;background:{swing_col};{bar_dir};width:{bar_w}%;border-radius:2px"></div>'
+                                       f'</div>'
+                                       f'<span style="width:68px;font-size:10px;color:#888;text-align:left">Bo3 {bo3:.0f}%</span>'
+                                       f'<span style="width:52px;font-size:11px;font-weight:700;color:{swing_col};text-align:right">{swing:+.1f}pp</span>'
+                                       f'</div>\n')
+                bo3_swing_html += '</div>\n'
+
+    # ------------------------------------------------------------------
+    # What Kills You — Removal Blind Spots. Aggregate opponent finishers
+    # across all matchups where opponent beat this deck. Top 8 shown.
+    # ------------------------------------------------------------------
+    what_kills_html = ''
+    if CARD_DATA:
+        killers = aggregate_what_kills(dk)
+        if killers:
+            top = killers[:8]
+            max_cnt = max(c for _, c in top) if top else 1
+            what_kills_html = '<div class="section-title">What Kills You — Removal Blind Spots</div>\n'
+            what_kills_html += ('<div style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.5">'
+                                'Cards that closed games against this deck across the metagame. '
+                                'If your removal suite doesn\'t have an answer to the top 3, you have a blind spot.</div>\n')
+            what_kills_html += '<div style="display:flex;flex-direction:column;gap:3px">\n'
+            for name, cnt in top:
+                bar_w = cnt / max_cnt * 100
+                what_kills_html += (f'<div style="display:flex;align-items:center;gap:8px;padding:3px 0">'
+                                    f'<span style="width:170px;font-size:12px;color:#333;text-align:right">'
+                                    f'<span class="card-tip" data-card="{name}">{name}</span></span>'
+                                    f'<div style="flex:1;height:12px;background:#f5f5f5;border-radius:2px;overflow:hidden;max-width:240px">'
+                                    f'<div style="width:{bar_w:.0f}%;height:100%;background:#b02020;border-radius:2px"></div>'
+                                    f'</div>'
+                                    f'<span style="width:60px;font-size:11px;font-weight:700;color:#b02020;text-align:right">{cnt} kills</span>'
+                                    f'</div>\n')
+            what_kills_html += '</div>\n'
+
     # Write using string concatenation (no f-strings for JS)
     _out_path = os.path.join(OUT_DIR, 'guide_'+dk+'.html')
     with open(_out_path,'w') as f:
@@ -320,6 +568,16 @@ for dk in sorted(DECKS.keys()):
         f.write('.card-tip{position:relative;cursor:pointer;border-bottom:1px dotted #ccc}.card-tip:hover{color:'+color+'}\n')
         f.write('#card-popup{position:fixed;z-index:999;pointer-events:none;display:none;border-radius:8px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.35);width:244px;height:340px;background:#111}\n')
         f.write('#card-popup img{width:100%;height:100%;object-fit:contain}\n')
+        # Stars of the Sim — 4-column card grid
+        f.write('.star-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}\n')
+        f.write('@media(max-width:720px){.star-cards{grid-template-columns:repeat(2,1fr)}}\n')
+        f.write('.star-card{border:1px solid #e0e0e0;border-radius:8px;padding:10px;display:flex;flex-direction:column;align-items:center;background:#fafafa}\n')
+        f.write('.star-label{display:inline-block;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}\n')
+        f.write('.star-label.mvp{background:#fff0e0;color:#c06010}.star-label.surprise{background:#e8f0ff;color:#2060c0}\n')
+        f.write('.star-card img{width:100%;max-width:140px;border-radius:6px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.15)}\n')
+        f.write('.star-name{font-size:12px;font-weight:700;color:#222;text-align:center;margin-bottom:4px;line-height:1.3}\n')
+        f.write('.star-stat{font-size:15px;font-weight:700;color:#1f7040;margin-bottom:4px}\n')
+        f.write('.star-desc{font-size:10px;color:#666;text-align:center;line-height:1.4}\n')
         f.write('</style></head><body>\n')
         
         # Hero
@@ -339,6 +597,10 @@ for dk in sorted(DECKS.keys()):
         f.write('<div class="section-title">Deck Construction Findings</div>\n')
         f.write(findings_html)
         f.write('</div></div>\n')
+        
+        # Stars of the Sim (NEW — card-level MVPs w/ Scryfall images)
+        if stars_html:
+            f.write(stars_html)
         
         # Game plan
         if plan:
@@ -381,6 +643,14 @@ for dk in sorted(DECKS.keys()):
         
         # Delta proof
         f.write(dp_html)
+        
+        # Bo3 Swing (NEW — match_wr vs bo1 wr per matchup)
+        if bo3_swing_html:
+            f.write(bo3_swing_html)
+        
+        # What Kills You (NEW — opponent finisher cards aggregated)
+        if what_kills_html:
+            f.write(what_kills_html)
         
         # Matchup spread
         f.write('<div class="section-title">Matchup Spread</div>\n')
