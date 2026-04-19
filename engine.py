@@ -4999,41 +4999,47 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
             return
 
         # ── Execute the kill ────────────────────────────────────────────────
-        # Simplified: cast the win condition (Tendrils or Infernal Tutor → Tendrils)
+        # Route kill_spell through cast_spell (fires Eidolon + counter window),
+        # with a custom on_counter that delivers the Flusterstorm rebuttal:
+        # Storm pitches Fluster vs FoW/FoN for a 65% save when no backup counter.
         kill_spell = tendrils or itutor
         if kill_spell:
-            player.remove_from_hand(kill_spell)
-            countered = _try_counter_any(player, opponent, gs, kill_spell, log_entries)
-            if countered:
-                # Storm pitches Flusterstorm vs FoW/FoN (65% success; fails vs backup counter)
+            _kill_budget = [budget[0]]
+            kill_effectively_resolved = [False]
+
+            def _resolve_kill(c):
+                player.add_to_grave(c)
+                kill_effectively_resolved[0] = True
+
+            def _on_counter_kill(c):
                 import random as _rr
                 fluster = player.find_tag('fluster')
                 last_ctr = getattr(gs, '_last_counter_used', None)
-                opp_has_backup = sum(1 for c in opponent.hand
-                                     if c.tag in ('fow','fon','fluster','daze')) >= 2
+                opp_has_backup = sum(1 for c2 in opponent.hand
+                                     if c2.tag in ('fow','fon','fluster','daze')) >= 2
                 can_fluster = (fluster and last_ctr in ('fow','fon','daze')
                                and not opp_has_backup and _rr.random() < 0.65)
+                player.add_to_grave(c)
                 if can_fluster:
                     player.remove_from_hand(fluster); player.add_to_grave(fluster)
-                    log_fn(f"  Flusterstorm beats {last_ctr} — {kill_spell.name} resolves!", True)
-                    countered = False
-            if not countered:
-                player.add_to_grave(kill_spell)
+                    log_fn(f"  Flusterstorm beats {last_ctr} — {c.name} resolves!", True)
+                    kill_effectively_resolved[0] = True
+
+            cast_spell(player, opponent, gs, kill_spell, _kill_budget,
+                       log_fn, log_entries,
+                       on_resolve=_resolve_kill, on_counter=_on_counter_kill)
+            budget[0] = _kill_budget[0]
+
+            if kill_effectively_resolved[0]:
                 for r in list(rituals): player.remove_from_hand(r); player.add_to_grave(r)
-                kill_type = 'Ad Nauseam' if kill_C else 'Past in Flames' if kill_D else 'Tendrils chain'
-                # Storm success — non-GY combo, no post-resolution fizzle (was double-jeopardy)
-                # Fizzle gate is only for GY combos (Oops, Reanimator) where hate can whiff the combo
-                import random as _rr2
-                if True:  # Storm always wins if Tendrils resolves through counters
-                    log_fn(f"★ Storm {kill_type} — wins (est. storm ~{est_storm + len(rituals)})", True)
-                    gs.game_over = True
-                    gs.kill_turn = gs.turn
-                    gs.winner = 'p1' if player is gs.p1 else 'p2'
-                    gs.win_reason = f"ANT combo ({kill_type})"
-                else:
-                    log_fn(f"Storm {kill_type} fizzles (BUG had backup interaction)")
-            else:
-                player.add_to_grave(kill_spell)
+                kill_type = ('Ad Nauseam' if kill_C else
+                             'Past in Flames' if kill_D else 'Tendrils chain')
+                log_fn(f"★ Storm {kill_type} — wins "
+                       f"(est. storm ~{est_storm + len(rituals)})", True)
+                gs.game_over = True
+                gs.kill_turn = gs.turn
+                gs.winner = 'p1' if player is gs.p1 else 'p2'
+                gs.win_reason = f"ANT combo ({kill_type})"
 
 
 
