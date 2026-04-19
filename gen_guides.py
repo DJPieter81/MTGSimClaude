@@ -315,6 +315,10 @@ def section_tournament_sim(i, D, arch):
     return out
 
 
+def section_tournament_arc(i, D, arch):
+    return '<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Tournament Arc</div><div style="display:flex;gap:2px;height:24px;border-radius:3px;overflow:hidden"><div style="flex:3;background:#d0f0d0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1f7040">R1-3 Bank</div><div style="flex:3;background:#fff0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#854f0b">R4-6 Gauntlet</div><div style="flex:2;background:#fde8e8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#b02020">R7-8 Top</div></div></div>\n'
+
+
 def section_tier_triptych(i, D, arch):
     decks, M = D['decks'], D['M']
     prey = len([x for x in decks if x != i and M.get(i+'|'+x, [50])[0] >= 80])
@@ -383,6 +387,7 @@ for dk in sorted(DECKS.keys()):
     archetype_wr_html = section_archetype_wr(d, D_CTX, agg)
     tournament_sim_html = section_tournament_sim(d, D_CTX, agg)
     tier_triptych_html = section_tier_triptych(d, D_CTX, agg)
+    tournament_arc_html = section_tournament_arc(d, D_CTX, agg)
 
     # Danger cards
     dangers=sorted([(M.get(d+'|'+x,[50])[0],x,agg.get(x,{}).get('type','?')) for x in decks if x!=d and M.get(d+'|'+x,[50])[0]<50])[:3]
@@ -663,8 +668,7 @@ for dk in sorted(DECKS.keys()):
         
         f.write(dc)
         
-        # Tournament arc
-        f.write('<div style="border:1px solid #e0e0e0;border-radius:4px;padding:14px;margin:12px 0"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:10px">Tournament Arc</div><div style="display:flex;gap:2px;height:24px;border-radius:3px;overflow:hidden"><div style="flex:3;background:#d0f0d0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1f7040">R1-3 Bank</div><div style="flex:3;background:#fff0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#854f0b">R4-6 Gauntlet</div><div style="flex:2;background:#fde8e8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#b02020">R7-8 Top</div></div></div>\n')
+        f.write(tournament_arc_html)
         
         # Delta proof
         f.write(dp_html)
