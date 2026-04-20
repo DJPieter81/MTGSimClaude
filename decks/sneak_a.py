@@ -237,12 +237,14 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
     payoffs = [c for c in player.hand
                if c.tag in ('emrakul', 'atraxa', 'omni', 'sneak')]
     if sat and payoffs and mana >= 3 and not gs.game_over:
-        if not _try_counter_any(player, opponent, gs, sat, log_entries):
-            player.remove_from_hand(sat)
-            player.add_to_grave(sat)
-            mana -= 3
-            player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
-
+        # Route SaT through cast_spell — fires Eidolon (cmc 3), opens counter
+        # window, deducts cmc, increments spells_cast_this_turn, and disposes
+        # the card correctly on either resolve or counter.
+        _budget_sat = [mana]
+        sat_resolved = cast_spell(player, opponent, gs, sat, _budget_sat,
+                                  log_fn, log_entries)
+        mana = _budget_sat[0]
+        if sat_resolved:
             # Choose best payoff: Emrakul > Omniscience > Sneak Attack > Atraxa
             payoff_priority = {'emrakul': 0, 'omni': 1, 'sneak': 2, 'atraxa': 3}
             best = min(payoffs, key=lambda c: payoff_priority.get(c.tag, 99))
@@ -310,7 +312,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                     gs.win_reason = "Sneak & Show: Sneak Attack in play"
                     gs.kill_turn = gs.turn + 1
         else:
-            player.add_to_grave(sat)
+            # Countered SaT is already in graveyard via cast_spell's default.
             log_fn("Show and Tell countered")
 
     # -- Step 4: Sneak Attack activation (if already in play) ------------------

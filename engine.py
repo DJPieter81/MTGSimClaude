@@ -3505,39 +3505,50 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
         for p in petals[:mana_needed]:
             player.remove_from_hand(p); player.add_to_grave(p)
 
+        # Optional Veil protection first — routes through cast_spell so Eidolon
+        # + counter window apply. On resolve, gs.veil_active is set, which
+        # try_reactive_counter (engine.py:854) respects — so SaT can't be
+        # countered when Veil lives through the stack.
         vos = player.find_tag('vos')
         if vos and can_afford(player, vos.mana_cost):
-            # Cast Veil first — but opponent gets a counter window
-            if not _try_counter_any(player, opponent, gs, vos, log_entries):
-                player.remove_from_hand(vos); player.add_to_grave(vos); gs.veil_active = True
+            _budget_vos = [total_mana]
+            def _resolve_veil(c):
+                player.add_to_grave(c)
+                gs.veil_active = True
                 log_fn("Veil of Summer — BUG blue/black counters blanked this gs.turn")
-            else:
-                player.remove_from_hand(vos); player.add_to_grave(vos)
+            if not cast_spell(player, opponent, gs, vos, _budget_vos,
+                              log_fn, log_entries, on_resolve=_resolve_veil):
                 log_fn("Veil of Summer countered")
-            player.remove_from_hand(sat); player.add_to_grave(sat)
+            total_mana = _budget_vos[0]
+
+        # Cast Show and Tell. cast_spell handles counter window (skipped under
+        # active Veil), Eidolon trigger, and grave disposition on counter.
+        _budget_sat = [total_mana]
+        sat_resolved = cast_spell(player, opponent, gs, sat, _budget_sat,
+                                  log_fn, log_entries)
+        total_mana = _budget_sat[0]
+
+        if sat_resolved:
             player.remove_from_hand(win_card)
             # BUG gets to put its best permanent in play too
             bug_put = opponent.find_any(lambda c: c.is_creature() and not c.is_land())
             if bug_put:
                 opponent.remove_from_hand(bug_put); opponent.put_creature_in_play(bug_put)
                 log_fn(f"  BUG puts {bug_put.name} in play")
-            log_fn(f"★ {win_card.name} enters through Veil (haste)" if getattr(win_card,'haste',False) else f"★ {win_card.name} enters through Veil", True)
-            if win_card.is_creature():
-                player.put_creature_in_play(win_card)
-            gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
-            gs.kill_turn = gs.turn
-            gs.win_reason = f"Show+Veil: {win_card.name}"
-        else:
-            player.remove_from_hand(sat)
-            if not _try_counter_any(player, opponent, gs, sat, log_entries):
-                player.add_to_grave(sat)
-                player.remove_from_hand(win_card)
-                bug_put = opponent.find_any(lambda c: c.is_creature() and not c.is_land())
-                if bug_put:
-                    opponent.remove_from_hand(bug_put); opponent.put_creature_in_play(bug_put)
-                    log_fn(f"  BUG puts {bug_put.name} in play")
+
+            if gs.veil_active:
+                # Veil branch: SaT is uncounterable, so win_card resolves safely.
+                log_fn(f"★ {win_card.name} enters through Veil (haste)"
+                       if getattr(win_card,'haste',False)
+                       else f"★ {win_card.name} enters through Veil", True)
+                if win_card.is_creature():
+                    player.put_creature_in_play(win_card)
+                gs.game_over = True; gs.winner = ('p1' if player is gs.p1 else 'p2')
+                gs.kill_turn = gs.turn
+                gs.win_reason = f"Show+Veil: {win_card.name}"
+            else:
+                # No Veil: normal SaT resolution with combat/omniscience chain.
                 log_fn(f"★ Show+Tell resolves: {win_card.name} enters play", True)
-                # Emrakul/Omniscience wins via combat — put creature in play and let combat happen
                 if win_card.is_creature():
                     player.put_creature_in_play(win_card)
                     # Emrakul has haste — attack immediately for lethal
@@ -3578,8 +3589,7 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
                                 gs.win_reason = f"Omniscience+{chain_target.name}"
                         else:
                             gs.show_creature_in_play = chain_target.name
-            else:
-                player.add_to_grave(sat)
+        # (Countered SaT is already in graveyard via cast_spell's default)
 
     # ── Sneak Attack activation (if Sneak on board and has Emrakul in hand) ──
     sneak_perm = next((p for p in player.artifacts if p.card.tag == 'sneak'), None)
@@ -3800,13 +3810,18 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         for _ in range(10):
             rit = next((c for c in player.hand if c.tag in ('darkrit', 'cabalrit')
                          and c.cmc <= total_mana), None)
-            if rit:
-                player.remove_from_hand(rit); player.add_to_grave(rit)
-                total_mana -= rit.cmc
-                total_mana += 3  # Dark Ritual/Cabal Ritual produce BBB/BBBBB
-                log_fn(f"{rit.name} → mana now {total_mana}")
-            else:
+            if not rit:
                 break
+            # Route through cast_spell: fires Eidolon, opens counter window,
+            # deducts cmc (respects Thalia) and adds +3 net on resolve.
+            budget = [total_mana]
+            def _resolve_rit(c):
+                player.add_to_grave(c)
+                budget[0] += 3  # Dark/Cabal Ritual produce BBB / BBBBB
+                log_fn(f"{c.name} → mana now {budget[0]}")
+            cast_spell(player, opponent, gs, rit, budget, log_fn, log_entries,
+                       on_resolve=_resolve_rit)
+            total_mana = budget[0]
 
     # ── 2b. Summoner's Pact: free tutor for green creature (Spy) ──
     # Pact costs 0 now, pay {2}{G}{G} next upkeep (or lose the game).
@@ -3881,15 +3896,15 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         # Try Veil protection first
         vos = player.find_tag('vos')
         if vos and total_mana >= combo_cost + 1:
-            if not _try_counter_any(player, opponent, gs, vos, log_entries):
-                player.remove_from_hand(vos); player.add_to_grave(vos)
+            budget = [total_mana]
+            def _resolve_veil(c):
+                player.add_to_grave(c)
                 gs.veil_active = True
-                total_mana -= 1
                 log_fn("Veil of Summer — blue interaction blanked")
-            else:
-                player.remove_from_hand(vos); player.add_to_grave(vos)
-                total_mana -= 1
+            if not cast_spell(player, opponent, gs, vos, budget,
+                              log_fn, log_entries, on_resolve=_resolve_veil):
                 log_fn("Veil of Summer countered")
+            total_mana = budget[0]
 
         # Mindbreak Trap check
         mindbreak_o = opponent.find_tag('mindbreak')
@@ -3900,9 +3915,12 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"★ Mindbreak Trap — {combo_card.name} exiled, combo fizzles", True)
             return
 
-        player.remove_from_hand(combo_card)
-        if not _try_counter_any(player, opponent, gs, combo_card, log_entries):
-            player.add_to_grave(combo_card)
+        # Cast combo card (Spy/Informer) — cast_spell fires Eidolon + counter window.
+        budget = [total_mana]
+        combo_resolved = cast_spell(player, opponent, gs, combo_card, budget,
+                                    log_fn, log_entries)
+        total_mana = budget[0]
+        if combo_resolved:
             # Mill entire library (no lands to stop it)
             milled = list(player.library)
             player.graveyard.extend(milled)
@@ -3940,8 +3958,7 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
                     log_fn("  Dread Return countered — combo fizzles")
             else:
                 log_fn(f"  Missing pieces for Oracle win (oracle={oracle_in_gy is not None}, dread={dread_in_gy is not None}, creatures={len(player.creatures)})")
-        else:
-            player.add_to_grave(combo_card)
+        # (Countered combo_card is already in graveyard via cast_spell's default)
 
 
 
@@ -3952,7 +3969,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     Handles both same-turn win and next-turn win after DD resolved previously."""
 
     dd_already_resolved = getattr(gs, '_doomsday_pile_built', False)
-    mana = total_mana  # track remaining mana
+    budget = [total_mana]  # mutable mana pool; deducted by cast_spell on resolve
 
     # Bayesian Hand Inference (§9 #8): estimate P(opp has free counter) from deck
     # identity + observed draws. Informational only here — surfaced in trace for
@@ -3974,8 +3991,8 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     gs.strat_log.log_decision(
         gs.turn, 'doomsday',
         candidates=['cast_doomsday', 'cycle_and_oracle', 'pass'],
-        chosen='cast_doomsday' if not dd_already_resolved and mana >= 3 else 'cycle_and_oracle' if dd_already_resolved else 'pass',
-        reason=f"mana={mana}, dd_resolved={dd_already_resolved}, life={player.life}, "
+        chosen='cast_doomsday' if not dd_already_resolved and budget[0] >= 3 else 'cycle_and_oracle' if dd_already_resolved else 'pass',
+        reason=f"mana={budget[0]}, dd_resolved={dd_already_resolved}, life={player.life}, "
                f"bhi_p_free_counter={belief.p_free_counter:.2f}")
 
     # ── Helper: cycle cards from hand (activated abilities — uncounterable) ──
@@ -4018,12 +4035,8 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         if expected_devotion < len(player.library):
             return False  # don't waste Oracle if it won't win yet
 
-        player.remove_from_hand(oracle)
-        countered = False
-        if not gs.veil_active:
-            countered = _try_counter_any(player, opponent, gs, oracle, log_entries)
-        if not countered:
-            player.put_creature_in_play(oracle)
+        def _resolve_oracle(c):
+            player.put_creature_in_play(c)
             lib_size = len(player.library)
             log_fn(f"  ★ Thassa's Oracle ETB — devotion {expected_devotion}, "
                    f"library {lib_size}", True)
@@ -4032,18 +4045,18 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             gs.winner = 'p1' if player is gs.p1 else 'p2'
             gs.win_reason = (f"Doomsday → Oracle (devotion {expected_devotion} "
                              f"≥ library {lib_size})")
-            gs.kill_turn = gs.turn
-            return True
-        else:
-            player.add_to_grave(oracle)
+
+        resolved = cast_spell(player, opponent, gs, oracle, budget,
+                              log_fn, log_entries, on_resolve=_resolve_oracle)
+        if not resolved:
             log_fn("  Oracle countered — Doomsday pile stranded")
-            return True  # spell was attempted
+        return True  # spell was attempted
 
     # ── Post-DD turns: pile already built, just draw + cast Oracle ──
     if dd_already_resolved:
         _cycle_draw_cards()
         if not gs.game_over:
-            _try_cast_oracle(mana)
+            _try_cast_oracle(budget[0])
         return
 
     # ── Pre-DD: rituals for mana acceleration ──
@@ -4051,18 +4064,23 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     # that dig for DD. Rituals drawn by cantrips are cast inside the cantrip loop.
     dd = player.find_tag('dd')
     if dd:
-        rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
-        extra = 0
+        rits = [c for c in list(player.hand)
+                if c.tag == 'darkrit' and opp_can_cast(c, budget[0], gs, caster=player)]
+        cast_count = 0
         for r in rits:
-            player.remove_from_hand(r); player.add_to_grave(r); extra += 2
-        if extra: log_fn(f"Dark Ritual ×{len(rits)} → +{extra} mana")
-        mana += extra
+            def _resolve_ritual(c):
+                player.add_to_grave(c)
+                budget[0] += 3  # Dark Ritual produces BBB
+            if cast_spell(player, opponent, gs, r, budget, log_fn, log_entries,
+                          on_resolve=_resolve_ritual):
+                cast_count += 1
+        if cast_count: log_fn(f"Dark Ritual ×{cast_count} resolved")
 
     # ── Cantrips (pre-DD: dig for combo pieces) ──
     # If we have DD + enough mana, skip mana cantrips to preserve mana for DD.
     # Free cycling (Wraith, Edge) is always fine. Only skip paid cantrips if DD ready.
     dd = player.find_tag('dd')
-    dd_ready = dd and mana >= 3  # DD costs BBB = 3 mana
+    dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
 
     # Cast free cantrips (cycling) to dig — these don't cost mana
     for _ in range(4):
@@ -4070,7 +4088,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         can = None
         if not dd_ready:
             can = next((c for c in player.hand if c.is_cantrip and c.tag not in ('wraith', 'edge')
-                        and mana >= 1), None)
+                        and budget[0] >= 1), None)
         if not can:
             can = next((c for c in player.hand if c.is_cantrip and c.tag == 'edge'
                         and player.lands), None)
@@ -4079,64 +4097,67 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                         and player.life > 2), None)
         if not can:
             break
-        player.remove_from_hand(can); player.add_to_grave(can)
         if can.tag == 'wraith':
+            # Cycling: activated ability, not a spell cast — bypass cast_spell
+            player.remove_from_hand(can); player.add_to_grave(can)
             player.life -= 2
             gs.check_life_totals()
             if gs.game_over: break
             log_fn(f"Street Wraith cycles (−2 life → {player.life}) — draws 1")
             player.draw(1)
+            if gs.bowmasters_on_board:
+                ctr = []; bowmasters_triggers(1, gs, ctr)
+                for m in ctr: log_entries.append(m)
         elif can.tag == 'edge':
+            # Cycling: activated ability, not a spell cast — bypass cast_spell
+            player.remove_from_hand(can); player.add_to_grave(can)
             if player.lands: sac = player.lands.pop(); player.add_to_grave(sac.card)
             log_fn(f"Edge of Autumn cycles (sac a land) — draws 1")
             player.draw(1)
+            if gs.bowmasters_on_board:
+                ctr = []; bowmasters_triggers(1, gs, ctr)
+                for m in ctr: log_entries.append(m)
         else:
-            draws = MTGRules.brainstorm_draws() if can.tag == 'bs' else 1
-            log_fn(f"{can.name} ({draws} draw{'s' if draws > 1 else ''})")
-            player.draw(draws)
-            mana -= 1
-        if gs.bowmasters_on_board:
-            ctr = []; bowmasters_triggers(1, gs, ctr)
-            for m in ctr: log_entries.append(m)
+            # Real cantrip (Brainstorm/Ponder/Preordain) — route through cast_spell
+            # resolve_cantrip handles draws + bowmasters trigger + add_to_grave
+            cast_spell(player, opponent, gs, can, budget, log_fn, log_entries,
+                       on_resolve=lambda c: resolve_cantrip(player, c, gs, log_fn, log_entries))
         # Re-check DD readiness after each cantrip (may have drawn DD or ritual)
         dd = player.find_tag('dd')
         # Also check for new rituals drawn by cantrips
-        new_rits = [c for c in player.hand if c.tag == 'darkrit' and opp_can_cast(c, mana, gs, caster=player)]
+        new_rits = [c for c in list(player.hand)
+                    if c.tag == 'darkrit' and opp_can_cast(c, budget[0], gs, caster=player)]
         for r in new_rits:
-            player.remove_from_hand(r); player.add_to_grave(r); mana += 2
-            log_fn(f"Dark Ritual → +2 mana")
-        dd_ready = dd and mana >= 3  # DD costs BBB = 3 mana
+            def _resolve_ritual(c):
+                player.add_to_grave(c)
+                budget[0] += 3  # Dark Ritual produces BBB
+            cast_spell(player, opponent, gs, r, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ritual)
+        dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
 
-    # ── Cast Doomsday if we have 5+ mana ──
+    # ── Cast Doomsday if we have 3+ mana (BBB) ──
     dd = player.find_tag('dd')
-    if dd and mana >= 3:  # DD costs BBB = 3 mana
-        dd_resolved = False
+    if dd and budget[0] >= 3:  # DD costs BBB = 3 mana
+        veil_cast = False
         vos = player.find_tag('vos')
         if vos:
-            veil_resolved = not _try_counter_any(player, opponent, gs, vos, log_entries)
-            player.remove_from_hand(vos); player.add_to_grave(vos)
-            if veil_resolved:
+            def _resolve_veil(c):
+                player.add_to_grave(c)
                 gs.veil_active = True
                 log_fn("Veil of Summer — blue interaction blanked")
-            else:
+            veil_cast = cast_spell(player, opponent, gs, vos, budget,
+                                   log_fn, log_entries, on_resolve=_resolve_veil)
+            if not veil_cast:
                 log_fn("Veil of Summer countered")
-            # DD must still pass counter check if Veil was countered
-            player.remove_from_hand(dd)
-            if veil_resolved or not _try_counter_any(player, opponent, gs, dd, log_entries):
-                player.add_to_grave(dd)
-                log_fn("★ Doomsday resolves" + (" through Veil" if veil_resolved else ""), True)
-                dd_resolved = True
-            else:
-                player.add_to_grave(dd)
-                log_fn("Doomsday countered")
+        # DD cast: gs.veil_active (set by _resolve_veil) is respected by
+        # try_reactive_counter (engine.py:854), so no manual bypass needed.
+        dd_resolved = cast_spell(player, opponent, gs, dd, budget,
+                                 log_fn, log_entries)
+        if dd_resolved:
+            log_fn("★ Doomsday resolves" +
+                   (" through Veil" if gs.veil_active else ""), True)
         else:
-            player.remove_from_hand(dd)
-            if not _try_counter_any(player, opponent, gs, dd, log_entries):
-                player.add_to_grave(dd)
-                log_fn("★ Doomsday resolves", True)
-                dd_resolved = True
-            else:
-                player.add_to_grave(dd)
+            log_fn("Doomsday countered")
 
         if dd_resolved:
             # Doomsday: pay half your life (rounded up)
@@ -4170,13 +4191,13 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             gs._doomsday_pile_built = True
             log_fn(f"  Pile built: {len(player.library)} cards in library")
 
-            mana -= 3  # DD costs BBB = 3 mana
+            # DD's 3-mana cost was already deducted by cast_spell.
 
             # Same-turn win attempt: cycle Wraiths from hand to thin pile + draw Oracle
             _cycle_draw_cards()
 
             if not gs.game_over:
-                _try_cast_oracle(mana)
+                _try_cast_oracle(budget[0])
 
 
 
@@ -4978,41 +4999,47 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
             return
 
         # ── Execute the kill ────────────────────────────────────────────────
-        # Simplified: cast the win condition (Tendrils or Infernal Tutor → Tendrils)
+        # Route kill_spell through cast_spell (fires Eidolon + counter window),
+        # with a custom on_counter that delivers the Flusterstorm rebuttal:
+        # Storm pitches Fluster vs FoW/FoN for a 65% save when no backup counter.
         kill_spell = tendrils or itutor
         if kill_spell:
-            player.remove_from_hand(kill_spell)
-            countered = _try_counter_any(player, opponent, gs, kill_spell, log_entries)
-            if countered:
-                # Storm pitches Flusterstorm vs FoW/FoN (65% success; fails vs backup counter)
+            _kill_budget = [budget[0]]
+            kill_effectively_resolved = [False]
+
+            def _resolve_kill(c):
+                player.add_to_grave(c)
+                kill_effectively_resolved[0] = True
+
+            def _on_counter_kill(c):
                 import random as _rr
                 fluster = player.find_tag('fluster')
                 last_ctr = getattr(gs, '_last_counter_used', None)
-                opp_has_backup = sum(1 for c in opponent.hand
-                                     if c.tag in ('fow','fon','fluster','daze')) >= 2
+                opp_has_backup = sum(1 for c2 in opponent.hand
+                                     if c2.tag in ('fow','fon','fluster','daze')) >= 2
                 can_fluster = (fluster and last_ctr in ('fow','fon','daze')
                                and not opp_has_backup and _rr.random() < 0.65)
+                player.add_to_grave(c)
                 if can_fluster:
                     player.remove_from_hand(fluster); player.add_to_grave(fluster)
-                    log_fn(f"  Flusterstorm beats {last_ctr} — {kill_spell.name} resolves!", True)
-                    countered = False
-            if not countered:
-                player.add_to_grave(kill_spell)
+                    log_fn(f"  Flusterstorm beats {last_ctr} — {c.name} resolves!", True)
+                    kill_effectively_resolved[0] = True
+
+            cast_spell(player, opponent, gs, kill_spell, _kill_budget,
+                       log_fn, log_entries,
+                       on_resolve=_resolve_kill, on_counter=_on_counter_kill)
+            budget[0] = _kill_budget[0]
+
+            if kill_effectively_resolved[0]:
                 for r in list(rituals): player.remove_from_hand(r); player.add_to_grave(r)
-                kill_type = 'Ad Nauseam' if kill_C else 'Past in Flames' if kill_D else 'Tendrils chain'
-                # Storm success — non-GY combo, no post-resolution fizzle (was double-jeopardy)
-                # Fizzle gate is only for GY combos (Oops, Reanimator) where hate can whiff the combo
-                import random as _rr2
-                if True:  # Storm always wins if Tendrils resolves through counters
-                    log_fn(f"★ Storm {kill_type} — wins (est. storm ~{est_storm + len(rituals)})", True)
-                    gs.game_over = True
-                    gs.kill_turn = gs.turn
-                    gs.winner = 'p1' if player is gs.p1 else 'p2'
-                    gs.win_reason = f"ANT combo ({kill_type})"
-                else:
-                    log_fn(f"Storm {kill_type} fizzles (BUG had backup interaction)")
-            else:
-                player.add_to_grave(kill_spell)
+                kill_type = ('Ad Nauseam' if kill_C else
+                             'Past in Flames' if kill_D else 'Tendrils chain')
+                log_fn(f"★ Storm {kill_type} — wins "
+                       f"(est. storm ~{est_storm + len(rituals)})", True)
+                gs.game_over = True
+                gs.kill_turn = gs.turn
+                gs.winner = 'p1' if player is gs.p1 else 'p2'
+                gs.win_reason = f"ANT combo ({kill_type})"
 
 
 
@@ -5333,19 +5360,47 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     grief = player.find_tag('grief')
     ephemerate = player.find_tag('ephemerate')
 
-    # T1 Grief+Ephemerate: strip 2 cards
+    # T1 Grief+Ephemerate: cast Grief (evoke — exile a black pitch), ETB
+    # strips 1, then Ephemerate blinks Grief for a 2nd ETB strip.
+    # Both spells route through cast_spell so Eidolon + counter window apply.
+    # Requires a non-Grief black card in hand for evoke cost (was implicitly
+    # cheated in the prior direct-manipulation code).
     if grief and ephemerate and gs.turn == 1:
-        player.remove_from_hand(grief); player.remove_from_hand(ephemerate)
-        player.add_to_grave(ephemerate)
-        for _ in range(2):
-            if opponent.hand:
-                t = (opponent.find_any(lambda c: c.free_cast_if_blue) or
-                     opponent.find_any(lambda c: c.is_creature()) or
-                     (next((c for c in opponent.hand if not c.is_land()), None)))
+        blacks = [c for c in player.hand
+                  if 'B' in getattr(c, 'colors', set())
+                  and c is not grief and c is not ephemerate]
+        if blacks:
+            pitch = blacks[0]
+            player.remove_from_hand(pitch); player.exile.append(pitch)
+            t1_budget = [total_mana]
+
+            def _strip_one(label):
+                if not opponent.hand:
+                    return
+                t = (opponent.find_any(lambda cc: cc.free_cast_if_blue) or
+                     opponent.find_any(lambda cc: cc.is_creature()) or
+                     (next((cc for cc in opponent.hand if not cc.is_land()), None)))
                 if t:
                     opponent.hand.remove(t)
-                    log_fn(f"★ Grief ETB — strips {t.name}", True)
-        player.put_creature_in_play(grief)
+                    log_fn(f"★ {label} — strips {t.name}", True)
+
+            def _resolve_grief_t1(c):
+                _strip_one("Grief ETB")
+                player.put_creature_in_play(c)
+
+            grief_resolved = cast_spell(player, opponent, gs, grief, None,
+                                        log_fn, log_entries,
+                                        on_resolve=_resolve_grief_t1)
+
+            if grief_resolved:
+                def _resolve_ephem_t1(c):
+                    player.add_to_grave(c)
+                    _strip_one("Grief re-ETB (Ephemerate blink)")
+                cast_spell(player, opponent, gs, ephemerate, t1_budget,
+                           log_fn, log_entries,
+                           on_resolve=_resolve_ephem_t1)
+
+            total_mana = t1_budget[0]
 
     # Evoke Grief T1-2 (no Ephemerate)
     elif grief and gs.turn <= 2:
