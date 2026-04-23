@@ -76,5 +76,14 @@
   Post-conversion sanity (n=100): 11.0% / 62.0% / 53.0% / 64.0% / 53.0% — bug_vs_burn
   -5.8pp shift is the expected Eidolon-sensitivity correction (more accurate trigger
   on cantrips / removal); other matchups within ±5pp noise band.
-- Remaining SKIPs: decks/belcher (16 casts, local cast_spell helper conflict),
-  decks/tes (33 casts, same).
+- decks/belcher: 12 casts converted (Land Grant, Tinder Wall, Probe, 4 rituals,
+  VoS, Charbelcher full+delayed, Burning Wish, Empty the Warrens). Local helper
+  removed in favour of engine.cast_spell; mana int replaced with `budget = [..]`
+  and storm counter with `storm = [0]`. Spirit Guides, Petals, Chrome Mox, LED
+  crack remain as activated/simplified mana production (out of the cast pipeline
+  to preserve current behaviour). Tests 149/0. P1/P2 WR shifts (n=100 vs n=500
+  baseline): belcher_vs_{burn,storm,dimir,show,oops,dnt} within ±5pp each;
+  P2 side shifted +9pp vs burn/storm (better counter coverage for Belcher's
+  rituals now that they traverse the unified counter window).
+- Remaining SKIPs: decks/tes (33 casts, local cast_spell helper, Veil+Mindbreak
+  + LED + Echo of Eons rebuttal logic).
