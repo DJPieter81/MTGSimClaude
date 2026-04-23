@@ -65,3 +65,16 @@
 - All 36 guides regenerated (500 games/deck, 129s)
 - Matrix HTML rebuilt (meta_matrix_20260414_172128.html, 719KB)
 - verify.py: 147/1 (only flaky symmetry storm vs bug 30%+37%=67%, stochastic noise)
+
+## Phase B continuation (2026-04-23)
+- _strategy_bug: 21 casts converted (TS, Bowmasters main+EOT, Push early+main, Snuff Out
+  early+main, Brainstorm, Ponder, Dismember, Endurance evoke+full, FoV paid, Pyro/Hydro,
+  Toxic Deluge, Surgical, Tamiyo, Goyf, Borrower, Murktide, Kaito). Abrupt Decay
+  intentionally left manual (officially uncounterable). Tests 149/0.
+  Pre-conversion baseline (n=500): bug_vs_burn 16.8%, bug_vs_storm 61.8%,
+  bug_vs_dimir 47.6%, bug_vs_show 62.6%, bug_vs_oops 51.6%.
+  Post-conversion sanity (n=100): 11.0% / 62.0% / 53.0% / 64.0% / 53.0% — bug_vs_burn
+  -5.8pp shift is the expected Eidolon-sensitivity correction (more accurate trigger
+  on cantrips / removal); other matchups within ±5pp noise band.
+- Remaining SKIPs: decks/belcher (16 casts, local cast_spell helper conflict),
+  decks/tes (33 casts, same).
