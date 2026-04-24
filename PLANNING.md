@@ -142,7 +142,7 @@ All P0 accuracy blockers are addressed. Next session priorities are P1/P2.
 
 ### P1 — Should Do
 
-1. **Finish skipped `cast_spell()` conversions** — close the Eidolon-coverage gap left by Phase B SKIPs: `_strategy_doomsday`, `_strategy_oops`, `_strategy_bug` (23 casts), `decks/belcher`, `decks/tes` (33 casts), and partial-conversion residue in storm/show/mardu/sneak_a/sneak_b. Each is its own commit; pattern documented in `docs/ARCHIVED_SESSION_TASK_2026-04-13.md`. Risk per-strategy: medium (intricate combo logic).
+1. **Finish skipped `cast_spell()` conversions** — close the Eidolon-coverage gap left by Phase B SKIPs. _strategy_doomsday, _strategy_oops, _strategy_storm, _strategy_show, _strategy_mardu were converted 2026-04-19. _strategy_bug (21 casts; Abrupt Decay intentionally left manual since it is officially uncounterable) and decks/belcher (12 casts: rituals, Probe, VoS, Charbelcher, Wish, Empty, Tinder Wall, Land Grant) converted 2026-04-23. **Remaining: `decks/tes` (33 casts)** — also defines a local `cast_spell` helper; complex storm chain with Veil+Mindbreak+LED+Echo of Eons rebuttal logic. Pattern documented in `docs/ARCHIVED_SESSION_TASK_2026-04-13.md`.
 
 2. ~~**Mardu proxy re-audit**~~ — ✅ DONE (2026-04-19 audit of `matrix_20260414_172128.json`): Mardu appears in **1** of the top-60 symmetry outliers (was "7" per the old claim, from a pre-PR-#84 matrix). Average |deviation| across all 630 pairs is 2.6pp. The one residual is `doomsday vs mardu: 36% + 72% = 107%` (Δ +7pp) — on the top-60 boundary, not a standout. Mardu's tier-based WR is 40.4% (rank 31/36, within T2 bounds 40-70%). No proxy-upgrade warranted on symmetry grounds. *Low meta-WR remains as a separate signal (see P2 #6 below).*
 

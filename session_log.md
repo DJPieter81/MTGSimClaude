@@ -65,3 +65,25 @@
 - All 36 guides regenerated (500 games/deck, 129s)
 - Matrix HTML rebuilt (meta_matrix_20260414_172128.html, 719KB)
 - verify.py: 147/1 (only flaky symmetry storm vs bug 30%+37%=67%, stochastic noise)
+
+## Phase B continuation (2026-04-23)
+- _strategy_bug: 21 casts converted (TS, Bowmasters main+EOT, Push early+main, Snuff Out
+  early+main, Brainstorm, Ponder, Dismember, Endurance evoke+full, FoV paid, Pyro/Hydro,
+  Toxic Deluge, Surgical, Tamiyo, Goyf, Borrower, Murktide, Kaito). Abrupt Decay
+  intentionally left manual (officially uncounterable). Tests 149/0.
+  Pre-conversion baseline (n=500): bug_vs_burn 16.8%, bug_vs_storm 61.8%,
+  bug_vs_dimir 47.6%, bug_vs_show 62.6%, bug_vs_oops 51.6%.
+  Post-conversion sanity (n=100): 11.0% / 62.0% / 53.0% / 64.0% / 53.0% — bug_vs_burn
+  -5.8pp shift is the expected Eidolon-sensitivity correction (more accurate trigger
+  on cantrips / removal); other matchups within ±5pp noise band.
+- decks/belcher: 12 casts converted (Land Grant, Tinder Wall, Probe, 4 rituals,
+  VoS, Charbelcher full+delayed, Burning Wish, Empty the Warrens). Local helper
+  removed in favour of engine.cast_spell; mana int replaced with `budget = [..]`
+  and storm counter with `storm = [0]`. Spirit Guides, Petals, Chrome Mox, LED
+  crack remain as activated/simplified mana production (out of the cast pipeline
+  to preserve current behaviour). Tests 149/0. P1/P2 WR shifts (n=100 vs n=500
+  baseline): belcher_vs_{burn,storm,dimir,show,oops,dnt} within ±5pp each;
+  P2 side shifted +9pp vs burn/storm (better counter coverage for Belcher's
+  rituals now that they traverse the unified counter window).
+- Remaining SKIPs: decks/tes (33 casts, local cast_spell helper, Veil+Mindbreak
+  + LED + Echo of Eons rebuttal logic).

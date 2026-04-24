@@ -177,45 +177,36 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
     Needs 7 total mana to cast + activate in one shot.
     Alternate plan: Empty the Warrens with high storm count.
     """
-    from engine import _try_counter_any, bowmasters_triggers
+    from engine import cast_spell, bowmasters_triggers
 
-    storm = 0
-    mana = total_mana
-
-    # ── Helper: cast a spell from hand ───────────────────────────────────────
-    def cast_spell(card, cost, label):
-        nonlocal storm, mana
-        player.remove_from_hand(card)
-        player.add_to_grave(card)
-        mana -= cost
-        storm += 1
-        player.spells_cast_this_turn += 1
-        log_fn(f"{label} (mana={mana}, storm={storm})")
+    storm = [0]   # mutable so on_resolve callbacks can increment
+    budget = [total_mana]
 
     def exile_for_mana(card, gained, label):
-        nonlocal storm, mana
         player.remove_from_hand(card)
         player.exile.append(card)
-        mana += gained
-        log_fn(f"{label} (mana={mana})")
+        budget[0] += gained
+        log_fn(f"{label} (mana={budget[0]})")
 
-    # ── Step 1: Free mana — Spirit Guides (exile from hand) ─────────────────
+    # ── Step 1: Free mana — Spirit Guides (activated ability, uncounterable) ─
     for esg in [c for c in player.hand if c.tag == 'esg']:
         exile_for_mana(esg, 1, "Elvish Spirit Guide (exile → +G)")
 
     for ssg in [c for c in player.hand if c.tag == 'ssg']:
         exile_for_mana(ssg, 1, "Simian Spirit Guide (exile → +R)")
 
-    # ── Step 2: Lotus Petals (free +1 each) ─────────────────────────────────
+    # ── Step 2: Lotus Petals (simplified as cast+sac — kept outside cast_spell
+    # pipeline so opponent can't counter a 0-mana artifact that would normally
+    # resolve without interaction) ───────────────────────────────────────────
     for petal in [c for c in player.hand if c.tag == 'petal']:
         player.remove_from_hand(petal)
         player.exile.append(petal)
-        mana += 1
-        storm += 1
+        budget[0] += 1
+        storm[0] += 1
         player.spells_cast_this_turn += 1
-        log_fn(f"Lotus Petal (mana={mana}, storm={storm})")
+        log_fn(f"Lotus Petal (mana={budget[0]}, storm={storm[0]})")
 
-    # ── Step 3: Chrome Mox (exile nonartifact/nonland → +1 mana) ────────────
+    # ── Step 3: Chrome Mox (cast-and-tap simplified; see Petals note) ───────
     for mox in [c for c in player.hand if c.tag == 'chrome_mox']:
         pitch = next((c for c in player.hand
                       if c is not mox and not c.is_land()
@@ -226,145 +217,157 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
             player.put_artifact_in_play(mox)
             player.remove_from_hand(pitch)
             player.exile.append(pitch)
-            mana += 1
-            storm += 1
+            budget[0] += 1
+            storm[0] += 1
             player.spells_cast_this_turn += 1
-            log_fn(f"Chrome Mox (exile {pitch.name}) → mana={mana} storm={storm}")
+            log_fn(f"Chrome Mox (exile {pitch.name}) → mana={budget[0]} storm={storm[0]}")
             break  # typically only imprint one
 
     # ── Step 4: Land Grant (free if no lands in hand) ───────────────────────
-    # Search for Taiga — puts a land in hand (then play it for mana)
     grant = player.find_tag('grant')
     has_land_in_hand = any(c.is_land() for c in player.hand)
     if grant and not has_land_in_hand:
-        player.remove_from_hand(grant)
-        player.add_to_grave(grant)
-        storm += 1
-        player.spells_cast_this_turn += 1
-        # Search library for Taiga
-        taiga = next((c for c in player.library if c.name == 'Taiga'), None)
-        if taiga:
-            player.library.remove(taiga)
-            player.hand.append(taiga)
-            log_fn(f"Land Grant (free, revealed hand) → Taiga to hand (storm={storm})")
-        else:
-            log_fn(f"Land Grant (free) — no Forest in library (storm={storm})")
+        def _resolve_grant(c):
+            player.add_to_grave(c)
+            storm[0] += 1
+            taiga = next((cc for cc in player.library if cc.name == 'Taiga'), None)
+            if taiga:
+                player.library.remove(taiga)
+                player.hand.append(taiga)
+                log_fn(f"Land Grant (free, revealed hand) → Taiga to hand (storm={storm[0]})")
+            else:
+                log_fn(f"Land Grant (free) — no Forest in library (storm={storm[0]})")
+        cast_spell(player, opponent, gs, grant, None, log_fn, log_entries,
+                   on_resolve=_resolve_grant)
 
     # Play Taiga from hand if we have it (land drop → +1 mana)
     taiga_in_hand = next((c for c in player.hand if c.name == 'Taiga'), None)
     if taiga_in_hand:
         player.remove_from_hand(taiga_in_hand)
         # Put on battlefield (simplified: just add mana)
-        mana += 1
-        log_fn(f"Play Taiga → mana={mana}")
+        budget[0] += 1
+        log_fn(f"Play Taiga → mana={budget[0]}")
 
-    # ── Step 5: Tinder Wall (sac for RR) ────────────────────────────────────
+    # ── Step 5: Tinder Wall (cast for {G}, sac for RR = net +1) ─────────────
     for tw in [c for c in player.hand if c.tag == 'tinder']:
-        if mana >= 1:
-            player.remove_from_hand(tw)
-            player.add_to_grave(tw)
-            # Cast for {G} (1 mana), then sac for RR = net +1
-            mana -= 1
-            mana += 2
-            storm += 1
-            player.spells_cast_this_turn += 1
-            log_fn(f"Tinder Wall (cast + sac → +RR, net +1) mana={mana} storm={storm}")
+        if budget[0] >= 1:
+            def _resolve_tinder(c):
+                player.add_to_grave(c)
+                budget[0] += 2   # sac for RR — cost_override=1 already deducted
+                storm[0] += 1
+                log_fn(f"Tinder Wall (cast + sac → +RR, net +1) mana={budget[0]} storm={storm[0]}")
+            cast_spell(player, opponent, gs, tw, budget, log_fn, log_entries,
+                       on_resolve=_resolve_tinder, cost_override=1)
 
     # ── Step 6: Gitaxian Probe (free, storm + draw) ─────────────────────────
     for probe in [c for c in player.hand if c.tag == 'probe']:
-        player.remove_from_hand(probe)
-        player.add_to_grave(probe)
-        player.life -= 2
-        player.draw(1)
-        storm += 1
-        player.spells_cast_this_turn += 1
-        log_fn(f"Gitaxian Probe (−2 life → {player.life}) storm={storm}")
-        bowmasters_triggers(1, gs, log_entries,
-                            controller='o' if player is gs.p1 else 'b')
-        gs.check_life_totals()
+        def _resolve_probe(c):
+            player.add_to_grave(c)
+            player.life -= 2
+            player.draw(1)
+            storm[0] += 1
+            log_fn(f"Gitaxian Probe (−2 life → {player.life}) storm={storm[0]}")
+            bowmasters_triggers(1, gs, log_entries,
+                                controller='o' if player is gs.p1 else 'b')
+            gs.check_life_totals()
+        cast_spell(player, opponent, gs, probe, None, log_fn, log_entries,
+                   on_resolve=_resolve_probe)
         if gs.game_over:
             return
 
     # ── Step 7: Rituals ─────────────────────────────────────────────────────
     # Dark Ritual: {B} → BBB (net +2)
     for rit in [c for c in player.hand if c.tag == 'darkrit']:
-        if mana >= 1:
-            cast_spell(rit, 1, "Dark Ritual → +BBB")
-            mana += 3  # cast_spell already did -1, ritual adds BBB (+3), net = +2
+        if budget[0] >= 1:
+            def _resolve_darkrit(c):
+                player.add_to_grave(c)
+                budget[0] += 3  # Dark Ritual adds BBB; cost_override=1 already deducted
+                storm[0] += 1
+                log_fn(f"Dark Ritual → +BBB (mana={budget[0]}, storm={storm[0]})")
+            cast_spell(player, opponent, gs, rit, budget, log_fn, log_entries,
+                       on_resolve=_resolve_darkrit, cost_override=1)
 
-    # Rite of Flame: {R} → RR (net +1), or RRR if rite in GY (net +2)
+    # Rite of Flame: {R} → RR (net +1), or RRR if rite already in GY
     for rite in [c for c in player.hand if c.tag == 'rite']:
-        if mana >= 1:
-            rites_in_gy = sum(1 for c in player.graveyard if c.tag == 'rite')
-            produced = 3 if rites_in_gy > 0 else 2  # total mana produced
-            cast_spell(rite, 1, f"Rite of Flame → +{'RRR' if produced == 3 else 'RR'}")
-            mana += produced  # cast_spell already did -1, add full produced amount
+        if budget[0] >= 1:
+            _rites_in_gy = sum(1 for c in player.graveyard if c.tag == 'rite')
+            _produced = 3 if _rites_in_gy > 0 else 2
+            def _resolve_rite(c, _p=_produced):
+                player.add_to_grave(c)
+                budget[0] += _p
+                storm[0] += 1
+                log_fn(f"Rite of Flame → +{'RRR' if _p == 3 else 'RR'} "
+                       f"(mana={budget[0]}, storm={storm[0]})")
+            cast_spell(player, opponent, gs, rite, budget, log_fn, log_entries,
+                       on_resolve=_resolve_rite, cost_override=1)
 
     # Desperate Ritual: {1R} → RRR (net +1)
     for des in [c for c in player.hand if c.tag == 'desperate']:
-        if mana >= 2:
-            cast_spell(des, 2, "Desperate Ritual → +RRR")
-            mana += 3  # net after cost already deducted (add 3 back = net +1)
+        if budget[0] >= 2:
+            def _resolve_desperate(c):
+                player.add_to_grave(c)
+                budget[0] += 3
+                storm[0] += 1
+                log_fn(f"Desperate Ritual → +RRR (mana={budget[0]}, storm={storm[0]})")
+            cast_spell(player, opponent, gs, des, budget, log_fn, log_entries,
+                       on_resolve=_resolve_desperate, cost_override=2)
 
     # Seething Song: {2R} → RRRRR (net +2)
     for song in [c for c in player.hand if c.tag == 'seething']:
-        if mana >= 3:
-            cast_spell(song, 3, "Seething Song → +RRRRR")
-            mana += 5  # net after cost already deducted (add 5 back = net +2)
+        if budget[0] >= 3:
+            def _resolve_seething(c):
+                player.add_to_grave(c)
+                budget[0] += 5
+                storm[0] += 1
+                log_fn(f"Seething Song → +RRRRR (mana={budget[0]}, storm={storm[0]})")
+            cast_spell(player, opponent, gs, song, budget, log_fn, log_entries,
+                       on_resolve=_resolve_seething, cost_override=3)
 
     # ── Step 8: Veil of Summer (protect combo) ──────────────────────────────
     vos = player.find_tag('vos')
     opp_has_counters = any(c.tag in ('fow', 'fon', 'daze', 'fluster')
                           for c in opponent.hand)
     opp_mana_up = sum(1 for l in opponent.lands if not l.tapped)
-    if vos and mana >= 1 and (opp_has_counters or opp_mana_up >= 1):
+    if vos and budget[0] >= 1 and (opp_has_counters or opp_mana_up >= 1):
         if not getattr(gs, 'veil_active', False):
-            player.remove_from_hand(vos)
-            player.add_to_grave(vos)
-            gs.veil_active = True
-            mana -= 1
-            storm += 1
-            player.spells_cast_this_turn += 1
-            log_fn(f"★ Veil of Summer — uncounterable (storm={storm})", True)
+            def _resolve_vos(c):
+                player.add_to_grave(c)
+                gs.veil_active = True
+                storm[0] += 1
+                log_fn(f"★ Veil of Summer — uncounterable (storm={storm[0]})", True)
+            cast_spell(player, opponent, gs, vos, budget, log_fn, log_entries,
+                       on_resolve=_resolve_vos, cost_override=1)
 
     # ── Step 9: Cast + Activate Goblin Charbelcher ──────────────────────────
     belcher = player.find_tag('belcher')
-    if belcher and mana >= 7 and not gs.game_over:
-        # Cast Charbelcher (4 mana)
-        if not _try_counter_any(player, opponent, gs, belcher, log_entries):
-            player.remove_from_hand(belcher)
-            perm = player.put_artifact_in_play(belcher)
-            mana -= 4
-            storm += 1
-            player.spells_cast_this_turn += 1
-            log_fn(f"★ Goblin Charbelcher (mana={mana}, storm={storm})", True)
-
+    if belcher and budget[0] >= 7 and not gs.game_over:
+        def _resolve_belcher_full(c):
+            player.put_artifact_in_play(c)
+            storm[0] += 1
+            log_fn(f"★ Goblin Charbelcher (mana={budget[0]}, storm={storm[0]})", True)
             # Activate Charbelcher (3 mana, tap)
-            if mana >= 3:
-                mana -= 3
+            if budget[0] >= 3:
+                budget[0] -= 3
                 _activate_charbelcher(player, opponent, gs, log_fn, log_entries)
-        else:
-            player.add_to_grave(belcher)
+        if not cast_spell(player, opponent, gs, belcher, budget, log_fn, log_entries,
+                          on_resolve=_resolve_belcher_full, cost_override=4):
             log_fn("Goblin Charbelcher countered")
 
     # ── Step 10: Cast Charbelcher without activating (if mana < 7 but >= 4)
-    if not gs.game_over and player.find_tag('belcher') and mana >= 4 and mana < 7:
+    if not gs.game_over and player.find_tag('belcher') and budget[0] >= 4 and budget[0] < 7:
         belcher = player.find_tag('belcher')
-        if not _try_counter_any(player, opponent, gs, belcher, log_entries):
-            player.remove_from_hand(belcher)
-            player.put_artifact_in_play(belcher)
-            mana -= 4
-            storm += 1
-            player.spells_cast_this_turn += 1
-            log_fn(f"Charbelcher cast (waiting to activate next turn) mana={mana}")
-        else:
-            player.add_to_grave(belcher)
+        def _resolve_belcher_delayed(c):
+            player.put_artifact_in_play(c)
+            storm[0] += 1
+            log_fn(f"Charbelcher cast (waiting to activate next turn) mana={budget[0]}")
+        if not cast_spell(player, opponent, gs, belcher, budget, log_fn, log_entries,
+                          on_resolve=_resolve_belcher_delayed, cost_override=4):
             log_fn("Goblin Charbelcher countered")
 
     # ── Step 11: Burning Wish → Empty the Warrens from sideboard ────────────
     wish = player.find_tag('burning_wish')
-    if not gs.game_over and wish and mana >= 2 and storm >= 3:
-        # Crack LED in response if available
+    if not gs.game_over and wish and budget[0] >= 2 and storm[0] >= 3:
+        # Crack LED in response (activated ability — uncounterable)
         led = player.find_tag('led')
         if led:
             player.remove_from_hand(led)
@@ -373,40 +376,37 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
             for c in discarded:
                 player.remove_from_hand(c)
                 player.graveyard.append(c)
-            mana += 3
-            storm += 1
+            budget[0] += 3
+            storm[0] += 1
             player.spells_cast_this_turn += 1
-            log_fn(f"★ LED cracked — +3 mana={mana}, storm={storm}", True)
+            log_fn(f"★ LED cracked — +3 mana={budget[0]}, storm={storm[0]}", True)
 
-        player.remove_from_hand(wish)
-        player.add_to_grave(wish)
-        mana -= 2
-        storm += 1
-        player.spells_cast_this_turn += 1
-
-        # Fetch Empty the Warrens from SB
-        empty_card = sorcery('Empty the Warrens', 4, {'R': 1, 'generic': 3},
-                             {'R'}, tag='empty', win_condition=True)
-        player.hand.append(empty_card)
-        log_fn(f"Burning Wish → Empty the Warrens (storm={storm})", True)
+        def _resolve_wish(c):
+            player.add_to_grave(c)
+            storm[0] += 1
+            # Fetch Empty the Warrens from SB
+            empty_card = sorcery('Empty the Warrens', 4, {'R': 1, 'generic': 3},
+                                 {'R'}, tag='empty', win_condition=True)
+            player.hand.append(empty_card)
+            log_fn(f"Burning Wish → Empty the Warrens (storm={storm[0]})", True)
+        cast_spell(player, opponent, gs, wish, budget, log_fn, log_entries,
+                   on_resolve=_resolve_wish, cost_override=2)
 
     # ── Step 12: Empty the Warrens as backup win ────────────────────────────
     empty = player.find_tag('empty')
-    if not gs.game_over and empty and mana >= 4 and storm >= 3:
-        if not _try_counter_any(player, opponent, gs, empty, log_entries):
-            player.remove_from_hand(empty)
-            player.add_to_grave(empty)
-            storm += 1
-            player.spells_cast_this_turn += 1
-            token_count = (storm + 1) * 2
-            log_fn(f"★ Empty the Warrens — storm {storm}, {token_count} Goblins", True)
+    if not gs.game_over and empty and budget[0] >= 4 and storm[0] >= 3:
+        def _resolve_empty(c):
+            player.add_to_grave(c)
+            storm[0] += 1
+            token_count = (storm[0] + 1) * 2
+            log_fn(f"★ Empty the Warrens — storm {storm[0]}, {token_count} Goblins", True)
             if token_count >= 6:
                 gs.game_over = True
                 gs.winner = 'p1' if player is gs.p1 else 'p2'
                 gs.win_reason = f"Belcher: Empty the Warrens ({token_count} goblins)"
                 gs.kill_turn = gs.turn + 1
-        else:
-            player.add_to_grave(empty)
+        if not cast_spell(player, opponent, gs, empty, budget, log_fn, log_entries,
+                          on_resolve=_resolve_empty, cost_override=4):
             log_fn("Empty the Warrens countered")
 
     gs.state_based_actions()
