@@ -567,21 +567,26 @@ def make_doomsday_deck() -> List[Card]:
     d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 4  # was 3
     d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 3
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 3
-    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 3  # was 4 — trimmed 1 to make room for Lurrus
-    d += [instant('Edge of Autumn', 2, {'G':1,'generic':1}, {'G'}, tag='edge', is_cantrip=True)] * 1  # was 2 (trimmed to fit 60)
-    # Lurrus of the Dream-Den — companion in real Legacy. Simulator can't model
-    # companion zone, so we put 2 copies in main as an approximation. Lurrus
-    # provides a 3/2 lifelink body for vs-aggro racing (key gap iter-8 found:
-    # Doomsday's vs-Burn baseline is 4.3 % because the deck has no defense).
+    # Wraith count was 4; trimmed to 1 to fit Lurrus (iter 9) + Petal (iter 10).
+    # NOTE: post-DD pile is built via fresh `_make_wraith()` calls in the
+    # strategy (engine.py ~4176), so deck wraith count doesn't affect combo
+    # quality — only pre-DD cycling thinning. 1 wraith is sufficient.
+    # Wraith trimmed 4 → 1 (Lurrus + Petal). Pile post-DD is built via fresh
+    # `_make_wraith()` calls (engine.py ~4176) so deck count doesn't matter.
+    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 1
+    # Edge of Autumn dropped — Petal is strictly better fast mana.
+    # Lurrus of the Dream-Den — companion (iter 9).
     d += [creature("Lurrus of the Dream-Den", 2, {'B':1,'generic':1}, {'B'}, 3, 2,
                    tag='lurrus', lifelink=True)] * 2
-    # 25 lands (was 26 — trimmed 1 Cavern to fit Lurrus)
-    d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 3  # was 4
+    # Lotus Petal — fast mana for race-turn Doomsday casts (iter 10).
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    # 23 lands (-2 from baseline 25). Petal acts as +4 mana sources.
+    d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 3  # -1
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
     d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 1
-    d += [basic_land('Island', 'U', 'Island')] * 5  # was 6 (trimmed to fit 60)
+    d += [basic_land('Island', 'U', 'Island')] * 4  # -1
     d += [basic_land('Swamp', 'B', 'Swamp')] * 4
     d += [basic_land('Forest', 'G', 'Forest')] * 2
     assert len(d) == 60, f"Doomsday deck: {len(d)}"

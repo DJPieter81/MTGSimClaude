@@ -4070,6 +4070,15 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     # that dig for DD. Rituals drawn by cantrips are cast inside the cantrip loop.
     dd = player.find_tag('dd')
     if dd:
+        # Crack Lotus Petals first — they cost 0 mana and produce 1, so they
+        # always strictly add to the budget. Iter-10 addition; key for race
+        # turns where T2-DD = +1 turn faster combo than T3-DD.
+        for petal in [c for c in list(player.hand) if c.tag == 'petal']:
+            player.remove_from_hand(petal)
+            player.add_to_grave(petal)
+            budget[0] += 1
+            log_fn("Lotus Petal → +1 mana")
+
         rits = [c for c in list(player.hand)
                 if c.tag == 'darkrit' and opp_can_cast(c, budget[0], gs, caster=player)]
         cast_count = 0
