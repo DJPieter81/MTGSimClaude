@@ -141,6 +141,7 @@ class Card:
     deathtouch: bool = False             # CR 702.2: any damage dealt is lethal damage
     lifelink: bool = False               # CR 702.15: damage dealt also causes life gain
     vigilance: bool = False              # CR 702.20: attacking doesn't cause creature to tap
+    pro_red: bool = False                # CR 702.16: protection from red — prevents red damage to controller and permanents (currently used for Sanctifier en-Vec)
     delve: bool = False
     free_cast_if_blue: bool = False   # FoW/FoN alternate cost: exile blue card
     life_cost: int = 0                # Additional life paid on cast (CR 118.9): Thoughtseize=2, Snuff Out=4
