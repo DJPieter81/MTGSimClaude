@@ -37,13 +37,16 @@ class ConfigResult:
     name: str
     use_neural_gates: bool
     use_neural_scorer: bool
+    use_ensemble: bool
     n_p1: int
     n_p2: int
-    p1_wins: int  # tes as P1
-    p2_wins: int  # tes as P2 (i.e. opponent in role P1 lost)
+    p1_wins: int  # protagonist as P1
+    p2_wins: int  # protagonist as P2 (i.e. opponent in role P1 lost)
     avg_kill_p1: float
     avg_kill_p2: float
     elapsed_s: float
+    p1_deck: str = "tes"
+    p2_deck: str = "burn"
 
     @property
     def p1_wr(self) -> float:
@@ -72,15 +75,18 @@ def _wr_ci(wins: int, n: int) -> tuple[float, float]:
 
 
 def run_config(name: str, n: int, seed_start: int,
-               use_gates: bool, use_scorer: bool) -> ConfigResult:
+               use_gates: bool, use_scorer: bool,
+               use_ensemble: bool = False,
+               p1_deck: str = "tes", p2_deck: str = "burn") -> ConfigResult:
     t0 = time.time()
     p1_wins = 0
     p1_kt = []
     for i in range(n):
         random.seed(seed_start + i)
-        r = run_game("tes", "burn",
+        r = run_game(p1_deck, p2_deck,
                      use_neural_gates=use_gates,
-                     use_neural_scorer=use_scorer)
+                     use_neural_scorer=use_scorer,
+                     use_ensemble=use_ensemble)
         if r.winner == "p1":
             p1_wins += 1
         if r.kill_turn:
@@ -90,10 +96,11 @@ def run_config(name: str, n: int, seed_start: int,
     p2_kt = []
     for i in range(n):
         random.seed(seed_start + 100_000 + i)
-        r = run_game("burn", "tes",
+        r = run_game(p2_deck, p1_deck,
                      use_neural_gates=use_gates,
-                     use_neural_scorer=use_scorer)
-        if r.winner == "p2":  # tes was P2 and won
+                     use_neural_scorer=use_scorer,
+                     use_ensemble=use_ensemble)
+        if r.winner == "p2":  # protagonist was P2 and won
             p2_wins += 1
         if r.kill_turn:
             p2_kt.append(r.kill_turn)
@@ -102,6 +109,8 @@ def run_config(name: str, n: int, seed_start: int,
         name=name,
         use_neural_gates=use_gates,
         use_neural_scorer=use_scorer,
+        use_ensemble=use_ensemble,
+        p1_deck=p1_deck, p2_deck=p2_deck,
         n_p1=n, n_p2=n,
         p1_wins=p1_wins, p2_wins=p2_wins,
         avg_kill_p1=sum(p1_kt) / max(1, len(p1_kt)),
@@ -128,6 +137,7 @@ def _row_html(cfg: ConfigResult, baseline: ConfigResult) -> str:
           <td><strong>{cfg.name}</strong></td>
           <td><code>{int(cfg.use_neural_gates)}</code></td>
           <td><code>{int(cfg.use_neural_scorer)}</code></td>
+          <td><code>{int(cfg.use_ensemble)}</code></td>
           <td>{cfg.p1_wr*100:.1f}% <span class="ci">[{p1_lo*100:.1f}–{p1_hi*100:.1f}]</span></td>
           <td>{cfg.p2_wr*100:.1f}% <span class="ci">[{p2_lo*100:.1f}–{p2_hi*100:.1f}]</span></td>
           <td><strong>{cfg.combined_wr*100:.1f}%</strong></td>
@@ -185,9 +195,9 @@ def render_html(results: list[ConfigResult], n: int, out_path: Path) -> None:
     <thead>
       <tr>
         <th>Config</th>
-        <th>gates</th><th>scorer</th>
-        <th>P1 WR (TES on play)</th>
-        <th>P2 WR (TES on draw)</th>
+        <th>gates</th><th>scorer</th><th>ens</th>
+        <th>P1 WR (on play)</th>
+        <th>P2 WR (on draw)</th>
         <th>Combined WR</th>
         <th>Δ vs baseline</th>
         <th>avg kill (P1/P2)</th>

@@ -436,7 +436,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         if _cantrip_iter >= 1 and getattr(gs, 'use_neural_scorer', False):
             try:
                 from neural_scorer import score as _nn_score
-                _p_win = _nn_score(gs, player, opponent)
+                _p_win = _nn_score(gs, player, opponent, deck='tes')
                 if _p_win is not None and _p_win >= 0.55:
                     log_fn(f"[neural_scorer] P(TES wins)={_p_win:.2f} — "
                            f"stopping cantrip chain to preserve resources")

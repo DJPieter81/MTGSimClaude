@@ -26,7 +26,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-from neural_scorer import TesScorer, CHECKPOINT_PATH, NORM_STATS_PATH
+from neural_scorer import TesScorer, CHECKPOINT_PATH as DEFAULT_CHECKPOINT
+from neural_scorer import NORM_STATS_PATH as DEFAULT_NORM_STATS
 from state_encoder import FEATURE_ORDER
 
 
@@ -76,12 +77,21 @@ def _apply_norm(x: torch.Tensor, stats: dict) -> torch.Tensor:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--in", dest="input_path", default="traces/tes_burn.jsonl")
+    ap.add_argument("--out-prefix", default=None,
+                    help="path prefix for outputs; '<prefix>.pt' + "
+                         "'<prefix>_norm.json' (default: tes_scorer)")
     ap.add_argument("--epochs", type=int, default=40)
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--lr", type=float, default=2e-3)
     ap.add_argument("--val-split", type=float, default=0.2)
     ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
+    if args.out_prefix is None:
+        ckpt_path = DEFAULT_CHECKPOINT
+        norm_path = DEFAULT_NORM_STATS
+    else:
+        ckpt_path = Path(f"{args.out_prefix}.pt")
+        norm_path = Path(f"{args.out_prefix}_norm.json")
 
     torch.manual_seed(args.seed)
 
@@ -143,10 +153,10 @@ def main() -> int:
                   f"val_acc={val_acc:.3f}")
 
     # Save model + norm stats.
-    CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(model.state_dict(), CHECKPOINT_PATH)
-    NORM_STATS_PATH.write_text(json.dumps(stats))
-    print(f"[save] {CHECKPOINT_PATH}  +  {NORM_STATS_PATH}")
+    ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), ckpt_path)
+    norm_path.write_text(json.dumps(stats))
+    print(f"[save] {ckpt_path}  +  {norm_path}")
     print(f"[summary] final val_acc={val_acc:.3f}  baseline={baseline_acc:.3f}  "
           f"lift={val_acc - baseline_acc:+.3f}")
     return 0

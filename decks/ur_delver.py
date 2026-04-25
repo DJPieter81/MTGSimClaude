@@ -100,6 +100,7 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
     """
     from engine import _try_counter_any, bowmasters_triggers, combat_declare
     from engine import update_goyf, opp_can_cast
+    from state_encoder import record as _trace_record
 
     mana = total_mana
     turn = gs.turn
@@ -194,9 +195,29 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
                        on_resolve=_resolve_borrow, cost_override=3)
 
     # ── 2. Cantrips ──
+    _cant_cands = [t for t in ('bs', 'ponder', 'pre')
+                   if player.find_tag(t) is not None and budget[0] >= 1]
     for cantrip_tag in ('bs', 'ponder', 'pre'):
         cantrip = player.find_tag(cantrip_tag)
         if cantrip and budget[0] >= 1:
+            # ── TRACE: cantrip pick (≥ 2 candidates only) ───────────────
+            if len(_cant_cands) >= 2:
+                _trace_record('ur_cantrip_pick', cantrip_tag, gs, player, opponent,
+                              candidates=_cant_cands)
+            # ── PHASE 3 OPT-IN: NN scorer can re-rank cantrip choices ───
+            if (getattr(gs, 'use_neural_scorer', False)
+                    and len(_cant_cands) >= 2):
+                try:
+                    from neural_scorer import score as _nn_score
+                    # Score the current state. Lever 2 (1-ply lookahead) will
+                    # do per-candidate scoring; for now this just observes.
+                    _trace_record('ur_cantrip_score',
+                                  cantrip_tag, gs, player, opponent,
+                                  candidates=_cant_cands,
+                                  scorer_p_win=_nn_score(gs, player, opponent,
+                                                         deck='ur_delver'))
+                except Exception:
+                    pass
             def _resolve_cant(c):
                 player.add_to_grave(c)
                 player.draw(1)
@@ -247,6 +268,48 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
                         or (opponent.life <= 9 and turn >= 5)))
 
         if target or go_face:
+            # ── TRACE: Bolt mode decision (creature vs face) ────────────
+            _bolt_mode = 'face' if (go_face and target is None) else 'creature'
+            if target is not None or go_face:
+                _trace_record('ur_bolt_mode', _bolt_mode, gs, player, opponent,
+                              target_name=target.card.name if target else None,
+                              opp_life=opponent.life,
+                              creatures_on_board=len(opponent.creatures),
+                              has_clock=has_clock)
+            # ── LEVER 2: 1-ply action-space lookahead via NN scorer ────
+            # When BOTH face and a creature target are available AND the
+            # neural-scorer flag is on, score each post-state and pick max.
+            # The heuristic restricts face to opp.life ≤ 9 — the NN can
+            # vote face even when life is higher if it predicts a higher
+            # win probability there.
+            if (getattr(gs, 'use_neural_scorer', False)
+                    and target is not None and has_clock):
+                try:
+                    from lookahead import (argmax_action,
+                                           hypothetical_life_delta,
+                                           hypothetical_creature_removed)
+                    _cands = [
+                        ('face',     hypothetical_life_delta(opponent, -3)),
+                        ('creature', hypothetical_creature_removed(opponent, target)),
+                    ]
+                    if getattr(gs, 'use_ensemble', False):
+                        from determinization import ensemble_argmax_action
+                        _best_tag, _best_score = ensemble_argmax_action(
+                            gs, player, opponent, 'ur_delver',
+                            _cands, default_tag=_bolt_mode, n_samples=5)
+                    else:
+                        _best_tag, _best_score = argmax_action(
+                            gs, player, opponent, 'ur_delver',
+                            _cands, default_tag=_bolt_mode)
+                    if _best_tag == 'face' and _best_score is not None:
+                        target = None  # override → go face
+                        log_fn(f"[neural_scorer] face P(win)={_best_score:.2f} "
+                               f"> creature → going face")
+                    elif _best_tag == 'creature':
+                        log_fn(f"[neural_scorer] keep target choice "
+                               f"(P(win)={_best_score:.2f})")
+                except Exception as _e:
+                    log_fn(f"[neural_scorer] bolt lookahead error: {_e!r}")
             _b = [mana]
             def _resolve_bolt(c, _t=target):
                 player.add_to_grave(c)
@@ -283,6 +346,36 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
 
         if heat_targets:
             target = heat_targets[0]
+            # ── LEVER 2: Heat target lookahead via NN scorer ──────────
+            if (getattr(gs, 'use_neural_scorer', False)
+                    and len(heat_targets) >= 2):
+                try:
+                    from lookahead import (argmax_action,
+                                           hypothetical_creature_removed)
+                    _cands = [
+                        (f"idx{i}",
+                         hypothetical_creature_removed(opponent, perm))
+                        for i, perm in enumerate(heat_targets)
+                    ]
+                    if getattr(gs, 'use_ensemble', False):
+                        from determinization import ensemble_argmax_action
+                        _best_tag, _best_score = ensemble_argmax_action(
+                            gs, player, opponent, 'ur_delver',
+                            _cands, default_tag='idx0', n_samples=5)
+                    else:
+                        _best_tag, _best_score = argmax_action(
+                            gs, player, opponent, 'ur_delver',
+                            _cands, default_tag='idx0')
+                    if _best_tag is not None:
+                        _best_idx = int(_best_tag.replace('idx', ''))
+                        target = heat_targets[_best_idx]
+                        if _best_score is not None:
+                            log_fn(f"[neural_scorer] Heat target → "
+                                   f"{target.card.name} (P(win)={_best_score:.2f})")
+                except Exception as _e:
+                    log_fn(f"[neural_scorer] heat lookahead error: {_e!r}")
+            _trace_record('ur_heat_target', target.card.name, gs, player, opponent,
+                          n_candidates=len(heat_targets), heat_dmg=heat_dmg)
             _b = [mana]
             def _resolve_heat(c, _t=target, _d=heat_dmg):
                 player.add_to_grave(c)

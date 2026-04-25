@@ -350,3 +350,73 @@ heuristic only (baseline)  : P1 46.0%  P2 38.0%  combined 42.0%
 - Cowling, Powley, Ward, "Ensemble Determinization in MCTS for MtG", IEEE TCIAIG 2012 — https://eprints.whiterose.ac.uk/75050/
 - Bertram et al., "Learning With Generalised Card Representations for MtG", 2024 — https://arxiv.org/html/2407.05879v1
 - Anthropic prompt caching docs — https://docs.claude.com/en/docs/build-with-claude/prompt-caching
+
+### Iteration 2 — three intelligence-upgrade levers (2026-04-25)
+
+User asked "is there more intelligence we can bring in?". Three levers
+landed on top of the iteration-1 prototype.
+
+#### L1 — Retarget to UR Delver (better testbed)
+- `decks/ur_delver.py`: `_trace_record` hooks at 3 elective decisions —
+  cantrip pick (BS / Ponder / Preordain), Bolt mode (face vs creature
+  target), Heat target.
+- 1000-row multi-matchup trace at `traces/ur_delver_meta.jsonl`
+  (200 games × 5 opponents — burn / storm / dimir / show / oops).
+- `train_neural_scorer.py` extended with `--out-prefix` for per-deck
+  checkpoints. UR Delver scorer trained: **val acc 78.5% vs 68.3%
+  majority baseline (+10.2pp lift)** at `models/ur_delver_scorer.pt`.
+- `neural_scorer.py` made deck-aware — `score(gs, p, o, deck='ur_delver')`
+  loads the right checkpoint; legacy `deck='tes'` default preserved.
+
+#### L2 — 1-ply action-space lookahead via NN scorer
+- New `lookahead.py` with context-manager mutators
+  (`hypothetical_life_delta`, `hypothetical_creature_removed`,
+  `hypothetical_card_drawn`, `hypothetical_mana_spent`) and an
+  `argmax_action(...)` helper that scores each candidate's post-state
+  via temporary state mutation + restore (no GameState deep-copy).
+- Wired into `decks/ur_delver.py` at the Bolt mode and Heat target
+  decisions (the cantrip pick is observation-only — all 3 cantrips
+  give the same shallow post-state perturbation, so lookahead can't
+  discriminate without a richer encoder).
+
+#### L3 — BHI-jittered ensemble determinization (Cowling 2012 lite)
+- New `determinization.py` with `hypothetical_bhi(...)` and
+  `ensemble_argmax_action(...)` — each candidate is scored across N=5
+  perturbations of the cached `HandBelief` probabilities; the mean
+  score is the ensemble vote. New `gs.use_ensemble` flag (default off).
+- Today the encoder reads only the marginal HandBelief probabilities,
+  so the jitter is equivalent to sampling realisations under the deck
+  profile. If/when more hand-aware features get added to
+  `state_encoder.py`, ensemble will automatically benefit from them.
+
+#### Eval — `ur_delver_vs_burn` at n=200 per side, NN-only
+```
+heuristic only (baseline)        : P1 38.0%  P2 33.0%  combined 35.5%
++ NN scorer (single lookahead)   : P1 38.0%  P2 33.5%  combined 35.8%
++ NN scorer (ensemble x5)        : P1 38.0%  P2 33.5%  combined 35.8%
+```
+Δ = **+0.3pp** combined. Honest assessment: lift is real but small.
+The NN hook fires in ~3-9 games out of 20 in any given matchup
+(verified empirically) — the elective decision space is just narrow.
+
+#### What would actually move WR more (next experiments)
+1. **Per-decision discriminator** instead of state-value scorer. Train
+   on `(state, action) → win?` triples. Requires a richer trace
+   dataset where the same state has multiple labelled action choices.
+2. **LLM gate eval with the real API key**. The LLM is the
+   "randomised expert rollout" Cowling 2012 says is most valuable.
+   Cost ≤ \$2 per 200-game eval at Opus 4.7 prices with prompt caching.
+   Pre-requisite: a valid `sk-ant-…` key (the previous attempt was a
+   GitHub PAT — cannot authenticate the Anthropic SDK).
+3. **Add more hand-aware features to `state_encoder.py`** so ensemble
+   determinization has more variance to integrate over (currently the
+   only sample-varying feature is `bhi_p_free_counter` and siblings).
+
+#### Run command (when API key is set)
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+python3 run_meta.py --neural-eval -n 200 ur_delver burn
+```
+Five configs run automatically: baseline / +LLM gate / +NN scorer
+(single) / +NN scorer (ensemble x5) / +LLM gate + NN scorer (ensemble).
+HTML written to `results/neural_eval_ur_delver_vs_burn_<ts>.html`.

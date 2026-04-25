@@ -546,25 +546,35 @@ Import a new deck:
         from neural_eval import run_config, render_html
         from datetime import datetime
         from pathlib import Path
-        configs = [("heuristic only (baseline)", False, False)]
+        # name, gates, scorer, ensemble
+        configs = [
+            ("heuristic only (baseline)", False, False, False),
+        ]
         if not args.skip_llm:
-            configs.append(("+ LLM gate", True, False))
-        configs.append(("+ NN scorer", False, True))
+            configs.append(("+ LLM gate", True, False, False))
+        configs.append(("+ NN scorer (single)",  False, True, False))
+        configs.append(("+ NN scorer (ensemble x5)", False, True, True))
         if not args.skip_llm:
-            configs.append(("+ LLM gate + NN scorer", True, True))
+            configs.append(("+ LLM gate + NN scorer (ensemble)", True, True, True))
         seed_start = args.seed if args.seed is not None else 10_000
         n = args.n
-        print(f"[neural_eval] n={n}, seed={seed_start}, "
+        # Default protagonist is UR Delver (better testbed); pass two
+        # positional args to override, e.g. `--neural-eval tes burn`.
+        p1 = args.deck_list[0] if args.deck_list else 'ur_delver'
+        p2 = args.deck_list[1] if len(args.deck_list) >= 2 else 'burn'
+        print(f"[neural_eval] {p1}_vs_{p2}, n={n}, seed={seed_start}, "
               f"skip_llm={args.skip_llm}")
         results = []
-        for name, use_g, use_s in configs:
+        for cfg in configs:
+            name, use_g, use_s, use_e = cfg
             print(f"  → {name}")
-            r = run_config(name, n, seed_start, use_g, use_s)
+            r = run_config(name, n, seed_start, use_g, use_s,
+                           use_ensemble=use_e, p1_deck=p1, p2_deck=p2)
             print(f"     P1 {r.p1_wr*100:.1f}%  P2 {r.p2_wr*100:.1f}%  "
                   f"combined {r.combined_wr*100:.1f}%  ({r.elapsed_s:.1f}s)")
             results.append(r)
         ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-        out = Path(f"results/neural_eval_{ts}.html")
+        out = Path(f"results/neural_eval_{p1}_vs_{p2}_{ts}.html")
         render_html(results, n, out)
         print(f"[neural_eval] HTML: {out}")
     else:

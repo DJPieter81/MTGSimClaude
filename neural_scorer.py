@@ -1,15 +1,14 @@
-"""Tiny PyTorch MLP that predicts P(TES wins | state) — Phase 3 of the
-neural pivot.
+"""Tiny PyTorch MLP that predicts P(active player wins | state).
 
-Architecture: 40 → 32 → 16 → 1 (sigmoid). ~2.4K parameters. CPU-only.
+Architecture: 41 → 32 → 16 → 1 (sigmoid). ~2.4K parameters. CPU-only.
 
-Used by `_strategy_tes` to score candidate cantrip orderings: encode the
-state after each candidate, pick the one with the highest predicted win
-probability.
+Now deck-aware: callers `score(gs, p, o, deck="tes")` to load the right
+checkpoint. `models/<deck>_scorer.pt` + `models/<deck>_scorer_norm.json`.
+The legacy single-checkpoint path (`load_scorer()` / `score()` without
+`deck=`) defaults to "tes" for back-compat.
 
-`load_scorer()` returns a singleton; `score(gs, p, o)` returns a float in
-[0, 1] or `None` if the checkpoint isn't available (caller falls back to
-heuristic).
+`score(...)` returns a float ∈ [0, 1], or `None` if the checkpoint is
+missing (callers fall back to heuristic).
 """
 
 from __future__ import annotations
@@ -22,11 +21,15 @@ import torch.nn as nn
 
 from state_encoder import FEATURE_ORDER, encode_state_vec
 
+# Legacy path defaults — kept so old code that imports CHECKPOINT_PATH
+# / NORM_STATS_PATH still works (used by train_neural_scorer.py default).
 CHECKPOINT_PATH = Path("models/tes_scorer.pt")
 NORM_STATS_PATH = Path("models/tes_scorer_norm.json")
 
 
 class TesScorer(nn.Module):
+    """Original 41 → 32 → 16 → 1 architecture. The class name is kept for
+    back-compat with `train_neural_scorer.py`; it is deck-agnostic."""
     def __init__(self, input_dim: int = len(FEATURE_ORDER)):
         super().__init__()
         self.net = nn.Sequential(
@@ -41,33 +44,35 @@ class TesScorer(nn.Module):
         return torch.sigmoid(self.net(x)).squeeze(-1)
 
 
-_singleton: Optional[TesScorer] = None
-_norm: Optional[dict] = None
+# ── Deck-keyed cache for loaded models ────────────────────────────────────
+_cache: dict[str, tuple[TesScorer, dict]] = {}
 
 
-def load_scorer() -> Optional[TesScorer]:
-    """Return the trained model or None if the checkpoint is missing."""
-    global _singleton, _norm
-    if _singleton is not None:
-        return _singleton
-    if not CHECKPOINT_PATH.exists() or not NORM_STATS_PATH.exists():
+def _paths_for(deck: str) -> tuple[Path, Path]:
+    return Path(f"models/{deck}_scorer.pt"), Path(f"models/{deck}_scorer_norm.json")
+
+
+def load_scorer(deck: str = "tes") -> Optional[TesScorer]:
+    """Return the trained model for `deck` or None if the checkpoint is missing."""
+    if deck in _cache:
+        return _cache[deck][0]
+    ckpt_path, norm_path = _paths_for(deck)
+    if not ckpt_path.exists() or not norm_path.exists():
         return None
     model = TesScorer()
-    model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location="cpu",
+    model.load_state_dict(torch.load(ckpt_path, map_location="cpu",
                                      weights_only=True))
     model.eval()
-    _singleton = model
-    _norm = json.loads(NORM_STATS_PATH.read_text())
+    norm = json.loads(norm_path.read_text())
+    _cache[deck] = (model, norm)
     return model
 
 
-def _normalize(vec: list[float]) -> torch.Tensor:
-    """Apply mean / std normalisation from the training set."""
-    if _norm is None:
-        # No norm stats — fall back to identity (raw vector).
+def _normalize(vec: list[float], norm: Optional[dict]) -> torch.Tensor:
+    if norm is None:
         return torch.tensor(vec, dtype=torch.float32)
-    mean = _norm["mean"]
-    std = _norm["std"]
+    mean = norm["mean"]
+    std = norm["std"]
     return torch.tensor(
         [(v - m) / (s if s > 1e-6 else 1.0) for v, m, s in zip(vec, mean, std)],
         dtype=torch.float32,
@@ -75,11 +80,12 @@ def _normalize(vec: list[float]) -> torch.Tensor:
 
 
 @torch.no_grad()
-def score(gs, player, opponent) -> Optional[float]:
-    """Return P(TES wins | current state) ∈ [0, 1]."""
-    model = load_scorer()
+def score(gs, player, opponent, deck: str = "tes") -> Optional[float]:
+    """Return P(<deck> wins | current state) ∈ [0, 1]."""
+    model = load_scorer(deck)
     if model is None:
         return None
     vec = encode_state_vec(gs, player, opponent)
-    x = _normalize(vec).unsqueeze(0)
+    norm = _cache[deck][1] if deck in _cache else None
+    x = _normalize(vec, norm).unsqueeze(0)
     return float(model(x).item())

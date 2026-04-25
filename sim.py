@@ -90,7 +90,8 @@ def _trace_dual_board(log, gs, deck1, deck2):
 def run_game(deck1: str, deck2: str = None, verbose: bool = False,
              trace: bool = False,
              use_neural_gates: bool = False,
-             use_neural_scorer: bool = False) -> GameResult:
+             use_neural_scorer: bool = False,
+             use_ensemble: bool = False) -> GameResult:
     """
     Run a single game between any two decks with equal AI quality.
 
@@ -142,6 +143,7 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
     # off so the heuristic matrix path is byte-identical to before.
     gs.use_neural_gates = use_neural_gates
     gs.use_neural_scorer = use_neural_scorer
+    gs.use_ensemble = use_ensemble
     # Strategic logger follows the same trace flag
     gs.strat_log.enabled = trace
 
@@ -255,14 +257,16 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
 
 def run_sweep(deck1: str, deck2: str, n_games: int = 100,
               use_neural_gates: bool = False,
-              use_neural_scorer: bool = False) -> dict:
+              use_neural_scorer: bool = False,
+              use_ensemble: bool = False) -> dict:
     """
     Run n_games between deck1 and deck2, return stats.
     Returns dict with: p1_wins, p2_wins, p1_wr, avg_length, avg_kill_turn
     """
     results = [run_game(deck1, deck2,
                         use_neural_gates=use_neural_gates,
-                        use_neural_scorer=use_neural_scorer)
+                        use_neural_scorer=use_neural_scorer,
+                        use_ensemble=use_ensemble)
                for _ in range(n_games)]
     p1_wins = sum(1 for r in results if r.winner == 'p1')
     p2_wins = n_games - p1_wins
