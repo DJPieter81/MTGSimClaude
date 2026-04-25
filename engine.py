@@ -4052,11 +4052,33 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             _try_cast_oracle(budget[0])
         return
 
+    # ── Pre-DD: deploy Lurrus for defense + lifelink (iteration 9) ──
+    # Real Doomsday races aggro decks via Lurrus's lifelink body. Without it
+    # the matchup vs Burn is 4.3 %; deploying T2 buys 6+ life over 2 combats
+    # plus blocks one threat per turn. Only deploy if not already in play.
+    lurrus = player.find_tag('lurrus')
+    if (lurrus and budget[0] >= 2
+            and not any(c.card.tag == 'lurrus' for c in player.creatures)):
+        def _resolve_lurrus(c):
+            player.put_creature_in_play(c)
+            log_fn(f"Lurrus of the Dream-Den (3/2 lifelink)")
+        cast_spell(player, opponent, gs, lurrus, budget,
+                   log_fn, log_entries, on_resolve=_resolve_lurrus)
+
     # ── Pre-DD: rituals for mana acceleration ──
     # Only cast rituals if DD is already in hand — otherwise save mana for cantrips
     # that dig for DD. Rituals drawn by cantrips are cast inside the cantrip loop.
     dd = player.find_tag('dd')
     if dd:
+        # Crack Lotus Petals first — they cost 0 mana and produce 1, so they
+        # always strictly add to the budget. Iter-10 addition; key for race
+        # turns where T2-DD = +1 turn faster combo than T3-DD.
+        for petal in [c for c in list(player.hand) if c.tag == 'petal']:
+            player.remove_from_hand(petal)
+            player.add_to_grave(petal)
+            budget[0] += 1
+            log_fn("Lotus Petal → +1 mana")
+
         rits = [c for c in list(player.hand)
                 if c.tag == 'darkrit' and opp_can_cast(c, budget[0], gs, caster=player)]
         cast_count = 0
