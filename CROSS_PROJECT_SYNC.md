@@ -1,6 +1,6 @@
 # Cross-Project Sync — MTGSimManu (Modern) ↔ MTGSimClaude (Legacy)
 
-> **Last updated:** 2026-04-25 (iteration 8 — null result on doomsday keep-fn fix; mulligan tightening alone can't recover a deck whose simulator is missing cards)
+> **Last updated:** 2026-04-25 (iter 12 — diminishing-returns finding on decklist audits; the last 4 audit candidates need deeper strategy work, not single-card edits)
 > **Read by:** Both CLAUDE.md files, Cowork, Claude Code
 > **Rule:** Check this file before starting cross-project work
 
@@ -171,6 +171,16 @@ results/neural_logs/
 10. **Both:** Hook MORE elective decisions per turn — *was* the highest-leverage open work item; Lever 6 (mulligan, the highest-leverage decision in the game) shipped in Legacy and STILL netted 0 pp combined. New highest-leverage open item: **the LLM advisor** (#11), since the in-codebase NN ceiling appears to be flat against well-tuned heuristics. Don't burn time on more Q-nets for already-tuned decisions until the LLM path has been validated.
 11. **Both:** Run the live LLM-gate eval (`sk-ant-…` key in env var, never in chat). Cost ≤ \$2 per 200-game eval at Opus 4.7 prices. The LLM brings *qualitatively different reasoning* the Q-net can't (matchup-aware sideboard logic, novel mulligan reasoning ("this hand has no early plays vs Burn"), strategic gates). This is the unvalidated lever and the most likely path to a non-zero WR delta on already-mature decks.
 12. **Done in Legacy (commit history will reflect):** `(state, action) → won?` Q-style discriminator (Lever 5) and counterfactual-rollout mulligan Q-net (Lever 6). Trained models at `models/q_ur_bolt_mode.pt` (94.2 % val acc) and `models/q_mulligan.pt` (62.7 % val acc). Modern can adopt the trainers + scorers + collectors verbatim. **But before porting** — read lessons #17, #19, #22 above. Q-nets at high val acc do not move WR on tuned heuristics; use the toolkit on (a) untuned strategies, or (b) for trace data + audit, not as a WR lever.
+
+## Lessons learned (continued)
+
+25. **Decklist audits hit diminishing returns after the obvious wins.** Iters 9-11 produced large WR lifts from single-edit fixes on three decks — Lurrus + Petal for doomsday (+4 pp combined), Grindstone 1→4 for painter (+10.8 pp). Iter 12 audited the next four candidates from the iter-7 low-WR list (oops, wan_shi_tong, belcher, mardu) and found:
+    * **oops 36.2 % audit number was Bo3 sideboard hate.** Bo1 measurement at n=200/side is **56.3 %** combined — out of scope for "decklist audit" because the gap is post-board, not pre-board.
+    * **wan_shi_tong 37.4 %.** Sanctifier en-Vec is in the deck but its protection-from-red effect isn't modelled (just a 2/2 stat-block). Approximating via ETB lifegain (+8 vs Burn / +4 vs other red aggro) lifted the worst matchups by 1-3 pp but the AVG didn't move meaningfully and the hack felt wrong. Reverted. Real fix is implementing damage-prevention in the engine — substantial work, out of scope for a single-iteration audit.
+    * **belcher 35.8 %.** Strategy fires Burning Wish for Empty the Warrens unconditionally — even when an Empty is already in hand, AND without checking that we have ≥ 6 mana to actually cast it. Tightened the gate (`not has_empty_in_hand and budget ≥ 6`); WR moved -1.2 pp combined (within noise). The deeper bug is "all-in T1 or fail" — Belcher has no plan B. Reverted.
+    * **mardu 34.7 %.** Uniformly low across many matchups (vs burn 10 %, vs ur_delver 11 %, vs ur_tempo 13 %, vs bug 15 %) — not a single decklist gap, deeper strategy issue. Out of scope.
+
+    **Updated rule of thumb:** decklist audits work when there's an obvious quantitative gap (1 of a 4-of, missing companion, missing fast mana). For decks with broader weakness, the real fix is in the strategy code — typically 50-200 lines of careful logic, not a 1-line edit. **For Manu**: the audit pattern transfers, but expect 2-3 obvious wins out of every 5-10 candidates. Don't burn cycles on candidates with uniform weakness — those signal strategy gaps that need their own iteration.
 
 ## Out of scope for the cross-project sync
 - Modern uses `gs.player1` / `gs.player2`, Legacy uses `gs.p1` / `gs.p2`. The `state_encoder.py` port to Modern must rename the slot accessors. All other features (life, hand, lands, etc.) are named identically in both repos.
