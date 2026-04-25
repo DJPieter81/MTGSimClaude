@@ -567,10 +567,16 @@ def make_doomsday_deck() -> List[Card]:
     d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 4  # was 3
     d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 3
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 3
-    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 4  # was 3
+    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 3  # was 4 — trimmed 1 to make room for Lurrus
     d += [instant('Edge of Autumn', 2, {'G':1,'generic':1}, {'G'}, tag='edge', is_cantrip=True)] * 1  # was 2 (trimmed to fit 60)
-    # 26 lands
-    d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 4
+    # Lurrus of the Dream-Den — companion in real Legacy. Simulator can't model
+    # companion zone, so we put 2 copies in main as an approximation. Lurrus
+    # provides a 3/2 lifelink body for vs-aggro racing (key gap iter-8 found:
+    # Doomsday's vs-Burn baseline is 4.3 % because the deck has no defense).
+    d += [creature("Lurrus of the Dream-Den", 2, {'B':1,'generic':1}, {'B'}, 3, 2,
+                   tag='lurrus', lifelink=True)] * 2
+    # 25 lands (was 26 — trimmed 1 Cavern to fit Lurrus)
+    d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 3  # was 4
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
