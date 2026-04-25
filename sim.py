@@ -94,6 +94,7 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
              use_ensemble: bool = False,
              use_rollout: bool = False,
              use_q_scorer: bool = False,
+             use_q_mulligan: bool = False,
              collect_q_data: bool = False) -> GameResult:
     """
     Run a single game between any two decks with equal AI quality.
@@ -117,10 +118,26 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
     if deck2 not in DECKS:
         raise ValueError(f"Unknown deck: {deck2}. Available: {sorted(DECKS.keys())}")
 
+    # Coin flip happens BEFORE mulligans (matches real Magic CR 103.1, and
+    # lets matchup-aware mulligan policies condition on going first/second).
+    p1_goes_first = random.random() < 0.5
+
     # Mulligan: each deck uses its own keep logic (via registry or fallback)
     from deck_registry import get_keep_fn
     p1_keep = get_keep_fn(deck1) or opp_keep
     p2_keep = get_keep_fn(deck2) or opp_keep
+    # ── LEVER 6: Q-net mulligan policy (default off) ───────────────────
+    if use_q_mulligan:
+        try:
+            from mulligan_q import should_keep as _q_should_keep
+            _heuristic_keep = p1_keep
+            def _q_wrapped_keep(hand, matchup='', _gf=p1_goes_first):
+                v = _q_should_keep(hand, matchup, goes_first=_gf)
+                return _heuristic_keep(hand, matchup) if v is None else v
+            p1_keep = _q_wrapped_keep
+        except Exception:
+            # Checkpoint missing or torch not importable — fall back silently.
+            pass
 
     p1_mull_trace = p2_mull_trace = None
     if trace:
@@ -131,8 +148,6 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
     else:
         p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1)
         p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2)
-
-    p1_goes_first = random.random() < 0.5
 
     gs = GameState(
         p1=PlayerState(name='b', hand=list(p1_hand), library=list(p1_lib)),
@@ -149,6 +164,7 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
     gs.use_ensemble = use_ensemble
     gs.use_rollout = use_rollout
     gs.use_q_scorer = use_q_scorer
+    gs.use_q_mulligan = use_q_mulligan
     gs.collect_q_data = collect_q_data
     # Strategic logger follows the same trace flag
     gs.strat_log.enabled = trace
@@ -265,7 +281,9 @@ def run_sweep(deck1: str, deck2: str, n_games: int = 100,
               use_neural_gates: bool = False,
               use_neural_scorer: bool = False,
               use_ensemble: bool = False,
-              use_rollout: bool = False) -> dict:
+              use_rollout: bool = False,
+              use_q_scorer: bool = False,
+              use_q_mulligan: bool = False) -> dict:
     """
     Run n_games between deck1 and deck2, return stats.
     Returns dict with: p1_wins, p2_wins, p1_wr, avg_length, avg_kill_turn
@@ -274,7 +292,9 @@ def run_sweep(deck1: str, deck2: str, n_games: int = 100,
                         use_neural_gates=use_neural_gates,
                         use_neural_scorer=use_neural_scorer,
                         use_ensemble=use_ensemble,
-                        use_rollout=use_rollout)
+                        use_rollout=use_rollout,
+                        use_q_scorer=use_q_scorer,
+                        use_q_mulligan=use_q_mulligan)
                for _ in range(n_games)]
     p1_wins = sum(1 for r in results if r.winner == 'p1')
     p2_wins = n_games - p1_wins

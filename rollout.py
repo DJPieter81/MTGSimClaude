@@ -66,6 +66,7 @@ def rollout_to_end(gs, max_turns_remaining: int = 5,
         gs.use_ensemble = False
         gs.use_rollout = False
         gs.use_q_scorer = False
+        gs.use_q_mulligan = False
         gs.collect_q_data = False
 
         starting_turn = gs.turn + 1

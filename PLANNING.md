@@ -478,3 +478,51 @@ A 94 %-accurate model on a low-leverage decision doesn't move WR. The Bolt-mode 
 
 #### Phase 5 verdict — still YELLOW, but for a different reason
 Iterations 1-3 were YELLOW because the *modelling* was too weak. Iteration 4's Q-net proves the modelling can be strong (94 % val acc). It's still YELLOW because the *decisions hooked* are too low-leverage. The next iteration is "hook 3-5 high-leverage decisions" — same infrastructure, much smaller code change.
+
+### Iteration 6 — Lever 6: Mulligan Q-net (the highest-leverage decision) (2026-04-25)
+
+User said "continue". Mulligan is THE highest-leverage decision in any game of Magic — built a counterfactual mulligan Q-net to test whether the iteration-4 ceiling lesson held.
+
+#### What landed
+- `mulligan_features.py` — 27-feature hand encoder (lands by colour, threats by CMC, cantrips, counters, removal, combo, win-cons, burn count, total CMC, matchup category one-hots, **goes_first** role flag).
+- `scripts/collect_mulligan_q.py` — counterfactual data generator. For each opening hand, run K=5 full-game rollouts of "keep" and K=5 of "mulligan-to-6", each with a different opp-mull seed. 10 000 rows (200 hands × 5 opps × 2 actions × K=5) in 16 s.
+- `mulligan_q.py` + `train_mulligan_q.py` — Q-net (29 → 32 → 16 → 1) + early-stopping trainer that restores the lowest-val-loss checkpoint.
+- `should_keep(hand, matchup, goes_first)` exposes a confidence threshold (τ=0.10): only override the heuristic when |P_keep − P_mull| ≥ τ.
+- New `gs.use_q_mulligan` flag, threaded through `run_game` / `run_sweep` / `--neural-eval`. Mulligan Q-net wraps `p1_keep` (deck-specific keep_fn) on opt-in.
+- **Coin-flip moved before mulligan in `sim.run_game`** — matches real Magic CR 103.1, and lets the Q-net read `goes_first` at decision time.
+
+#### Q-net training result
+```
+val_acc = 62.7%  vs  baseline majority class 56.6%   →  +6.1 pp lift
+early-stopped at epoch 8 (best val_loss = 0.6571)
+```
+Better than the v1 trainer (no goes_first, +3.2 pp lift). Adding the role feature roughly doubled the val-acc lift, confirming role-dependence.
+
+#### Multi-matchup eval (P1+P2 combined, 600 games per cell)
+```
+Matchup     baseline      +Q-mull        Δ
+─────────────────────────────────────────────
+burn         37.7%         37.0%       −0.7pp
+storm        66.2%         63.8%       −2.3pp
+dimir        68.2%         69.3%       +1.2pp
+show         66.5%         66.3%       −0.2pp
+oops         60.5%         62.2%       +1.7pp
+─────────────────────────────────────────────
+TOTAL        59.8%         59.7%       −0.1pp   (n=3000 per cell)
+```
+
+#### THE strengthened ceiling lesson
+- Iteration 4: Q-scorer for Bolt mode at 94% val acc → 0pp WR
+- Iteration 6: Q-net for Mulligan at 62.7% val acc → -0.1pp WR
+
+Two different decisions, two very different val accuracies, same null WR result. **The deck-specific heuristics in this codebase (`decks/ur_delver.py` strategy + `_keep_ur_delver` mulligan logic) are well-tuned enough that Q-net overrides net out neutral combined.** Two paths remain to actually move WR:
+
+1. **LLM advisor** (Lever 6 / Phase 4 in original plan). Brings qualitatively different reasoning (matchup-aware sideboard logic, novel mulligan reasoning) the Q-net can't. Cost ≤ \$2 per 200-game eval at Opus 4.7 prices with prompt caching. Pre-requisite: an `sk-ant-…` key set as env var (the user revoked the leaked key; awaiting fresh value never visible to the assistant).
+
+2. **Hook decisions in untuned strategies.** The neural toolkit is most useful where the heuristic is poor — UR Delver is a bad test bed because its heuristic is mature. Candidate matchups / decks where the strategy code is thinner: Goblins, Lands, Painter combos.
+
+#### What's now true and durable in the codebase
+- 7 new modules (`gamestate_clone.py`, `rollout.py`, `rollout_policy.py`, `q_scorer.py`, `train_q_scorer.py`, `mulligan_features.py`, `mulligan_q.py`, `train_mulligan_q.py`) totalling ~700 LoC, all opt-in, all fail-soft, all defaulted off, all byte-identical-to-baseline when off (verified via 149/0 test suite).
+- 3 trained models at `models/q_*.pt` — usable for any future research that wants per-decision discrimination on these specific decisions.
+- Counterfactual data generation patterns proven at 1000 games × 5 opponents in <20 s.
+- **23 documented lessons** in `CROSS_PROJECT_SYNC.md` (was 7 at iteration 0, +15 added across iterations 2-6) — every non-obvious trap captured for the Manu port.

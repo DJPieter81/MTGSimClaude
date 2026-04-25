@@ -546,18 +546,20 @@ Import a new deck:
         from neural_eval import run_config, render_html
         from datetime import datetime
         from pathlib import Path
-        # name, gates, scorer, ensemble, rollout, q_scorer
+        # name, gates, scorer, ensemble, rollout, q_scorer, q_mulligan
         configs = [
-            ("heuristic only (baseline)", False, False, False, False, False),
+            ("heuristic only (baseline)", False, False, False, False, False, False),
         ]
         if not args.skip_llm:
-            configs.append(("+ LLM gate",            True,  False, False, False, False))
-        configs.append((    "+ NN scorer (1-ply)",   False, True,  False, False, False))
-        configs.append((    "+ NN scorer (ens x5)",  False, True,  True,  False, False))
-        configs.append((    "+ rollout K=5",         False, False, False, True,  False))
-        configs.append((    "+ Q-scorer",            False, False, False, False, True))
+            configs.append(("+ LLM gate",            True,  False, False, False, False, False))
+        configs.append((    "+ NN scorer (1-ply)",   False, True,  False, False, False, False))
+        configs.append((    "+ NN scorer (ens x5)",  False, True,  True,  False, False, False))
+        configs.append((    "+ rollout K=5",         False, False, False, True,  False, False))
+        configs.append((    "+ Q-scorer (bolt)",     False, False, False, False, True,  False))
+        configs.append((    "+ Q-mulligan",          False, False, False, False, False, True))
+        configs.append((    "+ Q-mull + Q-bolt",     False, False, False, False, True,  True))
         if not args.skip_llm:
-            configs.append(("+ LLM gate + Q-scorer", True,  False, False, False, True))
+            configs.append(("+ LLM gate + Q-mull",   True,  False, False, False, False, True))
         seed_start = args.seed if args.seed is not None else 10_000
         n = args.n
         # Default protagonist is UR Delver (better testbed); pass two
@@ -568,11 +570,12 @@ Import a new deck:
               f"skip_llm={args.skip_llm}")
         results = []
         for cfg in configs:
-            name, use_g, use_s, use_e, use_r, use_q = cfg
+            name, use_g, use_s, use_e, use_r, use_q, use_qm = cfg
             print(f"  → {name}")
             r = run_config(name, n, seed_start, use_g, use_s,
                            use_ensemble=use_e, use_rollout=use_r,
                            use_q_scorer=use_q,
+                           use_q_mulligan=use_qm,
                            p1_deck=p1, p2_deck=p2)
             print(f"     P1 {r.p1_wr*100:.1f}%  P2 {r.p2_wr*100:.1f}%  "
                   f"combined {r.combined_wr*100:.1f}%  ({r.elapsed_s:.1f}s)")
