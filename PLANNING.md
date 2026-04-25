@@ -560,3 +560,31 @@ mardu           38.3%
 3. Existing modules port directly: `state_encoder.py`, `mulligan_features.py`, `q_scorer.py`, `mulligan_q.py`, `train_*.py`, `scripts/collect_*.py`. New work is mostly per-decision hooks in the doomsday strategy.
 
 The honest risk: if the simulator's doomsday strategy is missing real-world cards / lines (Lurrus, lifegain piles, pile-choice logic), Q-net overrides on top of broken heuristic logic won't fix the underlying gap. Iteration 8 would need to (a) audit the strategy code for missing lines, (b) add hooks to the genuinely-elective decisions, (c) collect Q-data, (d) eval. Probably 3-4 hours of work for a measurable WR shift.
+
+### Iteration 8 — Doomsday null result (2026-04-25)
+
+User said "continue". Took the iter-7-recommended Doomsday target. **Honest finding: the keep-fn fix moved WR by 0.0pp; the simulator is missing real-world cards.**
+
+#### What I tried
+* Audited 40 doomsday-vs-burn losses: **65 % had no Doomsday in opener** — the original `_keep_doomsday` (`1 ≤ lc ≤ 4 AND (combo OR cantrip)`) kept 80 % of opening 7s, way too lenient for a race matchup.
+* Wrote a tightened keep with `_RACE_MATCHUPS` whitelist (burn / ur_delver / ur_aggro / ur_tempo / mardu / boros / goblins / eldrazi / dnt / mono_black / infect / cephalid). Race-matchup keep requires Doomsday + black source + (cantrip OR fast mana OR protection) — keep-rate dropped from **80 % to 40 %**.
+* A/B tested at n=200 per side over 13 matchups: **bit-identical WR before vs after**. The deck mulligans more, gets smaller hands, still loses.
+
+#### Why
+Real-world Doomsday's vs-aggro game depends on **Lurrus of the Dream-Den** (companion → 1/1 attacker + recursion) + **lifegain piles** (`Lotus Petal → BS → Wraith × 3` gains ~6 life via Lurrus death-rebuy). The simulator's decklist has neither. Without those cards, the deck has no race plan, and snap-mulling bad hands just substitutes one losing hand for another.
+
+#### Reverted
+The keep-fn change — pure code complexity for zero WR benefit. The lesson is durably documented in `CROSS_PROJECT_SYNC.md` #24.
+
+#### What would actually fix Doomsday (out of scope for this iteration)
+1. Add Lurrus of the Dream-Den to `cards.make_doomsday_deck()` as the companion.
+2. Add Lurrus death-rebuy + lifegain pile logic to `_strategy_doomsday` (1605-line file).
+3. Pile-choice subroutine selecting between Tendrils/Death pile and Lurrus pile based on opp life.
+4. Estimated 4-6 hours of careful strategy work — out of scope for iteration 8 because it's deck-construction, not the neural-pivot research thread.
+
+#### Lesson #24 added to `CROSS_PROJECT_SYNC.md`
+**Mulligan tightening alone cannot recover a deck whose simulator is missing real-world cards.** Audit checklist before training Q-nets / building neural advisors for any deck:
+1. Does the decklist match a current-format real list?
+2. Does the strategy deploy every nonland in the decklist?
+3. Does the strategy have at least one realistic win path against each archetype tier?
+4. If any of (1)-(3) fail, fix THAT first — neural overlays on broken foundations don't help.

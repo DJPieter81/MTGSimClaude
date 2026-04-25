@@ -1,6 +1,6 @@
 # Cross-Project Sync — MTGSimManu (Modern) ↔ MTGSimClaude (Legacy)
 
-> **Last updated:** 2026-04-25 (added Lever 6 mulligan Q-net + the strengthened "well-tuned heuristic ceiling" finding)
+> **Last updated:** 2026-04-25 (iteration 8 — null result on doomsday keep-fn fix; mulligan tightening alone can't recover a deck whose simulator is missing cards)
 > **Read by:** Both CLAUDE.md files, Cowork, Claude Code
 > **Rule:** Check this file before starting cross-project work
 
@@ -89,6 +89,12 @@ These are honest findings from two iterations of building / measuring the protot
 22. **THE strengthened ceiling lesson — well-tuned heuristics absorb most neural lift.** Iteration 4 found "94 % val acc Q-scorer (Bolt mode) → 0 pp WR". Iteration 6 found "62.7 % val acc Q-net (Mulligan, the highest-leverage decision in the game) → −0.1 pp WR". Two different decisions, two different model accuracies, same null result. The mid-game heuristics in `decks/ur_delver.py` and the deck-specific `_keep_*` mulligan logic are well-tuned enough that incremental Q-net overrides at any single decision point net out neutral. **For Manu**: do not expect Q-nets alone to lift WR on a deck whose strategy + mulligan logic is mature. The neural toolkit is needed for (a) brand-new strategies where heuristics aren't tuned yet, OR (b) qualitatively-different reasoning the heuristic can't do (LLM advisor — still untested live in either repo). Don't burn weeks chasing per-decision Q-net accuracy gains on already-tuned decisions.
 
 23. **Honest test rigor — measure both P1 (on the play) and P2 (on the draw).** The earliest mulligan Q-net result showed +1.5 pp on a P1-only sample, which looked like a win until P2 was added: combined dropped to −0.2 pp. The lift was an artifact of training the model on P1 data and inadvertently optimising one role at the expense of the other. The eval harness (`neural_eval.run_config`) already runs both sides; never report P1-only WR for a policy change.
+
+24. **Mulligan tightening alone cannot recover a deck whose *simulator* is missing real-world cards.** Iteration 8 attacked `doomsday` (4.3 % vs Burn baseline, real Legacy ~50 %) by tightening `_keep_doomsday`: the original kept *80 %* of opening 7s vs Burn (`1 ≤ lc ≤ 4 AND (combo OR cantrip)`); the tightened version kept *40 %*, matching real-world Doomsday discipline (snap-mull hands without Doomsday-in-hand or fast mana). The keep-rate change was confirmed by direct measurement (200 → 402 keeps over 500 trials), but **WR was bit-identical to baseline**. The reason: the deck is missing real-world Doomsday's vs-aggro game (Lurrus of the Dream-Den as a 1/1 attacker + recursion engine, lifegain piles like `Lotus Petal → BS → Wraith × 3` that gain ~6 life via Lurrus). Without those cards in the decklist, the deck has no path to win the race regardless of opener — so mulling doesn't help. **Translation for Manu:** before training Q-nets / building neural advisors for any deck, verify the *decklist and strategy itself* model the deck's real-world game plan. Heuristic improvements on top of an incomplete deck definition produce null results (or worse, mask the real problem). Audit checklist:
+    1. Does the decklist match a current-format real list?
+    2. Does the strategy deploy every nonland in the decklist? (echoes lesson "Strategy Must Model Win Conditions" in `CLAUDE.md`)
+    3. Does the strategy have at least one realistic win path against each archetype tier (aggro / midrange / combo)?
+    4. If any of (1)-(3) fail, fix THAT first — neural overlays on broken foundations don't help.
 
 ---
 
