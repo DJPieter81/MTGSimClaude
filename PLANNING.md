@@ -526,3 +526,37 @@ Two different decisions, two very different val accuracies, same null WR result.
 - 3 trained models at `models/q_*.pt` — usable for any future research that wants per-decision discrimination on these specific decisions.
 - Counterfactual data generation patterns proven at 1000 games × 5 opponents in <20 s.
 - **23 documented lessons** in `CROSS_PROJECT_SYNC.md` (was 7 at iteration 0, +15 added across iterations 2-6) — every non-obvious trap captured for the Manu port.
+
+### Iteration 7 — Pipeline-regression check + audit for next target (2026-04-25)
+
+User said "continue". The neural pivot has plateaued (iter 4 + 6 both confirm well-tuned heuristics absorb Q-net overrides). Two productive moves remain: (a) verify nothing's broken in production, (b) find a deck where the heuristic is genuinely WEAK so the toolkit might actually help. Both done this iteration.
+
+#### Pipeline-regression check
+* Ran `python3 refresh_all.py` (no `--resim`). Wall: 132 s.
+* All 38 deck guides regenerated (timestamp 2026-04-25 10:36).
+* `results/meta_matrix_bo3_20260412.html` rebuilt and validated — all 9 JS functions present, `D` data constant found.
+* `run_rules_tests` 148/1: the single failing test (`Symmetry: storm vs bug 57+70=127%`) is the pre-existing stochastic-symmetry flake we've tracked all session. Not caused by iterations 1-6 — appears in clean main too.
+* **Iterations 1-6 did NOT regress the production pipeline.** All flags default to False; the heuristic path is byte-identical to before.
+
+#### Audit — lowest-WR decks (game_wr from `matrix_bo3_20260412_122609.json`)
+```
+doomsday        33.2%    ← best candidate (real Legacy WR ~50%)
+painter         36.1%
+oops            36.2%
+wan_shi_tong    37.3%
+belcher         38.0%
+mardu           38.3%
+```
+
+#### Doomsday's failure pattern (game_wr by matchup)
+- **Catastrophic vs aggressive blue/red:** 5.7% vs burn, 11.2% vs ur_tempo, 11.7% vs uwx, 11.9% vs ur_aggro, 14.0% vs ur_delver, 15-19% vs dimir variants
+- **Solid vs slow combo:** 60-67% vs cloudpost / lands / oops / painter / belcher
+- **Pattern**: dies to fast pressure + counterspell support before combo lands. Real Doomsday plays around this with Lurrus-style backups and lifegain piles — likely missing in the simulator.
+
+#### Recommendation for the next iteration
+**Apply the existing neural toolkit to Doomsday.** Three reasons:
+1. Heuristic is GENUINELY weak (the iter 4/6 ceiling lesson said the toolkit only helps where the heuristic is poor — Doomsday qualifies).
+2. Combo deck → high decision density (mulligan, when to pop combo, which pile to build, when to pitch FoW). Many places to hook.
+3. Existing modules port directly: `state_encoder.py`, `mulligan_features.py`, `q_scorer.py`, `mulligan_q.py`, `train_*.py`, `scripts/collect_*.py`. New work is mostly per-decision hooks in the doomsday strategy.
+
+The honest risk: if the simulator's doomsday strategy is missing real-world cards / lines (Lurrus, lifegain piles, pile-choice logic), Q-net overrides on top of broken heuristic logic won't fix the underlying gap. Iteration 8 would need to (a) audit the strategy code for missing lines, (b) add hooks to the genuinely-elective decisions, (c) collect Q-data, (d) eval. Probably 3-4 hours of work for a measurable WR shift.
