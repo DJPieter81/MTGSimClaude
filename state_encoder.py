@@ -215,3 +215,51 @@ def record(decision_type: str, decision_value: Any, gs, player, opponent,
         "state": encode_state(gs, player, opponent),
         **extras,
     })
+
+
+def record_q(decision_type: str, candidates_with_apply: list,
+             gs, player, opponent,
+             K: int = 3, max_turns_remaining: int = 5,
+             rng_seed_base: int = 0, **extras) -> None:
+    """Lever 5 — emit `(state, action, rollout_outcome)` rows for each
+    candidate via cloned-state rollouts. No-op when no collector active.
+
+    `candidates_with_apply` is a list of `(action_tag, apply_fn)` where
+    `apply_fn(cgs, cp, co)` mutates the clone with the candidate's effect.
+    For each candidate we clone K times, apply, rollout, and emit one row
+    per rollout with the binary outcome (1 = protagonist wins, 0 = loses).
+
+    Strategy continues with its heuristic decision after this call returns
+    — `record_q` is observation-only.
+    """
+    if not _collectors:
+        return
+    from gamestate_clone import clone_game_state
+    from rollout import rollout_to_end
+    state_features = encode_state(gs, player, opponent)
+    proto_label = 1 if player is gs.p1 else 0
+    for ci, (action_tag, apply_fn) in enumerate(candidates_with_apply):
+        for k in range(K):
+            try:
+                clone = clone_game_state(gs)
+                cp = clone.p1 if player is gs.p1 else clone.p2
+                co = clone.p2 if opponent is gs.p2 else clone.p1
+                apply_fn(clone, cp, co)
+                outcome = rollout_to_end(
+                    clone,
+                    max_turns_remaining=max_turns_remaining,
+                    rng_seed=rng_seed_base * 1000 + ci * 100 + k,
+                )
+                won = 1 if outcome == proto_label else 0
+                _collectors[-1].append({
+                    "decision_type": f"q_{decision_type}",
+                    "decision_value": action_tag,
+                    "rollout_idx": k,
+                    "rollout_won": won,
+                    "state": state_features,
+                    **extras,
+                })
+            except Exception:
+                # Skip this rollout silently — we don't want training data
+                # generation to crash the game.
+                continue

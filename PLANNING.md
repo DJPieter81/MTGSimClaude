@@ -417,6 +417,64 @@ The NN hook fires in ~3-9 games out of 20 in any given matchup
 export ANTHROPIC_API_KEY=sk-ant-...
 python3 run_meta.py --neural-eval -n 200 ur_delver burn
 ```
-Five configs run automatically: baseline / +LLM gate / +NN scorer
-(single) / +NN scorer (ensemble x5) / +LLM gate + NN scorer (ensemble).
+Six configs run automatically: baseline / +LLM gate / +NN scorer
+(single) / +NN scorer (ensemble x5) / +rollout K=5 / +LLM gate + rollout.
 HTML written to `results/neural_eval_ur_delver_vs_burn_<ts>.html`.
+
+### Iteration 3 — Lever 4: multi-step rollout (2026-04-25)
+
+User asked "continue" — built `gamestate_clone.py` + `rollout.py` + `rollout_policy.py` for real Monte Carlo policy improvement. Wired into `_strategy_ur_delver` Bolt-mode decision under a new `gs.use_rollout` flag.
+
+#### Eval — `ur_delver_vs_burn` at n=200 per side, NN-only (commit `0756fbd` baseline)
+```
+heuristic only (baseline)        : P1 38.0%  P2 33.0%  combined 35.5%
++ NN scorer (1-ply)              : P1 38.0%  P2 33.5%  combined 35.8%   Δ +0.3pp
++ NN scorer (ens x5)             : P1 38.0%  P2 33.5%  combined 35.8%   Δ +0.3pp
++ rollout K=5                    : P1 38.0%  P2 33.0%  combined 35.5%   Δ  0.0pp
+```
+
+#### Honest finding
+- **Rollout is WR-neutral** at n=200/side with the heuristic gate restored.
+- **Rollout regresses (-0.7 pp) without the gate** — first run let it fire whenever a creature target existed; it voted face mid-game in spots where keeping creature targets mattered for clock. Restoring the heuristic's life-threshold gate (only fire when face is at least life-plausible) fixed this.
+- **K-sensitivity sweep** (K ∈ {5, 10, 15} at n=100): identical WR. The candidate distinction at the gated points is on a knife-edge — more rollouts don't help.
+- **Translation**: don't replace the heuristic with rollout — *gate rollout to fire only at the same decision boundary the heuristic already considers*, then let it pick between candidates.
+
+#### Phase 5 verdict — still YELLOW
+Best config across iterations 1-3 is **+0.3 pp** at n=200. The infrastructure is fully sound (clone roundtrip test passes, rollout RNG hygiene clean, fail-soft on every neural call) but the hooked decisions (Bolt mode + Heat target on UR Delver) don't have enough leverage to move combined WR.
+
+#### Next experiments (the actual high-leverage moves)
+1. **Hook 3-5 more elective decisions.** The infrastructure handles any tag — what's missing is `record()` + scorer/rollout calls at: mulligan, deploy-threat order, cast-cantrip-vs-hold-mana-for-counter, attack-or-hold, FoW-counter-or-not.
+2. **Live LLM-gate eval** — needs `ANTHROPIC_API_KEY` (revoked one rotated; awaiting fresh value as env var). Cost ≤ \$2 per 200-game eval at Opus 4.7 with prompt caching.
+3. **Per-decision Q-style discriminator** (Lever 5 in original plan) — train on `(state, action) → won?` triples generated via Lever 4 rollouts of *non-chosen* candidates. The right architecture once we have Lever 4 producing useful counterfactuals.
+
+#### Cross-project sync — Manu adoption notes
+Iteration 3's findings landed in `CROSS_PROJECT_SYNC.md` as 15 documented lessons (state-value scorer alone insufficient, rollout needs heuristic gate, RNG hygiene, defuse-toggles-inside-rollout, etc.). New row #5b in the Legacy → Modern adoption table covers all 11 modules. New action items #8-#12 sequence the Modern port. Read those before porting anything.
+
+### Iteration 4 — Lever 5: Q-style discriminator (2026-04-25)
+
+User: *"training a small NN is important"*. Built the Q-style per-decision discriminator that the iteration-3 finding called for.
+
+#### What landed
+- `state_encoder.record_q(...)` — at decision time, fork the game K times per candidate via `gamestate_clone.clone_game_state` + `rollout.rollout_to_end`, label each rollout, emit one `(state, action, won)` row per rollout.
+- `scripts/collect_q_data.py` — multi-matchup Q-data generator. 1 000 games × 5 opponents → 600 rows in 4.6 s.
+- `q_scorer.py` — Q-style net `(41 + |actions|) → 32 → 16 → 1`, sigmoid. One model per `decision_type` (`ACTION_VOCAB` registry). `models/q_<decision_type>.pt` + `_norm.json`.
+- `train_q_scorer.py` — supervised trainer. State portion is normalised; action one-hots passed through unchanged.
+- New `gs.use_q_scorer` flag (default off) consulted in `decks/ur_delver.py` Bolt-mode decision; takes precedence over `use_rollout` and `use_neural_scorer`.
+
+#### Empirical findings
+- **Q-data signal is real.** Across 600 rollouts, face wins 69.3 %, creature wins 74.0 % (4.7 pp gap). The heuristic was picking creature most of the time — the data confirms that's correct.
+- **Q-net val acc 94.2 % vs 68.3 % majority baseline (+25.8 pp lift).** That's far above the value-scorer's +10.6 pp on the same decision. Action-conditioning is doing real work; the model truly discriminates between the two candidate actions at a state.
+- **Combined WR delta at n=200/side: +0.0 pp.** Diagnostic: Q-scorer fires ~22 times across 50 vs-dimir games; 4 are face-overrides, 18 agree with the heuristic. The 4 overrides don't aggregate into measurable WR change.
+
+#### THE bottleneck — decision selection, not decision quality
+A 94 %-accurate model on a low-leverage decision doesn't move WR. The Bolt-mode decision is genuinely not worth perfecting in isolation: the heuristic is right ~70 % of the time, the Q-net agrees with it most of the time, and the few real disagreements happen in mid-game spots that the rest of the simulation can recover from.
+
+**Implication for both Legacy and Manu:** the modelling toolkit (value-scorer, rollout, Q-net, LLM gate) is in place and works. **Picking the right decisions to hook is the open research direction.** Candidates with high game-leverage:
+1. Mulligan — whole-game outcome rests on hand quality. Single decision per game; LLM gate is ideal.
+2. Deploy-threat order (Delver / DRC / Murktide / Borrower) — early-game leverage. Q-net target.
+3. "Cast cantrip vs hold mana for counter" — turn-by-turn leverage. Q-net target.
+4. Attack/hold for each non-sick attacker — combat decisions. Q-net target.
+5. FoW counter pitch — high cost, high information value. LLM gate target.
+
+#### Phase 5 verdict — still YELLOW, but for a different reason
+Iterations 1-3 were YELLOW because the *modelling* was too weak. Iteration 4's Q-net proves the modelling can be strong (94 % val acc). It's still YELLOW because the *decisions hooked* are too low-leverage. The next iteration is "hook 3-5 high-leverage decisions" — same infrastructure, much smaller code change.

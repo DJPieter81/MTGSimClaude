@@ -276,13 +276,78 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
                               opp_life=opponent.life,
                               creatures_on_board=len(opponent.creatures),
                               has_clock=has_clock)
+            # ── LEVER 5: Q-data collection (counterfactual rollouts) ──
+            # When `gs.collect_q_data` is set, emit one row per (candidate,
+            # rollout) so we can later train a (state, action) → won? Q-net.
+            # Observation-only: the heuristic still decides the actual move.
+            if (getattr(gs, 'collect_q_data', False)
+                    and target is not None and has_clock):
+                from state_encoder import record_q as _trace_record_q
+                _target_idx_q = (opponent.creatures.index(target)
+                                 if target in opponent.creatures else 0)
+                def _q_face(cgs, cp, co):
+                    co.life = co.life - 3
+                def _q_kill(cgs, cp, co, _i=_target_idx_q):
+                    if _i < len(co.creatures):
+                        co.creatures.pop(_i)
+                _trace_record_q(
+                    'ur_bolt_mode',
+                    [('face', _q_face), ('creature', _q_kill)],
+                    gs, player, opponent,
+                    K=3, max_turns_remaining=5,
+                    rng_seed_base=gs.turn,
+                    opp_life=opponent.life,
+                    has_clock=has_clock)
+            # ── LEVER 5 (preferred): Q-style discriminator (per-decision NN)
+            # Q-net trained on `(state, action) → rollout_won` triples.
+            # Single forward pass per candidate; no temporary mutation, no
+            # rollout. ~94% val acc on `ur_bolt_mode` (vs 68% majority).
+            if (getattr(gs, 'use_q_scorer', False)
+                    and target is not None and has_clock):
+                try:
+                    import q_scorer
+                    _best_a, _best_p = q_scorer.argmax(
+                        'ur_bolt_mode', ['face', 'creature'],
+                        gs, player, opponent, default=_bolt_mode)
+                    if _best_a == 'face' and _best_p is not None:
+                        target = None
+                        log_fn(f"[q_scorer] face P(win)={_best_p:.2f} → going face")
+                    elif _best_a == 'creature' and _best_p is not None:
+                        log_fn(f"[q_scorer] keep creature target P(win)={_best_p:.2f}")
+                except Exception as _e:
+                    log_fn(f"[q_scorer] error: {_e!r}")
+            # ── LEVER 4: multi-step rollout via cloned-state ──
+            # Fall back when q_scorer is off but use_rollout is on.
+            elif (getattr(gs, 'use_rollout', False)
+                    and target is not None and has_clock
+                    and (opponent.life <= 9
+                         or (opponent.life <= 12 and turn >= 5))):
+                try:
+                    from rollout_policy import argmax_rollout
+                    _target_idx = (opponent.creatures.index(target)
+                                   if target in opponent.creatures else 0)
+                    def _apply_face(cgs, cp, co):
+                        co.life = co.life - 3
+                    def _apply_kill(cgs, cp, co, _i=_target_idx):
+                        if _i < len(co.creatures):
+                            co.creatures.pop(_i)
+                    _cands = [('face', _apply_face), ('creature', _apply_kill)]
+                    _best_tag, _best_score = argmax_rollout(
+                        gs, player, opponent, _cands,
+                        K=5, max_turns_remaining=5,
+                        rng_seed_base=gs.turn)
+                    if _best_tag == 'face' and _best_score is not None:
+                        target = None
+                        log_fn(f"[rollout K=5] face WR={_best_score:.2f} > creature → face")
+                    elif _best_tag == 'creature' and _best_score is not None:
+                        log_fn(f"[rollout K=5] keep creature target (WR={_best_score:.2f})")
+                except Exception as _e:
+                    log_fn(f"[rollout] bolt rollout error: {_e!r}")
             # ── LEVER 2: 1-ply action-space lookahead via NN scorer ────
             # When BOTH face and a creature target are available AND the
-            # neural-scorer flag is on, score each post-state and pick max.
-            # The heuristic restricts face to opp.life ≤ 9 — the NN can
-            # vote face even when life is higher if it predicts a higher
-            # win probability there.
-            if (getattr(gs, 'use_neural_scorer', False)
+            # neural-scorer flag is on (and not use_rollout — that takes
+            # precedence), score each post-state and pick max.
+            elif (getattr(gs, 'use_neural_scorer', False)
                     and target is not None and has_clock):
                 try:
                     from lookahead import (argmax_action,

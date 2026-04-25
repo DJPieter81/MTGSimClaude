@@ -1,6 +1,6 @@
 # Cross-Project Sync — MTGSimManu (Modern) ↔ MTGSimClaude (Legacy)
 
-> **Last updated:** 2026-04-12
+> **Last updated:** 2026-04-25 (added neural-pivot prototype, Lever 4 multi-step rollout, Lever 5 Q-style discriminator + the critical "decision-selection is the bottleneck" lesson)
 > **Read by:** Both CLAUDE.md files, Cowork, Claude Code
 > **Rule:** Check this file before starting cross-project work
 
@@ -28,6 +28,7 @@ Keep these portable — no project-specific imports.
 | 3 | Statistical significance | `hypothesis_testing.py` | 935 | ❌ No stat testing on WR diffs | HIGH |
 | 4 | Metagame audit | `meta_audit.py` | 547 | ⚠️ Partial (`scan_results.py`) | MED |
 | 5 | LLM game judge | `llm_judge.py` | 237 | ❌ Proposed but not implemented | MED |
+| 5b | Neural-pivot prototype: state encoder + value scorer + LLM gate + 1-ply lookahead + BHI ensemble + multi-step rollout + Q-style discriminator | `state_encoder.py`, `neural_scorer.py`, `neural_gates.py`, `lookahead.py`, `determinization.py`, `gamestate_clone.py`, `rollout.py`, `rollout_policy.py`, `q_scorer.py`, `train_q_scorer.py`, `scripts/collect_q_data.py`, `neural_eval.py`, `train_neural_scorer.py`, `scripts/collect_tes_traces.py` | ~1 750 | ❌ Not started | MED |
 | 6 | Post-sim verification | `verify.py` | 174 | ❌ Has tests but no post-sim checks | MED |
 | 7 | Card validation | `card_validation.py` | 548 | ⚠️ Partial (oracle_parser) | LOW |
 | 8 | Rich terminal tables | `verbose_table.py` | 666 | ❌ Raw text output | LOW |
@@ -37,6 +38,47 @@ Keep these portable — no project-specific imports.
 - **#1 Plugin arch:** Would let users add decks by dropping a file. Currently requires edits to `modern_meta.py` + `gameplans/*.json` + `strategy_profile.py`. Legacy's `deck_registry.py` auto-discovers on import.
 - **#2 Parallel:** Modern's 0.68s/Bo3 × 12,000 pairs = 2.3hrs serial. Legacy does 38 decks in minutes via multiprocessing. Would cut Cowork pipeline from 95min to ~20min.
 - **#3 Hypothesis testing:** Modern reports 60% WR but can't say if it's significantly different from 50%. Legacy's `hypothesis_testing.py` adds p-values and confidence intervals. Critical for validating that sim WR differences are real.
+- **#5b Neural-pivot prototype.** Hybrid LLM-gate + small-NN-scorer + 1-ply lookahead + BHI-jittered ensemble + multi-step rollout. All opt-in via four independent flags (`use_neural_gates`, `use_neural_scorer`, `use_ensemble`, `use_rollout`) threaded through `run_game` → `gs` → strategy. Default off → byte-identical to heuristic path. Per-deck checkpoints at `models/<deck>_scorer.pt` + `models/<deck>_scorer_norm.json`. Honest result on Legacy at n=200/side, NN-only: best config Δ = **+0.3 pp** on `ur_delver_vs_burn` (1-ply NN scorer); rollout K=5 is WR-neutral with the heuristic gate restored, regresses without it. Infrastructure is sound; the elective decision space inside one turn is too narrow for the chosen hooks to swing combined WR meaningfully. Read the **Lessons learned** section below before adopting in Modern — several non-obvious traps documented there.
+
+### Lessons learned (read before adopting in Modern)
+
+These are honest findings from two iterations of building / measuring the prototype on Legacy. Most are negative-result lessons that save time on the Modern port.
+
+1. **State-value scorer alone is not enough.** Training on `state → P(win at game end)` gives near-identical scores for slightly-different post-states (e.g. "Bolt face" vs "Bolt creature"). Per-decision discrimination needs either (a) multi-step rollout (`rollout.py` + `rollout_policy.py` here) or (b) `(state, action) → won?` Q-style training. (a) is sound but loses the rest-of-current-turn semantics; (b) needs counterfactual data we don't yet trace.
+
+2. **Multi-step rollout requires a heuristic gate, not full override.** First Lever-4 run let rollout fire whenever a creature target existed; it voted face mid-game in spots where keeping creature targets mattered for clock and regressed combined WR by 0.7pp. With the heuristic's life-threshold gate restored (rollout only fires when face is at least life-plausible), rollout is WR-neutral. Translation for Modern: don't replace the heuristic with rollout — **gate rollout to fire only at the same decision boundary the heuristic already considers**, then let it pick between the candidates.
+
+3. **The trace-record context-manager pattern is the right shape.** `state_encoder.record(...)` is a no-op when no collector is active. Strategies sprinkle `record()` calls at every decision; collection happens out-of-band via `with collect() as rows:`. Costs nothing in production. Modern should adopt this verbatim.
+
+4. **Opt-in flags must default to False AND must produce byte-identical behaviour when off.** Verified by re-running the same seed before/after wiring and comparing `winner` / `kill_turn` / `log_lines`. This is non-negotiable for Modern's matrix path which is on the critical path of the Cowork pipeline.
+
+5. **Use `claude-api` skill conventions for the LLM advisor.** Specifically: model = `claude-opus-4-7`, `thinking={"type": "adaptive"}` (no `budget_tokens`, no `temperature` — both 400 on Opus 4.7), `output_config={"effort": "low"}` for sparse strategic gates, `client.messages.parse()` with Pydantic schemas for structured outputs, top-level `cache_control={"type": "ephemeral"}` on the system prefix. Static doctrine + per-gate instruction prefix are cacheable; the volatile per-call game-state JSON sits in the user message after the cached prefix.
+
+6. **Fail-soft is mandatory for any LLM call.** Every gate is wrapped in `try/except` → returns `None` on any error → strategy falls back to heuristic. Verified when the sandbox lacked an API key: the eval still ran, the gate decisions silently fell through to heuristic, no game forfeited.
+
+7. **Per-deck scorers, not one big multi-deck scorer.** Cross-deck transfer was untested but expected to be poor without conditioning. Per-deck val acc was 78–80 %; a single shared model would average toward the mean. Modern's modular deck registry naturally supports `models/{deck_slug}_scorer.pt`.
+
+8. **The state encoder is deck-agnostic.** All 41 features come from `gs`/`player`/`opponent` and are populated for any deck pair. The encoder doesn't need to know which deck is playing — that's encoded in the `mc_*` matchup-category one-hots and the `bhi_*` HandBelief features. Same encoder works for TES and UR Delver.
+
+9. **BHI is the right anchor for hidden-info reasoning.** Both ensemble determinization (`determinization.hypothetical_bhi`) and the LLM prompt construction read from `bhi.HandBelief`. Modern's BHI is already adopted (`✅` in shared modules table) — the neural pivot rides on top of it.
+
+10. **GameState is `copy.deepcopy`-safe** — verified by `gamestate_clone.test_clone_roundtrip()`. No closures or non-pickleable refs hiding in the dataclass. Modern's `GameState` uses the same dataclass shape; should clone cleanly with the same approach.
+
+11. **Rollout RNG hygiene is critical.** Rollouts call `random.*` from inside strategies; `random` is a global module. Always: capture state with `random.getstate()`, seed with a per-rollout deterministic seed (e.g. `gs.turn * 1000 + ci * 100 + k`), then `random.setstate(saved)` in a `finally`. Otherwise the production game's RNG state is corrupted by the rollouts and downstream determinism breaks.
+
+12. **Defuse neural toggles inside the rollout body.** When the rollout-policy plays the heuristic forward on a clone, the clone inherits `gs.use_neural_*` from the original. Inside `rollout_to_end` we explicitly `gs.use_neural_gates = False; gs.use_neural_scorer = False; gs.use_ensemble = False; gs.use_rollout = False` so the rollout policy IS the heuristic (no nested neural calls, no infinite loops). This is mandatory.
+
+13. **K (rollouts per candidate) can be small.** K=5 / K=10 / K=15 produced identical WR at n=100 in our K-sensitivity sweep. The eval cost grows linearly in K but the marginal information after K=5 is small for a 5-turn horizon. Default K=5 is fine; bump only if the candidate distinction is on a knife-edge.
+
+14. **Don't paste API keys in chat.** During this work the user pasted a `ghp_…` GitHub PAT (rejected by the Anthropic SDK) and later a real `sk-ant-…` key (had to be revoked). The right pattern is `ANTHROPIC_API_KEY=sk-ant-... python3 run_meta.py ...` or a gitignored `.env`. Surface this in any onboarding doc.
+
+15. **Cost containment for live evals.** With prompt caching, a 200-game ablation with 5 LLM-gate calls per game lands at ≤ \$2 at Opus 4.7 prices. Without caching it would be ~10× more. The static prefix MUST be ≥ 4 096 tokens for Opus-tier caching to engage; verify via `usage.cache_read_input_tokens` on every response.
+
+16. **Q-style discriminator beats value-scorer at per-decision discrimination.** Trained on `(state ⊕ action_one_hot) → rollout_won` triples generated by `scripts/collect_q_data.py`. On UR Delver's `ur_bolt_mode` decision: **94.2 % val acc vs 68.3 % majority baseline (+25.8 pp lift)** — vs the value-scorer's +10.6 pp on the same data. The architectural change (action conditioning) is doing real work. Architecture is `(41 + |actions|) → 32 → 16 → 1` sigmoid; one model per `decision_type` so the action-vocabulary stays small. Counterfactual data generation is cheap: 1 000 games × 5 opponents × K=3 rollouts per candidate produced 600 rows in **4.6 s**.
+
+17. **THE BOTTLENECK IS DECISION SELECTION, NOT DECISION QUALITY.** This is the single most important finding from iteration 4 and the one that changes how we should sequence neural work going forward. Empirical evidence: a Q-net at 94 % val acc on `ur_bolt_mode` produces **+0.0 pp combined WR** at n=200/side on `ur_delver_vs_burn`. Diagnostic: Q-scorer fires 22 times across 50 games vs dimir; 4 of those are real face-overrides; 18 agree with the heuristic. The 4 overrides don't add up to a measurable WR shift because the Bolt-mode decision is genuinely low-leverage on UR Delver — the heuristic was already right most of the time, and the few disagreements happen in ambiguous mid-game spots that the rest of the game can recover from. **Translation for Manu**: do not adopt the neural pipeline for any decision until you've identified one with high game-leverage (mulligan, deploy-threat order, "cast cantrip vs hold mana for counter", attack/hold). Hooking 5 such decisions is worth more than perfecting any single one. Picking the right *decisions to hook* is the open research direction; the *modelling toolkit* (value-scorer, rollout, Q-net, LLM gate) is in place and works.
+
+18. **Recursion trap: defuse `collect_q_data` inside the rollout body.** The first build of `record_q` ran rollouts that themselves triggered `record_q` on the cloned state, since `gs.collect_q_data` was True on the clone — infinite recursion, processes pegging CPU at 99 %. Fix: in `rollout.py` set `gs.collect_q_data = False` (along with `use_q_scorer`, `use_rollout`, etc.) before stepping the clone forward. The same defensive pattern applies to ANY new flag that triggers fork-style rollouts. Auditing rule: every new neural toggle that recurses through `play_turn` MUST be added to the `rollout.py` defuse list.
 
 ---
 
@@ -86,6 +128,17 @@ Simulated: {date} · {N} decks · {games}/pair · Engine: {repo}
 Source: {data_file} · Shell: ManusAI · Strategy: Claude · Owner: DJPieter81
 ```
 
+### Neural artefacts (Legacy; same paths if Modern adopts)
+- Trace data: `traces/{deck1}_{deck2}.jsonl` (single matchup) or `traces/{deck}_meta.jsonl` (multi-matchup concat). One row per decision: `{decision_type, decision_value, state, candidates, eventual_winner, tes_won, kill_turn, game_length, matchup, seed}`. The field is named `tes_won` for back-compat — it's actually `1 if winner == 'p1'`, regardless of which deck is in P1.
+- Model checkpoints: `models/{deck}_scorer.pt` (PyTorch state_dict) + `models/{deck}_scorer_norm.json` (per-feature mean/std). Both required to load.
+- Ablation reports: `results/neural_eval_{p1}_vs_{p2}_{ts}.html`.
+- LLM call logs: `results/neural_logs/{date}.jsonl` — **gitignored**. One row per Claude call with model id, token counts (incl. `cache_read` / `cache_write`), parsed response, `stop_reason`.
+
+### Required `.gitignore` additions
+```
+results/neural_logs/
+```
+
 ---
 
 ## Next Actions
@@ -97,3 +150,12 @@ Source: {data_file} · Shell: ManusAI · Strategy: Claude · Owner: DJPieter81
 5. **Legacy:** Add sideboard guide section to matchup detail panel
 6. **Both:** Keep shared modules (`clock.py`, `bhi.py`, `strategic_logger.py`, `gameplan.py`) portable
 7. **Both:** Merge deck guide pipelines — Legacy's 7-feature `gen_guides.py` + Modern's Stars/findings `build_guide.py`
+8. **Modern:** Adopt the trace-record context-manager pattern from `state_encoder.py`. Smallest possible adoption — pure Python, no torch dep, no Anthropic dep. Foundation for everything else.
+9. **Modern:** Adopt `lookahead.py`'s context-manager mutator pattern. The mutators (`hypothetical_life_delta`, etc.) are deck-agnostic; only the per-strategy `argmax_action` call sites need wiring.
+10. **Both:** Hook MORE elective decisions per turn — *this is the highest-leverage open work item*. The Lever-4 / Lever-5 ablations showed Bolt-mode alone doesn't have enough game-leverage to swing combined WR even with a 94 %-accurate Q-net. Candidates: mulligan, deploy-threat order, "cast cantrip vs hold mana for counter", attack/hold, FoW-counter-or-not. Same infrastructure already supports them — `_trace_record(...)` + `record_q(...)` calls at the new sites + `q_scorer.ACTION_VOCAB` extension + `train_q_scorer.py` re-run.
+11. **Both:** Run the live LLM-gate eval (`sk-ant-…` key in env var, never in chat). Cost ≤ \$2 per 200-game eval at Opus 4.7 prices. Validates the LLM-as-randomised-expert hypothesis from Cowling/Powley/Ward 2012. The LLM is best at the high-leverage decisions (mulligan, sideboard, "should we go off this turn?") — pair it with #10.
+12. **Done in Legacy (commit history will reflect):** `(state, action) → won?` Q-style discriminator (Lever 5). Trained model at `models/q_ur_bolt_mode.pt` hits 94.2 % val acc. Modern can adopt the trainer + `q_scorer.py` verbatim once a high-leverage decision is hooked.
+
+## Out of scope for the cross-project sync
+- Modern uses `gs.player1` / `gs.player2`, Legacy uses `gs.p1` / `gs.p2`. The `state_encoder.py` port to Modern must rename the slot accessors. All other features (life, hand, lands, etc.) are named identically in both repos.
+- Modern's `combat_manager.py` and `turn_planner.py` are not present in Legacy — the `lookahead.py` mutators may need additional helpers to handle Modern's richer combat / multi-ordering decisions.
