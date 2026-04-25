@@ -88,7 +88,14 @@ def _trace_dual_board(log, gs, deck1, deck2):
 
 
 def run_game(deck1: str, deck2: str = None, verbose: bool = False,
-             trace: bool = False) -> GameResult:
+             trace: bool = False,
+             use_neural_gates: bool = False,
+             use_neural_scorer: bool = False,
+             use_ensemble: bool = False,
+             use_rollout: bool = False,
+             use_q_scorer: bool = False,
+             use_q_mulligan: bool = False,
+             collect_q_data: bool = False) -> GameResult:
     """
     Run a single game between any two decks with equal AI quality.
 
@@ -111,10 +118,26 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
     if deck2 not in DECKS:
         raise ValueError(f"Unknown deck: {deck2}. Available: {sorted(DECKS.keys())}")
 
+    # Coin flip happens BEFORE mulligans (matches real Magic CR 103.1, and
+    # lets matchup-aware mulligan policies condition on going first/second).
+    p1_goes_first = random.random() < 0.5
+
     # Mulligan: each deck uses its own keep logic (via registry or fallback)
     from deck_registry import get_keep_fn
     p1_keep = get_keep_fn(deck1) or opp_keep
     p2_keep = get_keep_fn(deck2) or opp_keep
+    # ── LEVER 6: Q-net mulligan policy (default off) ───────────────────
+    if use_q_mulligan:
+        try:
+            from mulligan_q import should_keep as _q_should_keep
+            _heuristic_keep = p1_keep
+            def _q_wrapped_keep(hand, matchup='', _gf=p1_goes_first):
+                v = _q_should_keep(hand, matchup, goes_first=_gf)
+                return _heuristic_keep(hand, matchup) if v is None else v
+            p1_keep = _q_wrapped_keep
+        except Exception:
+            # Checkpoint missing or torch not importable — fall back silently.
+            pass
 
     p1_mull_trace = p2_mull_trace = None
     if trace:
@@ -126,8 +149,6 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
         p1_hand, p1_lib, p1_mulls = london_mulligan(DECKS[deck1], p1_keep, deck1)
         p2_hand, p2_lib, p2_mulls = london_mulligan(DECKS[deck2], p2_keep, deck2)
 
-    p1_goes_first = random.random() < 0.5
-
     gs = GameState(
         p1=PlayerState(name='b', hand=list(p1_hand), library=list(p1_lib)),
         p2=PlayerState(name='o', hand=list(p2_hand), library=list(p2_lib)),
@@ -136,6 +157,15 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
     gs.p2_deck = deck2
     gs.matchup = deck2  # backward compat: matchup = antagonist deck
     gs.trace = trace
+    # Phase 3b — opt-in neural-pivot toggles for `_strategy_tes`. Default
+    # off so the heuristic matrix path is byte-identical to before.
+    gs.use_neural_gates = use_neural_gates
+    gs.use_neural_scorer = use_neural_scorer
+    gs.use_ensemble = use_ensemble
+    gs.use_rollout = use_rollout
+    gs.use_q_scorer = use_q_scorer
+    gs.use_q_mulligan = use_q_mulligan
+    gs.collect_q_data = collect_q_data
     # Strategic logger follows the same trace flag
     gs.strat_log.enabled = trace
 
@@ -247,12 +277,25 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
         p2_deck=deck2,
     )
 
-def run_sweep(deck1: str, deck2: str, n_games: int = 100) -> dict:
+def run_sweep(deck1: str, deck2: str, n_games: int = 100,
+              use_neural_gates: bool = False,
+              use_neural_scorer: bool = False,
+              use_ensemble: bool = False,
+              use_rollout: bool = False,
+              use_q_scorer: bool = False,
+              use_q_mulligan: bool = False) -> dict:
     """
     Run n_games between deck1 and deck2, return stats.
     Returns dict with: p1_wins, p2_wins, p1_wr, avg_length, avg_kill_turn
     """
-    results = [run_game(deck1, deck2) for _ in range(n_games)]
+    results = [run_game(deck1, deck2,
+                        use_neural_gates=use_neural_gates,
+                        use_neural_scorer=use_neural_scorer,
+                        use_ensemble=use_ensemble,
+                        use_rollout=use_rollout,
+                        use_q_scorer=use_q_scorer,
+                        use_q_mulligan=use_q_mulligan)
+               for _ in range(n_games)]
     p1_wins = sum(1 for r in results if r.winner == 'p1')
     p2_wins = n_games - p1_wins
     kill_turns = [r.kill_turn for r in results if r.kill_turn]
@@ -2191,12 +2234,27 @@ def run_rules_tests():
     test("assess_board: board_power = 4", metrics['board_power'], 4)
 
     # ── Layer 3: Holistic Controls (matchup balance guards) ──
-    print(f"\n  --- Holistic Controls (30-game sweeps) ---")
+    print(f"\n  --- Holistic Controls (60-game sweeps, paired seeds) ---")
     import random as _ctrl_rng
+    import hashlib as _ctrl_hash
 
-    def _sweep_wr(d1, d2, n=30):
-        """Quick sweep returning p1 win rate."""
-        seed_base = hash(d1 + d2) % 10000
+    def _det_seed(*parts: str) -> int:
+        """Deterministic across-runs seed from string parts. Replaces
+        `hash()` which is salted by PYTHONHASHSEED and so produces a
+        different seed_base on every Python invocation — that was the
+        root cause of the symmetry test's intermittent failures."""
+        h = _ctrl_hash.md5("|".join(parts).encode()).digest()
+        return int.from_bytes(h[:4], "big") & 0x7FFFFFFF
+
+    def _sweep_wr(d1, d2, n=60, seed_label=None):
+        """Sweep returning p1 win rate.
+
+        `seed_label` lets the caller share a seed sequence between the
+        two directions of a symmetry test (the same `(da, db)` pair
+        produces the same shuffles for both `da_vs_db` and `db_vs_da`),
+        which sharply reduces variance for the symmetry test."""
+        label = seed_label if seed_label is not None else f"{d1}|{d2}"
+        seed_base = _det_seed(label)
         wins = 0
         for i in range(n):
             _ctrl_rng.seed(seed_base + i)
@@ -2205,10 +2263,14 @@ def run_rules_tests():
                 wins += 1
         return wins / n
 
-    # Control 1: Symmetry — A_vs_B + B_vs_A should sum to ~100%
+    # Control 1: Symmetry — A_vs_B + B_vs_A should sum to ~100%.
+    # Paired seeds (same `seed_label` both directions) sharply reduce
+    # variance — the same library shuffles drive both runs, so the WR
+    # difference reflects strategy, not RNG noise.
     for da, db in [('burn', 'dimir'), ('storm', 'bug'), ('eldrazi', 'goblins')]:
-        wr_ab = _sweep_wr(da, db)
-        wr_ba = _sweep_wr(db, da)
+        pair_label = "|".join(sorted([da, db]))  # symmetric across direction
+        wr_ab = _sweep_wr(da, db, n=60, seed_label=pair_label)
+        wr_ba = _sweep_wr(db, da, n=60, seed_label=pair_label)
         sym = wr_ab + wr_ba
         ok = abs(sym - 1.0) <= 0.25
         test(f"Symmetry: {da} vs {db} ({wr_ab:.0%}+{wr_ba:.0%}={sym:.0%})", ok, True)

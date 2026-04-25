@@ -492,6 +492,12 @@ Import a new deck:
                         help='Single game with full log')
     parser.add_argument('--trace', nargs=2, metavar=('D1', 'D2'),
                         help='Single game with AI reasoning trace')
+    parser.add_argument('--neural-eval', action='store_true',
+                        help='Run TES neural-pivot ablation eval (Phase 4 — '
+                             'requires neural_eval.py + a trained scorer)')
+    parser.add_argument('--skip-llm', action='store_true',
+                        help='With --neural-eval: skip configs that require the '
+                             'Claude API (run NN-only ablations).')
 
     parser.add_argument('-n', type=int, default=100,
                         help='Number of games (default: 100)')
@@ -536,6 +542,48 @@ Import a new deck:
         cmd_verbose(args.verbose[0], args.verbose[1], args.seed)
     elif args.trace:
         cmd_trace(args.trace[0], args.trace[1], args.seed)
+    elif args.neural_eval:
+        from neural_eval import run_config, render_html
+        from datetime import datetime
+        from pathlib import Path
+        # name, gates, scorer, ensemble, rollout, q_scorer, q_mulligan
+        configs = [
+            ("heuristic only (baseline)", False, False, False, False, False, False),
+        ]
+        if not args.skip_llm:
+            configs.append(("+ LLM gate",            True,  False, False, False, False, False))
+        configs.append((    "+ NN scorer (1-ply)",   False, True,  False, False, False, False))
+        configs.append((    "+ NN scorer (ens x5)",  False, True,  True,  False, False, False))
+        configs.append((    "+ rollout K=5",         False, False, False, True,  False, False))
+        configs.append((    "+ Q-scorer (bolt)",     False, False, False, False, True,  False))
+        configs.append((    "+ Q-mulligan",          False, False, False, False, False, True))
+        configs.append((    "+ Q-mull + Q-bolt",     False, False, False, False, True,  True))
+        if not args.skip_llm:
+            configs.append(("+ LLM gate + Q-mull",   True,  False, False, False, False, True))
+        seed_start = args.seed if args.seed is not None else 10_000
+        n = args.n
+        # Default protagonist is UR Delver (better testbed); pass two
+        # positional args to override, e.g. `--neural-eval tes burn`.
+        p1 = args.deck_list[0] if args.deck_list else 'ur_delver'
+        p2 = args.deck_list[1] if len(args.deck_list) >= 2 else 'burn'
+        print(f"[neural_eval] {p1}_vs_{p2}, n={n}, seed={seed_start}, "
+              f"skip_llm={args.skip_llm}")
+        results = []
+        for cfg in configs:
+            name, use_g, use_s, use_e, use_r, use_q, use_qm = cfg
+            print(f"  → {name}")
+            r = run_config(name, n, seed_start, use_g, use_s,
+                           use_ensemble=use_e, use_rollout=use_r,
+                           use_q_scorer=use_q,
+                           use_q_mulligan=use_qm,
+                           p1_deck=p1, p2_deck=p2)
+            print(f"     P1 {r.p1_wr*100:.1f}%  P2 {r.p2_wr*100:.1f}%  "
+                  f"combined {r.combined_wr*100:.1f}%  ({r.elapsed_s:.1f}s)")
+            results.append(r)
+        ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        out = Path(f"results/neural_eval_{p1}_vs_{p2}_{ts}.html")
+        render_html(results, n, out)
+        print(f"[neural_eval] HTML: {out}")
     else:
         parser.print_help()
 
