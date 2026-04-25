@@ -5482,12 +5482,52 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
                        on_resolve=_resolve_ts_mardu)
 
     # ── Creature deployment loop ──
+    # ── Iter-13 fix: kill Eidolon BEFORE deploying creatures ─────────
+    # Vs Burn with Eidolon active, casting Ragavan/Bowmasters/Grief
+    # eats 2 damage per spell — at 4-5 spells across a game, that's
+    # the matchup. Trace finding from mardu-vs-burn at seed 0:
+    # T4 Bowmasters → -2 life under Eidolon → death by T8.
+    # Real Mardu kills Eidolon with STP/Bolt FIRST, then deploys.
+    if gs.eidolon_active:
+        eidolon_target = next((c for c in opponent.creatures
+                               if c.card.tag == 'eidolon'), None)
+        if eidolon_target:
+            stp_card = player.find_tag('stp')
+            if stp_card and budget[0] >= 1 and opp_can_cast(stp_card, budget[0], gs, caster=player):
+                def _resolve_eidolon_stp(c, _t=eidolon_target):
+                    player.add_to_grave(c)
+                    if _t in opponent.creatures:
+                        opponent.remove_creature(_t)
+                        log_fn(f"★ Swords to Plowshares → exiles Eidolon", True)
+                        update_goyf(gs)
+                cast_spell(player, opponent, gs, stp_card, budget,
+                           log_fn, log_entries, on_resolve=_resolve_eidolon_stp)
+            else:
+                bolt_card = player.find_tag('bolt')
+                # Eidolon is 2/1 — Bolt kills it
+                if (bolt_card and budget[0] >= 1
+                        and opp_can_cast(bolt_card, budget[0], gs, caster=player)):
+                    def _resolve_eidolon_bolt(c, _t=eidolon_target):
+                        player.add_to_grave(c)
+                        if _t in opponent.creatures:
+                            opponent.remove_creature(_t)
+                            log_fn("★ Lightning Bolt → kills Eidolon", True)
+                            update_goyf(gs)
+                    cast_spell(player, opponent, gs, bolt_card, budget,
+                               log_fn, log_entries, on_resolve=_resolve_eidolon_bolt)
+
     deploy_tags = ['ragavan', 'bowm', 'grief']
     for tag in deploy_tags:
         card = player.find_tag(tag)
         if not card or not opp_can_cast(card, budget[0], gs, caster=player):
             continue
         if tag == 'grief' and gs.turn <= 2:
+            continue
+        # ── Iter-13: skip low-CMC deploys under Eidolon if we couldn't
+        # remove it. Eating 2 damage per creature deploy is worse than
+        # passing on the threat — usually we can deploy next turn.
+        if (gs.eidolon_active and card.cmc <= 3
+                and any(c.card.tag == 'eidolon' for c in opponent.creatures)):
             continue
         def _resolve_deploy_mardu(c, _tag=tag):
             player.put_creature_in_play(c)
