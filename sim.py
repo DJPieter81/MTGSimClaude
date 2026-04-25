@@ -2234,12 +2234,27 @@ def run_rules_tests():
     test("assess_board: board_power = 4", metrics['board_power'], 4)
 
     # ── Layer 3: Holistic Controls (matchup balance guards) ──
-    print(f"\n  --- Holistic Controls (30-game sweeps) ---")
+    print(f"\n  --- Holistic Controls (60-game sweeps, paired seeds) ---")
     import random as _ctrl_rng
+    import hashlib as _ctrl_hash
 
-    def _sweep_wr(d1, d2, n=30):
-        """Quick sweep returning p1 win rate."""
-        seed_base = hash(d1 + d2) % 10000
+    def _det_seed(*parts: str) -> int:
+        """Deterministic across-runs seed from string parts. Replaces
+        `hash()` which is salted by PYTHONHASHSEED and so produces a
+        different seed_base on every Python invocation — that was the
+        root cause of the symmetry test's intermittent failures."""
+        h = _ctrl_hash.md5("|".join(parts).encode()).digest()
+        return int.from_bytes(h[:4], "big") & 0x7FFFFFFF
+
+    def _sweep_wr(d1, d2, n=60, seed_label=None):
+        """Sweep returning p1 win rate.
+
+        `seed_label` lets the caller share a seed sequence between the
+        two directions of a symmetry test (the same `(da, db)` pair
+        produces the same shuffles for both `da_vs_db` and `db_vs_da`),
+        which sharply reduces variance for the symmetry test."""
+        label = seed_label if seed_label is not None else f"{d1}|{d2}"
+        seed_base = _det_seed(label)
         wins = 0
         for i in range(n):
             _ctrl_rng.seed(seed_base + i)
@@ -2248,10 +2263,14 @@ def run_rules_tests():
                 wins += 1
         return wins / n
 
-    # Control 1: Symmetry — A_vs_B + B_vs_A should sum to ~100%
+    # Control 1: Symmetry — A_vs_B + B_vs_A should sum to ~100%.
+    # Paired seeds (same `seed_label` both directions) sharply reduce
+    # variance — the same library shuffles drive both runs, so the WR
+    # difference reflects strategy, not RNG noise.
     for da, db in [('burn', 'dimir'), ('storm', 'bug'), ('eldrazi', 'goblins')]:
-        wr_ab = _sweep_wr(da, db)
-        wr_ba = _sweep_wr(db, da)
+        pair_label = "|".join(sorted([da, db]))  # symmetric across direction
+        wr_ab = _sweep_wr(da, db, n=60, seed_label=pair_label)
+        wr_ba = _sweep_wr(db, da, n=60, seed_label=pair_label)
         sym = wr_ab + wr_ba
         ok = abs(sym - 1.0) <= 0.25
         test(f"Symmetry: {da} vs {db} ({wr_ab:.0%}+{wr_ba:.0%}={sym:.0%})", ok, True)
