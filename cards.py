@@ -525,9 +525,11 @@ def make_eldrazi_deck() -> List[Card]:
 
 def make_painter_deck() -> List[Card]:
     d = []
-    # Combo
-    d += [creature("Painter's Servant", 2, {'generic':2}, set(), 1, 3, tag='painter', is_combo_piece=True)] * 3
-    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', is_combo_piece=True, win_condition=True)] * 1
+    # Combo — iter 11 fix: bumped Painter 3→4 and Grindstone 1→4 to match
+    # real-world ratios. With only 1 Grindstone, the deck rarely assembled
+    # combo (Grindstone showed in only ~12% of openers); WR was 36.1%.
+    d += [creature("Painter's Servant", 2, {'generic':2}, set(), 1, 3, tag='painter', is_combo_piece=True)] * 4
+    d += [artifact('Grindstone', 1, {'generic':1}, tag='grind', is_combo_piece=True, win_condition=True)] * 4
     # Planeswalkers
     d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(), tag='karn', engine=True, lock_piece=True)] * 4
     d += [planeswalker('Tezzeret, Cruel Captain', 3, {'generic':3}, set(), tag='tezzeret', engine=True)] * 4
@@ -536,11 +538,10 @@ def make_painter_deck() -> List[Card]:
     d += [artifact('Grim Monolith', 2, {'generic':2}, tag='monolith', mana_ritual=True)] * 4
     d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
     d += [instant("Kozilek's Command", 4, {'C':2,'generic':2}, set(), tag='kozcommand')] * 4
-    d += [artifact('Manifold Key', 1, {'generic':1}, tag='mfkey')] * 3
-    d += [artifact("Mishra's Research Desk", 1, {'generic':1}, tag='desk', is_cantrip=True)] * 3
-    d += [artifact('Disruptor Flute', 3, {'generic':3}, tag='flute', lock_piece=True)] * 1
+    d += [artifact('Manifold Key', 1, {'generic':1}, tag='mfkey')] * 2  # was 3
+    d += [artifact("Mishra's Research Desk", 1, {'generic':1}, tag='desk', is_cantrip=True)] * 2  # was 3
+    # flex slots trimmed (Disruptor Flute, Pithing Needle) to make room for combo pieces
     d += [artifact('Mox Opal', 0, {}, tag='opal', mana_ritual=True)] * 1
-    d += [artifact('Pithing Needle', 1, {'generic':1}, tag='needle')] * 1
     d += [artifact('Portable Hole', 1, {'W':1}, tag='hole', is_removal=True)] * 1
     d += [artifact('Soul-Guide Lantern', 1, {'generic':1}, tag='lantern')] * 1
     d += [artifact('Voltaic Key', 1, {'generic':1}, tag='vkey')] * 1
