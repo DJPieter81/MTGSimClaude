@@ -231,6 +231,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
     (10-12 damage) is often enough, especially with follow-up turns.
     """
     from engine import _try_counter_any, bowmasters_triggers, combat_declare
+    from state_encoder import record as _trace_record
     import random as _rnd
 
     storm = 0
@@ -280,6 +281,28 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
     if has_veil and (has_tutor or has_tendrils) and proj_mana >= 3:
         can_go_off = True
 
+    # ── TRACE GATE 1: go-off decision (LLM advisor target in Phase 2) ──────
+    _trace_record('go_off', bool(can_go_off), gs, player, opponent,
+                  proj_mana=proj_mana, proj_storm=proj_storm,
+                  has_tutor=has_tutor, has_tendrils=has_tendrils,
+                  led_in_hand=led_in_hand, has_veil=has_veil)
+
+    # ── PHASE 2 OPT-IN: LLM gate advisor for go-off ────────────────────────
+    if getattr(gs, 'use_neural_gates', False):
+        try:
+            from neural_gates import should_go_off as _nn_should_go_off
+            _llm_decision = _nn_should_go_off(
+                gs, player, opponent,
+                proj_mana=proj_mana, proj_storm=proj_storm,
+                has_tutor=has_tutor, has_tendrils=has_tendrils,
+                led_in_hand=led_in_hand, has_veil=has_veil,
+                heuristic_decision=bool(can_go_off))
+            if _llm_decision is not None:
+                can_go_off = _llm_decision
+        except Exception as _e:
+            log_fn(f"[neural_gates] go_off advisor error: {_e!r} — "
+                   f"falling back to heuristic")
+
     if not can_go_off:
         # ── Develop turn: chain cantrips aggressively to find combo ──────────
         # Cast Gitaxian Probe (free) — information + storm + draw
@@ -304,8 +327,14 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
 
         # Cast ALL cantrips to dig aggressively (not just one)
         for _ in range(3):  # up to 3 cantrips per develop turn
+            _cands = [c.tag for c in player.hand
+                      if c.tag in ('bs', 'ponder') and mana >= 1]
             bs = next((c for c in player.hand if c.tag in ('bs', 'ponder') and mana >= 1), None)
             if not bs: break
+            # ── TRACE NN-SCORER DECISION 1a: cantrip pick (develop turn) ──
+            if len(_cands) >= 2:
+                _trace_record('cantrip_pick', bs.tag, gs, player, opponent,
+                              candidates=_cands, phase='develop')
             player.remove_from_hand(bs); player.add_to_grave(bs)
             mana -= 1; player.draw(1)
             player.spells_cast_this_turn += 1
@@ -391,9 +420,29 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
     crack_all_fast_mana()
 
     # ── Step 3: Cantrips for storm + draw (Brainstorm/Ponder) ───────────────
-    for _ in range(3):
+    for _cantrip_iter in range(3):
+        _cands = [c.tag for c in player.hand
+                  if c.tag in ('bs', 'ponder') and mana >= 1]
         bs = next((c for c in player.hand if c.tag in ('bs', 'ponder') and mana >= 1), None)
         if not bs: break
+        # ── TRACE NN-SCORER DECISION 1b: cantrip pick (combo turn) ────────
+        if len(_cands) >= 2:
+            _trace_record('cantrip_pick', bs.tag, gs, player, opponent,
+                          candidates=_cands, phase='combo')
+        # ── PHASE 3 OPT-IN: NN scorer as stop-early gate ──────────────────
+        # After the first cantrip resolves, if scorer thinks P(win) ≥ 0.55
+        # we're already favoured — preserve a cantrip for next turn rather
+        # than spending mana drawing more cards we don't need.
+        if _cantrip_iter >= 1 and getattr(gs, 'use_neural_scorer', False):
+            try:
+                from neural_scorer import score as _nn_score
+                _p_win = _nn_score(gs, player, opponent)
+                if _p_win is not None and _p_win >= 0.55:
+                    log_fn(f"[neural_scorer] P(TES wins)={_p_win:.2f} — "
+                           f"stopping cantrip chain to preserve resources")
+                    break
+            except Exception as _e:
+                log_fn(f"[neural_scorer] cantrip-stop hook error: {_e!r}")
         player.remove_from_hand(bs); player.add_to_grave(bs)
         mana -= 1; storm += 1; player.spells_cast_this_turn += 1
         player.draw(1)
@@ -465,7 +514,25 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Step 6: Echo of Eons line (LED → discard → flashback Echo → 7 new cards)
     echo = player.find_tag('echo')
     led_for_echo = player.find_tag('led')
-    if echo and led_for_echo and storm < 5:
+    _echo_take = bool(echo and led_for_echo and storm < 5)
+    # ── TRACE GATE 3: Echo line decision (LLM advisor target in Phase 2) ──
+    if echo and led_for_echo:
+        _trace_record('echo_line', _echo_take, gs, player, opponent,
+                      storm=storm, mana=mana, hand_size=len(player.hand))
+        # ── PHASE 2 OPT-IN: LLM advisor for Echo of Eons line ──────────
+        if getattr(gs, 'use_neural_gates', False):
+            try:
+                from neural_gates import worth_echo_line as _nn_echo
+                _llm_echo = _nn_echo(
+                    gs, player, opponent,
+                    storm=storm, mana=mana, hand_size=len(player.hand),
+                    heuristic_decision=_echo_take)
+                if _llm_echo is not None:
+                    _echo_take = _llm_echo
+            except Exception as _e:
+                log_fn(f"[neural_gates] echo_line advisor error: {_e!r} — "
+                       f"falling back to heuristic")
+    if _echo_take:
         # Crack LED: discard hand (including Echo to GY), add 3 mana
         player.remove_from_hand(led_for_echo); player.exile.append(led_for_echo)
         discarded = list(player.hand)
@@ -528,6 +595,30 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
                                      'mono_black', 'prison', 'lands')
         use_empty = (fair_non_blue and storm >= 4 and
                      proj_tendrils_dmg < opponent.life and mana >= 4)
+        # ── TRACE GATE 2: Wish target (LLM advisor target in Phase 2) ──────
+        _trace_record('wish_target',
+                      'empty' if use_empty else 'tendrils',
+                      gs, player, opponent,
+                      storm=storm, mana=mana,
+                      proj_tendrils_dmg=proj_tendrils_dmg,
+                      fair_non_blue=fair_non_blue)
+        # ── PHASE 2 OPT-IN: LLM advisor for wish target ──────────────────
+        if getattr(gs, 'use_neural_gates', False):
+            try:
+                from neural_gates import pick_wish_target as _nn_wish
+                _llm_target = _nn_wish(
+                    gs, player, opponent,
+                    storm=storm, mana=mana,
+                    proj_tendrils_dmg=proj_tendrils_dmg,
+                    fair_non_blue=fair_non_blue,
+                    heuristic_target='empty' if use_empty else 'tendrils')
+                if _llm_target == 'empty':
+                    use_empty = True
+                elif _llm_target == 'tendrils':
+                    use_empty = False
+            except Exception as _e:
+                log_fn(f"[neural_gates] wish_target advisor error: {_e!r} — "
+                       f"falling back to heuristic")
         if use_empty:
             empty_card = sorcery('Empty the Warrens', 4, {'R': 1, 'generic': 3},
                                  {'R'}, tag='empty', win_condition=True)

@@ -296,3 +296,57 @@ Oops T1 kill rate = 38% (correct). G1 WR = 44% (reasonable). Bo3 WR = 30% is a s
 - Show and Tell: already gates Petal crack behind combo check (line 3455). 40% stuck is legitimate (needs 2 specific pieces).
 - TES: 39% stuck, but uses registry dispatch — needs separate audit.
 - Goblins/Lands/UR Aggro: proxy strategies, no full strategy to fix.
+
+---
+
+## Research: Hybrid LLM-gate + small-NN-scorer prototype for `_strategy_tes` (2026-04-25)
+
+User pivoted from heuristic incrementalism to "real neural improvements with LLMs vs pure heuristics" mid-rewrite of the TES `cast_spell()` conversion. Built a fail-soft prototype with the heuristic path as the default fallback.
+
+### External findings
+
+- **Forge AI** (https://github.com/Card-Forge/forge/wiki/AI) is heuristic-only, explicitly "weak at combo", no upstream NN. Nothing to port.
+- **Cowling / Powley / Ward 2012**, IEEE TCIAIG (https://eprints.whiterose.ac.uk/75050/) — canonical MCTS-for-MtG. Best rollout = randomised expert; decompose moves into a binary decision tree. Our `cast_spell()` pipeline already presents every gate as a binary cast/skip — maps directly.
+- **CCG RL papers** (LoCM, Bertram 2024 generalised card representations): operate on stripped-down CCG variants. Bertram 2024 long-term P3 idea — auto-generate `bhi.py` deck profiles from learned card embeddings.
+- **Anthropic prompt caching** (https://docs.claude.com/en/docs/build-with-claude/prompt-caching): 90% cost / 85% latency reduction on a static prefix; ≥ 4096 tokens for an Opus-tier prefix to cache.
+
+### Prototype architecture (built, fully wired, opt-in)
+
+| Module | Role | Status |
+|---|---|---|
+| `state_encoder.py` | 41-feature canonical state vector + record-collector | ✅ |
+| `scripts/collect_tes_traces.py` | 1000-game `tes_vs_burn` trace dump → `traces/tes_burn.jsonl` (4161 rows) | ✅ |
+| `neural_gates.py` | Claude `claude-opus-4-7` advisor for go-off / wish-target / Echo gates; structured outputs via Pydantic; top-level `cache_control={"type":"ephemeral"}` for prefix caching; fail-soft on API error | ✅ |
+| `neural_scorer.py` + `train_neural_scorer.py` | 41 → 32 → 16 → 1 MLP predicting P(TES wins ⎮ state) | ✅ — val acc 80.3% vs 69.7% majority baseline (+10.6pp lift, n=4161, 80/20 split, BCE) |
+| Opt-in flags `gs.use_neural_gates` / `gs.use_neural_scorer` on `run_game` / `run_sweep` | Wired through `sim.py`; consulted by `decks/tes.py` at the 3 gates + cantrip-stop hook; flag-off path byte-identical (verified: `tes_vs_burn` 52.0% before/after at seed 42, n=100) | ✅ |
+| `neural_eval.py` + `--neural-eval` CLI | 4-config ablation; HTML report at `results/neural_eval_*.html`; Wilson 95% CIs; Phase 5 banner gates on +5pp delta | ✅ |
+| `models/tes_scorer.pt` + `models/tes_scorer_norm.json` | Trained scorer + per-feature normalisation stats | ✅ |
+
+### Phase 4 result (n=200 per side per config, NN-only — LLM untested in sandbox)
+
+```
+heuristic only (baseline)  : P1 46.0%  P2 38.0%  combined 42.0%
++ NN scorer                : P1 46.0%  P2 38.0%  combined 42.0%
+```
+
+Δ = **0.0 pp**. The scorer's chosen integration point (cantrip-stop gate inside the going-off branch) fires too rarely to move WR — TES is mostly forced (cast every petal, every ritual, every cantrip, then fire) and has very few elective decisions per turn.
+
+### Phase 5 verdict — **YELLOW**
+
+- LLM gate path is wired and verified to fail-soft (`results/neural_logs/<date>.jsonl` has the auth-error entry from the smoke test). To run the actual eval, set `ANTHROPIC_API_KEY` in the env and rerun `python3 run_meta.py --neural-eval -n 200`.
+- NN scorer infrastructure is solid (val acc 80.3 %), but TES is the wrong test bed — too few elective decisions for dense per-turn scoring. **Better candidates for the next NN-scorer experiment**: UR Delver, BUG, dimir variants — decks with genuine cantrip-vs-threat-vs-removal trade-offs each turn.
+- Per the plan's Phase 5 stop condition, this is "marginal — archive prototype, resume backlog". The TES `cast_spell()` syntactic conversion remains paused in `decks/tes.py`; the trace-record hooks (which are no-ops without an active collector) are kept in place since they cost nothing and unblock future work.
+
+### Next experiments (ranked)
+
+1. **Run the LLM-gate eval with a real API key** — the prototype's most novel value lives there (Cowling 2012 says the best rollouts are *randomised expert* — the LLM gate is exactly that). Cost ≤ \$2 per 200-game eval at Opus 4.7 prices with prompt caching. Skip-condition only because the sandbox env doesn't expose a key.
+2. **Re-target the NN scorer to UR Delver** — same `state_encoder.py` works (deck-agnostic features). Trace 1000 games of `ur_delver_vs_*`, retrain, wire into `decks/ur_delver.py` at the cantrip-vs-bolt-vs-deploy decision points.
+3. **Resume `_strategy_tes` `cast_spell()` syntactic conversion** — last Phase B SKIP. Now decoupled from the neural pivot.
+
+### Sources
+
+- Card-Forge/forge — https://github.com/Card-Forge/forge
+- Forge AI wiki — https://github.com/Card-Forge/forge/wiki/AI
+- Cowling, Powley, Ward, "Ensemble Determinization in MCTS for MtG", IEEE TCIAIG 2012 — https://eprints.whiterose.ac.uk/75050/
+- Bertram et al., "Learning With Generalised Card Representations for MtG", 2024 — https://arxiv.org/html/2407.05879v1
+- Anthropic prompt caching docs — https://docs.claude.com/en/docs/build-with-claude/prompt-caching
