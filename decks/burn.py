@@ -186,6 +186,15 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     eidolon_self_cost = 2 if own_eidolon else 0
 
     def deal_face_damage(amount, source_name):
+        # ── Iter-15: pro-red damage prevention. If opponent controls a
+        # creature with `pro_red`, all red-source damage to opponent (and
+        # their permanents) is prevented. Implements Sanctifier en-Vec's
+        # protection effect — was missing in the simulator and explained
+        # WST-vs-Burn at 10.3 % combined.
+        if any(getattr(c.card, 'pro_red', False) for c in opponent.creatures):
+            log_fn(f"  {source_name} → prevented by pro-red "
+                   f"(opp life unchanged at {opponent.life})")
+            return
         opponent.life -= amount
         log_fn(f"★ {source_name} → {amount} damage (opp at {opponent.life})", True)
         gs.check_life_totals()
@@ -466,12 +475,16 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
             'ocelot',                    # Ocelot Pride — token engine
             'guide',                     # Guide of Souls — lifegain engine (not Goblin Guide)
         )
+        # Iter-15: skip pro-red creatures (e.g. Sanctifier en-Vec) — bolt
+        # is red and won't damage them.
         priority_targets = [c for c in opponent.creatures
-                            if c.card.tag in _high_priority_tags and _bolt_kills(c)]
+                            if c.card.tag in _high_priority_tags and _bolt_kills(c)
+                            and not getattr(c.card, 'pro_red', False)]
         # Fallback: any creature with power >= 2 that blocks our attackers and dies to bolt
         if not priority_targets:
             priority_targets = [c for c in opponent.creatures
-                                if _bolt_kills(c) and c.power >= 2]
+                                if _bolt_kills(c) and c.power >= 2
+                                and not getattr(c.card, 'pro_red', False)]
         # Only bolt creatures if NOT in lethal range (bolt+fireblast or bolt+bolt etc.)
         burn_in_hand = sum(1 for c in player.hand if c.tag in
                            ('bolt', 'chain', 'spike', 'rift', 'skullcrack', 'fireblast'))

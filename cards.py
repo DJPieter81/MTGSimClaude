@@ -11,6 +11,7 @@ def creature(name, cmc, mana_cost, colors, power, toughness, tag='',
              flash=False, haste=False, flying=False, indestructible=False,
              trample=False, delve=False, free_cast_if_blue=False,
              deathtouch=False, lifelink=False, vigilance=False, reach=False,
+             pro_red=False,
              subtypes=None, win_condition=False, is_combo_piece=False, **kwargs):
     return Card(
         name=name, card_type=CardType.CREATURE, cmc=cmc,
@@ -22,6 +23,7 @@ def creature(name, cmc, mana_cost, colors, power, toughness, tag='',
         free_cast_if_blue=free_cast_if_blue,
         deathtouch=deathtouch, lifelink=lifelink,
         vigilance=vigilance, reach=reach,
+        pro_red=pro_red,
         win_condition=win_condition, is_combo_piece=is_combo_piece,
         tag=tag, gy_type='creature', **kwargs
     )

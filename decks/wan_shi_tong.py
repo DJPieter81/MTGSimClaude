@@ -17,7 +17,7 @@ def make_wst_deck():
     d += [creature('Wan Shi Tong, Librarian', 4, {'W':1,'U':1,'generic':2}, {'W','U'}, 3, 5,
                    tag='wst', engine=True, flying=True)] * 4
     d += [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'}, 2, 2,
-                   tag='sanctifier')] * 2
+                   tag='sanctifier', pro_red=True)] * 2
     d += [creature('Snapcaster Mage', 2, {'U':1,'generic':1}, {'U'}, 2, 1,
                    tag='snap', flash=True)] * 2
     # Lock piece (4)

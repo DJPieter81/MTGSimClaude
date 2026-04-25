@@ -730,6 +730,19 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
             dmg_to_blocker  = atk.power
             dmg_to_attacker = blocker.power
 
+            # Iter-15: pro-red prevention on combat damage TO a pro-red
+            # blocker from a red attacker. Sanctifier en-Vec must survive
+            # blocking Goblin Guide / Swiftspear / Eidolon — that's the
+            # whole point of the card.
+            if (getattr(blocker.card, 'pro_red', False)
+                    and 'R' in getattr(atk.card, 'colors', set())):
+                dmg_to_blocker = 0
+            # Symmetric case (red blocker into pro-red attacker — rare but
+            # supported for symmetry).
+            if (getattr(atk.card, 'pro_red', False)
+                    and 'R' in getattr(blocker.card, 'colors', set())):
+                dmg_to_attacker = 0
+
             blocker.damage_marked  += dmg_to_blocker
             atk.damage_marked      += dmg_to_attacker
 
@@ -769,7 +782,18 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
                             damage_type='infect', log_fn=_log_dmg,
                             source_card=atk.card, attacker_player=attacker_player)
             else:
-                total_unblocked_dmg += atk.power
+                # Iter-15: pro-red prevention on combat damage from red
+                # attackers. If defender controls a creature with pro_red
+                # and the attacker is red, prevent the damage.
+                defender_pro_red = any(
+                    getattr(c.card, 'pro_red', False)
+                    for c in defender_player.creatures)
+                attacker_red = 'R' in getattr(atk.card, 'colors', set())
+                if defender_pro_red and attacker_red:
+                    block_parts.append(
+                        f"  {atk.name} unblocked → prevented by pro-red")
+                else:
+                    total_unblocked_dmg += atk.power
             if atk.card.lifelink:
                 attacker_player.life += atk.power
 
@@ -2012,8 +2036,10 @@ def _respond_on_opponent_turn(responder, active, gs, log_fn, log_entries):
     bolt = responder.find_tag('bolt') or responder.find_tag('heat')
     if bolt and active.creatures and responder.available_mana_count() >= 1:
         mana_after = responder.available_mana_count() - 1
+        # Iter-15: skip pro-red targets when bolting from red source
         targets = [c for c in active.creatures
-                   if c.toughness <= 3 and c.power >= 2 and _can_target(c, mana_after)]
+                   if c.toughness <= 3 and c.power >= 2 and _can_target(c, mana_after)
+                   and not getattr(c.card, 'pro_red', False)]
         if targets:
             target = max(targets, key=lambda c: c.power)
             responder.remove_from_hand(bolt)
