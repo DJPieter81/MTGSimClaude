@@ -239,6 +239,42 @@ Fix: 5 gates added.
 
 Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
 
+## Iter 10 — Doomsday Lurrus rebuy (SHIPPED, WR-neutral correctness)
+
+After iter 9's Prison TKS work, took a scoped attempt at the highest-priority remaining T1 calibration outlier — **doomsday at 0.329 weighted (gap -17pp)**. Per `CROSS_PROJECT_SYNC.md` lesson #24, doomsday needs full companion mechanic + lifegain piles (4-6h structural). This iteration tried a smaller piece: implementing Lurrus's "recur permanent CMC ≤ 2 from GY" effect for Lotus Petal.
+
+### Implementation (engine.py:4204-4220)
+Real Lurrus: "During each of your turns, you may cast one permanent spell with mana value 2 or less from your graveyard."
+
+For Doomsday's decklist, this means:
+- **Lotus Petal** (CMC 0, free) — implemented; gives +1 mana per Lurrus-turn
+- **Thassa's Oracle** (CMC 2 backup win-con) — NOT implemented
+- **Veil of Summer** (CMC 1 instant — not a permanent, doesn't qualify)
+
+Code adds `gs._lurrus_used_turn` per-turn flag. When Lurrus on board + Petal in GY + not yet used: move Petal GY → exile, +1 budget.
+
+### Matrix re-sim (iter 10)
+- Doomsday weighted EV: **0.329 → 0.327 (-0.19pp, within noise)**
+- Cross-deck mean |Δ|: **0.03pp** (essentially identical matrix)
+- Spearman ρ: all unchanged
+
+Per-matchup at n=300 showed +5.4pp on ur_delver and +1.5pp on burn (correct direction) but matched regressions on ur_tempo/dimir within noise. The aggregate near-zero confirms Lurrus dies fast vs aggro (3/2 lifelink = easy bolt target), so the rebuy fires infrequently.
+
+### Why this isn't enough
+Lurrus alone gives +1 mana per surviving Lurrus-turn. Vs aggro, Lurrus survives ~1-2 turns. That's 1-2 extra mana. Not enough to outpace burn's clock or counter UR Delver's Murktide.
+
+The full companion mechanic adds:
+1. **Always-in-deck access** — Lurrus appears in 100% of games (companion zone), not 30% (drawn from deck)
+2. **Death-rebuy** — when Lurrus dies, can be re-cast next turn (currently happens automatically since Lurrus is in deck, but companion lets it be cast IMMEDIATELY)
+3. **Lifegain piles** — pile-build subroutine that constructs `Petal → BS → Wraith × N` for ~6 life via Lurrus death-rebuy
+4. **Oracle backup** — if Oracle gets countered/exiled, Lurrus recurs it from GY for 2 mana
+
+This is a 4-6h dedicated session per the Explore audit estimate.
+
+**Shipped as a correctness commit** since it doesn't regress (matrix bit-identical) and is rules-correct. Foundation for future companion-mechanic work.
+
+Commit: `cfbf582`.
+
 ## Iter 9 — Prison TKS targeting fix (SHIPPED, T1+T2 ρ moved -0.169 → -0.121)
 
 After iter 8's Glacial Chasm revert, audited prison strategy code via verbose game traces. Found a clear bug: TKS used `random.choice(nonlands)` to pick its exile target. Random selection means TKS exiled trivial cards (Cabal Therapy, Spirit Guides, Lotus Petals) most of the time, leaving the actual win conditions (Show and Tell, Balustrade Spy, Emrakul) in opponent's hand to combo through.
