@@ -3448,6 +3448,15 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Threats ──
     # ── Threats — deploy all affordable creatures each turn (biggest first) ──
     # TKS first (hand disruption is high-value)
+    # NOTE: keeping random.choice here despite the prison TKS targeting fix
+    # (commit 2f44673). Tested on eldrazi at n=300 across 9 matchups: targeted
+    # exile of win-cons gave +16.9pp on TES and +8.2pp on sneak_a, but
+    # -7.4pp on storm, -5.8pp on reanimator, -4.0pp on show. For decks with
+    # MULTIPLE redundant payoffs (storm, reanimator, show), targeted exile of
+    # one win-con is recoverable via cantrips; random exile is more disruptive
+    # because it likely hits a critical mana ritual or cantrip instead.
+    # Aggregate +1.23pp is positive but below threshold; per-matchup variance
+    # is too high to justify the change for eldrazi specifically.
     tks = player.find_tag('tks')
     if tks and opp_can_cast(tks, budget[0], gs, caster=player):
         def _resolve_tks(c):
