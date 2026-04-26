@@ -222,6 +222,51 @@ results/neural_logs/
     rho = 1 - 6*sum((wr_rank[d]-sh_rank[d])**2 for d in wr_rank)/(n*(n*n-1))
     ```
 
+28. **Systematic `opp_can_cast` bypass pattern affects multiple decks** *(found 2026-04-26 iter 4-5)*. There's a class of bug where deck strategies directly do `player.remove_from_hand(c)` + `player.put_artifact_in_play(c)` (or equivalent) without routing through `cast_spell()`. This bypasses `opp_can_cast()` — the **only place** in the engine where Chalice (`gs.chalice_x`), Trinisphere (`gs.trinisphere_active`), and Thalia tax (`gs.thalia_on_board`) are enforced. **For Manu**: scan all your deck strategies for the same pattern and apply the same fix.
+
+    **Confirmed bug sites in Legacy** (2 fixes shipped, 9+ decks unaudited):
+    * **`decks/infect.py` (FIXED commit f71b09c)** — 7 sites: Mutagenic Growth, Invigorate, Berserk, Vines of Vastwood ×2, Blossoming Defense ×2. All CMC 1, all silently bypassed Chalice on 1. Impact: prison vs infect 23.5 % → 35.1 % (+11.6pp at n=300). Aggregate matrix: infect weighted EV 0.619 → 0.560 (-5.8pp). The over-tuning was sustained by this bypass.
+    * **`decks/affinity.py` (FIXED commit ee7877d)** — 5 sites: Lotus Petal, Mishra's Bauble, Urza's Bauble, Mox Opal (all CMC 0 → Chalice X=0), Lavaspur Boots, Shadowspear (both CMC 1 → Chalice X=1). Trinisphere also now enforced. 5-opp avg 0.507 → 0.476 (-3.1pp). Chalice-deck matchups (vs prison/painter/eldrazi) all calibrate near 50 %.
+    * **Unaudited (raw site counts of `find_tag` + `remove_from_hand` without `cast_spell` nearby)**:
+        - `decks/tes.py`: 33 sites — by far the largest exposure. TES is the storm combo deck; its rituals + cantrips bypass would let it ignore Chalice on 1 vs prison/painter/uwx. **HIGH PRIORITY for Manu.**
+        - `decks/belcher.py`: 7 sites
+        - `decks/sneak_b.py`: 7 sites
+        - `decks/affinity.py`: ~~6~~ now 1 (Sink into Stupor manual cast remains)
+        - `decks/depths.py`: 5
+        - `decks/sneak_a.py`: 5
+        - `decks/goblins.py`: 6 *(activated abilities — Vial, Lackey-trigger; mostly NOT spells, so likely safe; verify each site)*
+        - `decks/eldrazi.py`: 3
+        - `decks/cloudpost.py`: 2
+        - `decks/eight_cast.py`: 2
+
+    **Detection one-liner**:
+    ```bash
+    for f in decks/*.py; do
+      bypass=$(grep -c "player.remove_from_hand" "$f")
+      gated=$(grep -c "opp_can_cast" "$f")
+      [ "$bypass" -gt 0 ] && echo "$(basename $f): $bypass remove_from_hand, $gated opp_can_cast usage"
+    done
+    ```
+    *(Heuristic — not every `remove_from_hand` is a spell-cast bypass. Activated abilities like Aether Vial / Goblin Lackey legitimately put creatures into play without casting. Inspect each site before fixing.)*
+
+    **Fix template**:
+    ```python
+    # BEFORE (bypass):
+    spell = player.find_tag('mutagenic')
+    if spell:
+        player.remove_from_hand(spell)
+        # ... apply effect
+
+    # AFTER (gated):
+    spell = player.find_tag('mutagenic')
+    if spell and opp_can_cast(spell, mana, gs, caster=player):
+        player.remove_from_hand(spell)
+        # ... apply effect
+    ```
+    Add `opp_can_cast` to the strategy's `from engine import ...` line.
+
+    **Impact on calibration ρ**: affinity over-tuning (lesson 26) AND infect over-tuning (this lesson) were both partly maintained by Chalice bypass. Closing both shipped a -5.8pp infect drop in iter 4 and a -3.1pp affinity drop in iter 5 — both move the **calibration Spearman ρ** (lesson 27) closer to positive on the all-decks measure. T1 ρ specifically still requires fixing the underperforming T1 decks (doomsday, lands, prison) — those need structural strategy work beyond bypass auditing.
+
 ## Out of scope for the cross-project sync
 - Modern uses `gs.player1` / `gs.player2`, Legacy uses `gs.p1` / `gs.p2`. The `state_encoder.py` port to Modern must rename the slot accessors. All other features (life, hand, lands, etc.) are named identically in both repos.
 - Modern's `combat_manager.py` and `turn_planner.py` are not present in Legacy — the `lookahead.py` mutators may need additional helpers to handle Modern's richer combat / multi-ordering decisions.
