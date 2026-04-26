@@ -1,4 +1,34 @@
 {
+  "affinity": {
+    "type": "prison",
+    "plan": "Land lock pieces early, deny opponent's actions, win slowly.",
+    "speed": 3,
+    "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "belcher": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 1,
+    "resilience": 1,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "boros": {
+    "type": "prison",
+    "plan": "Land lock pieces early, deny opponent's actions, win slowly.",
+    "speed": 4,
+    "resilience": 3,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
   "bug": {
     "type": "tempo",
     "plan": "Curve threats into disruption; win on tempo margins.",
@@ -19,11 +49,151 @@
     "uses_graveyard": false,
     "uses_veil": false
   },
+  "cephalid": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 3,
+    "resilience": 2,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": true,
+    "uses_veil": false
+  },
+  "cloudpost": {
+    "type": "prison",
+    "plan": "Land lock pieces early, deny opponent's actions, win slowly.",
+    "speed": 4,
+    "resilience": 5,
+    "creature_based": false,
+    "soft_to_wasteland": true,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "depths": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 2,
+    "resilience": 1,
+    "creature_based": false,
+    "soft_to_wasteland": true,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "dimir": {
+    "type": "other",
+    "plan": "Play to the deck's strengths.",
+    "speed": 4,
+    "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "dimir_b": {
+    "type": "other",
+    "plan": "Play to the deck's strengths.",
+    "speed": 3,
+    "resilience": 5,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "dimir_c": {
+    "type": "tempo",
+    "plan": "Curve threats into disruption; win on tempo margins.",
+    "speed": 4,
+    "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "dimir_d": {
+    "type": "tempo",
+    "plan": "Curve threats into disruption; win on tempo margins.",
+    "speed": 4,
+    "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "dimir_flash": {
+    "type": "other",
+    "plan": "Play to the deck's strengths.",
+    "speed": 4,
+    "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "dnt": {
+    "type": "prison",
+    "plan": "Land lock pieces early, deny opponent's actions, win slowly.",
+    "speed": 3,
+    "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "doomsday": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 3,
+    "resilience": 2,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": true,
+    "uses_veil": false
+  },
+  "eight_cast": {
+    "type": "prison",
+    "plan": "Land lock pieces early, deny opponent's actions, win slowly.",
+    "speed": 3,
+    "resilience": 4,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
   "eldrazi": {
     "type": "aggro",
     "plan": "Deploy threats, trade efficiently, close out with reach.",
     "speed": 3,
     "resilience": 4,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "elves": {
+    "type": "aggro",
+    "plan": "Deploy threats, trade efficiently, close out with reach.",
+    "speed": 3,
+    "resilience": 3,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "goblins": {
+    "type": "aggro",
+    "plan": "Deploy threats, trade efficiently, close out with reach.",
+    "speed": 2,
+    "resilience": 5,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "infect": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 1,
+    "resilience": 2,
     "creature_based": true,
     "soft_to_wasteland": false,
     "uses_graveyard": false,
@@ -39,6 +209,36 @@
     "uses_graveyard": true,
     "uses_veil": false
   },
+  "mardu": {
+    "type": "aggro",
+    "plan": "Deploy threats, trade efficiently, close out with reach.",
+    "speed": 3,
+    "resilience": 3,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "mono_black": {
+    "type": "aggro",
+    "plan": "Deploy threats, trade efficiently, close out with reach.",
+    "speed": 3,
+    "resilience": 3,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "ocelot": {
+    "type": "aggro",
+    "plan": "Deploy threats, trade efficiently, close out with reach.",
+    "speed": 2,
+    "resilience": 2,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
   "oops": {
     "type": "combo",
     "plan": "Protect the combo, dig with cantrips, go off when safe.",
@@ -48,6 +248,16 @@
     "soft_to_wasteland": false,
     "uses_graveyard": true,
     "uses_veil": true
+  },
+  "painter": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 3,
+    "resilience": 3,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
   },
   "prison": {
     "type": "prison",
@@ -69,12 +279,82 @@
     "uses_graveyard": true,
     "uses_veil": false
   },
+  "show": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 3,
+    "resilience": 5,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": true
+  },
+  "sneak_a": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 3,
+    "resilience": 3,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "sneak_b": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 3,
+    "resilience": 3,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "storm": {
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
+    "speed": 3,
+    "resilience": 3,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": true,
+    "uses_veil": true
+  },
   "ur_delver": {
     "type": "aggro",
     "plan": "Deploy threats, trade efficiently, close out with reach.",
     "speed": 2,
     "resilience": 3,
     "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "ur_tempo": {
+    "type": "aggro",
+    "plan": "Deploy threats, trade efficiently, close out with reach.",
+    "speed": 3,
+    "resilience": 3,
+    "creature_based": true,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "uwx": {
+    "type": "control",
+    "plan": "Stabilise with counters and removal, win with card advantage.",
+    "speed": 5,
+    "resilience": 5,
+    "creature_based": false,
+    "soft_to_wasteland": false,
+    "uses_graveyard": false,
+    "uses_veil": false
+  },
+  "wan_shi_tong": {
+    "type": "prison",
+    "plan": "Land lock pieces early, deny opponent's actions, win slowly.",
+    "speed": 2,
+    "resilience": 2,
+    "creature_based": false,
     "soft_to_wasteland": false,
     "uses_graveyard": false,
     "uses_veil": false
