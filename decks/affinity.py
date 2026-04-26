@@ -244,6 +244,16 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         if c.card.tag == 'cannoneer':
             c.cant_be_blocked = False
 
+    # Reset Patchwork Automaton's power_mod at start of turn — its buff is
+    # "+1/+1 for each artifact spell THIS TURN" (not cumulative across turns).
+    # The previous code added artifacts_cast_this_turn each turn, accumulating
+    # the buff (a T3 Automaton became an 8/8 from T2's 4 + T3's 3 artifacts).
+    # The recompute happens at L569-573 below using artifacts_cast_this_turn.
+    for c in player.creatures:
+        if c.card.tag == 'automaton':
+            c.power_mod = 0
+            c.toughness_mod = 0
+
     # cannoneer_on_board: Kappa Cannoneer gives +1/+1 to itself for each
     # artifact that enters the battlefield while it's on the battlefield.
     # Artifacts that enter this turn do NOT retroactively trigger it if it
@@ -567,10 +577,12 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             c.toughness_mod = art_count
 
     # ── Boost Patchwork Automaton for artifacts cast this turn ────────────────
+    # Per Oracle: "+1/+1 for each artifact spell you've cast this turn".
+    # Use direct assignment (power_mod was reset to 0 at start of turn at L240).
     for c in player.creatures:
         if c.card.tag == 'automaton':
-            c.power_mod = getattr(c, 'power_mod', 0) + artifacts_cast_this_turn
-            c.toughness_mod = getattr(c, 'toughness_mod', 0) + artifacts_cast_this_turn
+            c.power_mod = artifacts_cast_this_turn
+            c.toughness_mod = artifacts_cast_this_turn
 
     # ── 12b. Equip Lavaspur Boots — give haste to summoning-sick creature ────
     # Boots are most valuable on a freshly played creature so it can attack
