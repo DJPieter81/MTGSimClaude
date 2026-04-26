@@ -49,6 +49,7 @@ class PlayerState:
     planeswalkers: List[Permanent] = field(default_factory=list)
     mana: ManaPool = field(default_factory=ManaPool)
     land_played_this_turn: bool = False
+    extra_land_drops_used: int = 0  # Exploration: tracks extra land drops consumed this turn
     revolt_this_turn: bool = False
     draws_this_turn: int = 0  # track for Tamiyo flip (3rd draw) and Bowmasters
     spells_cast_this_turn: int = 0  # for Mindbreak Trap free condition
@@ -115,6 +116,7 @@ class PlayerState:
         for perm in self.all_permanents:
             perm.untap()
         self.land_played_this_turn = False
+        self.extra_land_drops_used = 0
         self.draws_this_turn = 0
         self.spells_cast_this_turn = 0
         self.opp_cast_blue_black_this_turn = False
@@ -147,9 +149,32 @@ class PlayerState:
                 log_fn(f"{card.name} (−{card.life_cost} life, {self.life})")
         return True
 
+    def _exploration_count(self) -> int:
+        """Count Exploration permanents in play (each grants +1 land drop per turn).
+
+        CR: Exploration says "you may play an additional land on each of your
+        turns". With N Explorations, you can play 1 + N lands per turn.
+        """
+        return sum(1 for e in self.enchantments if e.card.tag == 'exploration')
+
+    def can_play_extra_land(self) -> bool:
+        """Return True if controller has an unused extra-land drop this turn.
+
+        Used by callers (sim.py / engine.py) to decide whether to attempt a
+        second/third land drop after the regular one. Independent of
+        play_land()'s own check — that one decides whether the next
+        play_land() call would succeed.
+        """
+        return self._exploration_count() > self.extra_land_drops_used
+
     def play_land(self, card: Card) -> Optional[LandPermanent]:
-        if self.land_played_this_turn: return None
         if card not in self.hand or not card.is_land(): return None
+        # First land drop is always allowed if not yet played.
+        # Subsequent drops require an unused Exploration slot.
+        if self.land_played_this_turn:
+            if not self.can_play_extra_land():
+                return None
+            self.extra_land_drops_used += 1
         self.hand.remove(card)
         # CR 305.3 — some lands enter tapped unless a condition is met.
         # Undercity Sewers and similar: enter tapped unless controller controls 2+ other lands.

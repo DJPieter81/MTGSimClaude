@@ -546,11 +546,21 @@ def _execute_turn(gs, turn, b, o, who, matchup):
             return 3
         return min(lands_in_hand, key=land_priority)
 
-    land = _pick_land()
-    if land and not getattr(b, 'land_played_this_turn', False):
+    # Land drops: first drop is always allowed; additional drops require an
+    # Exploration permanent in play. Loop while we have lands in hand AND a
+    # drop slot remaining. (Real Lands runs 4× Exploration → up to 5 land
+    # drops per turn early game, more typically 2-3.)
+    for _land_drop in range(1 + b._exploration_count()):
+        if b.land_played_this_turn and not b.can_play_extra_land():
+            break
+        land = _pick_land()
+        if not land:
+            break
         b.hand.remove(land)
         lp = LandPermanent(card=land, controller='b')
         b.lands.append(lp)
+        if b.land_played_this_turn:
+            b.extra_land_drops_used += 1
         b.land_played_this_turn = True
         gs.apply_continuous_effects(lp)
         if lp.is_fetch:
@@ -562,7 +572,8 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                 log(f"Play+crack {land.name} → ?")
             b.revolt_this_turn = True
         else:
-            log(f"Land: {land.name} ({len(b.lands)} lands)")
+            extra_marker = " [Exploration]" if _land_drop > 0 else ""
+            log(f"Land: {land.name} ({len(b.lands)} lands){extra_marker}")
 
     # ── Mana calculation ──
     total_mana = b.available_mana_count()
@@ -767,6 +778,7 @@ def _execute_turn(gs, turn, b, o, who, matchup):
 
     update_goyf(gs)
     b.land_played_this_turn = False
+    b.extra_land_drops_used = 0
     gs.state_based_actions()
 
     if gs.trace:

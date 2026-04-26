@@ -239,6 +239,142 @@ Fix: 5 gates added.
 
 Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
 
+## Iter 9 — Prison TKS targeting fix (SHIPPED, T1+T2 ρ moved -0.169 → -0.121)
+
+After iter 8's Glacial Chasm revert, audited prison strategy code via verbose game traces. Found a clear bug: TKS used `random.choice(nonlands)` to pick its exile target. Random selection means TKS exiled trivial cards (Cabal Therapy, Spirit Guides, Lotus Petals) most of the time, leaving the actual win conditions (Show and Tell, Balustrade Spy, Emrakul) in opponent's hand to combo through.
+
+### Fix
+Targeted exile priority in `engine.py:3361`:
+1. `win_condition` (Show and Tell, Balustrade Spy, Tendrils)
+2. `is_combo_piece` (Doomsday, Sneak Attack, Empty)
+3. `engine` flag (Lurrus, Emry, Phyrexian Tower)
+4. Highest CMC (most expensive = most disruptive to remove from hand)
+
+### Per-matchup impact (n=500)
+| Opponent | Before | After | Δ |
+|---|---|---|---|
+| infect | 0.304 | 0.351 | **+4.7pp** ★ (TKS exiles Glistener / pump) |
+| sneak_a | 0.294 | 0.343 | **+4.9pp** ★ (TKS exiles SaT / Emrakul) |
+| oops | 0.236 | 0.226 | -1.0pp (noise) |
+| ur_tempo | 0.409 | 0.381 | -2.8pp (noise; tempo has many redundant cards) |
+| burn | 0.365 | 0.355 | -1.0pp (noise) |
+| **avg** | **0.322** | **0.331** | +0.94pp |
+
+### Iter 9 matrix re-sim
+- Prison weighted EV: **0.440 → 0.440** (no aggregate move)
+- Cross-deck mean |Δ|: 0.33pp (very stable; only prison's matches changed)
+- **T1+T2 Spearman ρ: -0.169 → -0.121 (+0.048)** ← meaningful calibration win
+- T1 ρ: unchanged at -0.429
+- All-decks ρ: +0.061 → +0.084 (+0.023)
+
+The improvement shows up in T1+T2 ρ (not T1) because prison's targeted matchups are mostly T2 decks (sneak_a, infect). Prison's own weighted EV barely shifts because the improvements (+4.7pp on infect at 2% share + +4.9pp on sneak_a at 4% share) average to a tiny weighted contribution.
+
+### Same bug found in eldrazi — REVERTED
+The same `random.choice` TKS targeting exists in `_strategy_eldrazi` (engine.py:3458). Tested at n=300 across 9 matchups:
+- TES +16.9pp, sneak_a +8.2pp, infect +4.0pp ← targeted is much better
+- storm -7.4pp, reanimator -5.8pp, show -4.0pp ← random was better
+
+For decks with multiple redundant payoffs (storm/reanimator/show — many tendrils + many rituals + many cantrips), targeted exile of one win-con is recoverable via cantrips. Random exile is more disruptive in expectation because it likely hits a critical mana ritual or cantrip instead.
+
+Net +1.23pp aggregate but per-matchup variance too high. **Reverted with detailed code comment** at engine.py:3450 documenting the research finding for future iteration.
+
+### Lesson — TKS targeting depends on opponent deck redundancy
+- Decks with **single key card** (Show and Tell deck, infect's combo creature, Balustrade Spy): targeted-best-exile clearly wins
+- Decks with **N redundant payoffs** (storm-class, reanimator-class): random exile may be better because it hits the most-frequent card type (rituals/cantrips), not the rarest
+- Future improvement: opponent-aware TKS targeting. If `opponent.deck_key in {tes, storm, reanimator}`: random-pick weighted toward CMC. Else: priority-pick.
+
+Commits: `2f44673` (prison TKS fix), `caa14c3` (iter 9 matrix re-sim).
+
+## Iter 8 — Glacial Chasm attempt (REVERTED — deck-composition tradeoff lesson)
+
+After iter 7 shipped Exploration+Loam, attempted to close Lands' remaining bottom matchups (vs dnt 0.215, uwx 0.260, oops 0.310) with **Glacial Chasm** — a defensive land that prevents all damage to controller, with cumulative upkeep cost.
+
+### What was implemented (then reverted)
+- `cards.py`: added 1× Glacial Chasm to lands deck (dropped 1× Yavimaya for slot)
+- `game.py`: `PlayerState.has_chasm_protection()` helper checking lands for tag='chasm'
+- `engine.py`: combat_declare unblocked-damage section now checks `defender_player.has_chasm_protection()`; lands strategy added cumulative-upkeep tracking via `chasm_age` attribute on the perm (sac when can't pay)
+- `decks/burn.py`: `deal_face_damage` checks chasm
+- `sim.py`: land-priority function deploys Chasm at life ≤ N when opp pressure threshold met
+
+### What went wrong
+**Two attempts, both regressed:**
+
+1. **First attempt** (life ≤ 12 + opp_creature_power ≥ 4): Burn -4.6pp, Infect -8.5pp. Cumulative upkeep eats life faster than Chasm prevents in matchups where the damage path isn't life-based (Infect = poison) or where the prevented damage is comparable to upkeep cost.
+
+2. **Second attempt** (life ≤ 5 + opp_power ≥ life — emergency-only): Goblins -8.2pp, Infect -7.1pp. Even at emergency thresholds, the **deck-composition tradeoff** of dropping 1× Yavimaya for Glacial Chasm hurts. ~30% of games see Chasm in hand by T5; if not deployed, it's a dead card. Removing 1 green source also occasionally costs Crop Rotation activations.
+
+### Lesson — engine fix is correct, deck slot is wrong
+The damage-prevention engine work is sound (verified by DNT +5.9pp on first attempt — exactly the matchup Chasm targets). But:
+
+- Adding Chasm at the cost of a Yavimaya is net-negative because Yavimaya was a more reliable contributor (every game) than Chasm (rare deployment + sometimes dead in hand)
+- The deployment heuristic in `_pick_land()` competes with other utility lands (Tabernacle especially vs Goblins), causing trade-off losses
+- Cumulative upkeep makes Chasm net-neutral or net-negative in many matchups
+
+**Future approach for Manu / next session**:
+1. Add Chasm WITHOUT removing Yavimaya — i.e., expand the deck to 61 cards or drop a different non-utility slot (Disruptor Flute is 3× and rarely used — could drop 1 to make room).
+2. Or implement Chasm as a **Crop-Rotation-tutorable** target only — keep it in deck but don't draw into it naturally; only fetch via Crop Rotation when life is critical.
+3. Or implement **Punishing Fire + Grove of the Burnwillows** instead — different defensive layer (kills creatures, doesn't lock combat) that doesn't consume life via upkeep.
+
+All of these are larger commitments than fit in this iteration. **Reverted entirely**; iter 7 (Exploration+Loam) work is preserved and remains shipped.
+
+## Iter 7 — Lands Exploration + Loam (SHIPPED, +9.5pp weighted, first T1 ρ move)
+
+After iter 6's TES revert, attacked the next-highest-leverage T1 calibration outlier — **lands** (sim 0.416 weighted, real meta share 6 %, gap -8.4pp). Per the lessons #24 (missing real cards) and #28 (bypass pattern), the right move was structural mechanic implementation, not bypass auditing.
+
+### What was missing
+1. **Exploration ×4** in deck — never cast, no engine support (`game.py:play_land` had a hard `land_played_this_turn` limit)
+2. **Life from the Loam ×4** in deck — never cast, no dredge mechanism, no recursion of Wasteland from GY
+
+### Implementation (3 files)
+
+**`game.py PlayerState`**: new field `extra_land_drops_used: int`, new methods `_exploration_count()` and `can_play_extra_land()`. `play_land()` now allows extra drops when an Exploration permanent is in play. `untap_all()` resets the counter.
+
+**`sim.py` protagonist land-drop block** (~L549-580): replaced single-shot `if not land_played_this_turn` with a loop `for _ in range(1 + b._exploration_count())`. Prefers Wasteland > Saga > combo lands when picking extras. Logs `[Exploration]` marker on bonus drops.
+
+**`engine.py _strategy_lands`**: Cast Exploration via `cast_spell()` as soon as available. After cast, attempt extra land drops inline. Cast Loam (1G) when 2+ mana available — returns up to 3 land cards from GY to hand (priority Wasteland > Saga > Tabernacle > Maze > Ghost Quarter > Tomb > combo). **Simulated dredge**: if Loam in GY and 3+ cards in library, mill 3 and return Loam to hand.
+
+### Per-matchup impact (n=500)
+
+| Opponent | Before | After | Δ |
+|---|---|---|---|
+| dnt | 0.190 | 0.208 | +1.8pp |
+| uwx | 0.290 | 0.284 | -0.6pp |
+| dimir_d | 0.415 | 0.460 | +4.5pp |
+| oops | 0.265 | 0.331 | +6.6pp |
+| ocelot | 0.330 | 0.417 | **+8.7pp** |
+| **5-opp avg** | 0.298 | 0.340 | **+4.2pp** |
+
+Tempo/midrange matchups (ocelot, dimir_d) gained most from the Exploration tempo boost. DNT/UWX still tough — lands needs Glacial Chasm (life-prevention lock vs aggro) for those, deferred to a future iteration.
+
+### Aggregate matrix re-sim (iter 7)
+
+**Lands weighted EV: 0.416 → 0.511 (+9.5pp)** — out of the bottom cluster, now nearly mid-tier. New top/bottom 5 lists no longer include lands.
+
+**T1 Spearman ρ moved for the first time this session**:
+| Filter | orig (Apr 20) | iter 4 | iter 7 |
+|---|---|---|---|
+| T1 only (n=8) | -0.452 | -0.452 | **-0.429** |
+| T1+T2 (n=14) | -0.152 | -0.178 | -0.169 |
+| All meta (n=36) | -0.011 | +0.045 | +0.061 |
+
+The T1 ρ improvement is small but it's the first signal that calibration is moving. To flip T1 ρ positive, the remaining work is on doomsday (still 0.335, gap -16.5pp) and prison (0.439, gap -6.1pp). Each is a structural project of similar scope.
+
+**Cross-deck stability**: mean |Δ| weighted EV vs iter 4 = 0.94pp ≤ 3pp gate.
+
+Top 10 most-moved decks vs iter 4: only lands (+9.5pp) is significant; the others (-1 to -2pp on dimir variants, ocelot, ur_tempo) reflect those decks' previously-easy matchup vs lands now becoming closer to fair.
+
+Commits: `4b64f7c` (lands fix), `f9bee1c` (matrix re-sim).
+
+### What's left for lands
+
+Worst remaining matchups:
+- vs dnt 0.215 — Thalia tax + Stoneforge clock outraces lands
+- vs uwx 0.260 — control wins long game
+- vs oops 0.310 — fast combo
+- vs sneak_a 0.390 — T2-T3 Show & Tell into Emrakul
+
+All four would benefit from **Glacial Chasm** (life-gain on ETB + skip combat damage = lock vs aggro/tempo). Real Lands runs 1-2 copies. Adding it to the deck + implementing the "skip combat damage to controller" effect is ~50 lines and should close another 5-10pp on these matchups. Deferred to next session.
+
 ## Iter 6 — TES bypass attempt (REVERTED — important timing lesson)
 
 Targeted `decks/tes.py` for the same bypass treatment — 33 raw sites, 14 confirmed TRUE BYPASS via Explore audit (Probe, cantrips, Dark Ritual, Veil, Burning Wish, Infernal Tutor ×2, Tendrils, Empty, FoW, Ad Nauseam).
