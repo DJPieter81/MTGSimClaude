@@ -38,3861 +38,3861 @@
     "wan_shi_tong"
   ],
   "a": {
-    "affinity": 72.5,
-    "belcher": 37.7,
-    "boros": 52.8,
+    "affinity": 57.7,
+    "belcher": 37.6,
+    "boros": 52.5,
     "bug": 53.0,
-    "burn": 71.9,
-    "cephalid": 41.2,
-    "cloudpost": 51.2,
-    "depths": 57.8,
-    "dimir": 47.1,
-    "dimir_b": 51.0,
-    "dimir_c": 56.9,
+    "burn": 71.7,
+    "cephalid": 40.3,
+    "cloudpost": 51.4,
+    "depths": 58.0,
+    "dimir": 46.4,
+    "dimir_b": 50.0,
+    "dimir_c": 55.7,
     "dimir_d": 59.4,
     "dimir_flash": 45.7,
-    "dnt": 54.9,
-    "doomsday": 30.8,
+    "dnt": 54.3,
+    "doomsday": 34.4,
     "eight_cast": 41.3,
-    "eldrazi": 59.1,
-    "elves": 46.1,
-    "goblins": 37.1,
-    "infect": 63.0,
-    "lands": 44.6,
-    "mardu": 35.1,
-    "mono_black": 54.6,
-    "ocelot": 48.0,
-    "oops": 55.4,
-    "painter": 38.2,
+    "eldrazi": 59.5,
+    "elves": 45.3,
+    "goblins": 36.7,
+    "infect": 63.1,
+    "lands": 45.0,
+    "mardu": 34.9,
+    "mono_black": 54.8,
+    "ocelot": 47.2,
+    "oops": 56.0,
+    "painter": 49.6,
     "prison": 43.9,
-    "reanimator": 42.3,
-    "show": 42.6,
-    "sneak_a": 50.6,
-    "sneak_b": 51.0,
-    "storm": 44.9,
-    "ur_delver": 59.0,
-    "ur_tempo": 64.5,
-    "uwx": 52.5,
-    "wan_shi_tong": 35.8
+    "reanimator": 42.0,
+    "show": 43.0,
+    "sneak_a": 50.7,
+    "sneak_b": 51.6,
+    "storm": 44.6,
+    "ur_delver": 58.9,
+    "ur_tempo": 64.6,
+    "uwx": 52.6,
+    "wan_shi_tong": 37.3
   },
   "w": {
-    "affinity": 70.7,
-    "belcher": 37.2,
-    "boros": 55.6,
-    "bug": 55.9,
-    "burn": 73.2,
-    "cephalid": 44.1,
-    "cloudpost": 49.9,
-    "depths": 56.9,
-    "dimir": 50.2,
-    "dimir_b": 53.2,
-    "dimir_c": 62.2,
-    "dimir_d": 63.4,
-    "dimir_flash": 50.9,
-    "dnt": 60.1,
-    "doomsday": 31.1,
-    "eight_cast": 45.6,
-    "eldrazi": 60.4,
-    "elves": 49.3,
-    "goblins": 40.1,
-    "infect": 63.6,
-    "lands": 41.2,
-    "mardu": 36.3,
-    "mono_black": 55.8,
-    "ocelot": 53.2,
-    "oops": 57.7,
-    "painter": 36.6,
-    "prison": 42.9,
-    "reanimator": 44.9,
-    "show": 43.8,
-    "sneak_a": 51.0,
-    "sneak_b": 51.4,
-    "storm": 45.6,
-    "ur_delver": 61.5,
-    "ur_tempo": 66.3,
-    "uwx": 59.6,
-    "wan_shi_tong": 40.5
+    "affinity": 57.4,
+    "belcher": 37.0,
+    "boros": 55.1,
+    "bug": 55.7,
+    "burn": 72.4,
+    "cephalid": 43.7,
+    "cloudpost": 50.6,
+    "depths": 57.0,
+    "dimir": 49.5,
+    "dimir_b": 52.3,
+    "dimir_c": 60.9,
+    "dimir_d": 63.2,
+    "dimir_flash": 49.3,
+    "dnt": 58.2,
+    "doomsday": 33.7,
+    "eight_cast": 44.5,
+    "eldrazi": 59.9,
+    "elves": 48.5,
+    "goblins": 38.9,
+    "infect": 61.9,
+    "lands": 41.6,
+    "mardu": 35.8,
+    "mono_black": 54.3,
+    "ocelot": 51.1,
+    "oops": 57.6,
+    "painter": 48.3,
+    "prison": 43.9,
+    "reanimator": 43.7,
+    "show": 43.3,
+    "sneak_a": 50.2,
+    "sneak_b": 50.7,
+    "storm": 43.8,
+    "ur_delver": 60.0,
+    "ur_tempo": 65.4,
+    "uwx": 59.7,
+    "wan_shi_tong": 40.7
   },
   "m": {
     "affinity|belcher": [
-      67.6
+      58.5
     ],
     "affinity|boros": [
-      77.8
+      68.5
     ],
     "affinity|bug": [
-      77.0
+      60.5
     ],
     "affinity|burn": [
-      61.4
+      41.5
     ],
     "affinity|cephalid": [
-      73.4
+      56.0
     ],
     "affinity|cloudpost": [
-      82.4
+      65.0
     ],
     "affinity|depths": [
-      60.0
+      38.0
     ],
     "affinity|dimir": [
-      73.8
+      63.0
     ],
     "affinity|dimir_b": [
-      62.2
+      47.0
     ],
     "affinity|dimir_c": [
-      69.4
+      47.5
     ],
     "affinity|dimir_d": [
-      68.2
+      50.5
     ],
     "affinity|dimir_flash": [
-      77.2
+      53.0
     ],
     "affinity|dnt": [
-      78.4
+      66.5
     ],
     "affinity|doomsday": [
-      94.2
+      74.5
     ],
     "affinity|eight_cast": [
-      91.6
+      82.5
     ],
     "affinity|eldrazi": [
-      70.6
+      63.5
     ],
     "affinity|elves": [
-      84.2
+      71.5
     ],
     "affinity|goblins": [
-      88.6
+      84.5
     ],
     "affinity|infect": [
-      69.2
+      54.0
     ],
     "affinity|lands": [
-      59.8
+      48.5
     ],
     "affinity|mardu": [
-      79.2
+      64.0
     ],
     "affinity|mono_black": [
-      65.0
+      56.5
     ],
     "affinity|ocelot": [
-      78.2
+      74.5
     ],
     "affinity|oops": [
-      50.8
+      28.5
     ],
     "affinity|painter": [
-      76.6
+      61.5
     ],
     "affinity|prison": [
-      59.8
+      54.0
     ],
     "affinity|reanimator": [
-      75.2
+      64.0
     ],
     "affinity|show": [
-      74.2
+      58.5
     ],
     "affinity|sneak_a": [
-      65.0
+      42.0
     ],
     "affinity|sneak_b": [
-      62.2
+      38.5
     ],
     "affinity|storm": [
-      78.0
+      65.5
     ],
     "affinity|ur_delver": [
-      77.6
+      58.5
     ],
     "affinity|ur_tempo": [
-      69.2
+      52.0
     ],
     "affinity|uwx": [
-      69.2
+      50.0
     ],
     "affinity|wan_shi_tong": [
-      69.4
+      56.0
     ],
     "belcher|affinity": [
-      34.8
+      35.5
     ],
     "belcher|boros": [
-      41.0
+      42.5
     ],
     "belcher|bug": [
-      29.2
+      34.5
     ],
     "belcher|burn": [
-      37.8
+      36.5
     ],
     "belcher|cephalid": [
-      34.6
+      34.0
     ],
     "belcher|cloudpost": [
-      41.0
+      39.0
     ],
     "belcher|depths": [
-      40.6
+      37.5
     ],
     "belcher|dimir": [
-      32.8
+      31.0
     ],
     "belcher|dimir_b": [
-      32.4
+      35.0
     ],
     "belcher|dimir_c": [
-      37.4
+      37.5
     ],
     "belcher|dimir_d": [
-      36.2
+      34.5
     ],
     "belcher|dimir_flash": [
-      26.6
+      29.5
     ],
     "belcher|dnt": [
-      42.4
+      40.0
     ],
     "belcher|doomsday": [
-      39.8
-    ],
-    "belcher|eight_cast": [
-      35.8
-    ],
-    "belcher|eldrazi": [
-      35.2
-    ],
-    "belcher|elves": [
-      41.8
-    ],
-    "belcher|goblins": [
       36.0
     ],
+    "belcher|eight_cast": [
+      40.0
+    ],
+    "belcher|eldrazi": [
+      35.5
+    ],
+    "belcher|elves": [
+      36.0
+    ],
+    "belcher|goblins": [
+      35.0
+    ],
     "belcher|infect": [
-      37.4
+      39.5
     ],
     "belcher|lands": [
       47.0
     ],
     "belcher|mardu": [
-      38.0
+      40.5
     ],
     "belcher|mono_black": [
-      31.6
+      32.5
     ],
     "belcher|ocelot": [
-      32.4
+      29.0
     ],
     "belcher|oops": [
-      34.0
+      36.5
     ],
     "belcher|painter": [
-      49.8
+      45.5
     ],
     "belcher|prison": [
-      50.0
+      52.5
     ],
     "belcher|reanimator": [
-      48.6
+      48.5
     ],
     "belcher|show": [
-      44.2
+      46.5
     ],
     "belcher|sneak_a": [
-      46.0
+      43.5
     ],
     "belcher|sneak_b": [
-      36.8
+      36.5
     ],
     "belcher|storm": [
       35.0
     ],
     "belcher|ur_delver": [
-      32.2
+      33.5
     ],
     "belcher|ur_tempo": [
-      33.4
+      35.0
     ],
     "belcher|uwx": [
-      28.6
+      27.0
     ],
     "belcher|wan_shi_tong": [
-      40.6
+      39.5
     ],
     "boros|affinity": [
-      23.4
+      41.5
     ],
     "boros|belcher": [
-      56.8
+      53.0
     ],
     "boros|bug": [
-      46.6
-    ],
-    "boros|burn": [
-      21.2
-    ],
-    "boros|cephalid": [
-      71.2
-    ],
-    "boros|cloudpost": [
-      42.8
-    ],
-    "boros|depths": [
-      36.4
-    ],
-    "boros|dimir": [
-      59.0
-    ],
-    "boros|dimir_b": [
-      63.4
-    ],
-    "boros|dimir_c": [
-      50.2
-    ],
-    "boros|dimir_d": [
-      44.4
-    ],
-    "boros|dimir_flash": [
-      71.2
-    ],
-    "boros|dnt": [
-      40.2
-    ],
-    "boros|doomsday": [
-      83.6
-    ],
-    "boros|eight_cast": [
-      68.6
-    ],
-    "boros|eldrazi": [
-      37.2
-    ],
-    "boros|elves": [
-      52.2
-    ],
-    "boros|goblins": [
-      65.4
-    ],
-    "boros|infect": [
-      33.6
-    ],
-    "boros|lands": [
-      58.0
-    ],
-    "boros|mardu": [
-      72.6
-    ],
-    "boros|mono_black": [
-      38.4
-    ],
-    "boros|ocelot": [
-      67.0
-    ],
-    "boros|oops": [
-      29.6
-    ],
-    "boros|painter": [
-      62.6
-    ],
-    "boros|prison": [
-      57.2
-    ],
-    "boros|reanimator": [
-      62.6
-    ],
-    "boros|show": [
-      62.4
-    ],
-    "boros|sneak_a": [
-      46.8
-    ],
-    "boros|sneak_b": [
-      49.8
-    ],
-    "boros|storm": [
-      62.2
-    ],
-    "boros|ur_delver": [
-      29.2
-    ],
-    "boros|ur_tempo": [
-      33.0
-    ],
-    "boros|uwx": [
-      66.0
-    ],
-    "boros|wan_shi_tong": [
-      83.4
-    ],
-    "bug|affinity": [
-      27.8
-    ],
-    "bug|belcher": [
-      63.8
-    ],
-    "bug|boros": [
-      47.6
-    ],
-    "bug|burn": [
-      16.8
-    ],
-    "bug|cephalid": [
-      73.8
-    ],
-    "bug|cloudpost": [
-      43.6
-    ],
-    "bug|depths": [
-      37.8
-    ],
-    "bug|dimir": [
-      47.6
-    ],
-    "bug|dimir_b": [
-      47.4
-    ],
-    "bug|dimir_c": [
-      33.2
-    ],
-    "bug|dimir_d": [
-      34.2
-    ],
-    "bug|dimir_flash": [
-      57.0
-    ],
-    "bug|dnt": [
-      41.8
-    ],
-    "bug|doomsday": [
-      88.0
-    ],
-    "bug|eight_cast": [
-      56.8
-    ],
-    "bug|eldrazi": [
-      42.0
-    ],
-    "bug|elves": [
-      62.8
-    ],
-    "bug|goblins": [
-      83.0
-    ],
-    "bug|infect": [
-      31.4
-    ],
-    "bug|lands": [
-      52.0
-    ],
-    "bug|mardu": [
-      86.2
-    ],
-    "bug|mono_black": [
-      58.0
-    ],
-    "bug|ocelot": [
-      57.8
-    ],
-    "bug|oops": [
-      51.6
-    ],
-    "bug|painter": [
-      59.4
-    ],
-    "bug|prison": [
-      57.0
-    ],
-    "bug|reanimator": [
-      48.4
-    ],
-    "bug|show": [
-      62.6
-    ],
-    "bug|sneak_a": [
-      59.4
-    ],
-    "bug|sneak_b": [
-      57.0
-    ],
-    "bug|storm": [
-      61.8
-    ],
-    "bug|ur_delver": [
-      40.0
-    ],
-    "bug|ur_tempo": [
-      42.2
-    ],
-    "bug|uwx": [
-      48.0
-    ],
-    "bug|wan_shi_tong": [
-      76.4
-    ],
-    "burn|affinity": [
-      37.0
-    ],
-    "burn|belcher": [
-      59.6
-    ],
-    "burn|boros": [
-      78.6
-    ],
-    "burn|bug": [
-      77.0
-    ],
-    "burn|cephalid": [
-      70.4
-    ],
-    "burn|cloudpost": [
-      86.4
-    ],
-    "burn|depths": [
-      66.0
-    ],
-    "burn|dimir": [
-      88.8
-    ],
-    "burn|dimir_b": [
-      79.0
-    ],
-    "burn|dimir_c": [
-      84.0
-    ],
-    "burn|dimir_d": [
-      84.6
-    ],
-    "burn|dimir_flash": [
-      93.0
-    ],
-    "burn|dnt": [
-      82.0
-    ],
-    "burn|doomsday": [
-      94.8
-    ],
-    "burn|eight_cast": [
-      64.2
-    ],
-    "burn|eldrazi": [
-      53.0
-    ],
-    "burn|elves": [
-      73.0
-    ],
-    "burn|goblins": [
-      90.4
-    ],
-    "burn|infect": [
-      58.8
-    ],
-    "burn|lands": [
-      56.6
-    ],
-    "burn|mardu": [
-      92.4
-    ],
-    "burn|mono_black": [
-      85.0
-    ],
-    "burn|ocelot": [
-      92.8
-    ],
-    "burn|oops": [
-      38.2
-    ],
-    "burn|painter": [
-      79.6
-    ],
-    "burn|prison": [
-      70.4
-    ],
-    "burn|reanimator": [
-      74.6
-    ],
-    "burn|show": [
-      60.2
-    ],
-    "burn|sneak_a": [
-      43.8
-    ],
-    "burn|sneak_b": [
-      45.0
-    ],
-    "burn|storm": [
-      70.6
-    ],
-    "burn|ur_delver": [
-      63.2
-    ],
-    "burn|ur_tempo": [
-      50.4
-    ],
-    "burn|uwx": [
-      83.2
-    ],
-    "burn|wan_shi_tong": [
-      90.6
-    ],
-    "cephalid|affinity": [
-      24.6
-    ],
-    "cephalid|belcher": [
-      60.6
-    ],
-    "cephalid|boros": [
-      29.4
-    ],
-    "cephalid|bug": [
-      30.0
-    ],
-    "cephalid|burn": [
-      34.6
-    ],
-    "cephalid|cloudpost": [
-      44.4
-    ],
-    "cephalid|depths": [
-      42.8
-    ],
-    "cephalid|dimir": [
-      32.8
-    ],
-    "cephalid|dimir_b": [
-      29.8
-    ],
-    "cephalid|dimir_c": [
-      23.6
-    ],
-    "cephalid|dimir_d": [
-      18.8
-    ],
-    "cephalid|dimir_flash": [
-      29.8
-    ],
-    "cephalid|dnt": [
-      36.8
-    ],
-    "cephalid|doomsday": [
-      75.0
-    ],
-    "cephalid|eight_cast": [
-      38.4
-    ],
-    "cephalid|eldrazi": [
-      29.0
-    ],
-    "cephalid|elves": [
-      22.6
-    ],
-    "cephalid|goblins": [
-      35.6
-    ],
-    "cephalid|infect": [
-      23.4
-    ],
-    "cephalid|lands": [
-      63.6
-    ],
-    "cephalid|mardu": [
-      48.0
-    ],
-    "cephalid|mono_black": [
-      33.4
-    ],
-    "cephalid|ocelot": [
-      31.8
-    ],
-    "cephalid|oops": [
-      56.8
-    ],
-    "cephalid|painter": [
-      63.2
-    ],
-    "cephalid|prison": [
-      52.6
-    ],
-    "cephalid|reanimator": [
-      73.2
-    ],
-    "cephalid|show": [
-      64.0
-    ],
-    "cephalid|sneak_a": [
-      59.8
-    ],
-    "cephalid|sneak_b": [
-      55.4
-    ],
-    "cephalid|storm": [
-      51.8
-    ],
-    "cephalid|ur_delver": [
-      19.4
-    ],
-    "cephalid|ur_tempo": [
-      17.6
-    ],
-    "cephalid|uwx": [
-      26.4
-    ],
-    "cephalid|wan_shi_tong": [
-      63.0
-    ],
-    "cloudpost|affinity": [
-      16.4
-    ],
-    "cloudpost|belcher": [
-      58.2
-    ],
-    "cloudpost|boros": [
-      57.4
-    ],
-    "cloudpost|bug": [
-      56.2
-    ],
-    "cloudpost|burn": [
-      14.2
-    ],
-    "cloudpost|cephalid": [
-      58.6
-    ],
-    "cloudpost|depths": [
-      38.6
-    ],
-    "cloudpost|dimir": [
-      56.6
-    ],
-    "cloudpost|dimir_b": [
-      56.6
-    ],
-    "cloudpost|dimir_c": [
       54.0
     ],
-    "cloudpost|dimir_d": [
-      48.2
+    "boros|burn": [
+      20.5
     ],
-    "cloudpost|dimir_flash": [
-      67.4
+    "boros|cephalid": [
+      71.5
     ],
-    "cloudpost|dnt": [
-      77.6
+    "boros|cloudpost": [
+      41.5
     ],
-    "cloudpost|doomsday": [
-      36.6
+    "boros|depths": [
+      34.0
     ],
-    "cloudpost|eight_cast": [
-      77.8
+    "boros|dimir": [
+      60.0
     ],
-    "cloudpost|eldrazi": [
-      33.6
+    "boros|dimir_b": [
+      60.0
     ],
-    "cloudpost|elves": [
-      51.0
+    "boros|dimir_c": [
+      47.0
     ],
-    "cloudpost|goblins": [
-      68.8
+    "boros|dimir_d": [
+      44.5
     ],
-    "cloudpost|infect": [
-      16.2
+    "boros|dimir_flash": [
+      72.5
     ],
-    "cloudpost|lands": [
-      53.0
+    "boros|dnt": [
+      41.0
     ],
-    "cloudpost|mardu": [
-      77.2
+    "boros|doomsday": [
+      78.0
     ],
-    "cloudpost|mono_black": [
-      49.6
+    "boros|eight_cast": [
+      67.0
     ],
-    "cloudpost|ocelot": [
-      58.4
+    "boros|eldrazi": [
+      38.0
     ],
-    "cloudpost|oops": [
-      28.8
+    "boros|elves": [
+      58.0
     ],
-    "cloudpost|painter": [
-      46.0
+    "boros|goblins": [
+      69.5
     ],
-    "cloudpost|prison": [
-      51.8
+    "boros|infect": [
+      35.5
     ],
-    "cloudpost|reanimator": [
-      56.6
+    "boros|lands": [
+      57.0
     ],
-    "cloudpost|show": [
-      44.6
+    "boros|mardu": [
+      73.5
     ],
-    "cloudpost|sneak_a": [
-      30.2
+    "boros|mono_black": [
+      40.0
     ],
-    "cloudpost|sneak_b": [
-      32.4
+    "boros|ocelot": [
+      66.5
     ],
-    "cloudpost|storm": [
-      53.6
+    "boros|oops": [
+      25.5
     ],
-    "cloudpost|ur_delver": [
+    "boros|painter": [
+      43.0
+    ],
+    "boros|prison": [
+      56.0
+    ],
+    "boros|reanimator": [
+      60.5
+    ],
+    "boros|show": [
+      58.5
+    ],
+    "boros|sneak_a": [
+      47.0
+    ],
+    "boros|sneak_b": [
+      52.5
+    ],
+    "boros|storm": [
+      59.5
+    ],
+    "boros|ur_delver": [
+      33.5
+    ],
+    "boros|ur_tempo": [
+      32.0
+    ],
+    "boros|uwx": [
+      65.0
+    ],
+    "boros|wan_shi_tong": [
+      80.5
+    ],
+    "bug|affinity": [
+      41.5
+    ],
+    "bug|belcher": [
+      63.0
+    ],
+    "bug|boros": [
+      47.0
+    ],
+    "bug|burn": [
+      18.5
+    ],
+    "bug|cephalid": [
+      71.0
+    ],
+    "bug|cloudpost": [
+      42.0
+    ],
+    "bug|depths": [
+      34.0
+    ],
+    "bug|dimir": [
+      62.5
+    ],
+    "bug|dimir_b": [
+      47.0
+    ],
+    "bug|dimir_c": [
+      42.0
+    ],
+    "bug|dimir_d": [
+      37.0
+    ],
+    "bug|dimir_flash": [
+      51.5
+    ],
+    "bug|dnt": [
+      37.0
+    ],
+    "bug|doomsday": [
+      85.5
+    ],
+    "bug|eight_cast": [
+      56.5
+    ],
+    "bug|eldrazi": [
+      35.5
+    ],
+    "bug|elves": [
+      62.0
+    ],
+    "bug|goblins": [
+      82.5
+    ],
+    "bug|infect": [
+      32.5
+    ],
+    "bug|lands": [
+      47.0
+    ],
+    "bug|mardu": [
+      85.0
+    ],
+    "bug|mono_black": [
+      62.0
+    ],
+    "bug|ocelot": [
       59.0
     ],
+    "bug|oops": [
+      51.5
+    ],
+    "bug|painter": [
+      54.5
+    ],
+    "bug|prison": [
+      50.5
+    ],
+    "bug|reanimator": [
+      48.5
+    ],
+    "bug|show": [
+      68.5
+    ],
+    "bug|sneak_a": [
+      53.5
+    ],
+    "bug|sneak_b": [
+      54.5
+    ],
+    "bug|storm": [
+      61.0
+    ],
+    "bug|ur_delver": [
+      39.0
+    ],
+    "bug|ur_tempo": [
+      42.5
+    ],
+    "bug|uwx": [
+      51.0
+    ],
+    "bug|wan_shi_tong": [
+      78.0
+    ],
+    "burn|affinity": [
+      52.5
+    ],
+    "burn|belcher": [
+      63.5
+    ],
+    "burn|boros": [
+      79.0
+    ],
+    "burn|bug": [
+      85.0
+    ],
+    "burn|cephalid": [
+      70.5
+    ],
+    "burn|cloudpost": [
+      87.0
+    ],
+    "burn|depths": [
+      69.0
+    ],
+    "burn|dimir": [
+      87.5
+    ],
+    "burn|dimir_b": [
+      77.5
+    ],
+    "burn|dimir_c": [
+      81.5
+    ],
+    "burn|dimir_d": [
+      88.5
+    ],
+    "burn|dimir_flash": [
+      95.0
+    ],
+    "burn|dnt": [
+      78.5
+    ],
+    "burn|doomsday": [
+      88.5
+    ],
+    "burn|eight_cast": [
+      65.5
+    ],
+    "burn|eldrazi": [
+      55.0
+    ],
+    "burn|elves": [
+      73.5
+    ],
+    "burn|goblins": [
+      93.5
+    ],
+    "burn|infect": [
+      60.5
+    ],
+    "burn|lands": [
+      56.5
+    ],
+    "burn|mardu": [
+      87.5
+    ],
+    "burn|mono_black": [
+      86.5
+    ],
+    "burn|ocelot": [
+      95.0
+    ],
+    "burn|oops": [
+      41.5
+    ],
+    "burn|painter": [
+      66.0
+    ],
+    "burn|prison": [
+      59.0
+    ],
+    "burn|reanimator": [
+      71.0
+    ],
+    "burn|show": [
+      64.0
+    ],
+    "burn|sneak_a": [
+      45.5
+    ],
+    "burn|sneak_b": [
+      49.5
+    ],
+    "burn|storm": [
+      70.5
+    ],
+    "burn|ur_delver": [
+      61.5
+    ],
+    "burn|ur_tempo": [
+      51.5
+    ],
+    "burn|uwx": [
+      83.5
+    ],
+    "burn|wan_shi_tong": [
+      69.5
+    ],
+    "cephalid|affinity": [
+      32.0
+    ],
+    "cephalid|belcher": [
+      62.0
+    ],
+    "cephalid|boros": [
+      28.0
+    ],
+    "cephalid|bug": [
+      28.0
+    ],
+    "cephalid|burn": [
+      33.0
+    ],
+    "cephalid|cloudpost": [
+      41.0
+    ],
+    "cephalid|depths": [
+      44.5
+    ],
+    "cephalid|dimir": [
+      32.0
+    ],
+    "cephalid|dimir_b": [
+      34.0
+    ],
+    "cephalid|dimir_c": [
+      20.0
+    ],
+    "cephalid|dimir_d": [
+      21.0
+    ],
+    "cephalid|dimir_flash": [
+      26.0
+    ],
+    "cephalid|dnt": [
+      33.5
+    ],
+    "cephalid|doomsday": [
+      66.5
+    ],
+    "cephalid|eight_cast": [
+      36.5
+    ],
+    "cephalid|eldrazi": [
+      33.0
+    ],
+    "cephalid|elves": [
+      20.5
+    ],
+    "cephalid|goblins": [
+      39.0
+    ],
+    "cephalid|infect": [
+      19.5
+    ],
+    "cephalid|lands": [
+      59.5
+    ],
+    "cephalid|mardu": [
+      38.5
+    ],
+    "cephalid|mono_black": [
+      36.5
+    ],
+    "cephalid|ocelot": [
+      32.5
+    ],
+    "cephalid|oops": [
+      57.5
+    ],
+    "cephalid|painter": [
+      52.5
+    ],
+    "cephalid|prison": [
+      57.0
+    ],
+    "cephalid|reanimator": [
+      72.0
+    ],
+    "cephalid|show": [
+      65.0
+    ],
+    "cephalid|sneak_a": [
+      59.0
+    ],
+    "cephalid|sneak_b": [
+      54.5
+    ],
+    "cephalid|storm": [
+      50.0
+    ],
+    "cephalid|ur_delver": [
+      20.0
+    ],
+    "cephalid|ur_tempo": [
+      19.5
+    ],
+    "cephalid|uwx": [
+      22.5
+    ],
+    "cephalid|wan_shi_tong": [
+      65.0
+    ],
+    "cloudpost|affinity": [
+      23.5
+    ],
+    "cloudpost|belcher": [
+      56.5
+    ],
+    "cloudpost|boros": [
+      57.5
+    ],
+    "cloudpost|bug": [
+      54.0
+    ],
+    "cloudpost|burn": [
+      15.5
+    ],
+    "cloudpost|cephalid": [
+      58.5
+    ],
+    "cloudpost|depths": [
+      36.0
+    ],
+    "cloudpost|dimir": [
+      61.0
+    ],
+    "cloudpost|dimir_b": [
+      50.0
+    ],
+    "cloudpost|dimir_c": [
+      58.0
+    ],
+    "cloudpost|dimir_d": [
+      56.0
+    ],
+    "cloudpost|dimir_flash": [
+      70.0
+    ],
+    "cloudpost|dnt": [
+      81.5
+    ],
+    "cloudpost|doomsday": [
+      41.0
+    ],
+    "cloudpost|eight_cast": [
+      76.5
+    ],
+    "cloudpost|eldrazi": [
+      32.5
+    ],
+    "cloudpost|elves": [
+      52.5
+    ],
+    "cloudpost|goblins": [
+      61.5
+    ],
+    "cloudpost|infect": [
+      16.0
+    ],
+    "cloudpost|lands": [
+      53.5
+    ],
+    "cloudpost|mardu": [
+      80.0
+    ],
+    "cloudpost|mono_black": [
+      59.5
+    ],
+    "cloudpost|ocelot": [
+      61.0
+    ],
+    "cloudpost|oops": [
+      28.0
+    ],
+    "cloudpost|painter": [
+      33.0
+    ],
+    "cloudpost|prison": [
+      51.0
+    ],
+    "cloudpost|reanimator": [
+      52.0
+    ],
+    "cloudpost|show": [
+      40.5
+    ],
+    "cloudpost|sneak_a": [
+      29.5
+    ],
+    "cloudpost|sneak_b": [
+      37.5
+    ],
+    "cloudpost|storm": [
+      47.0
+    ],
+    "cloudpost|ur_delver": [
+      60.5
+    ],
     "cloudpost|ur_tempo": [
-      39.2
+      39.0
     ],
     "cloudpost|uwx": [
       72.0
     ],
     "cloudpost|wan_shi_tong": [
-      94.0
+      96.0
     ],
     "depths|affinity": [
-      39.4
+      52.5
     ],
     "depths|belcher": [
-      62.4
+      62.5
     ],
     "depths|boros": [
-      63.8
+      61.5
     ],
     "depths|bug": [
-      63.6
+      65.5
     ],
     "depths|burn": [
-      31.4
+      32.0
     ],
     "depths|cephalid": [
-      57.8
+      62.0
     ],
     "depths|cloudpost": [
-      62.8
+      62.0
     ],
     "depths|dimir": [
-      67.6
+      67.5
     ],
     "depths|dimir_b": [
-      60.2
+      62.0
     ],
     "depths|dimir_c": [
-      46.6
+      49.5
     ],
     "depths|dimir_d": [
-      49.6
+      50.5
     ],
     "depths|dimir_flash": [
-      82.4
+      83.5
     ],
     "depths|dnt": [
-      38.6
+      37.5
     ],
     "depths|doomsday": [
-      61.8
+      60.5
     ],
     "depths|eight_cast": [
-      76.2
+      80.5
     ],
     "depths|eldrazi": [
-      55.6
+      57.5
     ],
     "depths|elves": [
-      77.8
+      73.5
     ],
     "depths|goblins": [
-      82.4
+      85.0
     ],
     "depths|infect": [
-      39.6
+      39.5
     ],
     "depths|lands": [
-      50.6
+      49.0
     ],
     "depths|mardu": [
-      76.6
+      77.5
     ],
     "depths|mono_black": [
-      40.2
+      45.0
     ],
     "depths|ocelot": [
-      57.4
+      57.5
     ],
     "depths|oops": [
-      35.6
+      33.5
     ],
     "depths|painter": [
-      62.2
+      49.0
     ],
     "depths|prison": [
-      53.2
+      57.5
     ],
     "depths|reanimator": [
-      67.8
+      70.5
     ],
     "depths|show": [
-      64.6
+      59.5
     ],
     "depths|sneak_a": [
-      44.6
+      41.5
     ],
     "depths|sneak_b": [
-      45.2
+      42.0
     ],
     "depths|storm": [
-      68.2
+      66.5
     ],
     "depths|ur_delver": [
-      72.2
+      73.5
     ],
     "depths|ur_tempo": [
-      58.2
+      59.0
     ],
     "depths|uwx": [
-      52.6
+      52.5
     ],
     "depths|wan_shi_tong": [
-      55.0
+      52.0
     ],
     "dimir|affinity": [
-      27.2
+      31.5
     ],
     "dimir|belcher": [
       66.0
     ],
     "dimir|boros": [
-      40.0
+      39.5
     ],
     "dimir|bug": [
-      51.4
+      52.5
     ],
     "dimir|burn": [
-      10.4
+      10.5
     ],
     "dimir|cephalid": [
-      68.4
+      64.5
     ],
     "dimir|cloudpost": [
-      43.2
+      41.0
     ],
     "dimir|depths": [
-      28.8
+      28.0
     ],
     "dimir|dimir_b": [
-      44.8
+      39.0
     ],
     "dimir|dimir_c": [
-      30.4
+      29.5
     ],
     "dimir|dimir_d": [
-      30.2
+      31.5
     ],
     "dimir|dimir_flash": [
-      47.0
+      51.5
     ],
     "dimir|dnt": [
-      27.6
+      24.0
     ],
     "dimir|doomsday": [
-      80.2
+      78.5
     ],
     "dimir|eight_cast": [
-      52.4
+      48.5
     ],
     "dimir|eldrazi": [
-      36.6
+      33.5
     ],
     "dimir|elves": [
       55.0
     ],
     "dimir|goblins": [
-      72.0
+      74.0
     ],
     "dimir|infect": [
-      34.8
+      37.5
     ],
     "dimir|lands": [
-      47.8
-    ],
-    "dimir|mardu": [
-      66.0
-    ],
-    "dimir|mono_black": [
-      38.0
-    ],
-    "dimir|ocelot": [
-      48.8
-    ],
-    "dimir|oops": [
-      46.4
-    ],
-    "dimir|painter": [
-      60.0
-    ],
-    "dimir|prison": [
-      50.8
-    ],
-    "dimir|reanimator": [
-      42.6
-    ],
-    "dimir|show": [
-      62.2
-    ],
-    "dimir|sneak_a": [
-      47.8
-    ],
-    "dimir|sneak_b": [
-      54.0
-    ],
-    "dimir|storm": [
-      56.8
-    ],
-    "dimir|ur_delver": [
-      34.2
-    ],
-    "dimir|ur_tempo": [
-      37.8
-    ],
-    "dimir|uwx": [
-      40.0
-    ],
-    "dimir|wan_shi_tong": [
-      68.0
-    ],
-    "dimir_b|affinity": [
-      36.4
-    ],
-    "dimir_b|belcher": [
-      68.6
-    ],
-    "dimir_b|boros": [
-      38.6
-    ],
-    "dimir_b|bug": [
-      47.0
-    ],
-    "dimir_b|burn": [
-      19.6
-    ],
-    "dimir_b|cephalid": [
-      71.2
-    ],
-    "dimir_b|cloudpost": [
-      41.4
-    ],
-    "dimir_b|depths": [
-      42.6
-    ],
-    "dimir_b|dimir": [
-      54.6
-    ],
-    "dimir_b|dimir_c": [
-      39.0
-    ],
-    "dimir_b|dimir_d": [
-      37.4
-    ],
-    "dimir_b|dimir_flash": [
-      50.4
-    ],
-    "dimir_b|dnt": [
-      27.0
-    ],
-    "dimir_b|doomsday": [
-      85.8
-    ],
-    "dimir_b|eight_cast": [
-      69.0
-    ],
-    "dimir_b|eldrazi": [
-      46.0
-    ],
-    "dimir_b|elves": [
-      46.2
-    ],
-    "dimir_b|goblins": [
-      70.6
-    ],
-    "dimir_b|infect": [
-      40.4
-    ],
-    "dimir_b|lands": [
-      51.2
-    ],
-    "dimir_b|mardu": [
-      58.8
-    ],
-    "dimir_b|mono_black": [
-      31.4
-    ],
-    "dimir_b|ocelot": [
-      39.8
-    ],
-    "dimir_b|oops": [
-      52.6
-    ],
-    "dimir_b|painter": [
-      65.0
-    ],
-    "dimir_b|prison": [
-      51.6
-    ],
-    "dimir_b|reanimator": [
-      50.2
-    ],
-    "dimir_b|show": [
-      61.6
-    ],
-    "dimir_b|sneak_a": [
-      57.8
-    ],
-    "dimir_b|sneak_b": [
-      62.0
-    ],
-    "dimir_b|storm": [
       51.0
     ],
-    "dimir_b|ur_delver": [
-      51.6
-    ],
-    "dimir_b|ur_tempo": [
-      47.6
-    ],
-    "dimir_b|uwx": [
-      46.4
-    ],
-    "dimir_b|wan_shi_tong": [
-      76.0
-    ],
-    "dimir_c|affinity": [
-      32.2
-    ],
-    "dimir_c|belcher": [
-      66.8
-    ],
-    "dimir_c|boros": [
-      52.8
-    ],
-    "dimir_c|bug": [
-      65.8
-    ],
-    "dimir_c|burn": [
-      16.8
-    ],
-    "dimir_c|cephalid": [
-      81.6
-    ],
-    "dimir_c|cloudpost": [
-      44.8
-    ],
-    "dimir_c|depths": [
-      50.8
-    ],
-    "dimir_c|dimir": [
-      70.0
-    ],
-    "dimir_c|dimir_b": [
-      64.2
-    ],
-    "dimir_c|dimir_d": [
-      41.6
-    ],
-    "dimir_c|dimir_flash": [
-      65.6
-    ],
-    "dimir_c|dnt": [
-      41.0
-    ],
-    "dimir_c|doomsday": [
-      81.6
-    ],
-    "dimir_c|eight_cast": [
-      70.4
-    ],
-    "dimir_c|eldrazi": [
-      42.8
-    ],
-    "dimir_c|elves": [
-      67.6
-    ],
-    "dimir_c|goblins": [
-      86.4
-    ],
-    "dimir_c|infect": [
-      50.8
-    ],
-    "dimir_c|lands": [
-      68.0
-    ],
-    "dimir_c|mardu": [
-      81.2
-    ],
-    "dimir_c|mono_black": [
-      58.0
-    ],
-    "dimir_c|ocelot": [
-      64.8
-    ],
-    "dimir_c|oops": [
-      49.2
-    ],
-    "dimir_c|painter": [
-      59.0
-    ],
-    "dimir_c|prison": [
-      56.0
-    ],
-    "dimir_c|reanimator": [
-      45.4
-    ],
-    "dimir_c|show": [
-      56.2
-    ],
-    "dimir_c|sneak_a": [
-      50.4
-    ],
-    "dimir_c|sneak_b": [
-      50.8
-    ],
-    "dimir_c|storm": [
-      50.0
-    ],
-    "dimir_c|ur_delver": [
-      47.0
-    ],
-    "dimir_c|ur_tempo": [
-      48.2
-    ],
-    "dimir_c|uwx": [
-      46.4
-    ],
-    "dimir_c|wan_shi_tong": [
-      67.8
-    ],
-    "dimir_d|affinity": [
-      31.6
-    ],
-    "dimir_d|belcher": [
-      66.8
-    ],
-    "dimir_d|boros": [
-      56.2
-    ],
-    "dimir_d|bug": [
-      70.8
-    ],
-    "dimir_d|burn": [
-      17.2
-    ],
-    "dimir_d|cephalid": [
-      78.8
-    ],
-    "dimir_d|cloudpost": [
-      49.8
-    ],
-    "dimir_d|depths": [
-      49.4
-    ],
-    "dimir_d|dimir": [
-      68.8
-    ],
-    "dimir_d|dimir_b": [
-      66.4
-    ],
-    "dimir_d|dimir_c": [
-      53.0
-    ],
-    "dimir_d|dimir_flash": [
+    "dimir|mardu": [
       71.0
     ],
-    "dimir_d|dnt": [
-      41.6
+    "dimir|mono_black": [
+      35.5
     ],
-    "dimir_d|doomsday": [
-      79.6
+    "dimir|ocelot": [
+      47.5
     ],
-    "dimir_d|eight_cast": [
-      73.0
+    "dimir|oops": [
+      44.0
     ],
-    "dimir_d|eldrazi": [
-      53.6
-    ],
-    "dimir_d|elves": [
-      72.6
-    ],
-    "dimir_d|goblins": [
-      88.0
-    ],
-    "dimir_d|infect": [
-      51.4
-    ],
-    "dimir_d|lands": [
-      64.2
-    ],
-    "dimir_d|mardu": [
-      84.0
-    ],
-    "dimir_d|mono_black": [
-      61.4
-    ],
-    "dimir_d|ocelot": [
-      66.8
-    ],
-    "dimir_d|oops": [
-      51.2
-    ],
-    "dimir_d|painter": [
-      65.2
-    ],
-    "dimir_d|prison": [
-      58.0
-    ],
-    "dimir_d|reanimator": [
+    "dimir|painter": [
       46.0
     ],
-    "dimir_d|show": [
-      59.8
+    "dimir|prison": [
+      51.0
     ],
-    "dimir_d|sneak_a": [
-      53.0
-    ],
-    "dimir_d|sneak_b": [
-      50.8
-    ],
-    "dimir_d|storm": [
-      53.2
-    ],
-    "dimir_d|ur_delver": [
-      50.8
-    ],
-    "dimir_d|ur_tempo": [
-      47.4
-    ],
-    "dimir_d|uwx": [
-      54.8
-    ],
-    "dimir_d|wan_shi_tong": [
-      71.8
-    ],
-    "dimir_flash|affinity": [
-      21.6
-    ],
-    "dimir_flash|belcher": [
-      69.6
-    ],
-    "dimir_flash|boros": [
-      25.8
-    ],
-    "dimir_flash|bug": [
-      42.2
-    ],
-    "dimir_flash|burn": [
-      7.4
-    ],
-    "dimir_flash|cephalid": [
-      71.4
-    ],
-    "dimir_flash|cloudpost": [
-      39.6
-    ],
-    "dimir_flash|depths": [
-      18.8
-    ],
-    "dimir_flash|dimir": [
-      51.2
-    ],
-    "dimir_flash|dimir_b": [
-      49.4
-    ],
-    "dimir_flash|dimir_c": [
-      31.2
-    ],
-    "dimir_flash|dimir_d": [
-      27.0
-    ],
-    "dimir_flash|dnt": [
-      19.2
-    ],
-    "dimir_flash|doomsday": [
-      88.6
-    ],
-    "dimir_flash|eight_cast": [
-      57.4
-    ],
-    "dimir_flash|eldrazi": [
-      24.6
-    ],
-    "dimir_flash|elves": [
-      39.2
-    ],
-    "dimir_flash|goblins": [
-      61.6
-    ],
-    "dimir_flash|infect": [
-      24.8
-    ],
-    "dimir_flash|lands": [
-      47.6
-    ],
-    "dimir_flash|mardu": [
-      51.8
-    ],
-    "dimir_flash|mono_black": [
-      14.4
-    ],
-    "dimir_flash|ocelot": [
-      29.4
-    ],
-    "dimir_flash|oops": [
-      64.0
-    ],
-    "dimir_flash|painter": [
-      54.2
-    ],
-    "dimir_flash|prison": [
-      53.6
-    ],
-    "dimir_flash|reanimator": [
-      55.4
-    ],
-    "dimir_flash|show": [
-      66.6
-    ],
-    "dimir_flash|sneak_a": [
-      64.6
-    ],
-    "dimir_flash|sneak_b": [
-      68.0
-    ],
-    "dimir_flash|storm": [
-      49.6
-    ],
-    "dimir_flash|ur_delver": [
-      41.4
-    ],
-    "dimir_flash|ur_tempo": [
-      35.2
-    ],
-    "dimir_flash|uwx": [
-      53.4
-    ],
-    "dimir_flash|wan_shi_tong": [
-      79.2
-    ],
-    "dnt|affinity": [
-      19.0
-    ],
-    "dnt|belcher": [
-      56.8
-    ],
-    "dnt|boros": [
-      58.2
-    ],
-    "dnt|bug": [
-      62.2
-    ],
-    "dnt|burn": [
-      19.0
-    ],
-    "dnt|cephalid": [
-      65.2
-    ],
-    "dnt|cloudpost": [
-      18.6
-    ],
-    "dnt|depths": [
-      54.0
-    ],
-    "dnt|dimir": [
-      77.2
-    ],
-    "dnt|dimir_b": [
-      74.2
-    ],
-    "dnt|dimir_c": [
-      59.0
-    ],
-    "dnt|dimir_d": [
-      54.0
-    ],
-    "dnt|dimir_flash": [
-      83.8
-    ],
-    "dnt|doomsday": [
-      59.8
-    ],
-    "dnt|eight_cast": [
-      74.2
-    ],
-    "dnt|eldrazi": [
-      43.4
-    ],
-    "dnt|elves": [
+    "dimir|reanimator": [
       45.0
     ],
-    "dnt|goblins": [
-      58.8
+    "dimir|show": [
+      57.5
     ],
-    "dnt|infect": [
-      26.6
+    "dimir|sneak_a": [
+      45.0
     ],
-    "dnt|lands": [
-      81.0
+    "dimir|sneak_b": [
+      49.0
     ],
-    "dnt|mardu": [
-      78.0
+    "dimir|storm": [
+      57.0
     ],
-    "dnt|mono_black": [
-      39.4
-    ],
-    "dnt|ocelot": [
-      64.6
-    ],
-    "dnt|oops": [
-      34.0
-    ],
-    "dnt|painter": [
-      56.4
-    ],
-    "dnt|prison": [
-      53.8
-    ],
-    "dnt|reanimator": [
-      70.4
-    ],
-    "dnt|show": [
-      52.4
-    ],
-    "dnt|sneak_a": [
-      33.4
-    ],
-    "dnt|sneak_b": [
+    "dimir|ur_delver": [
       37.0
     ],
-    "dnt|storm": [
-      59.2
+    "dimir|ur_tempo": [
+      41.5
     ],
-    "dnt|ur_delver": [
-      50.4
+    "dimir|uwx": [
+      41.0
     ],
-    "dnt|ur_tempo": [
-      42.6
+    "dimir|wan_shi_tong": [
+      70.5
     ],
-    "dnt|uwx": [
-      72.2
+    "dimir_b|affinity": [
+      52.0
     ],
-    "dnt|wan_shi_tong": [
-      87.2
+    "dimir_b|belcher": [
+      61.0
     ],
-    "doomsday|affinity": [
-      5.8
+    "dimir_b|boros": [
+      38.5
     ],
-    "doomsday|belcher": [
-      63.0
+    "dimir_b|bug": [
+      45.5
     ],
-    "doomsday|boros": [
-      20.2
-    ],
-    "doomsday|bug": [
-      17.2
-    ],
-    "doomsday|burn": [
-      5.0
-    ],
-    "doomsday|cephalid": [
-      24.6
-    ],
-    "doomsday|cloudpost": [
-      62.4
-    ],
-    "doomsday|depths": [
-      38.8
-    ],
-    "doomsday|dimir": [
-      21.2
-    ],
-    "doomsday|dimir_b": [
-      21.0
-    ],
-    "doomsday|dimir_c": [
-      22.6
-    ],
-    "doomsday|dimir_d": [
-      24.8
-    ],
-    "doomsday|dimir_flash": [
-      14.6
-    ],
-    "doomsday|dnt": [
-      44.6
-    ],
-    "doomsday|eight_cast": [
-      42.2
-    ],
-    "doomsday|eldrazi": [
-      14.6
-    ],
-    "doomsday|elves": [
+    "dimir_b|burn": [
       17.0
     ],
+    "dimir_b|cephalid": [
+      66.0
+    ],
+    "dimir_b|cloudpost": [
+      42.5
+    ],
+    "dimir_b|depths": [
+      46.0
+    ],
+    "dimir_b|dimir": [
+      54.0
+    ],
+    "dimir_b|dimir_c": [
+      43.5
+    ],
+    "dimir_b|dimir_d": [
+      29.0
+    ],
+    "dimir_b|dimir_flash": [
+      46.0
+    ],
+    "dimir_b|dnt": [
+      27.5
+    ],
+    "dimir_b|doomsday": [
+      83.0
+    ],
+    "dimir_b|eight_cast": [
+      71.5
+    ],
+    "dimir_b|eldrazi": [
+      45.0
+    ],
+    "dimir_b|elves": [
+      50.0
+    ],
+    "dimir_b|goblins": [
+      71.5
+    ],
+    "dimir_b|infect": [
+      45.0
+    ],
+    "dimir_b|lands": [
+      51.5
+    ],
+    "dimir_b|mardu": [
+      55.5
+    ],
+    "dimir_b|mono_black": [
+      34.5
+    ],
+    "dimir_b|ocelot": [
+      35.0
+    ],
+    "dimir_b|oops": [
+      51.5
+    ],
+    "dimir_b|painter": [
+      48.0
+    ],
+    "dimir_b|prison": [
+      57.5
+    ],
+    "dimir_b|reanimator": [
+      50.5
+    ],
+    "dimir_b|show": [
+      61.0
+    ],
+    "dimir_b|sneak_a": [
+      58.5
+    ],
+    "dimir_b|sneak_b": [
+      56.0
+    ],
+    "dimir_b|storm": [
+      54.0
+    ],
+    "dimir_b|ur_delver": [
+      51.5
+    ],
+    "dimir_b|ur_tempo": [
+      36.5
+    ],
+    "dimir_b|uwx": [
+      43.5
+    ],
+    "dimir_b|wan_shi_tong": [
+      71.5
+    ],
+    "dimir_c|affinity": [
+      43.0
+    ],
+    "dimir_c|belcher": [
+      64.5
+    ],
+    "dimir_c|boros": [
+      53.5
+    ],
+    "dimir_c|bug": [
+      64.5
+    ],
+    "dimir_c|burn": [
+      18.0
+    ],
+    "dimir_c|cephalid": [
+      80.5
+    ],
+    "dimir_c|cloudpost": [
+      45.0
+    ],
+    "dimir_c|depths": [
+      41.0
+    ],
+    "dimir_c|dimir": [
+      70.5
+    ],
+    "dimir_c|dimir_b": [
+      60.5
+    ],
+    "dimir_c|dimir_d": [
+      43.5
+    ],
+    "dimir_c|dimir_flash": [
+      67.5
+    ],
+    "dimir_c|dnt": [
+      40.0
+    ],
+    "dimir_c|doomsday": [
+      81.5
+    ],
+    "dimir_c|eight_cast": [
+      66.5
+    ],
+    "dimir_c|eldrazi": [
+      44.0
+    ],
+    "dimir_c|elves": [
+      64.5
+    ],
+    "dimir_c|goblins": [
+      80.5
+    ],
+    "dimir_c|infect": [
+      50.5
+    ],
+    "dimir_c|lands": [
+      69.5
+    ],
+    "dimir_c|mardu": [
+      76.5
+    ],
+    "dimir_c|mono_black": [
+      56.5
+    ],
+    "dimir_c|ocelot": [
+      62.0
+    ],
+    "dimir_c|oops": [
+      47.5
+    ],
+    "dimir_c|painter": [
+      47.0
+    ],
+    "dimir_c|prison": [
+      52.5
+    ],
+    "dimir_c|reanimator": [
+      45.0
+    ],
+    "dimir_c|show": [
+      57.5
+    ],
+    "dimir_c|sneak_a": [
+      52.5
+    ],
+    "dimir_c|sneak_b": [
+      46.5
+    ],
+    "dimir_c|storm": [
+      47.0
+    ],
+    "dimir_c|ur_delver": [
+      45.5
+    ],
+    "dimir_c|ur_tempo": [
+      47.0
+    ],
+    "dimir_c|uwx": [
+      51.5
+    ],
+    "dimir_c|wan_shi_tong": [
+      67.5
+    ],
+    "dimir_d|affinity": [
+      49.5
+    ],
+    "dimir_d|belcher": [
+      68.5
+    ],
+    "dimir_d|boros": [
+      52.0
+    ],
+    "dimir_d|bug": [
+      61.5
+    ],
+    "dimir_d|burn": [
+      14.0
+    ],
+    "dimir_d|cephalid": [
+      82.0
+    ],
+    "dimir_d|cloudpost": [
+      44.0
+    ],
+    "dimir_d|depths": [
+      49.0
+    ],
+    "dimir_d|dimir": [
+      70.0
+    ],
+    "dimir_d|dimir_b": [
+      64.5
+    ],
+    "dimir_d|dimir_c": [
+      52.5
+    ],
+    "dimir_d|dimir_flash": [
+      73.0
+    ],
+    "dimir_d|dnt": [
+      39.0
+    ],
+    "dimir_d|doomsday": [
+      81.5
+    ],
+    "dimir_d|eight_cast": [
+      75.5
+    ],
+    "dimir_d|eldrazi": [
+      56.5
+    ],
+    "dimir_d|elves": [
+      68.0
+    ],
+    "dimir_d|goblins": [
+      90.0
+    ],
+    "dimir_d|infect": [
+      55.5
+    ],
+    "dimir_d|lands": [
+      70.5
+    ],
+    "dimir_d|mardu": [
+      84.5
+    ],
+    "dimir_d|mono_black": [
+      56.0
+    ],
+    "dimir_d|ocelot": [
+      62.5
+    ],
+    "dimir_d|oops": [
+      51.5
+    ],
+    "dimir_d|painter": [
+      53.5
+    ],
+    "dimir_d|prison": [
+      55.5
+    ],
+    "dimir_d|reanimator": [
+      50.5
+    ],
+    "dimir_d|show": [
+      63.5
+    ],
+    "dimir_d|sneak_a": [
+      54.5
+    ],
+    "dimir_d|sneak_b": [
+      45.5
+    ],
+    "dimir_d|storm": [
+      55.0
+    ],
+    "dimir_d|ur_delver": [
+      57.0
+    ],
+    "dimir_d|ur_tempo": [
+      49.5
+    ],
+    "dimir_d|uwx": [
+      54.0
+    ],
+    "dimir_d|wan_shi_tong": [
+      70.0
+    ],
+    "dimir_flash|affinity": [
+      32.5
+    ],
+    "dimir_flash|belcher": [
+      68.5
+    ],
+    "dimir_flash|boros": [
+      24.5
+    ],
+    "dimir_flash|bug": [
+      40.5
+    ],
+    "dimir_flash|burn": [
+      5.5
+    ],
+    "dimir_flash|cephalid": [
+      75.0
+    ],
+    "dimir_flash|cloudpost": [
+      35.0
+    ],
+    "dimir_flash|depths": [
+      22.5
+    ],
+    "dimir_flash|dimir": [
+      49.0
+    ],
+    "dimir_flash|dimir_b": [
+      50.5
+    ],
+    "dimir_flash|dimir_c": [
+      33.0
+    ],
+    "dimir_flash|dimir_d": [
+      35.0
+    ],
+    "dimir_flash|dnt": [
+      20.5
+    ],
+    "dimir_flash|doomsday": [
+      86.0
+    ],
+    "dimir_flash|eight_cast": [
+      55.5
+    ],
+    "dimir_flash|eldrazi": [
+      27.0
+    ],
+    "dimir_flash|elves": [
+      40.5
+    ],
+    "dimir_flash|goblins": [
+      62.0
+    ],
+    "dimir_flash|infect": [
+      29.0
+    ],
+    "dimir_flash|lands": [
+      45.0
+    ],
+    "dimir_flash|mardu": [
+      51.5
+    ],
+    "dimir_flash|mono_black": [
+      12.5
+    ],
+    "dimir_flash|ocelot": [
+      29.5
+    ],
+    "dimir_flash|oops": [
+      61.0
+    ],
+    "dimir_flash|painter": [
+      40.0
+    ],
+    "dimir_flash|prison": [
+      53.0
+    ],
+    "dimir_flash|reanimator": [
+      56.0
+    ],
+    "dimir_flash|show": [
+      69.0
+    ],
+    "dimir_flash|sneak_a": [
+      60.0
+    ],
+    "dimir_flash|sneak_b": [
+      73.5
+    ],
+    "dimir_flash|storm": [
+      50.5
+    ],
+    "dimir_flash|ur_delver": [
+      39.5
+    ],
+    "dimir_flash|ur_tempo": [
+      32.0
+    ],
+    "dimir_flash|uwx": [
+      53.5
+    ],
+    "dimir_flash|wan_shi_tong": [
+      82.5
+    ],
+    "dnt|affinity": [
+      25.5
+    ],
+    "dnt|belcher": [
+      59.5
+    ],
+    "dnt|boros": [
+      58.5
+    ],
+    "dnt|bug": [
+      54.5
+    ],
+    "dnt|burn": [
+      18.5
+    ],
+    "dnt|cephalid": [
+      68.5
+    ],
+    "dnt|cloudpost": [
+      24.0
+    ],
+    "dnt|depths": [
+      57.5
+    ],
+    "dnt|dimir": [
+      73.5
+    ],
+    "dnt|dimir_b": [
+      71.0
+    ],
+    "dnt|dimir_c": [
+      62.5
+    ],
+    "dnt|dimir_d": [
+      58.0
+    ],
+    "dnt|dimir_flash": [
+      83.5
+    ],
+    "dnt|doomsday": [
+      54.5
+    ],
+    "dnt|eight_cast": [
+      74.5
+    ],
+    "dnt|eldrazi": [
+      43.5
+    ],
+    "dnt|elves": [
+      49.0
+    ],
+    "dnt|goblins": [
+      62.5
+    ],
+    "dnt|infect": [
+      21.5
+    ],
+    "dnt|lands": [
+      81.5
+    ],
+    "dnt|mardu": [
+      76.0
+    ],
+    "dnt|mono_black": [
+      37.0
+    ],
+    "dnt|ocelot": [
+      65.0
+    ],
+    "dnt|oops": [
+      33.5
+    ],
+    "dnt|painter": [
+      35.5
+    ],
+    "dnt|prison": [
+      52.0
+    ],
+    "dnt|reanimator": [
+      67.5
+    ],
+    "dnt|show": [
+      54.5
+    ],
+    "dnt|sneak_a": [
+      32.0
+    ],
+    "dnt|sneak_b": [
+      38.5
+    ],
+    "dnt|storm": [
+      56.0
+    ],
+    "dnt|ur_delver": [
+      50.0
+    ],
+    "dnt|ur_tempo": [
+      44.0
+    ],
+    "dnt|uwx": [
+      73.5
+    ],
+    "dnt|wan_shi_tong": [
+      85.0
+    ],
+    "doomsday|affinity": [
+      27.0
+    ],
+    "doomsday|belcher": [
+      56.5
+    ],
+    "doomsday|boros": [
+      30.5
+    ],
+    "doomsday|bug": [
+      19.5
+    ],
+    "doomsday|burn": [
+      11.0
+    ],
+    "doomsday|cephalid": [
+      33.5
+    ],
+    "doomsday|cloudpost": [
+      51.5
+    ],
+    "doomsday|depths": [
+      38.0
+    ],
+    "doomsday|dimir": [
+      27.0
+    ],
+    "doomsday|dimir_b": [
+      19.0
+    ],
+    "doomsday|dimir_c": [
+      22.0
+    ],
+    "doomsday|dimir_d": [
+      29.0
+    ],
+    "doomsday|dimir_flash": [
+      15.5
+    ],
+    "doomsday|dnt": [
+      46.5
+    ],
+    "doomsday|eight_cast": [
+      51.5
+    ],
+    "doomsday|eldrazi": [
+      25.5
+    ],
+    "doomsday|elves": [
+      33.0
+    ],
     "doomsday|goblins": [
-      26.4
+      38.0
     ],
     "doomsday|infect": [
-      30.8
+      25.5
     ],
     "doomsday|lands": [
-      55.2
+      55.5
     ],
     "doomsday|mardu": [
       35.0
     ],
     "doomsday|mono_black": [
-      25.2
+      24.0
     ],
     "doomsday|ocelot": [
-      23.4
+      30.5
     ],
     "doomsday|oops": [
-      38.4
+      41.5
     ],
     "doomsday|painter": [
-      60.2
+      52.5
     ],
     "doomsday|prison": [
-      54.6
+      56.5
     ],
     "doomsday|reanimator": [
-      45.8
+      53.0
     ],
     "doomsday|show": [
-      43.4
+      47.0
     ],
     "doomsday|sneak_a": [
-      41.8
+      39.5
     ],
     "doomsday|sneak_b": [
-      43.4
+      48.5
     ],
     "doomsday|storm": [
-      29.8
+      44.5
     ],
     "doomsday|ur_delver": [
-      12.0
+      12.5
     ],
     "doomsday|ur_tempo": [
-      11.2
+      14.0
     ],
     "doomsday|uwx": [
-      8.0
+      9.5
     ],
     "doomsday|wan_shi_tong": [
-      35.0
+      40.0
     ],
     "eight_cast|affinity": [
-      9.4
+      19.0
     ],
     "eight_cast|belcher": [
-      64.0
-    ],
-    "eight_cast|boros": [
-      39.2
-    ],
-    "eight_cast|bug": [
-      44.4
-    ],
-    "eight_cast|burn": [
-      32.4
-    ],
-    "eight_cast|cephalid": [
       62.0
     ],
-    "eight_cast|cloudpost": [
-      18.4
+    "eight_cast|boros": [
+      43.5
     ],
-    "eight_cast|depths": [
-      22.0
+    "eight_cast|bug": [
+      38.5
     ],
-    "eight_cast|dimir": [
-      46.0
+    "eight_cast|burn": [
+      34.0
     ],
-    "eight_cast|dimir_b": [
-      36.8
-    ],
-    "eight_cast|dimir_c": [
-      25.8
-    ],
-    "eight_cast|dimir_d": [
-      23.6
-    ],
-    "eight_cast|dimir_flash": [
-      39.0
-    ],
-    "eight_cast|dnt": [
-      25.2
-    ],
-    "eight_cast|doomsday": [
-      58.4
-    ],
-    "eight_cast|eldrazi": [
-      30.8
-    ],
-    "eight_cast|elves": [
-      69.8
-    ],
-    "eight_cast|goblins": [
-      62.2
-    ],
-    "eight_cast|infect": [
-      33.4
-    ],
-    "eight_cast|lands": [
-      43.6
-    ],
-    "eight_cast|mardu": [
-      61.2
-    ],
-    "eight_cast|mono_black": [
-      26.6
-    ],
-    "eight_cast|ocelot": [
-      58.2
-    ],
-    "eight_cast|oops": [
-      37.6
-    ],
-    "eight_cast|painter": [
-      48.2
-    ],
-    "eight_cast|prison": [
-      51.8
-    ],
-    "eight_cast|reanimator": [
-      55.2
-    ],
-    "eight_cast|show": [
-      53.8
-    ],
-    "eight_cast|sneak_a": [
-      33.4
-    ],
-    "eight_cast|sneak_b": [
-      30.4
-    ],
-    "eight_cast|storm": [
-      55.6
-    ],
-    "eight_cast|ur_delver": [
-      27.6
-    ],
-    "eight_cast|ur_tempo": [
-      24.4
-    ],
-    "eight_cast|uwx": [
-      49.0
-    ],
-    "eight_cast|wan_shi_tong": [
-      47.6
-    ],
-    "eldrazi|affinity": [
-      30.0
-    ],
-    "eldrazi|belcher": [
+    "eight_cast|cephalid": [
       66.0
     ],
-    "eldrazi|boros": [
-      61.6
+    "eight_cast|cloudpost": [
+      18.5
     ],
-    "eldrazi|bug": [
-      58.2
+    "eight_cast|depths": [
+      24.0
     ],
-    "eldrazi|burn": [
-      44.2
+    "eight_cast|dimir": [
+      49.0
     ],
-    "eldrazi|cephalid": [
-      70.2
+    "eight_cast|dimir_b": [
+      39.5
     ],
-    "eldrazi|cloudpost": [
-      67.8
+    "eight_cast|dimir_c": [
+      34.0
     ],
-    "eldrazi|depths": [
-      48.0
+    "eight_cast|dimir_d": [
+      27.5
     ],
-    "eldrazi|dimir": [
-      67.4
+    "eight_cast|dimir_flash": [
+      36.0
     ],
-    "eldrazi|dimir_b": [
-      57.2
+    "eight_cast|dnt": [
+      27.0
     ],
-    "eldrazi|dimir_c": [
-      52.2
+    "eight_cast|doomsday": [
+      47.0
     ],
-    "eldrazi|dimir_d": [
-      51.0
-    ],
-    "eldrazi|dimir_flash": [
-      66.2
-    ],
-    "eldrazi|dnt": [
-      57.0
-    ],
-    "eldrazi|doomsday": [
-      85.2
-    ],
-    "eldrazi|eight_cast": [
-      66.4
-    ],
-    "eldrazi|elves": [
-      80.4
-    ],
-    "eldrazi|goblins": [
-      76.2
-    ],
-    "eldrazi|infect": [
-      64.4
-    ],
-    "eldrazi|lands": [
-      51.0
-    ],
-    "eldrazi|mardu": [
-      66.8
-    ],
-    "eldrazi|mono_black": [
-      57.2
-    ],
-    "eldrazi|ocelot": [
-      77.8
-    ],
-    "eldrazi|oops": [
-      39.8
-    ],
-    "eldrazi|painter": [
-      73.6
-    ],
-    "eldrazi|prison": [
-      56.6
-    ],
-    "eldrazi|reanimator": [
-      56.8
-    ],
-    "eldrazi|show": [
-      59.2
-    ],
-    "eldrazi|sneak_a": [
-      45.6
-    ],
-    "eldrazi|sneak_b": [
-      47.6
-    ],
-    "eldrazi|storm": [
-      74.2
-    ],
-    "eldrazi|ur_delver": [
-      41.8
-    ],
-    "eldrazi|ur_tempo": [
-      40.6
-    ],
-    "eldrazi|uwx": [
-      61.6
-    ],
-    "eldrazi|wan_shi_tong": [
-      48.4
-    ],
-    "elves|affinity": [
-      19.4
-    ],
-    "elves|belcher": [
-      64.6
-    ],
-    "elves|boros": [
-      42.8
-    ],
-    "elves|bug": [
-      34.6
-    ],
-    "elves|burn": [
-      23.8
-    ],
-    "elves|cephalid": [
-      77.0
-    ],
-    "elves|cloudpost": [
-      46.4
-    ],
-    "elves|depths": [
-      30.6
-    ],
-    "elves|dimir": [
-      42.6
-    ],
-    "elves|dimir_b": [
-      48.6
-    ],
-    "elves|dimir_c": [
-      32.8
-    ],
-    "elves|dimir_d": [
-      28.4
-    ],
-    "elves|dimir_flash": [
-      64.8
-    ],
-    "elves|dnt": [
-      47.8
-    ],
-    "elves|doomsday": [
-      81.6
-    ],
-    "elves|eight_cast": [
-      31.8
-    ],
-    "elves|eldrazi": [
-      20.4
-    ],
-    "elves|goblins": [
-      55.4
-    ],
-    "elves|infect": [
-      44.4
-    ],
-    "elves|lands": [
-      39.0
-    ],
-    "elves|mardu": [
-      66.8
-    ],
-    "elves|mono_black": [
-      33.2
-    ],
-    "elves|ocelot": [
-      62.4
-    ],
-    "elves|oops": [
-      34.8
-    ],
-    "elves|painter": [
-      70.0
-    ],
-    "elves|prison": [
-      48.8
-    ],
-    "elves|reanimator": [
-      54.2
-    ],
-    "elves|show": [
-      56.6
-    ],
-    "elves|sneak_a": [
-      41.6
-    ],
-    "elves|sneak_b": [
-      42.2
-    ],
-    "elves|storm": [
-      69.8
-    ],
-    "elves|ur_delver": [
-      38.6
-    ],
-    "elves|ur_tempo": [
-      20.4
-    ],
-    "elves|uwx": [
-      51.4
-    ],
-    "elves|wan_shi_tong": [
-      45.6
-    ],
-    "goblins|affinity": [
-      6.8
-    ],
-    "goblins|belcher": [
-      60.4
-    ],
-    "goblins|boros": [
-      35.2
-    ],
-    "goblins|bug": [
-      18.4
-    ],
-    "goblins|burn": [
-      10.6
-    ],
-    "goblins|cephalid": [
-      65.0
-    ],
-    "goblins|cloudpost": [
+    "eight_cast|eldrazi": [
       28.0
     ],
-    "goblins|depths": [
-      18.8
+    "eight_cast|elves": [
+      74.5
     ],
-    "goblins|dimir": [
-      29.4
+    "eight_cast|goblins": [
+      58.5
     ],
-    "goblins|dimir_b": [
-      31.6
+    "eight_cast|infect": [
+      32.0
     ],
-    "goblins|dimir_c": [
-      15.8
+    "eight_cast|lands": [
+      42.5
     ],
-    "goblins|dimir_d": [
-      11.8
+    "eight_cast|mardu": [
+      58.5
     ],
-    "goblins|dimir_flash": [
-      33.8
+    "eight_cast|mono_black": [
+      28.5
     ],
-    "goblins|dnt": [
-      38.8
+    "eight_cast|ocelot": [
+      58.0
     ],
-    "goblins|doomsday": [
-      68.8
+    "eight_cast|oops": [
+      35.0
     ],
-    "goblins|eight_cast": [
-      37.8
+    "eight_cast|painter": [
+      39.5
     ],
-    "goblins|eldrazi": [
-      18.0
+    "eight_cast|prison": [
+      56.0
     ],
-    "goblins|elves": [
-      46.4
+    "eight_cast|reanimator": [
+      55.5
     ],
-    "goblins|infect": [
-      24.8
+    "eight_cast|show": [
+      54.0
     ],
-    "goblins|lands": [
-      37.6
+    "eight_cast|sneak_a": [
+      31.0
     ],
-    "goblins|mardu": [
-      73.0
+    "eight_cast|sneak_b": [
+      23.5
     ],
-    "goblins|mono_black": [
-      35.4
+    "eight_cast|storm": [
+      58.0
     ],
-    "goblins|ocelot": [
-      54.6
+    "eight_cast|ur_delver": [
+      27.5
     ],
-    "goblins|oops": [
+    "eight_cast|ur_tempo": [
+      26.5
+    ],
+    "eight_cast|uwx": [
+      46.0
+    ],
+    "eight_cast|wan_shi_tong": [
+      45.5
+    ],
+    "eldrazi|affinity": [
+      41.5
+    ],
+    "eldrazi|belcher": [
+      66.5
+    ],
+    "eldrazi|boros": [
+      57.5
+    ],
+    "eldrazi|bug": [
+      62.5
+    ],
+    "eldrazi|burn": [
+      52.0
+    ],
+    "eldrazi|cephalid": [
+      69.5
+    ],
+    "eldrazi|cloudpost": [
+      68.5
+    ],
+    "eldrazi|depths": [
+      47.0
+    ],
+    "eldrazi|dimir": [
+      65.5
+    ],
+    "eldrazi|dimir_b": [
+      53.5
+    ],
+    "eldrazi|dimir_c": [
+      49.0
+    ],
+    "eldrazi|dimir_d": [
+      50.0
+    ],
+    "eldrazi|dimir_flash": [
+      68.0
+    ],
+    "eldrazi|dnt": [
+      58.0
+    ],
+    "eldrazi|doomsday": [
+      76.0
+    ],
+    "eldrazi|eight_cast": [
+      69.5
+    ],
+    "eldrazi|elves": [
+      79.0
+    ],
+    "eldrazi|goblins": [
+      82.5
+    ],
+    "eldrazi|infect": [
+      63.0
+    ],
+    "eldrazi|lands": [
+      52.0
+    ],
+    "eldrazi|mardu": [
+      65.5
+    ],
+    "eldrazi|mono_black": [
+      54.0
+    ],
+    "eldrazi|ocelot": [
+      81.0
+    ],
+    "eldrazi|oops": [
+      42.0
+    ],
+    "eldrazi|painter": [
+      64.5
+    ],
+    "eldrazi|prison": [
+      54.0
+    ],
+    "eldrazi|reanimator": [
+      59.5
+    ],
+    "eldrazi|show": [
+      65.5
+    ],
+    "eldrazi|sneak_a": [
+      42.5
+    ],
+    "eldrazi|sneak_b": [
+      54.0
+    ],
+    "eldrazi|storm": [
+      77.0
+    ],
+    "eldrazi|ur_delver": [
+      42.5
+    ],
+    "eldrazi|ur_tempo": [
+      42.0
+    ],
+    "eldrazi|uwx": [
+      58.5
+    ],
+    "eldrazi|wan_shi_tong": [
+      49.0
+    ],
+    "elves|affinity": [
+      31.0
+    ],
+    "elves|belcher": [
+      58.0
+    ],
+    "elves|boros": [
+      44.0
+    ],
+    "elves|bug": [
+      33.0
+    ],
+    "elves|burn": [
+      23.5
+    ],
+    "elves|cephalid": [
+      80.0
+    ],
+    "elves|cloudpost": [
+      50.5
+    ],
+    "elves|depths": [
       30.0
     ],
+    "elves|dimir": [
+      49.0
+    ],
+    "elves|dimir_b": [
+      45.5
+    ],
+    "elves|dimir_c": [
+      36.5
+    ],
+    "elves|dimir_d": [
+      27.0
+    ],
+    "elves|dimir_flash": [
+      56.5
+    ],
+    "elves|dnt": [
+      49.5
+    ],
+    "elves|doomsday": [
+      62.0
+    ],
+    "elves|eight_cast": [
+      33.5
+    ],
+    "elves|eldrazi": [
+      17.0
+    ],
+    "elves|goblins": [
+      50.5
+    ],
+    "elves|infect": [
+      45.5
+    ],
+    "elves|lands": [
+      43.5
+    ],
+    "elves|mardu": [
+      69.5
+    ],
+    "elves|mono_black": [
+      29.0
+    ],
+    "elves|ocelot": [
+      61.0
+    ],
+    "elves|oops": [
+      40.5
+    ],
+    "elves|painter": [
+      45.0
+    ],
+    "elves|prison": [
+      50.0
+    ],
+    "elves|reanimator": [
+      51.5
+    ],
+    "elves|show": [
+      57.0
+    ],
+    "elves|sneak_a": [
+      41.0
+    ],
+    "elves|sneak_b": [
+      42.5
+    ],
+    "elves|storm": [
+      66.0
+    ],
+    "elves|ur_delver": [
+      38.5
+    ],
+    "elves|ur_tempo": [
+      25.0
+    ],
+    "elves|uwx": [
+      49.5
+    ],
+    "elves|wan_shi_tong": [
+      53.0
+    ],
+    "goblins|affinity": [
+      14.0
+    ],
+    "goblins|belcher": [
+      63.5
+    ],
+    "goblins|boros": [
+      36.0
+    ],
+    "goblins|bug": [
+      22.0
+    ],
+    "goblins|burn": [
+      8.5
+    ],
+    "goblins|cephalid": [
+      67.0
+    ],
+    "goblins|cloudpost": [
+      29.0
+    ],
+    "goblins|depths": [
+      20.5
+    ],
+    "goblins|dimir": [
+      27.5
+    ],
+    "goblins|dimir_b": [
+      31.0
+    ],
+    "goblins|dimir_c": [
+      21.0
+    ],
+    "goblins|dimir_d": [
+      13.0
+    ],
+    "goblins|dimir_flash": [
+      35.5
+    ],
+    "goblins|dnt": [
+      44.0
+    ],
+    "goblins|doomsday": [
+      60.0
+    ],
+    "goblins|eight_cast": [
+      38.5
+    ],
+    "goblins|eldrazi": [
+      15.5
+    ],
+    "goblins|elves": [
+      43.0
+    ],
+    "goblins|infect": [
+      25.5
+    ],
+    "goblins|lands": [
+      37.5
+    ],
+    "goblins|mardu": [
+      77.5
+    ],
+    "goblins|mono_black": [
+      35.0
+    ],
+    "goblins|ocelot": [
+      51.0
+    ],
+    "goblins|oops": [
+      28.0
+    ],
     "goblins|painter": [
-      59.8
+      40.0
     ],
     "goblins|prison": [
-      53.8
+      56.0
     ],
     "goblins|reanimator": [
-      43.8
+      44.0
     ],
     "goblins|show": [
-      51.2
+      49.5
     ],
     "goblins|sneak_a": [
-      35.4
+      37.0
     ],
     "goblins|sneak_b": [
-      36.4
+      33.5
     ],
     "goblins|storm": [
-      62.2
+      61.5
     ],
     "goblins|ur_delver": [
-      16.4
+      19.5
     ],
     "goblins|ur_tempo": [
-      8.8
+      7.5
     ],
     "goblins|uwx": [
-      46.8
+      44.0
     ],
     "goblins|wan_shi_tong": [
-      53.4
+      49.5
     ],
     "infect|affinity": [
-      29.6
+      50.5
     ],
     "infect|belcher": [
-      62.8
+      58.0
     ],
     "infect|boros": [
-      63.2
+      65.0
     ],
     "infect|bug": [
-      66.8
+      67.5
     ],
     "infect|burn": [
-      41.8
+      42.5
     ],
     "infect|cephalid": [
-      72.0
+      76.0
     ],
     "infect|cloudpost": [
       82.0
     ],
     "infect|depths": [
-      66.8
+      69.0
     ],
     "infect|dimir": [
-      64.8
-    ],
-    "infect|dimir_b": [
-      57.8
-    ],
-    "infect|dimir_c": [
-      50.4
-    ],
-    "infect|dimir_d": [
-      49.4
-    ],
-    "infect|dimir_flash": [
       72.0
     ],
+    "infect|dimir_b": [
+      55.5
+    ],
+    "infect|dimir_c": [
+      44.5
+    ],
+    "infect|dimir_d": [
+      47.0
+    ],
+    "infect|dimir_flash": [
+      71.5
+    ],
     "infect|dnt": [
-      74.6
+      75.5
     ],
     "infect|doomsday": [
-      68.0
+      66.5
     ],
     "infect|eight_cast": [
-      67.6
+      68.5
     ],
     "infect|eldrazi": [
-      32.0
+      36.5
     ],
     "infect|elves": [
-      51.0
+      55.5
     ],
     "infect|goblins": [
-      77.2
+      79.0
     ],
     "infect|lands": [
-      64.6
+      62.0
     ],
     "infect|mardu": [
-      84.8
+      83.0
     ],
     "infect|mono_black": [
-      67.4
+      70.5
     ],
     "infect|ocelot": [
-      72.8
-    ],
-    "infect|oops": [
-      49.6
-    ],
-    "infect|painter": [
-      79.8
-    ],
-    "infect|prison": [
-      77.4
-    ],
-    "infect|reanimator": [
-      62.4
-    ],
-    "infect|show": [
-      65.0
-    ],
-    "infect|sneak_a": [
-      55.2
-    ],
-    "infect|sneak_b": [
-      51.6
-    ],
-    "infect|storm": [
-      66.0
-    ],
-    "infect|ur_delver": [
-      47.6
-    ],
-    "infect|ur_tempo": [
-      40.6
-    ],
-    "infect|uwx": [
-      79.2
-    ],
-    "infect|wan_shi_tong": [
-      90.2
-    ],
-    "lands|affinity": [
-      36.0
-    ],
-    "lands|belcher": [
-      50.2
-    ],
-    "lands|boros": [
-      39.6
-    ],
-    "lands|bug": [
-      52.4
-    ],
-    "lands|burn": [
-      47.2
-    ],
-    "lands|cephalid": [
-      38.4
-    ],
-    "lands|cloudpost": [
-      52.6
-    ],
-    "lands|depths": [
-      48.8
-    ],
-    "lands|dimir": [
-      49.6
-    ],
-    "lands|dimir_b": [
-      51.8
-    ],
-    "lands|dimir_c": [
-      32.8
-    ],
-    "lands|dimir_d": [
-      33.4
-    ],
-    "lands|dimir_flash": [
-      50.4
-    ],
-    "lands|dnt": [
-      19.6
-    ],
-    "lands|doomsday": [
-      43.6
-    ],
-    "lands|eight_cast": [
-      58.4
-    ],
-    "lands|eldrazi": [
-      45.8
-    ],
-    "lands|elves": [
-      57.8
-    ],
-    "lands|goblins": [
-      66.2
-    ],
-    "lands|infect": [
-      31.8
-    ],
-    "lands|mardu": [
-      54.2
-    ],
-    "lands|mono_black": [
-      51.8
-    ],
-    "lands|ocelot": [
-      29.4
-    ],
-    "lands|oops": [
-      30.6
-    ],
-    "lands|painter": [
-      62.6
-    ],
-    "lands|prison": [
-      41.6
-    ],
-    "lands|reanimator": [
-      60.4
-    ],
-    "lands|show": [
-      43.6
-    ],
-    "lands|sneak_a": [
-      36.8
-    ],
-    "lands|sneak_b": [
-      39.4
-    ],
-    "lands|storm": [
-      49.8
-    ],
-    "lands|ur_delver": [
-      50.8
-    ],
-    "lands|ur_tempo": [
-      41.4
-    ],
-    "lands|uwx": [
-      22.6
-    ],
-    "lands|wan_shi_tong": [
-      38.2
-    ],
-    "mardu|affinity": [
-      20.8
-    ],
-    "mardu|belcher": [
-      63.0
-    ],
-    "mardu|boros": [
-      26.6
-    ],
-    "mardu|bug": [
-      15.6
-    ],
-    "mardu|burn": [
-      11.0
-    ],
-    "mardu|cephalid": [
-      52.4
-    ],
-    "mardu|cloudpost": [
-      26.2
-    ],
-    "mardu|depths": [
-      26.0
-    ],
-    "mardu|dimir": [
-      35.0
-    ],
-    "mardu|dimir_b": [
-      39.2
-    ],
-    "mardu|dimir_c": [
-      19.0
-    ],
-    "mardu|dimir_d": [
-      15.2
-    ],
-    "mardu|dimir_flash": [
-      45.6
-    ],
-    "mardu|dnt": [
-      24.8
-    ],
-    "mardu|doomsday": [
-      71.8
-    ],
-    "mardu|eight_cast": [
-      40.6
-    ],
-    "mardu|eldrazi": [
-      33.8
-    ],
-    "mardu|elves": [
-      30.0
-    ],
-    "mardu|goblins": [
-      28.0
-    ],
-    "mardu|infect": [
-      12.0
-    ],
-    "mardu|lands": [
-      48.8
-    ],
-    "mardu|mono_black": [
-      33.4
-    ],
-    "mardu|ocelot": [
-      21.2
-    ],
-    "mardu|oops": [
-      35.2
-    ],
-    "mardu|painter": [
-      48.8
-    ],
-    "mardu|prison": [
-      51.0
-    ],
-    "mardu|reanimator": [
-      51.8
-    ],
-    "mardu|show": [
-      58.4
-    ],
-    "mardu|sneak_a": [
-      38.6
-    ],
-    "mardu|sneak_b": [
-      33.4
-    ],
-    "mardu|storm": [
-      47.6
-    ],
-    "mardu|ur_delver": [
-      16.2
-    ],
-    "mardu|ur_tempo": [
-      11.8
-    ],
-    "mardu|uwx": [
-      42.0
-    ],
-    "mardu|wan_shi_tong": [
-      52.2
-    ],
-    "mono_black|affinity": [
-      32.8
-    ],
-    "mono_black|belcher": [
-      69.6
-    ],
-    "mono_black|boros": [
-      62.6
-    ],
-    "mono_black|bug": [
-      44.4
-    ],
-    "mono_black|burn": [
-      14.2
-    ],
-    "mono_black|cephalid": [
-      60.0
-    ],
-    "mono_black|cloudpost": [
-      46.4
-    ],
-    "mono_black|depths": [
-      59.0
-    ],
-    "mono_black|dimir": [
-      60.6
-    ],
-    "mono_black|dimir_b": [
-      68.0
-    ],
-    "mono_black|dimir_c": [
-      43.2
-    ],
-    "mono_black|dimir_d": [
-      40.4
-    ],
-    "mono_black|dimir_flash": [
-      78.0
-    ],
-    "mono_black|dnt": [
-      59.4
-    ],
-    "mono_black|doomsday": [
-      80.2
-    ],
-    "mono_black|eight_cast": [
-      74.2
-    ],
-    "mono_black|eldrazi": [
-      40.6
-    ],
-    "mono_black|elves": [
-      65.2
-    ],
-    "mono_black|goblins": [
-      63.8
-    ],
-    "mono_black|infect": [
-      34.2
-    ],
-    "mono_black|lands": [
-      48.4
-    ],
-    "mono_black|mardu": [
-      64.6
-    ],
-    "mono_black|ocelot": [
-      66.6
-    ],
-    "mono_black|oops": [
-      29.0
-    ],
-    "mono_black|painter": [
-      61.0
-    ],
-    "mono_black|prison": [
-      62.2
-    ],
-    "mono_black|reanimator": [
-      36.6
-    ],
-    "mono_black|show": [
-      62.8
-    ],
-    "mono_black|sneak_a": [
-      40.2
-    ],
-    "mono_black|sneak_b": [
-      45.0
-    ],
-    "mono_black|storm": [
-      67.6
-    ],
-    "mono_black|ur_delver": [
-      41.0
-    ],
-    "mono_black|ur_tempo": [
-      35.8
-    ],
-    "mono_black|uwx": [
-      70.2
-    ],
-    "mono_black|wan_shi_tong": [
-      82.8
-    ],
-    "ocelot|affinity": [
-      23.2
-    ],
-    "ocelot|belcher": [
-      66.2
-    ],
-    "ocelot|boros": [
-      33.8
-    ],
-    "ocelot|bug": [
-      37.6
-    ],
-    "ocelot|burn": [
-      7.2
-    ],
-    "ocelot|cephalid": [
-      65.0
-    ],
-    "ocelot|cloudpost": [
-      41.8
-    ],
-    "ocelot|depths": [
-      47.4
-    ],
-    "ocelot|dimir": [
-      54.6
-    ],
-    "ocelot|dimir_b": [
-      60.8
-    ],
-    "ocelot|dimir_c": [
-      41.2
-    ],
-    "ocelot|dimir_d": [
-      32.4
-    ],
-    "ocelot|dimir_flash": [
-      67.0
-    ],
-    "ocelot|dnt": [
-      33.8
-    ],
-    "ocelot|doomsday": [
-      79.4
-    ],
-    "ocelot|eight_cast": [
-      43.2
-    ],
-    "ocelot|eldrazi": [
-      19.6
-    ],
-    "ocelot|elves": [
-      40.2
-    ],
-    "ocelot|goblins": [
-      46.6
-    ],
-    "ocelot|infect": [
-      25.6
-    ],
-    "ocelot|lands": [
       71.0
     ],
+    "infect|oops": [
+      47.0
+    ],
+    "infect|painter": [
+      63.5
+    ],
+    "infect|prison": [
+      73.0
+    ],
+    "infect|reanimator": [
+      60.5
+    ],
+    "infect|show": [
+      69.0
+    ],
+    "infect|sneak_a": [
+      52.5
+    ],
+    "infect|sneak_b": [
+      53.5
+    ],
+    "infect|storm": [
+      67.5
+    ],
+    "infect|ur_delver": [
+      40.5
+    ],
+    "infect|ur_tempo": [
+      41.0
+    ],
+    "infect|uwx": [
+      80.0
+    ],
+    "infect|wan_shi_tong": [
+      90.5
+    ],
+    "lands|affinity": [
+      49.5
+    ],
+    "lands|belcher": [
+      49.5
+    ],
+    "lands|boros": [
+      40.5
+    ],
+    "lands|bug": [
+      53.0
+    ],
+    "lands|burn": [
+      49.5
+    ],
+    "lands|cephalid": [
+      44.0
+    ],
+    "lands|cloudpost": [
+      51.0
+    ],
+    "lands|depths": [
+      45.5
+    ],
+    "lands|dimir": [
+      50.5
+    ],
+    "lands|dimir_b": [
+      55.5
+    ],
+    "lands|dimir_c": [
+      31.5
+    ],
+    "lands|dimir_d": [
+      27.5
+    ],
+    "lands|dimir_flash": [
+      51.5
+    ],
+    "lands|dnt": [
+      19.0
+    ],
+    "lands|doomsday": [
+      42.5
+    ],
+    "lands|eight_cast": [
+      62.0
+    ],
+    "lands|eldrazi": [
+      45.5
+    ],
+    "lands|elves": [
+      62.5
+    ],
+    "lands|goblins": [
+      69.0
+    ],
+    "lands|infect": [
+      37.0
+    ],
+    "lands|mardu": [
+      56.5
+    ],
+    "lands|mono_black": [
+      56.5
+    ],
+    "lands|ocelot": [
+      34.0
+    ],
+    "lands|oops": [
+      30.0
+    ],
+    "lands|painter": [
+      39.5
+    ],
+    "lands|prison": [
+      41.0
+    ],
+    "lands|reanimator": [
+      59.0
+    ],
+    "lands|show": [
+      43.5
+    ],
+    "lands|sneak_a": [
+      37.0
+    ],
+    "lands|sneak_b": [
+      37.5
+    ],
+    "lands|storm": [
+      50.0
+    ],
+    "lands|ur_delver": [
+      43.5
+    ],
+    "lands|ur_tempo": [
+      43.0
+    ],
+    "lands|uwx": [
+      20.0
+    ],
+    "lands|wan_shi_tong": [
+      46.0
+    ],
+    "mardu|affinity": [
+      36.5
+    ],
+    "mardu|belcher": [
+      62.5
+    ],
+    "mardu|boros": [
+      26.5
+    ],
+    "mardu|bug": [
+      14.5
+    ],
+    "mardu|burn": [
+      9.0
+    ],
+    "mardu|cephalid": [
+      53.0
+    ],
+    "mardu|cloudpost": [
+      29.5
+    ],
+    "mardu|depths": [
+      27.0
+    ],
+    "mardu|dimir": [
+      36.5
+    ],
+    "mardu|dimir_b": [
+      43.0
+    ],
+    "mardu|dimir_c": [
+      13.0
+    ],
+    "mardu|dimir_d": [
+      11.5
+    ],
+    "mardu|dimir_flash": [
+      43.0
+    ],
+    "mardu|dnt": [
+      23.0
+    ],
+    "mardu|doomsday": [
+      70.5
+    ],
+    "mardu|eight_cast": [
+      41.5
+    ],
+    "mardu|eldrazi": [
+      37.0
+    ],
+    "mardu|elves": [
+      29.0
+    ],
+    "mardu|goblins": [
+      31.5
+    ],
+    "mardu|infect": [
+      16.0
+    ],
+    "mardu|lands": [
+      44.5
+    ],
+    "mardu|mono_black": [
+      30.0
+    ],
+    "mardu|ocelot": [
+      22.0
+    ],
+    "mardu|oops": [
+      38.0
+    ],
+    "mardu|painter": [
+      33.5
+    ],
+    "mardu|prison": [
+      45.5
+    ],
+    "mardu|reanimator": [
+      52.5
+    ],
+    "mardu|show": [
+      62.0
+    ],
+    "mardu|sneak_a": [
+      42.5
+    ],
+    "mardu|sneak_b": [
+      35.5
+    ],
+    "mardu|storm": [
+      49.5
+    ],
+    "mardu|ur_delver": [
+      11.5
+    ],
+    "mardu|ur_tempo": [
+      12.0
+    ],
+    "mardu|uwx": [
+      39.0
+    ],
+    "mardu|wan_shi_tong": [
+      48.0
+    ],
+    "mono_black|affinity": [
+      46.5
+    ],
+    "mono_black|belcher": [
+      63.0
+    ],
+    "mono_black|boros": [
+      65.0
+    ],
+    "mono_black|bug": [
+      43.5
+    ],
+    "mono_black|burn": [
+      14.5
+    ],
+    "mono_black|cephalid": [
+      61.0
+    ],
+    "mono_black|cloudpost": [
+      49.5
+    ],
+    "mono_black|depths": [
+      61.0
+    ],
+    "mono_black|dimir": [
+      60.0
+    ],
+    "mono_black|dimir_b": [
+      62.5
+    ],
+    "mono_black|dimir_c": [
+      47.0
+    ],
+    "mono_black|dimir_d": [
+      33.5
+    ],
+    "mono_black|dimir_flash": [
+      80.5
+    ],
+    "mono_black|dnt": [
+      63.5
+    ],
+    "mono_black|doomsday": [
+      80.5
+    ],
+    "mono_black|eight_cast": [
+      68.0
+    ],
+    "mono_black|eldrazi": [
+      41.0
+    ],
+    "mono_black|elves": [
+      68.0
+    ],
+    "mono_black|goblins": [
+      68.0
+    ],
+    "mono_black|infect": [
+      42.5
+    ],
+    "mono_black|lands": [
+      46.0
+    ],
+    "mono_black|mardu": [
+      66.0
+    ],
+    "mono_black|ocelot": [
+      63.5
+    ],
+    "mono_black|oops": [
+      32.5
+    ],
+    "mono_black|painter": [
+      49.5
+    ],
+    "mono_black|prison": [
+      60.5
+    ],
+    "mono_black|reanimator": [
+      37.0
+    ],
+    "mono_black|show": [
+      69.0
+    ],
+    "mono_black|sneak_a": [
+      39.0
+    ],
+    "mono_black|sneak_b": [
+      45.5
+    ],
+    "mono_black|storm": [
+      68.5
+    ],
+    "mono_black|ur_delver": [
+      38.0
+    ],
+    "mono_black|ur_tempo": [
+      38.0
+    ],
+    "mono_black|uwx": [
+      65.0
+    ],
+    "mono_black|wan_shi_tong": [
+      82.5
+    ],
+    "ocelot|affinity": [
+      33.0
+    ],
+    "ocelot|belcher": [
+      71.0
+    ],
+    "ocelot|boros": [
+      29.0
+    ],
+    "ocelot|bug": [
+      41.0
+    ],
+    "ocelot|burn": [
+      6.5
+    ],
+    "ocelot|cephalid": [
+      71.0
+    ],
+    "ocelot|cloudpost": [
+      43.0
+    ],
+    "ocelot|depths": [
+      45.0
+    ],
+    "ocelot|dimir": [
+      51.5
+    ],
+    "ocelot|dimir_b": [
+      62.0
+    ],
+    "ocelot|dimir_c": [
+      39.0
+    ],
+    "ocelot|dimir_d": [
+      34.0
+    ],
+    "ocelot|dimir_flash": [
+      61.5
+    ],
+    "ocelot|dnt": [
+      35.5
+    ],
+    "ocelot|doomsday": [
+      70.5
+    ],
+    "ocelot|eight_cast": [
+      44.5
+    ],
+    "ocelot|eldrazi": [
+      23.5
+    ],
+    "ocelot|elves": [
+      33.5
+    ],
+    "ocelot|goblins": [
+      48.0
+    ],
+    "ocelot|infect": [
+      28.0
+    ],
+    "ocelot|lands": [
+      70.0
+    ],
     "ocelot|mardu": [
-      78.0
+      72.5
     ],
     "ocelot|mono_black": [
-      31.0
+      38.0
     ],
     "ocelot|oops": [
-      30.4
+      28.0
     ],
     "ocelot|painter": [
-      66.6
+      50.5
     ],
     "ocelot|prison": [
-      56.6
+      54.5
     ],
     "ocelot|reanimator": [
-      58.6
+      57.0
     ],
     "ocelot|show": [
-      68.6
+      68.0
     ],
     "ocelot|sneak_a": [
-      47.8
+      50.0
     ],
     "ocelot|sneak_b": [
-      45.4
+      45.0
     ],
     "ocelot|storm": [
-      66.6
+      63.5
     ],
     "ocelot|ur_delver": [
-      34.8
+      30.5
     ],
     "ocelot|ur_tempo": [
-      26.6
+      27.5
     ],
     "ocelot|uwx": [
-      55.6
+      51.0
     ],
     "ocelot|wan_shi_tong": [
       75.0
     ],
     "oops|affinity": [
-      44.0
+      65.0
     ],
     "oops|belcher": [
-      68.0
+      69.0
     ],
     "oops|boros": [
-      69.2
-    ],
-    "oops|bug": [
-      41.0
-    ],
-    "oops|burn": [
-      59.4
-    ],
-    "oops|cephalid": [
-      51.8
-    ],
-    "oops|cloudpost": [
-      66.4
-    ],
-    "oops|depths": [
-      60.2
-    ],
-    "oops|dimir": [
-      52.8
-    ],
-    "oops|dimir_b": [
-      45.4
-    ],
-    "oops|dimir_c": [
-      45.0
-    ],
-    "oops|dimir_d": [
-      41.8
-    ],
-    "oops|dimir_flash": [
-      34.6
-    ],
-    "oops|dnt": [
-      61.4
-    ],
-    "oops|doomsday": [
-      62.2
-    ],
-    "oops|eight_cast": [
-      61.4
-    ],
-    "oops|eldrazi": [
-      58.4
-    ],
-    "oops|elves": [
-      60.4
-    ],
-    "oops|goblins": [
-      66.6
-    ],
-    "oops|infect": [
-      53.0
-    ],
-    "oops|lands": [
-      67.0
-    ],
-    "oops|mardu": [
-      62.2
-    ],
-    "oops|mono_black": [
-      65.2
-    ],
-    "oops|ocelot": [
       70.0
     ],
-    "oops|painter": [
-      73.8
+    "oops|bug": [
+      45.5
     ],
-    "oops|prison": [
-      74.6
+    "oops|burn": [
+      61.0
     ],
-    "oops|reanimator": [
-      67.6
+    "oops|cephalid": [
+      54.0
     ],
-    "oops|show": [
-      52.8
+    "oops|cloudpost": [
+      67.5
     ],
-    "oops|sneak_a": [
-      44.4
+    "oops|depths": [
+      57.5
     ],
-    "oops|sneak_b": [
-      45.2
+    "oops|dimir": [
+      44.0
     ],
-    "oops|storm": [
-      55.0
+    "oops|dimir_b": [
+      49.5
     ],
-    "oops|ur_delver": [
-      37.8
+    "oops|dimir_c": [
+      47.5
     ],
-    "oops|ur_tempo": [
-      39.4
-    ],
-    "oops|uwx": [
-      29.4
-    ],
-    "oops|wan_shi_tong": [
-      50.8
-    ],
-    "painter|affinity": [
-      19.0
-    ],
-    "painter|belcher": [
-      49.0
-    ],
-    "painter|boros": [
-      41.0
-    ],
-    "painter|bug": [
-      37.6
-    ],
-    "painter|burn": [
-      15.2
-    ],
-    "painter|cephalid": [
-      35.4
-    ],
-    "painter|cloudpost": [
-      58.8
-    ],
-    "painter|depths": [
-      37.2
-    ],
-    "painter|dimir": [
-      42.6
-    ],
-    "painter|dimir_b": [
-      33.8
-    ],
-    "painter|dimir_c": [
-      41.0
-    ],
-    "painter|dimir_d": [
-      36.0
-    ],
-    "painter|dimir_flash": [
+    "oops|dimir_d": [
       42.0
     ],
-    "painter|dnt": [
-      46.6
+    "oops|dimir_flash": [
+      39.0
     ],
-    "painter|doomsday": [
-      40.8
-    ],
-    "painter|eight_cast": [
-      52.2
-    ],
-    "painter|eldrazi": [
-      21.8
-    ],
-    "painter|elves": [
-      32.6
-    ],
-    "painter|goblins": [
-      43.0
-    ],
-    "painter|infect": [
-      21.4
-    ],
-    "painter|lands": [
-      38.4
-    ],
-    "painter|mardu": [
-      52.8
-    ],
-    "painter|mono_black": [
-      36.4
-    ],
-    "painter|ocelot": [
-      31.6
-    ],
-    "painter|oops": [
-      26.0
-    ],
-    "painter|prison": [
-      53.6
-    ],
-    "painter|reanimator": [
-      43.8
-    ],
-    "painter|show": [
-      45.0
-    ],
-    "painter|sneak_a": [
-      31.2
-    ],
-    "painter|sneak_b": [
-      33.2
-    ],
-    "painter|storm": [
-      42.2
-    ],
-    "painter|ur_delver": [
-      33.2
-    ],
-    "painter|ur_tempo": [
-      25.8
-    ],
-    "painter|uwx": [
-      33.8
-    ],
-    "painter|wan_shi_tong": [
+    "oops|dnt": [
       62.0
     ],
-    "prison|affinity": [
-      35.4
+    "oops|doomsday": [
+      61.5
     ],
-    "prison|belcher": [
-      49.4
+    "oops|eight_cast": [
+      63.0
     ],
-    "prison|boros": [
-      42.6
+    "oops|eldrazi": [
+      58.5
     ],
-    "prison|bug": [
-      46.4
+    "oops|elves": [
+      61.5
     ],
-    "prison|burn": [
-      33.6
+    "oops|goblins": [
+      71.0
     ],
-    "prison|cephalid": [
-      43.6
+    "oops|infect": [
+      46.5
     ],
-    "prison|cloudpost": [
+    "oops|lands": [
+      70.0
+    ],
+    "oops|mardu": [
+      63.0
+    ],
+    "oops|mono_black": [
+      72.0
+    ],
+    "oops|ocelot": [
+      71.0
+    ],
+    "oops|painter": [
+      68.5
+    ],
+    "oops|prison": [
+      73.5
+    ],
+    "oops|reanimator": [
+      66.0
+    ],
+    "oops|show": [
+      45.5
+    ],
+    "oops|sneak_a": [
       43.0
     ],
-    "prison|depths": [
-      43.0
-    ],
-    "prison|dimir": [
-      47.2
-    ],
-    "prison|dimir_b": [
-      40.6
-    ],
-    "prison|dimir_c": [
-      45.2
-    ],
-    "prison|dimir_d": [
+    "oops|sneak_b": [
       42.0
     ],
-    "prison|dimir_flash": [
-      46.4
+    "oops|storm": [
+      53.0
     ],
-    "prison|dnt": [
-      48.0
+    "oops|ur_delver": [
+      37.0
     ],
-    "prison|doomsday": [
-      45.2
+    "oops|ur_tempo": [
+      39.0
     ],
-    "prison|eight_cast": [
-      46.6
+    "oops|uwx": [
+      28.5
     ],
-    "prison|eldrazi": [
-      45.8
-    ],
-    "prison|elves": [
+    "oops|wan_shi_tong": [
       51.0
     ],
+    "painter|affinity": [
+      41.5
+    ],
+    "painter|belcher": [
+      56.5
+    ],
+    "painter|boros": [
+      51.5
+    ],
+    "painter|bug": [
+      47.5
+    ],
+    "painter|burn": [
+      35.5
+    ],
+    "painter|cephalid": [
+      46.0
+    ],
+    "painter|cloudpost": [
+      70.0
+    ],
+    "painter|depths": [
+      58.5
+    ],
+    "painter|dimir": [
+      49.0
+    ],
+    "painter|dimir_b": [
+      54.0
+    ],
+    "painter|dimir_c": [
+      48.0
+    ],
+    "painter|dimir_d": [
+      48.5
+    ],
+    "painter|dimir_flash": [
+      54.5
+    ],
+    "painter|dnt": [
+      57.0
+    ],
+    "painter|doomsday": [
+      51.5
+    ],
+    "painter|eight_cast": [
+      61.0
+    ],
+    "painter|eldrazi": [
+      38.5
+    ],
+    "painter|elves": [
+      48.0
+    ],
+    "painter|goblins": [
+      53.5
+    ],
+    "painter|infect": [
+      35.5
+    ],
+    "painter|lands": [
+      53.5
+    ],
+    "painter|mardu": [
+      58.0
+    ],
+    "painter|mono_black": [
+      51.0
+    ],
+    "painter|ocelot": [
+      45.5
+    ],
+    "painter|oops": [
+      30.5
+    ],
+    "painter|prison": [
+      59.5
+    ],
+    "painter|reanimator": [
+      54.5
+    ],
+    "painter|show": [
+      51.0
+    ],
+    "painter|sneak_a": [
+      43.5
+    ],
+    "painter|sneak_b": [
+      37.0
+    ],
+    "painter|storm": [
+      53.5
+    ],
+    "painter|ur_delver": [
+      50.5
+    ],
+    "painter|ur_tempo": [
+      32.0
+    ],
+    "painter|uwx": [
+      42.5
+    ],
+    "painter|wan_shi_tong": [
+      68.0
+    ],
+    "prison|affinity": [
+      40.5
+    ],
+    "prison|belcher": [
+      48.5
+    ],
+    "prison|boros": [
+      38.0
+    ],
+    "prison|bug": [
+      49.0
+    ],
+    "prison|burn": [
+      34.0
+    ],
+    "prison|cephalid": [
+      41.0
+    ],
+    "prison|cloudpost": [
+      44.0
+    ],
+    "prison|depths": [
+      44.0
+    ],
+    "prison|dimir": [
+      50.0
+    ],
+    "prison|dimir_b": [
+      41.5
+    ],
+    "prison|dimir_c": [
+      44.5
+    ],
+    "prison|dimir_d": [
+      44.0
+    ],
+    "prison|dimir_flash": [
+      48.5
+    ],
+    "prison|dnt": [
+      49.5
+    ],
+    "prison|doomsday": [
+      42.0
+    ],
+    "prison|eight_cast": [
+      50.0
+    ],
+    "prison|eldrazi": [
+      51.0
+    ],
+    "prison|elves": [
+      53.5
+    ],
     "prison|goblins": [
-      45.8
+      48.0
     ],
     "prison|infect": [
-      28.8
+      23.5
     ],
     "prison|lands": [
-      57.6
+      58.0
     ],
     "prison|mardu": [
-      49.6
+      45.5
     ],
     "prison|mono_black": [
-      44.4
+      42.0
     ],
     "prison|ocelot": [
-      44.6
+      47.5
     ],
     "prison|oops": [
       26.0
     ],
     "prison|painter": [
-      45.6
+      41.5
     ],
     "prison|reanimator": [
-      51.0
+      50.5
     ],
     "prison|show": [
-      55.0
-    ],
-    "prison|sneak_a": [
-      35.8
-    ],
-    "prison|sneak_b": [
-      36.8
-    ],
-    "prison|storm": [
-      44.8
-    ],
-    "prison|ur_delver": [
-      39.4
-    ],
-    "prison|ur_tempo": [
-      36.6
-    ],
-    "prison|uwx": [
-      42.4
-    ],
-    "prison|wan_shi_tong": [
-      56.2
-    ],
-    "reanimator|affinity": [
-      22.8
-    ],
-    "reanimator|belcher": [
-      54.6
-    ],
-    "reanimator|boros": [
-      37.8
-    ],
-    "reanimator|bug": [
-      52.6
-    ],
-    "reanimator|burn": [
-      22.2
-    ],
-    "reanimator|cephalid": [
-      27.6
-    ],
-    "reanimator|cloudpost": [
-      42.6
-    ],
-    "reanimator|depths": [
-      30.0
-    ],
-    "reanimator|dimir": [
-      52.8
-    ],
-    "reanimator|dimir_b": [
-      49.2
-    ],
-    "reanimator|dimir_c": [
-      54.0
-    ],
-    "reanimator|dimir_d": [
-      51.8
-    ],
-    "reanimator|dimir_flash": [
-      38.6
-    ],
-    "reanimator|dnt": [
-      35.6
-    ],
-    "reanimator|doomsday": [
-      58.8
-    ],
-    "reanimator|eight_cast": [
-      45.8
-    ],
-    "reanimator|eldrazi": [
-      40.6
-    ],
-    "reanimator|elves": [
-      42.4
-    ],
-    "reanimator|goblins": [
-      57.2
-    ],
-    "reanimator|infect": [
-      33.0
-    ],
-    "reanimator|lands": [
-      44.2
-    ],
-    "reanimator|mardu": [
-      47.8
-    ],
-    "reanimator|mono_black": [
-      59.6
-    ],
-    "reanimator|ocelot": [
-      37.0
-    ],
-    "reanimator|oops": [
-      32.0
-    ],
-    "reanimator|painter": [
-      51.8
-    ],
-    "reanimator|prison": [
-      45.0
-    ],
-    "reanimator|show": [
-      54.2
-    ],
-    "reanimator|sneak_a": [
-      46.8
-    ],
-    "reanimator|sneak_b": [
-      39.6
-    ],
-    "reanimator|storm": [
-      42.0
-    ],
-    "reanimator|ur_delver": [
-      42.2
-    ],
-    "reanimator|ur_tempo": [
-      39.0
-    ],
-    "reanimator|uwx": [
-      19.6
-    ],
-    "reanimator|wan_shi_tong": [
-      28.0
-    ],
-    "show|affinity": [
-      25.2
-    ],
-    "show|belcher": [
-      55.6
-    ],
-    "show|boros": [
-      41.2
-    ],
-    "show|bug": [
-      36.4
-    ],
-    "show|burn": [
-      36.2
-    ],
-    "show|cephalid": [
-      41.6
-    ],
-    "show|cloudpost": [
       50.0
     ],
-    "show|depths": [
-      34.2
+    "prison|sneak_a": [
+      32.5
     ],
-    "show|dimir": [
-      37.6
+    "prison|sneak_b": [
+      35.5
     ],
-    "show|dimir_b": [
-      32.0
+    "prison|storm": [
+      45.5
     ],
-    "show|dimir_c": [
-      44.4
+    "prison|ur_delver": [
+      42.5
     ],
-    "show|dimir_d": [
-      44.4
+    "prison|ur_tempo": [
+      31.0
     ],
-    "show|dimir_flash": [
-      36.0
+    "prison|uwx": [
+      43.5
     ],
-    "show|dnt": [
-      45.0
+    "prison|wan_shi_tong": [
+      58.5
     ],
-    "show|doomsday": [
-      59.8
-    ],
-    "show|eight_cast": [
-      47.2
-    ],
-    "show|eldrazi": [
-      39.2
-    ],
-    "show|elves": [
-      44.0
-    ],
-    "show|goblins": [
-      45.2
-    ],
-    "show|infect": [
-      32.8
-    ],
-    "show|lands": [
-      54.2
-    ],
-    "show|mardu": [
-      40.0
-    ],
-    "show|mono_black": [
+    "reanimator|affinity": [
       38.0
     ],
-    "show|ocelot": [
-      34.4
+    "reanimator|belcher": [
+      53.0
     ],
-    "show|oops": [
-      48.8
+    "reanimator|boros": [
+      36.5
     ],
-    "show|painter": [
-      54.6
+    "reanimator|bug": [
+      52.5
     ],
-    "show|prison": [
-      50.6
+    "reanimator|burn": [
+      20.0
     ],
-    "show|reanimator": [
-      45.8
+    "reanimator|cephalid": [
+      28.5
     ],
-    "show|sneak_a": [
-      52.4
-    ],
-    "show|sneak_b": [
-      49.0
-    ],
-    "show|storm": [
-      40.8
-    ],
-    "show|ur_delver": [
+    "reanimator|cloudpost": [
       40.0
     ],
-    "show|ur_tempo": [
-      36.6
+    "reanimator|depths": [
+      31.5
     ],
-    "show|uwx": [
-      30.6
+    "reanimator|dimir": [
+      49.0
     ],
-    "show|wan_shi_tong": [
-      46.4
+    "reanimator|dimir_b": [
+      45.5
     ],
-    "sneak_a|affinity": [
-      34.4
+    "reanimator|dimir_c": [
+      59.0
     ],
-    "sneak_a|belcher": [
-      54.6
+    "reanimator|dimir_d": [
+      55.5
     ],
-    "sneak_a|boros": [
+    "reanimator|dimir_flash": [
+      43.5
+    ],
+    "reanimator|dnt": [
+      34.5
+    ],
+    "reanimator|doomsday": [
+      55.5
+    ],
+    "reanimator|eight_cast": [
+      43.5
+    ],
+    "reanimator|eldrazi": [
+      37.0
+    ],
+    "reanimator|elves": [
+      41.0
+    ],
+    "reanimator|goblins": [
+      54.5
+    ],
+    "reanimator|infect": [
+      36.5
+    ],
+    "reanimator|lands": [
+      40.0
+    ],
+    "reanimator|mardu": [
+      48.0
+    ],
+    "reanimator|mono_black": [
+      67.5
+    ],
+    "reanimator|ocelot": [
+      41.5
+    ],
+    "reanimator|oops": [
+      30.0
+    ],
+    "reanimator|painter": [
+      43.5
+    ],
+    "reanimator|prison": [
+      49.0
+    ],
+    "reanimator|show": [
+      55.0
+    ],
+    "reanimator|sneak_a": [
+      44.0
+    ],
+    "reanimator|sneak_b": [
+      36.5
+    ],
+    "reanimator|storm": [
+      40.0
+    ],
+    "reanimator|ur_delver": [
+      36.0
+    ],
+    "reanimator|ur_tempo": [
+      38.5
+    ],
+    "reanimator|uwx": [
+      19.5
+    ],
+    "reanimator|wan_shi_tong": [
+      27.0
+    ],
+    "show|affinity": [
+      44.5
+    ],
+    "show|belcher": [
+      51.5
+    ],
+    "show|boros": [
+      38.0
+    ],
+    "show|bug": [
+      32.0
+    ],
+    "show|burn": [
+      38.0
+    ],
+    "show|cephalid": [
+      36.0
+    ],
+    "show|cloudpost": [
+      47.5
+    ],
+    "show|depths": [
+      37.0
+    ],
+    "show|dimir": [
+      40.5
+    ],
+    "show|dimir_b": [
+      36.0
+    ],
+    "show|dimir_c": [
+      42.0
+    ],
+    "show|dimir_d": [
+      42.5
+    ],
+    "show|dimir_flash": [
+      41.5
+    ],
+    "show|dnt": [
+      45.5
+    ],
+    "show|doomsday": [
       52.0
     ],
-    "sneak_a|bug": [
+    "show|eight_cast": [
+      51.0
+    ],
+    "show|eldrazi": [
+      35.0
+    ],
+    "show|elves": [
+      46.0
+    ],
+    "show|goblins": [
+      44.5
+    ],
+    "show|infect": [
+      31.5
+    ],
+    "show|lands": [
+      51.5
+    ],
+    "show|mardu": [
+      42.5
+    ],
+    "show|mono_black": [
+      36.5
+    ],
+    "show|ocelot": [
+      34.0
+    ],
+    "show|oops": [
+      49.5
+    ],
+    "show|painter": [
+      50.5
+    ],
+    "show|prison": [
+      51.0
+    ],
+    "show|reanimator": [
+      46.0
+    ],
+    "show|sneak_a": [
+      55.5
+    ],
+    "show|sneak_b": [
+      48.0
+    ],
+    "show|storm": [
+      37.5
+    ],
+    "show|ur_delver": [
       39.0
     ],
+    "show|ur_tempo": [
+      41.0
+    ],
+    "show|uwx": [
+      36.0
+    ],
+    "show|wan_shi_tong": [
+      52.5
+    ],
+    "sneak_a|affinity": [
+      62.0
+    ],
+    "sneak_a|belcher": [
+      54.0
+    ],
+    "sneak_a|boros": [
+      51.5
+    ],
+    "sneak_a|bug": [
+      39.5
+    ],
     "sneak_a|burn": [
-      48.4
+      54.0
     ],
     "sneak_a|cephalid": [
-      41.2
+      42.0
     ],
     "sneak_a|cloudpost": [
-      72.0
+      69.0
     ],
     "sneak_a|depths": [
-      54.4
+      57.0
     ],
     "sneak_a|dimir": [
-      53.2
+      57.0
     ],
     "sneak_a|dimir_b": [
-      43.2
+      39.5
     ],
     "sneak_a|dimir_c": [
-      47.0
+      50.0
     ],
     "sneak_a|dimir_d": [
-      45.6
+      45.5
     ],
     "sneak_a|dimir_flash": [
-      30.4
+      31.0
     ],
     "sneak_a|dnt": [
-      66.4
+      69.5
     ],
     "sneak_a|doomsday": [
-      56.2
+      57.0
     ],
     "sneak_a|eight_cast": [
       65.0
     ],
     "sneak_a|eldrazi": [
-      53.4
-    ],
-    "sneak_a|elves": [
-      64.0
-    ],
-    "sneak_a|goblins": [
-      62.6
-    ],
-    "sneak_a|infect": [
-      46.8
-    ],
-    "sneak_a|lands": [
-      61.4
-    ],
-    "sneak_a|mardu": [
-      63.4
-    ],
-    "sneak_a|mono_black": [
-      54.2
-    ],
-    "sneak_a|ocelot": [
-      52.4
-    ],
-    "sneak_a|oops": [
-      49.4
-    ],
-    "sneak_a|painter": [
-      72.2
-    ],
-    "sneak_a|prison": [
-      62.6
-    ],
-    "sneak_a|reanimator": [
-      55.0
-    ],
-    "sneak_a|show": [
-      51.2
-    ],
-    "sneak_a|sneak_b": [
-      39.4
-    ],
-    "sneak_a|storm": [
-      40.6
-    ],
-    "sneak_a|ur_delver": [
-      34.8
-    ],
-    "sneak_a|ur_tempo": [
-      40.2
-    ],
-    "sneak_a|uwx": [
-      18.0
-    ],
-    "sneak_a|wan_shi_tong": [
-      46.8
-    ],
-    "sneak_b|affinity": [
-      35.0
-    ],
-    "sneak_b|belcher": [
-      62.2
-    ],
-    "sneak_b|boros": [
-      54.4
-    ],
-    "sneak_b|bug": [
-      36.8
-    ],
-    "sneak_b|burn": [
-      53.4
-    ],
-    "sneak_b|cephalid": [
-      42.6
-    ],
-    "sneak_b|cloudpost": [
-      60.4
-    ],
-    "sneak_b|depths": [
-      47.8
-    ],
-    "sneak_b|dimir": [
-      55.6
-    ],
-    "sneak_b|dimir_b": [
-      41.0
-    ],
-    "sneak_b|dimir_c": [
-      44.4
-    ],
-    "sneak_b|dimir_d": [
-      47.8
-    ],
-    "sneak_b|dimir_flash": [
-      32.8
-    ],
-    "sneak_b|dnt": [
-      64.2
-    ],
-    "sneak_b|doomsday": [
-      58.4
-    ],
-    "sneak_b|eight_cast": [
-      64.6
-    ],
-    "sneak_b|eldrazi": [
-      53.2
-    ],
-    "sneak_b|elves": [
-      58.6
-    ],
-    "sneak_b|goblins": [
-      63.4
-    ],
-    "sneak_b|infect": [
-      45.4
-    ],
-    "sneak_b|lands": [
-      57.2
-    ],
-    "sneak_b|mardu": [
-      63.8
-    ],
-    "sneak_b|mono_black": [
-      55.8
-    ],
-    "sneak_b|ocelot": [
-      49.8
-    ],
-    "sneak_b|oops": [
-      57.6
-    ],
-    "sneak_b|painter": [
-      70.0
-    ],
-    "sneak_b|prison": [
-      60.0
-    ],
-    "sneak_b|reanimator": [
-      53.8
-    ],
-    "sneak_b|show": [
       54.0
     ],
-    "sneak_b|sneak_a": [
-      56.0
+    "sneak_a|elves": [
+      62.0
     ],
-    "sneak_b|storm": [
-      39.0
+    "sneak_a|goblins": [
+      64.5
     ],
-    "sneak_b|ur_delver": [
-      38.6
+    "sneak_a|infect": [
+      45.0
     ],
-    "sneak_b|ur_tempo": [
-      41.2
+    "sneak_a|lands": [
+      60.5
     ],
-    "sneak_b|uwx": [
-      18.0
+    "sneak_a|mardu": [
+      59.5
     ],
-    "sneak_b|wan_shi_tong": [
-      46.6
+    "sneak_a|mono_black": [
+      58.5
     ],
-    "storm|affinity": [
-      25.2
+    "sneak_a|ocelot": [
+      46.5
     ],
-    "storm|belcher": [
-      68.4
-    ],
-    "storm|boros": [
-      37.6
-    ],
-    "storm|bug": [
-      40.8
-    ],
-    "storm|burn": [
-      32.4
-    ],
-    "storm|cephalid": [
+    "sneak_a|oops": [
       50.0
     ],
+    "sneak_a|painter": [
+      58.5
+    ],
+    "sneak_a|prison": [
+      59.5
+    ],
+    "sneak_a|reanimator": [
+      53.0
+    ],
+    "sneak_a|show": [
+      45.0
+    ],
+    "sneak_a|sneak_b": [
+      37.5
+    ],
+    "sneak_a|storm": [
+      37.0
+    ],
+    "sneak_a|ur_delver": [
+      40.5
+    ],
+    "sneak_a|ur_tempo": [
+      37.5
+    ],
+    "sneak_a|uwx": [
+      17.5
+    ],
+    "sneak_a|wan_shi_tong": [
+      45.0
+    ],
+    "sneak_b|affinity": [
+      54.5
+    ],
+    "sneak_b|belcher": [
+      59.5
+    ],
+    "sneak_b|boros": [
+      55.0
+    ],
+    "sneak_b|bug": [
+      44.5
+    ],
+    "sneak_b|burn": [
+      53.5
+    ],
+    "sneak_b|cephalid": [
+      43.5
+    ],
+    "sneak_b|cloudpost": [
+      61.5
+    ],
+    "sneak_b|depths": [
+      50.5
+    ],
+    "sneak_b|dimir": [
+      52.5
+    ],
+    "sneak_b|dimir_b": [
+      40.5
+    ],
+    "sneak_b|dimir_c": [
+      49.0
+    ],
+    "sneak_b|dimir_d": [
+      46.0
+    ],
+    "sneak_b|dimir_flash": [
+      29.5
+    ],
+    "sneak_b|dnt": [
+      65.0
+    ],
+    "sneak_b|doomsday": [
+      53.0
+    ],
+    "sneak_b|eight_cast": [
+      66.0
+    ],
+    "sneak_b|eldrazi": [
+      55.0
+    ],
+    "sneak_b|elves": [
+      59.0
+    ],
+    "sneak_b|goblins": [
+      65.5
+    ],
+    "sneak_b|infect": [
+      47.0
+    ],
+    "sneak_b|lands": [
+      56.0
+    ],
+    "sneak_b|mardu": [
+      67.0
+    ],
+    "sneak_b|mono_black": [
+      58.0
+    ],
+    "sneak_b|ocelot": [
+      46.5
+    ],
+    "sneak_b|oops": [
+      59.5
+    ],
+    "sneak_b|painter": [
+      64.0
+    ],
+    "sneak_b|prison": [
+      59.5
+    ],
+    "sneak_b|reanimator": [
+      58.0
+    ],
+    "sneak_b|show": [
+      49.5
+    ],
+    "sneak_b|sneak_a": [
+      59.0
+    ],
+    "sneak_b|storm": [
+      36.0
+    ],
+    "sneak_b|ur_delver": [
+      39.0
+    ],
+    "sneak_b|ur_tempo": [
+      39.5
+    ],
+    "sneak_b|uwx": [
+      20.0
+    ],
+    "sneak_b|wan_shi_tong": [
+      45.5
+    ],
+    "storm|affinity": [
+      35.5
+    ],
+    "storm|belcher": [
+      70.5
+    ],
+    "storm|boros": [
+      36.5
+    ],
+    "storm|bug": [
+      38.5
+    ],
+    "storm|burn": [
+      31.0
+    ],
+    "storm|cephalid": [
+      52.5
+    ],
     "storm|cloudpost": [
-      44.2
+      48.0
     ],
     "storm|depths": [
-      29.8
+      31.0
     ],
     "storm|dimir": [
-      45.4
+      48.5
     ],
     "storm|dimir_b": [
-      46.6
+      47.5
     ],
     "storm|dimir_c": [
-      51.4
+      50.5
     ],
     "storm|dimir_d": [
-      45.8
+      47.5
     ],
     "storm|dimir_flash": [
-      52.6
+      50.5
     ],
     "storm|dnt": [
-      38.8
+      40.5
     ],
     "storm|doomsday": [
-      68.4
+      57.5
     ],
     "storm|eight_cast": [
-      45.0
+      42.5
     ],
     "storm|eldrazi": [
       26.0
     ],
     "storm|elves": [
-      34.2
+      31.0
     ],
     "storm|goblins": [
-      33.8
-    ],
-    "storm|infect": [
-      29.2
-    ],
-    "storm|lands": [
-      48.0
-    ],
-    "storm|mardu": [
-      53.4
-    ],
-    "storm|mono_black": [
       34.0
     ],
-    "storm|ocelot": [
-      32.8
+    "storm|infect": [
+      28.0
     ],
-    "storm|oops": [
-      43.2
-    ],
-    "storm|painter": [
-      52.8
-    ],
-    "storm|prison": [
-      51.4
-    ],
-    "storm|reanimator": [
-      53.8
-    ],
-    "storm|show": [
-      59.4
-    ],
-    "storm|sneak_a": [
-      59.2
-    ],
-    "storm|sneak_b": [
-      59.2
-    ],
-    "storm|ur_delver": [
-      36.6
-    ],
-    "storm|ur_tempo": [
-      32.2
-    ],
-    "storm|uwx": [
-      52.4
-    ],
-    "storm|wan_shi_tong": [
-      58.2
-    ],
-    "ur_delver|affinity": [
-      23.2
-    ],
-    "ur_delver|belcher": [
-      65.2
-    ],
-    "ur_delver|boros": [
-      70.6
-    ],
-    "ur_delver|bug": [
-      57.4
-    ],
-    "ur_delver|burn": [
-      39.6
-    ],
-    "ur_delver|cephalid": [
-      76.6
-    ],
-    "ur_delver|cloudpost": [
-      39.4
-    ],
-    "ur_delver|depths": [
-      26.0
-    ],
-    "ur_delver|dimir": [
-      69.6
-    ],
-    "ur_delver|dimir_b": [
-      55.4
-    ],
-    "ur_delver|dimir_c": [
-      50.2
-    ],
-    "ur_delver|dimir_d": [
-      49.0
-    ],
-    "ur_delver|dimir_flash": [
-      65.8
-    ],
-    "ur_delver|dnt": [
-      52.4
-    ],
-    "ur_delver|doomsday": [
-      87.0
-    ],
-    "ur_delver|eight_cast": [
-      73.2
-    ],
-    "ur_delver|eldrazi": [
-      56.8
-    ],
-    "ur_delver|elves": [
-      62.8
-    ],
-    "ur_delver|goblins": [
-      85.2
-    ],
-    "ur_delver|infect": [
-      54.0
-    ],
-    "ur_delver|lands": [
-      49.8
-    ],
-    "ur_delver|mardu": [
-      83.6
-    ],
-    "ur_delver|mono_black": [
-      61.0
-    ],
-    "ur_delver|ocelot": [
-      59.8
-    ],
-    "ur_delver|oops": [
-      58.4
-    ],
-    "ur_delver|painter": [
-      65.8
-    ],
-    "ur_delver|prison": [
-      55.6
-    ],
-    "ur_delver|reanimator": [
-      58.4
-    ],
-    "ur_delver|show": [
-      60.8
-    ],
-    "ur_delver|sneak_a": [
-      59.4
-    ],
-    "ur_delver|sneak_b": [
-      57.8
-    ],
-    "ur_delver|storm": [
-      63.0
-    ],
-    "ur_delver|ur_tempo": [
+    "storm|lands": [
       46.0
     ],
-    "ur_delver|uwx": [
-      57.4
+    "storm|mardu": [
+      56.5
     ],
-    "ur_delver|wan_shi_tong": [
-      67.4
+    "storm|mono_black": [
+      36.5
     ],
-    "ur_tempo|affinity": [
-      29.2
+    "storm|ocelot": [
+      32.0
     ],
-    "ur_tempo|belcher": [
-      66.4
+    "storm|oops": [
+      41.5
     ],
-    "ur_tempo|boros": [
-      70.0
+    "storm|painter": [
+      51.5
     ],
-    "ur_tempo|bug": [
+    "storm|prison": [
+      49.0
+    ],
+    "storm|reanimator": [
+      51.0
+    ],
+    "storm|show": [
+      61.0
+    ],
+    "storm|sneak_a": [
+      62.5
+    ],
+    "storm|sneak_b": [
+      59.5
+    ],
+    "storm|ur_delver": [
+      31.5
+    ],
+    "storm|ur_tempo": [
+      33.5
+    ],
+    "storm|uwx": [
+      47.5
+    ],
+    "storm|wan_shi_tong": [
       55.0
     ],
+    "ur_delver|affinity": [
+      42.0
+    ],
+    "ur_delver|belcher": [
+      70.5
+    ],
+    "ur_delver|boros": [
+      68.0
+    ],
+    "ur_delver|bug": [
+      57.0
+    ],
+    "ur_delver|burn": [
+      34.5
+    ],
+    "ur_delver|cephalid": [
+      75.5
+    ],
+    "ur_delver|cloudpost": [
+      42.0
+    ],
+    "ur_delver|depths": [
+      27.5
+    ],
+    "ur_delver|dimir": [
+      70.0
+    ],
+    "ur_delver|dimir_b": [
+      44.5
+    ],
+    "ur_delver|dimir_c": [
+      60.0
+    ],
+    "ur_delver|dimir_d": [
+      50.0
+    ],
+    "ur_delver|dimir_flash": [
+      73.0
+    ],
+    "ur_delver|dnt": [
+      54.0
+    ],
+    "ur_delver|doomsday": [
+      84.0
+    ],
+    "ur_delver|eight_cast": [
+      70.0
+    ],
+    "ur_delver|eldrazi": [
+      61.5
+    ],
+    "ur_delver|elves": [
+      64.5
+    ],
+    "ur_delver|goblins": [
+      85.5
+    ],
+    "ur_delver|infect": [
+      49.0
+    ],
+    "ur_delver|lands": [
+      48.0
+    ],
+    "ur_delver|mardu": [
+      86.0
+    ],
+    "ur_delver|mono_black": [
+      59.5
+    ],
+    "ur_delver|ocelot": [
+      59.5
+    ],
+    "ur_delver|oops": [
+      58.0
+    ],
+    "ur_delver|painter": [
+      52.0
+    ],
+    "ur_delver|prison": [
+      56.0
+    ],
+    "ur_delver|reanimator": [
+      57.5
+    ],
+    "ur_delver|show": [
+      65.0
+    ],
+    "ur_delver|sneak_a": [
+      60.0
+    ],
+    "ur_delver|sneak_b": [
+      60.0
+    ],
+    "ur_delver|storm": [
+      60.5
+    ],
+    "ur_delver|ur_tempo": [
+      45.0
+    ],
+    "ur_delver|uwx": [
+      51.0
+    ],
+    "ur_delver|wan_shi_tong": [
+      61.0
+    ],
+    "ur_tempo|affinity": [
+      48.0
+    ],
+    "ur_tempo|belcher": [
+      66.5
+    ],
+    "ur_tempo|boros": [
+      73.5
+    ],
+    "ur_tempo|bug": [
+      49.0
+    ],
     "ur_tempo|burn": [
-      45.8
+      49.5
     ],
     "ur_tempo|cephalid": [
-      78.2
+      78.0
     ],
     "ur_tempo|cloudpost": [
-      65.4
+      65.0
     ],
     "ur_tempo|depths": [
-      44.4
+      41.0
     ],
     "ur_tempo|dimir": [
-      67.2
+      69.5
     ],
     "ur_tempo|dimir_b": [
       62.0
     ],
     "ur_tempo|dimir_c": [
-      56.0
+      57.5
     ],
     "ur_tempo|dimir_d": [
-      49.2
+      49.5
     ],
     "ur_tempo|dimir_flash": [
-      71.4
+      70.0
     ],
     "ur_tempo|dnt": [
-      57.0
+      52.5
     ],
     "ur_tempo|doomsday": [
-      87.6
+      86.0
     ],
     "ur_tempo|eight_cast": [
-      74.0
+      76.5
     ],
     "ur_tempo|eldrazi": [
-      64.0
+      60.5
     ],
     "ur_tempo|elves": [
-      76.4
+      77.0
     ],
     "ur_tempo|goblins": [
-      93.0
+      90.5
     ],
     "ur_tempo|infect": [
-      60.0
+      58.5
     ],
     "ur_tempo|lands": [
-      63.4
+      64.0
     ],
     "ur_tempo|mardu": [
-      87.4
+      87.0
     ],
     "ur_tempo|mono_black": [
-      64.6
+      67.5
     ],
     "ur_tempo|ocelot": [
-      74.6
+      75.0
     ],
     "ur_tempo|oops": [
-      62.4
+      55.0
     ],
     "ur_tempo|painter": [
-      75.2
+      73.5
     ],
     "ur_tempo|prison": [
-      63.8
+      67.0
     ],
     "ur_tempo|reanimator": [
-      62.8
+      63.5
     ],
     "ur_tempo|show": [
-      63.2
-    ],
-    "ur_tempo|sneak_a": [
       58.0
     ],
+    "ur_tempo|sneak_a": [
+      57.5
+    ],
     "ur_tempo|sneak_b": [
-      56.8
+      63.0
     ],
     "ur_tempo|storm": [
-      65.2
+      64.5
     ],
     "ur_tempo|ur_delver": [
-      53.8
+      50.5
     ],
     "ur_tempo|uwx": [
-      56.4
+      62.0
     ],
     "ur_tempo|wan_shi_tong": [
-      76.4
+      72.5
     ],
     "uwx|affinity": [
-      27.2
+      37.0
     ],
     "uwx|belcher": [
-      69.4
+      68.5
     ],
     "uwx|boros": [
-      28.4
+      35.0
     ],
     "uwx|bug": [
-      43.2
+      42.5
     ],
     "uwx|burn": [
-      15.4
+      15.5
     ],
     "uwx|cephalid": [
-      71.8
+      71.0
     ],
     "uwx|cloudpost": [
-      25.0
-    ],
-    "uwx|depths": [
-      44.6
-    ],
-    "uwx|dimir": [
-      57.2
-    ],
-    "uwx|dimir_b": [
-      61.2
-    ],
-    "uwx|dimir_c": [
-      53.8
-    ],
-    "uwx|dimir_d": [
-      49.8
-    ],
-    "uwx|dimir_flash": [
-      43.4
-    ],
-    "uwx|dnt": [
-      30.6
-    ],
-    "uwx|doomsday": [
-      91.2
-    ],
-    "uwx|eight_cast": [
-      49.4
-    ],
-    "uwx|eldrazi": [
-      40.0
-    ],
-    "uwx|elves": [
-      50.2
-    ],
-    "uwx|goblins": [
-      53.4
-    ],
-    "uwx|infect": [
-      21.6
-    ],
-    "uwx|lands": [
-      73.2
-    ],
-    "uwx|mardu": [
-      56.2
-    ],
-    "uwx|mono_black": [
-      26.4
-    ],
-    "uwx|ocelot": [
-      42.8
-    ],
-    "uwx|oops": [
-      70.4
-    ],
-    "uwx|painter": [
-      65.8
-    ],
-    "uwx|prison": [
-      53.8
-    ],
-    "uwx|reanimator": [
-      85.6
-    ],
-    "uwx|show": [
-      66.0
-    ],
-    "uwx|sneak_a": [
-      80.6
-    ],
-    "uwx|sneak_b": [
-      81.0
-    ],
-    "uwx|storm": [
-      50.4
-    ],
-    "uwx|ur_delver": [
-      41.4
-    ],
-    "uwx|ur_tempo": [
-      42.0
-    ],
-    "uwx|wan_shi_tong": [
-      76.6
-    ],
-    "wan_shi_tong|affinity": [
-      25.4
-    ],
-    "wan_shi_tong|belcher": [
-      50.6
-    ],
-    "wan_shi_tong|boros": [
-      18.4
-    ],
-    "wan_shi_tong|bug": [
-      26.6
-    ],
-    "wan_shi_tong|burn": [
-      9.8
-    ],
-    "wan_shi_tong|cephalid": [
-      34.4
-    ],
-    "wan_shi_tong|cloudpost": [
-      6.6
-    ],
-    "wan_shi_tong|depths": [
-      35.2
-    ],
-    "wan_shi_tong|dimir": [
-      36.2
-    ],
-    "wan_shi_tong|dimir_b": [
-      30.0
-    ],
-    "wan_shi_tong|dimir_c": [
-      30.4
-    ],
-    "wan_shi_tong|dimir_d": [
-      27.6
-    ],
-    "wan_shi_tong|dimir_flash": [
-      19.2
-    ],
-    "wan_shi_tong|dnt": [
-      11.4
-    ],
-    "wan_shi_tong|doomsday": [
-      64.2
-    ],
-    "wan_shi_tong|eight_cast": [
-      44.6
-    ],
-    "wan_shi_tong|eldrazi": [
-      44.8
-    ],
-    "wan_shi_tong|elves": [
-      49.2
-    ],
-    "wan_shi_tong|goblins": [
-      50.0
-    ],
-    "wan_shi_tong|infect": [
-      11.6
-    ],
-    "wan_shi_tong|lands": [
-      65.0
-    ],
-    "wan_shi_tong|mardu": [
-      46.8
-    ],
-    "wan_shi_tong|mono_black": [
-      16.2
-    ],
-    "wan_shi_tong|ocelot": [
       24.0
     ],
-    "wan_shi_tong|oops": [
-      42.6
+    "uwx|depths": [
+      47.5
     ],
-    "wan_shi_tong|painter": [
-      36.6
+    "uwx|dimir": [
+      58.5
     ],
-    "wan_shi_tong|prison": [
-      48.0
+    "uwx|dimir_b": [
+      63.5
     ],
-    "wan_shi_tong|reanimator": [
-      76.6
+    "uwx|dimir_c": [
+      56.5
     ],
-    "wan_shi_tong|show": [
-      47.6
+    "uwx|dimir_d": [
+      49.5
     ],
-    "wan_shi_tong|sneak_a": [
-      55.8
+    "uwx|dimir_flash": [
+      40.0
     ],
-    "wan_shi_tong|sneak_b": [
-      51.2
+    "uwx|dnt": [
+      29.5
     ],
-    "wan_shi_tong|storm": [
+    "uwx|doomsday": [
+      84.5
+    ],
+    "uwx|eight_cast": [
+      51.0
+    ],
+    "uwx|eldrazi": [
+      40.5
+    ],
+    "uwx|elves": [
       39.0
     ],
+    "uwx|goblins": [
+      55.5
+    ],
+    "uwx|infect": [
+      21.5
+    ],
+    "uwx|lands": [
+      73.0
+    ],
+    "uwx|mardu": [
+      54.5
+    ],
+    "uwx|mono_black": [
+      31.5
+    ],
+    "uwx|ocelot": [
+      42.5
+    ],
+    "uwx|oops": [
+      69.0
+    ],
+    "uwx|painter": [
+      60.0
+    ],
+    "uwx|prison": [
+      62.5
+    ],
+    "uwx|reanimator": [
+      81.5
+    ],
+    "uwx|show": [
+      69.5
+    ],
+    "uwx|sneak_a": [
+      79.5
+    ],
+    "uwx|sneak_b": [
+      78.5
+    ],
+    "uwx|storm": [
+      44.5
+    ],
+    "uwx|ur_delver": [
+      40.0
+    ],
+    "uwx|ur_tempo": [
+      47.5
+    ],
+    "uwx|wan_shi_tong": [
+      77.5
+    ],
+    "wan_shi_tong|affinity": [
+      39.0
+    ],
+    "wan_shi_tong|belcher": [
+      50.5
+    ],
+    "wan_shi_tong|boros": [
+      20.0
+    ],
+    "wan_shi_tong|bug": [
+      28.5
+    ],
+    "wan_shi_tong|burn": [
+      31.5
+    ],
+    "wan_shi_tong|cephalid": [
+      35.5
+    ],
+    "wan_shi_tong|cloudpost": [
+      7.0
+    ],
+    "wan_shi_tong|depths": [
+      35.5
+    ],
+    "wan_shi_tong|dimir": [
+      39.5
+    ],
+    "wan_shi_tong|dimir_b": [
+      29.0
+    ],
+    "wan_shi_tong|dimir_c": [
+      33.5
+    ],
+    "wan_shi_tong|dimir_d": [
+      29.5
+    ],
+    "wan_shi_tong|dimir_flash": [
+      19.5
+    ],
+    "wan_shi_tong|dnt": [
+      10.5
+    ],
+    "wan_shi_tong|doomsday": [
+      62.0
+    ],
+    "wan_shi_tong|eight_cast": [
+      47.5
+    ],
+    "wan_shi_tong|eldrazi": [
+      48.5
+    ],
+    "wan_shi_tong|elves": [
+      50.0
+    ],
+    "wan_shi_tong|goblins": [
+      52.5
+    ],
+    "wan_shi_tong|infect": [
+      12.0
+    ],
+    "wan_shi_tong|lands": [
+      66.5
+    ],
+    "wan_shi_tong|mardu": [
+      48.5
+    ],
+    "wan_shi_tong|mono_black": [
+      16.5
+    ],
+    "wan_shi_tong|ocelot": [
+      22.5
+    ],
+    "wan_shi_tong|oops": [
+      41.5
+    ],
+    "wan_shi_tong|painter": [
+      27.5
+    ],
+    "wan_shi_tong|prison": [
+      46.0
+    ],
+    "wan_shi_tong|reanimator": [
+      76.0
+    ],
+    "wan_shi_tong|show": [
+      44.5
+    ],
+    "wan_shi_tong|sneak_a": [
+      52.5
+    ],
+    "wan_shi_tong|sneak_b": [
+      51.0
+    ],
+    "wan_shi_tong|storm": [
+      40.5
+    ],
     "wan_shi_tong|ur_delver": [
-      27.6
+      35.5
     ],
     "wan_shi_tong|ur_tempo": [
-      26.4
+      31.5
     ],
     "wan_shi_tong|uwx": [
-      23.4
+      24.5
     ]
   }
 }

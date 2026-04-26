@@ -1,0 +1,10 @@
+{
+  "rows": {
+    "burn": 0.125,
+    "ur_delver": 0.1,
+    "ur_aggro": 0.18,
+    "ur_tempo": 0.105,
+    "dimir": 0.26
+  },
+  "avg": 0.154
+}

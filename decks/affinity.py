@@ -141,9 +141,11 @@ def make_affinity_deck() -> List[Card]:
 
     # ── Spells (8) ───────────────────────────────────────────────────────────
 
-    # Force of Will
-    d += [instant('Force of Will', 5, {'U': 1, 'generic': 4}, {'U'},
-                  tag='fow', free_cast_if_blue=True)] * 4
+    # Frogmite — affinity for artifacts (real 8-Cast staple, replaces maindeck FoW)
+    for _ in range(4):
+        c = creature('Frogmite', 4, {'generic': 4}, set(), 2, 2, tag='frogmite')
+        c.affinity_artifacts = True
+        d.append(c)
 
     # Thoughtcast: affinity for artifacts, draw 2
     d += [sorcery('Thoughtcast', 5, {'U': 1, 'generic': 4}, {'U'},
@@ -241,6 +243,16 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     for c in player.creatures:
         if c.card.tag == 'cannoneer':
             c.cant_be_blocked = False
+
+    # Reset Patchwork Automaton's power_mod at start of turn — its buff is
+    # "+1/+1 for each artifact spell THIS TURN" (not cumulative across turns).
+    # The previous code added artifacts_cast_this_turn each turn, accumulating
+    # the buff (a T3 Automaton became an 8/8 from T2's 4 + T3's 3 artifacts).
+    # The recompute happens at L569-573 below using artifacts_cast_this_turn.
+    for c in player.creatures:
+        if c.card.tag == 'automaton':
+            c.power_mod = 0
+            c.toughness_mod = 0
 
     # cannoneer_on_board: Kappa Cannoneer gives +1/+1 to itself for each
     # artifact that enters the battlefield while it's on the battlefield.
@@ -565,10 +577,12 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
             c.toughness_mod = art_count
 
     # ── Boost Patchwork Automaton for artifacts cast this turn ────────────────
+    # Per Oracle: "+1/+1 for each artifact spell you've cast this turn".
+    # Use direct assignment (power_mod was reset to 0 at start of turn at L240).
     for c in player.creatures:
         if c.card.tag == 'automaton':
-            c.power_mod = getattr(c, 'power_mod', 0) + artifacts_cast_this_turn
-            c.toughness_mod = getattr(c, 'toughness_mod', 0) + artifacts_cast_this_turn
+            c.power_mod = artifacts_cast_this_turn
+            c.toughness_mod = artifacts_cast_this_turn
 
     # ── 12b. Equip Lavaspur Boots — give haste to summoning-sick creature ────
     # Boots are most valuable on a freshly played creature so it can attack
@@ -633,6 +647,13 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         gy_artifacts = [c for c in player.graveyard
                         if c.card_type == _CT.ARTIFACT
                         or c.tag in ARTIFACT_CREATURE_TAGS]
+
+        # Restrict Emry recursion to true 0-cost artifacts (petal/bauble/opal).
+        # Real Emry is a 1/2 that gets bolted on sight; recurring 4/4 Cannoneers
+        # and 7-cmc Monitors at affinity-reduced cost every turn assumes she
+        # always survives, which the simulator doesn't model.
+        gy_artifacts = [c for c in gy_artifacts
+                        if c.tag in ('petal', 'bauble', 'ubauble', 'opal')]
 
         if gy_artifacts:
             # Base CMCs for artifact creatures (used to compute affinity costs)
@@ -874,7 +895,7 @@ def test_affinity():
         'emry': 4, 'automaton': 4, 'emissary': 4, 'monitor': 4,
         'cannoneer': 2,
         'petal': 4, 'bauble': 4, 'ubauble': 4, 'opal': 4,
-        'fow': 4, 'cast': 4,
+        'frogmite': 4, 'cast': 4,
         'boots': 1, 'spear': 1, 'sink': 1,
     }
     for tag, count in expected.items():
@@ -887,9 +908,9 @@ def test_affinity():
     assert land_count == 15, f"Land count {land_count} != 15"
     results.append(f"OK  Land count = {land_count}")
 
-    # Test 4: Creature count = 18
+    # Test 4: Creature count = 22 (18 base + 4 Frogmite from FoW swap)
     creature_count = sum(1 for c in deck if c.card_type == CardType.CREATURE)
-    assert creature_count == 18, f"Creature count {creature_count} != 18"
+    assert creature_count == 22, f"Creature count {creature_count} != 22"
     results.append(f"OK  Creature count = {creature_count}")
 
     # Test 5: Artifact count = 17 (4 Petal + 4 Bauble + 4 Ubauble + 4 Opal + 1 Boots + 1 Spear - wait, count them)
@@ -908,10 +929,10 @@ def test_affinity():
     assert getattr(cannoneer, 'affinity_artifacts', False), "Cannoneer should have affinity"
     results.append("OK  Kappa Cannoneer has trample + affinity")
 
-    # Test 8: FoW has free_cast_if_blue
-    fow = next(c for c in deck if c.tag == 'fow')
-    assert getattr(fow, 'free_cast_if_blue', False), "FoW should have free_cast_if_blue"
-    results.append("OK  Force of Will is free-castable")
+    # Test 8: Frogmite has affinity (replaced maindeck FoW)
+    frogmite = next(c for c in deck if c.tag == 'frogmite')
+    assert getattr(frogmite, 'affinity_artifacts', False), "Frogmite should have affinity"
+    results.append("OK  Frogmite has affinity")
 
     # Test 9: Affinity cost calculation
     class MockPlayer:
