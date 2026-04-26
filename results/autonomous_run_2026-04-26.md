@@ -209,6 +209,36 @@ fff907f fix(affinity): remove 4× maindeck FoW, add 4× Frogmite — 5opp 67.9�
 
 ---
 
+## Iter 3 — Lands audit (REVERTED, useful findings)
+
+After iter 2, attempted to attack the calibration-health #1 priority — **lands** (T1, sim 0.416, real meta share 6 %, gap -8.4pp). 5-opp baseline at n=200 against worst matchups: dnt 0.190, uwx 0.290, dimir_d 0.415, oops 0.265, ocelot 0.330 — avg **0.298**.
+
+### Findings
+1. **`_strategy_lands` deploys ZERO of these cards** despite them being in the deck:
+   - **Exploration** ×4 (1G enchantment, "play extra land per turn") — `game.py:play_land` has hard `land_played_this_turn` limit, no engine support for Exploration's bypass
+   - **Life from the Loam** ×4 (1G sorcery, "return 3 lands from GY + dredge 3") — no dredge mechanism, no Loam recursion logic
+   - **Once Upon a Time** ×3 (free first spell, dig 5 take creature/land) — no cast logic
+   - **Malevolent Rumble** ×4 (1G sorcery, dig 4 with experience-counter discount)
+2. **Decklist is also missing real-list staples**: Glacial Chasm (life-prevention lock vs aggro), Punishing Fire + Grove of the Burnwillows engine. Real Lands grinds via these; the simulator's deck has no equivalent grind plan.
+3. **Dead Mardu/UWx combat code copied into `_strategy_lands` (engine.py:3733-3756)** — references `bug_max_blocker_toughness`, `mardu_desperate`, special-cases `bowm` (Bowmasters) and `tamiyo` tags that do not exist in the lands decklist. The code accidentally still works (Marit Lage is neither tag, so always attacks) but it's dead weight. **Same code is also copy-pasted into `_strategy_dimir` (L4396) and `_strategy_dimir_flash` (L4525)** — there the Bowmasters/Tamiyo special-cases ARE relevant since those decks run them, so the logic is right but variable names (`bug_max_blocker_*`, `mardu_desperate`) are stale leftovers from an earlier copy. Refactor target.
+
+### Attempted fix (reverted)
+Added Once Upon a Time deployment (free first spell, dig top 5 of library, take a land prioritising depths > stage > saga > yavimaya). Cleaned up the dead Mardu/UWx combat block in `_strategy_lands` to a simple "attack with all non-summoning-sick creatures".
+
+5-opp results (n=200): avg 0.298 → 0.311 (+1.3pp). Re-ran at **n=500** to filter noise: avg → **0.316 (+1.8pp toward 50%)**. Mixed per-matchup:
+- dnt 0.190 → 0.246 (+5.6pp) ✅
+- oops 0.265 → 0.310 (+4.5pp) ✅
+- uwx, dimir_d, ocelot — within noise (±1pp at n=500)
+
+**Net: +1.8pp combined — below the 3pp threshold per protocol; reverted.** OUaT alone is too marginal — Lands genuinely needs the engine cards (Loam dredge, Exploration's extra-land-drop, Glacial Chasm life prevention). That's 200-400 lines of careful work, not a single-iteration fix.
+
+### Lessons
+1. **Lands is the second-clearest example of `CROSS_PROJECT_SYNC.md` lesson #24** — a deck whose simulator is missing real-world cards (Glacial Chasm) AND missing core mechanic support (dredge for Loam, Exploration's extra-land-drop). Heuristic improvements alone can't recover it.
+2. **The dead Mardu/UWx combat block in 3+ strategies** is a code-hygiene refactor target. Lands' is genuinely dead; dimir/dimir_flash have stale variable names but live logic. Worth a focused "extract `_default_combat_with_held_value_engines()` helper" pass in a future session.
+3. **OUaT alone is +5.6pp vs DNT and +4.5pp vs Oops** — these specific matchups DID respond. If the user wants to ship just the OUaT addition + dead-code cleanup as a code-correctness commit (without claiming WR improvement), it would benefit those two matchups; trade-off is matrix noise on the 3 noisy ones. Defer to user judgement.
+
+---
+
 ## Audit trail
 
 ```bash
