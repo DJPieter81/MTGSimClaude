@@ -227,8 +227,25 @@ results/neural_logs/
     **Confirmed bug sites in Legacy** (2 fixes shipped, 9+ decks unaudited):
     * **`decks/infect.py` (FIXED commit f71b09c)** — 7 sites: Mutagenic Growth, Invigorate, Berserk, Vines of Vastwood ×2, Blossoming Defense ×2. All CMC 1, all silently bypassed Chalice on 1. Impact: prison vs infect 23.5 % → 35.1 % (+11.6pp at n=300). Aggregate matrix: infect weighted EV 0.619 → 0.560 (-5.8pp). The over-tuning was sustained by this bypass.
     * **`decks/affinity.py` (FIXED commit ee7877d)** — 5 sites: Lotus Petal, Mishra's Bauble, Urza's Bauble, Mox Opal (all CMC 0 → Chalice X=0), Lavaspur Boots, Shadowspear (both CMC 1 → Chalice X=1). Trinisphere also now enforced. 5-opp avg 0.507 → 0.476 (-3.1pp). Chalice-deck matchups (vs prison/painter/eldrazi) all calibrate near 50 %.
+    * **`decks/tes.py` (AUDITED 2026-04-26 iter 6 — REVERTED)**: 33 raw sites; 14 confirmed TRUE BYPASS (Probe, cantrips, Dark Ritual, Veil, Burning Wish, Infernal Tutor ×2, Tendrils, Empty, FoW, Ad Nauseam). **Two-step lesson learned**:
+        1. *First attempt used `opp_can_cast()` — broke even Burn matchup -45pp.* Root cause: `opp_can_cast()` calls `can_afford()` which checks UNTAPPED lands, but TES tracks mana via a local int counter (Petals/Rituals/LED produce floating mana, not untapped lands). By Step 6 (Wish/Tendrils) all lands are tapped, so `can_afford()` falsely blocked the cast. **For Manu**: any storm-style strategy that uses a local `mana` counter cannot use `opp_can_cast()` directly — `can_afford` will false-block.
+        2. *Second attempt used a tax-only helper that skips `can_afford` and only checks Chalice/Trini/Thalia*. 5-opp avg moved only +1.2pp at n=500 — minimum threshold not met. **Why**: Chalice rarely lands in time vs T1-T2 storm kill. Only `eldrazi` (-6.9pp) showed the expected drop because Eldrazi reliably deploys T1 Chalice via Eldrazi Temple's extra mana. Prison/painter/uwx Chalice arrives T2-T4, after TES has already won. Reverted per regression policy.
+
+        **Drop-in tax-only helper for Manu's storm decks** (paste inside the strategy function):
+        ```python
+        def _tax_blocks_cast(card, current_mana):
+            if gs.spell_blocked_by_chalice(card.cmc):
+                return True
+            eff = card.cmc
+            if gs.trinisphere_active:
+                eff = max(eff, 3)
+            if gs.thalia_on_board and not card.is_creature():
+                eff += 1
+            return current_mana < eff
+        ```
+        Then gate each spell with `if not _tax_blocks_cast(spell, mana):`. **Don't expect WR movement** — the fix is for correctness only, especially in matchups where opponents reliably land T1 Chalice.
+
     * **Unaudited (raw site counts of `find_tag` + `remove_from_hand` without `cast_spell` nearby)**:
-        - `decks/tes.py`: 33 sites — by far the largest exposure. TES is the storm combo deck; its rituals + cantrips bypass would let it ignore Chalice on 1 vs prison/painter/uwx. **HIGH PRIORITY for Manu.**
         - `decks/belcher.py`: 7 sites
         - `decks/sneak_b.py`: 7 sites
         - `decks/affinity.py`: ~~6~~ now 1 (Sink into Stupor manual cast remains)
