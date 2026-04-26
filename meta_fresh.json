@@ -38,42 +38,42 @@
     "wan_shi_tong"
   ],
   "a": {
-    "affinity": 57.7,
-    "belcher": 37.6,
-    "boros": 52.5,
-    "bug": 53.0,
-    "burn": 71.7,
-    "cephalid": 40.3,
-    "cloudpost": 51.4,
-    "depths": 58.0,
-    "dimir": 46.4,
-    "dimir_b": 50.0,
-    "dimir_c": 55.7,
-    "dimir_d": 59.4,
-    "dimir_flash": 45.7,
-    "dnt": 54.3,
-    "doomsday": 34.4,
+    "affinity": 57.8,
+    "belcher": 37.7,
+    "boros": 52.9,
+    "bug": 53.3,
+    "burn": 72.1,
+    "cephalid": 40.5,
+    "cloudpost": 51.5,
+    "depths": 58.3,
+    "dimir": 46.7,
+    "dimir_b": 50.1,
+    "dimir_c": 56.1,
+    "dimir_d": 59.6,
+    "dimir_flash": 45.9,
+    "dnt": 54.9,
+    "doomsday": 34.5,
     "eight_cast": 41.3,
-    "eldrazi": 59.5,
-    "elves": 45.3,
-    "goblins": 36.7,
-    "infect": 63.1,
-    "lands": 45.0,
+    "eldrazi": 59.7,
+    "elves": 45.5,
+    "goblins": 36.9,
+    "infect": 56.8,
+    "lands": 45.1,
     "mardu": 34.9,
     "mono_black": 54.8,
-    "ocelot": 47.2,
-    "oops": 56.0,
-    "painter": 49.6,
-    "prison": 43.9,
-    "reanimator": 42.0,
-    "show": 43.0,
-    "sneak_a": 50.7,
-    "sneak_b": 51.6,
-    "storm": 44.6,
+    "ocelot": 47.4,
+    "oops": 56.1,
+    "painter": 49.7,
+    "prison": 44.2,
+    "reanimator": 42.2,
+    "show": 43.1,
+    "sneak_a": 50.8,
+    "sneak_b": 51.8,
+    "storm": 44.7,
     "ur_delver": 58.9,
-    "ur_tempo": 64.6,
-    "uwx": 52.6,
-    "wan_shi_tong": 37.3
+    "ur_tempo": 64.9,
+    "uwx": 52.7,
+    "wan_shi_tong": 37.4
   },
   "w": {
     "affinity": 57.4,
@@ -95,7 +95,7 @@
     "eldrazi": 59.9,
     "elves": 48.5,
     "goblins": 38.9,
-    "infect": 61.9,
+    "infect": 56.0,
     "lands": 41.6,
     "mardu": 35.8,
     "mono_black": 54.3,
@@ -169,7 +169,7 @@
       84.5
     ],
     "affinity|infect": [
-      54.0
+      59.5
     ],
     "affinity|lands": [
       48.5
@@ -274,7 +274,7 @@
       35.0
     ],
     "belcher|infect": [
-      39.5
+      40.5
     ],
     "belcher|lands": [
       47.0
@@ -379,7 +379,7 @@
       69.5
     ],
     "boros|infect": [
-      35.5
+      51.0
     ],
     "boros|lands": [
       57.0
@@ -484,7 +484,7 @@
       82.5
     ],
     "bug|infect": [
-      32.5
+      42.0
     ],
     "bug|lands": [
       47.0
@@ -589,7 +589,7 @@
       93.5
     ],
     "burn|infect": [
-      60.5
+      75.5
     ],
     "burn|lands": [
       56.5
@@ -694,7 +694,7 @@
       39.0
     ],
     "cephalid|infect": [
-      19.5
+      25.5
     ],
     "cephalid|lands": [
       59.5
@@ -799,7 +799,7 @@
       61.5
     ],
     "cloudpost|infect": [
-      16.0
+      21.5
     ],
     "cloudpost|lands": [
       53.5
@@ -904,7 +904,7 @@
       85.0
     ],
     "depths|infect": [
-      39.5
+      48.5
     ],
     "depths|lands": [
       49.0
@@ -1009,7 +1009,7 @@
       74.0
     ],
     "dimir|infect": [
-      37.5
+      45.0
     ],
     "dimir|lands": [
       51.0
@@ -1114,7 +1114,7 @@
       71.5
     ],
     "dimir_b|infect": [
-      45.0
+      48.0
     ],
     "dimir_b|lands": [
       51.5
@@ -1219,7 +1219,7 @@
       80.5
     ],
     "dimir_c|infect": [
-      50.5
+      61.5
     ],
     "dimir_c|lands": [
       69.5
@@ -1324,7 +1324,7 @@
       90.0
     ],
     "dimir_d|infect": [
-      55.5
+      61.0
     ],
     "dimir_d|lands": [
       70.5
@@ -1429,7 +1429,7 @@
       62.0
     ],
     "dimir_flash|infect": [
-      29.0
+      34.5
     ],
     "dimir_flash|lands": [
       45.0
@@ -1534,7 +1534,7 @@
       62.5
     ],
     "dnt|infect": [
-      21.5
+      42.0
     ],
     "dnt|lands": [
       81.5
@@ -1639,7 +1639,7 @@
       38.0
     ],
     "doomsday|infect": [
-      25.5
+      29.5
     ],
     "doomsday|lands": [
       55.5
@@ -1744,7 +1744,7 @@
       58.5
     ],
     "eight_cast|infect": [
-      32.0
+      34.0
     ],
     "eight_cast|lands": [
       42.5
@@ -1849,7 +1849,7 @@
       82.5
     ],
     "eldrazi|infect": [
-      63.0
+      69.0
     ],
     "eldrazi|lands": [
       52.0
@@ -1954,7 +1954,7 @@
       50.5
     ],
     "elves|infect": [
-      45.5
+      52.5
     ],
     "elves|lands": [
       43.5
@@ -2059,7 +2059,7 @@
       43.0
     ],
     "goblins|infect": [
-      25.5
+      32.5
     ],
     "goblins|lands": [
       37.5
@@ -2110,106 +2110,106 @@
       49.5
     ],
     "infect|affinity": [
-      50.5
+      40.0
     ],
     "infect|belcher": [
       58.0
     ],
     "infect|boros": [
-      65.0
+      52.5
     ],
     "infect|bug": [
-      67.5
+      57.5
     ],
     "infect|burn": [
-      42.5
+      26.5
     ],
     "infect|cephalid": [
       76.0
     ],
     "infect|cloudpost": [
-      82.0
+      75.0
     ],
     "infect|depths": [
-      69.0
+      58.5
     ],
     "infect|dimir": [
-      72.0
+      64.0
     ],
     "infect|dimir_b": [
-      55.5
+      53.0
     ],
     "infect|dimir_c": [
-      44.5
+      39.0
     ],
     "infect|dimir_d": [
-      47.0
+      41.5
     ],
     "infect|dimir_flash": [
-      71.5
+      65.0
     ],
     "infect|dnt": [
-      75.5
+      59.5
     ],
     "infect|doomsday": [
-      66.5
+      66.0
     ],
     "infect|eight_cast": [
-      68.5
+      67.5
     ],
     "infect|eldrazi": [
-      36.5
+      26.0
     ],
     "infect|elves": [
-      55.5
+      44.0
     ],
     "infect|goblins": [
-      79.0
+      75.5
     ],
     "infect|lands": [
-      62.0
+      53.5
     ],
     "infect|mardu": [
-      83.0
+      81.5
     ],
     "infect|mono_black": [
-      70.5
+      59.5
     ],
     "infect|ocelot": [
-      71.0
+      63.0
     ],
     "infect|oops": [
-      47.0
+      45.0
     ],
     "infect|painter": [
-      63.5
+      55.5
     ],
     "infect|prison": [
-      73.0
+      62.0
     ],
     "infect|reanimator": [
-      60.5
+      53.5
     ],
     "infect|show": [
-      69.0
+      64.0
     ],
     "infect|sneak_a": [
-      52.5
+      50.0
     ],
     "infect|sneak_b": [
       53.5
     ],
     "infect|storm": [
-      67.5
+      63.5
     ],
     "infect|ur_delver": [
-      40.5
+      37.5
     ],
     "infect|ur_tempo": [
-      41.0
+      35.0
     ],
     "infect|uwx": [
-      80.0
+      77.0
     ],
     "infect|wan_shi_tong": [
       90.5
@@ -2272,7 +2272,7 @@
       69.0
     ],
     "lands|infect": [
-      37.0
+      43.5
     ],
     "lands|mardu": [
       56.5
@@ -2377,7 +2377,7 @@
       31.5
     ],
     "mardu|infect": [
-      16.0
+      18.0
     ],
     "mardu|lands": [
       44.5
@@ -2587,7 +2587,7 @@
       48.0
     ],
     "ocelot|infect": [
-      28.0
+      33.5
     ],
     "ocelot|lands": [
       70.0
@@ -2692,7 +2692,7 @@
       71.0
     ],
     "oops|infect": [
-      46.5
+      51.5
     ],
     "oops|lands": [
       70.0
@@ -2797,7 +2797,7 @@
       53.5
     ],
     "painter|infect": [
-      35.5
+      40.0
     ],
     "painter|lands": [
       53.5
@@ -2902,7 +2902,7 @@
       48.0
     ],
     "prison|infect": [
-      23.5
+      34.0
     ],
     "prison|lands": [
       58.0
@@ -3007,7 +3007,7 @@
       54.5
     ],
     "reanimator|infect": [
-      36.5
+      41.0
     ],
     "reanimator|lands": [
       40.0
@@ -3112,7 +3112,7 @@
       44.5
     ],
     "show|infect": [
-      31.5
+      35.0
     ],
     "show|lands": [
       51.5
@@ -3217,7 +3217,7 @@
       64.5
     ],
     "sneak_a|infect": [
-      45.0
+      46.5
     ],
     "sneak_a|lands": [
       60.5
@@ -3322,7 +3322,7 @@
       65.5
     ],
     "sneak_b|infect": [
-      47.0
+      51.5
     ],
     "sneak_b|lands": [
       56.0
@@ -3427,7 +3427,7 @@
       34.0
     ],
     "storm|infect": [
-      28.0
+      31.0
     ],
     "storm|lands": [
       46.0
@@ -3532,7 +3532,7 @@
       85.5
     ],
     "ur_delver|infect": [
-      49.0
+      49.5
     ],
     "ur_delver|lands": [
       48.0
@@ -3637,7 +3637,7 @@
       90.5
     ],
     "ur_tempo|infect": [
-      58.5
+      70.0
     ],
     "ur_tempo|lands": [
       64.0
@@ -3742,7 +3742,7 @@
       55.5
     ],
     "uwx|infect": [
-      21.5
+      23.5
     ],
     "uwx|lands": [
       73.0
@@ -3847,7 +3847,7 @@
       52.5
     ],
     "wan_shi_tong|infect": [
-      12.0
+      16.0
     ],
     "wan_shi_tong|lands": [
       66.5

@@ -187,7 +187,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     9. Urza's Saga — tick chapters, generate constructs, tutor artifacts
     10. Attack with all creatures
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
+    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell, opp_can_cast
     from rules import Card as _Card, CardType as _CT, Permanent
 
     def _has_blue():
@@ -281,7 +281,11 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     # Deploy Petals as 0-cost artifacts to maximise affinity cost reductions.
     # They stay on the battlefield for the rest of this turn; only sacrifice
     # via _sac_petal_if_needed() when we are short mana for a specific spell.
+    # Note: opp_can_cast() catches Chalice on 0 (would block all 0-cost
+    # artifacts); previously this path bypassed Chalice entirely.
     for petal in [c for c in player.hand if c.tag == 'petal']:
+        if not opp_can_cast(petal, mana, gs, caster=player):
+            break
         player.remove_from_hand(petal)
         player.put_artifact_in_play(petal)
         art_count += 1
@@ -293,6 +297,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── 2. Free artifacts: Baubles ───────────────────────────────────────────
     for bauble_tag in ('bauble', 'ubauble'):
         for bauble in [c for c in player.hand if c.tag == bauble_tag]:
+            if not opp_can_cast(bauble, mana, gs, caster=player):
+                break
             player.remove_from_hand(bauble)
             player.add_to_grave(bauble)
             drawn = player.draw(1)
@@ -312,6 +318,8 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     for opal in [c for c in player.hand if c.tag == 'opal']:
         if opal_in_play:
             break  # legend rule: can't have two Mox Opals in play
+        if not opp_can_cast(opal, mana, gs, caster=player):
+            break
         if art_count >= 2:  # will be 3 once Opal itself enters
             player.remove_from_hand(opal)
             player.put_artifact_in_play(opal)
@@ -485,11 +493,13 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
         mana = _b[0]
 
     # ── 11. Equipment — Lavaspur Boots / Shadowspear ─────────────────────────
+    # Equipment at CMC 1 — opp_can_cast catches Chalice on 1, Trinisphere
+    # (would tax to 3), and Thalia tax. Previously bypassed.
     for equip_tag in ('boots', 'spear'):
         equip = player.find_tag(equip_tag)
         if equip:
             _sac_petal_if_needed(1)
-        if equip and mana >= 1:
+        if equip and mana >= 1 and opp_can_cast(equip, mana, gs, caster=player):
             player.remove_from_hand(equip)
             player.put_artifact_in_play(equip)
             mana -= 1
