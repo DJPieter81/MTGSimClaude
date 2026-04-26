@@ -239,6 +239,44 @@ Fix: 5 gates added.
 
 Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
 
+## Iter 11 — Opp-aware TKS targeting (REVERTED — heuristic was too eager)
+
+After iter 9's prison TKS targeting and iter 10's Lurrus rebuy, attempted to combine the iter-9 research findings: "targeted exile beats random for single-key decks; random beats targeted for redundant-payoff decks". Built a shared helper `_tks_pick_exile(opp_nonland_hand)` that picks targeted vs random based on count of redundant disruption tags in opp's hand (≥3 → random, else targeted).
+
+Wired into BOTH prison TKS and eldrazi TKS sites.
+
+### Per-matchup at n=300 (looked promising)
+
+**Eldrazi:**
+- vs TES +13.5pp ★, vs infect +5.7pp ★, vs sneak_a +4.8pp ★
+- vs storm -3.7pp ★, vs oops -4.8pp ★
+- avg +2.36pp
+
+**Prison:**
+- vs ur_tempo +7.2pp ★, vs reanimator +5.7pp ★, vs sneak_a +3.7pp ★, vs oops +3.2pp ★
+- vs TES -7.1pp ★ (variance, since the heuristic should have used targeted here)
+- avg +2.11pp
+
+### Matrix re-sim told a different story
+
+- Prison weighted: 0.440 → 0.431 (-0.87pp, slight regression)
+- Eldrazi weighted: 0.595 → 0.595 (no change)
+- Cross-deck mean |Δ|: 0.12pp (small total movement)
+- **T1+T2 Spearman ρ: -0.121 → -0.138 (-0.017 regression)** ← worst signal
+- All-decks ρ: +0.084 → +0.067 (-0.017)
+
+**Key insight**: the T1+T2 ρ regression undid ~1/3 of iter 9's +0.048 gain. The matrix-level result contradicted the n=300 per-matchup data — meaning either the n=300 sample was noisier than expected, or the heuristic interacts differently when integrated across all 36 deck pairings.
+
+### Lesson — single-matchup wins ≠ aggregate calibration improvement
+- Per-matchup spot-checks at n=300 showed +5-13pp wins on key matchups
+- Full matrix re-sim at n=200 showed the gains average out to slight regression
+- Possible cause: the redundancy heuristic threshold (≥3 redundant tags) is too eager — fires too often, switching to random when targeted would have been better
+- **Future iteration could**: tune the threshold (try ≥4 or ≥5), or use a deck-allowlist hybrid (hardcode known redundant decks: storm, reanimator, show, belcher), or add per-matchup signal (e.g. "opp.spells_cast_this_turn > N" as a proxy for "they're storming off, exile their win-con")
+
+**Reverted entirely**. Iter 9's prison-targeted-only and iter 9's eldrazi-random-only restored. Helper code (`_tks_pick_exile` + `_TKS_REDUNDANT_TAGS`) also removed since the calling sites are gone.
+
+Commits: `dd81f0d` (the attempt), `e870c0c` (the revert).
+
 ## Iter 10 — Doomsday Lurrus rebuy (SHIPPED, WR-neutral correctness)
 
 After iter 9's Prison TKS work, took a scoped attempt at the highest-priority remaining T1 calibration outlier — **doomsday at 0.329 weighted (gap -17pp)**. Per `CROSS_PROJECT_SYNC.md` lesson #24, doomsday needs full companion mechanic + lifegain piles (4-6h structural). This iteration tried a smaller piece: implementing Lurrus's "recur permanent CMC ≤ 2 from GY" effect for Lotus Petal.
