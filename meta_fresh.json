@@ -38,42 +38,42 @@
     "wan_shi_tong"
   ],
   "a": {
-    "affinity": 57.3,
+    "affinity": 57.2,
     "belcher": 37.5,
-    "boros": 52.8,
-    "bug": 53.1,
-    "burn": 72.4,
-    "cephalid": 40.1,
+    "boros": 52.7,
+    "bug": 52.8,
+    "burn": 72.3,
+    "cephalid": 40.0,
     "cloudpost": 51.3,
     "depths": 59.9,
-    "dimir": 46.3,
-    "dimir_b": 49.3,
-    "dimir_c": 55.8,
-    "dimir_d": 59.0,
-    "dimir_flash": 45.4,
-    "dnt": 54.9,
-    "doomsday": 34.4,
-    "eight_cast": 41.0,
+    "dimir": 46.1,
+    "dimir_b": 49.1,
+    "dimir_c": 55.7,
+    "dimir_d": 58.9,
+    "dimir_flash": 45.1,
+    "dnt": 54.7,
+    "doomsday": 34.3,
+    "eight_cast": 40.9,
     "eldrazi": 59.5,
-    "elves": 45.1,
-    "goblins": 36.8,
-    "infect": 56.8,
+    "elves": 44.9,
+    "goblins": 40.7,
+    "infect": 56.6,
     "lands": 51.5,
-    "mardu": 34.8,
-    "mono_black": 54.4,
-    "ocelot": 47.0,
-    "oops": 56.1,
+    "mardu": 34.4,
+    "mono_black": 54.2,
+    "ocelot": 46.5,
+    "oops": 56.0,
     "painter": 49.5,
-    "prison": 44.8,
+    "prison": 44.7,
     "reanimator": 42.1,
     "show": 42.9,
-    "sneak_a": 50.9,
-    "sneak_b": 51.7,
-    "storm": 44.6,
-    "ur_delver": 58.7,
-    "ur_tempo": 64.4,
-    "uwx": 52.4,
-    "wan_shi_tong": 37.2
+    "sneak_a": 50.8,
+    "sneak_b": 51.6,
+    "storm": 44.5,
+    "ur_delver": 58.6,
+    "ur_tempo": 64.3,
+    "uwx": 52.0,
+    "wan_shi_tong": 37.0
   },
   "w": {
     "affinity": 57.2,
@@ -94,7 +94,7 @@
     "eight_cast": 43.5,
     "eldrazi": 59.5,
     "elves": 47.6,
-    "goblins": 38.6,
+    "goblins": 42.7,
     "infect": 56.3,
     "lands": 50.6,
     "mardu": 35.5,
@@ -166,7 +166,7 @@
       69.5
     ],
     "affinity|goblins": [
-      84.5
+      83.0
     ],
     "affinity|infect": [
       59.5
@@ -376,7 +376,7 @@
       58.0
     ],
     "boros|goblins": [
-      69.5
+      64.0
     ],
     "boros|infect": [
       51.0
@@ -481,7 +481,7 @@
       62.0
     ],
     "bug|goblins": [
-      82.5
+      72.5
     ],
     "bug|infect": [
       42.0
@@ -586,7 +586,7 @@
       73.5
     ],
     "burn|goblins": [
-      93.5
+      89.5
     ],
     "burn|infect": [
       75.5
@@ -691,7 +691,7 @@
       20.5
     ],
     "cephalid|goblins": [
-      39.0
+      34.5
     ],
     "cephalid|infect": [
       25.5
@@ -796,7 +796,7 @@
       52.5
     ],
     "cloudpost|goblins": [
-      61.5
+      60.0
     ],
     "cloudpost|infect": [
       21.5
@@ -901,7 +901,7 @@
       76.5
     ],
     "depths|goblins": [
-      85.5
+      84.0
     ],
     "depths|infect": [
       51.5
@@ -1006,7 +1006,7 @@
       55.0
     ],
     "dimir|goblins": [
-      74.0
+      69.0
     ],
     "dimir|infect": [
       45.0
@@ -1111,7 +1111,7 @@
       50.0
     ],
     "dimir_b|goblins": [
-      71.5
+      66.5
     ],
     "dimir_b|infect": [
       48.0
@@ -1216,7 +1216,7 @@
       64.5
     ],
     "dimir_c|goblins": [
-      80.5
+      77.0
     ],
     "dimir_c|infect": [
       61.5
@@ -1321,7 +1321,7 @@
       68.0
     ],
     "dimir_d|goblins": [
-      90.0
+      84.0
     ],
     "dimir_d|infect": [
       61.0
@@ -1426,7 +1426,7 @@
       40.5
     ],
     "dimir_flash|goblins": [
-      62.0
+      49.0
     ],
     "dimir_flash|infect": [
       34.5
@@ -1531,7 +1531,7 @@
       49.0
     ],
     "dnt|goblins": [
-      62.5
+      54.5
     ],
     "dnt|infect": [
       42.0
@@ -1636,7 +1636,7 @@
       34.0
     ],
     "doomsday|goblins": [
-      38.0
+      34.5
     ],
     "doomsday|infect": [
       30.0
@@ -1741,7 +1741,7 @@
       74.5
     ],
     "eight_cast|goblins": [
-      58.5
+      52.0
     ],
     "eight_cast|infect": [
       34.0
@@ -1846,7 +1846,7 @@
       79.0
     ],
     "eldrazi|goblins": [
-      82.5
+      80.5
     ],
     "eldrazi|infect": [
       69.0
@@ -1951,7 +1951,7 @@
       17.0
     ],
     "elves|goblins": [
-      50.5
+      44.0
     ],
     "elves|infect": [
       52.5
@@ -2008,106 +2008,106 @@
       14.5
     ],
     "goblins|belcher": [
-      63.5
+      64.0
     ],
     "goblins|boros": [
-      36.0
+      42.0
     ],
     "goblins|bug": [
-      22.0
-    ],
-    "goblins|burn": [
-      8.5
-    ],
-    "goblins|cephalid": [
-      67.0
-    ],
-    "goblins|cloudpost": [
-      29.0
-    ],
-    "goblins|depths": [
-      18.5
-    ],
-    "goblins|dimir": [
       27.5
     ],
+    "goblins|burn": [
+      10.5
+    ],
+    "goblins|cephalid": [
+      70.0
+    ],
+    "goblins|cloudpost": [
+      30.5
+    ],
+    "goblins|depths": [
+      18.0
+    ],
+    "goblins|dimir": [
+      29.0
+    ],
     "goblins|dimir_b": [
-      31.0
+      37.5
     ],
     "goblins|dimir_c": [
-      21.0
+      23.5
     ],
     "goblins|dimir_d": [
-      13.0
+      14.5
     ],
     "goblins|dimir_flash": [
-      35.5
+      46.0
     ],
     "goblins|dnt": [
-      44.0
+      54.5
     ],
     "goblins|doomsday": [
-      60.0
+      62.5
     ],
     "goblins|eight_cast": [
-      38.5
+      42.0
     ],
     "goblins|eldrazi": [
-      15.5
+      16.5
     ],
     "goblins|elves": [
-      43.0
+      52.5
     ],
     "goblins|infect": [
-      32.5
+      35.0
     ],
     "goblins|lands": [
-      35.0
+      35.5
     ],
     "goblins|mardu": [
-      77.5
+      90.5
     ],
     "goblins|mono_black": [
-      35.0
+      42.5
     ],
     "goblins|ocelot": [
-      51.0
+      62.0
     ],
     "goblins|oops": [
-      28.0
+      30.0
     ],
     "goblins|painter": [
-      40.0
+      41.0
     ],
     "goblins|prison": [
-      55.0
+      56.5
     ],
     "goblins|reanimator": [
-      44.0
+      44.5
     ],
     "goblins|show": [
-      49.5
+      52.0
     ],
     "goblins|sneak_a": [
-      37.0
+      36.5
     ],
     "goblins|sneak_b": [
-      33.5
+      34.5
     ],
     "goblins|storm": [
       61.5
     ],
     "goblins|ur_delver": [
-      19.5
+      23.0
     ],
     "goblins|ur_tempo": [
-      7.5
+      10.0
     ],
     "goblins|uwx": [
-      44.0
+      55.0
     ],
     "goblins|wan_shi_tong": [
-      49.5
+      58.5
     ],
     "infect|affinity": [
       40.0
@@ -2164,7 +2164,7 @@
       44.0
     ],
     "infect|goblins": [
-      75.5
+      69.5
     ],
     "infect|lands": [
       54.5
@@ -2269,7 +2269,7 @@
       64.0
     ],
     "lands|goblins": [
-      70.0
+      69.0
     ],
     "lands|infect": [
       48.0
@@ -2374,7 +2374,7 @@
       29.0
     ],
     "mardu|goblins": [
-      31.5
+      17.5
     ],
     "mardu|infect": [
       18.0
@@ -2479,7 +2479,7 @@
       68.0
     ],
     "mono_black|goblins": [
-      68.0
+      63.0
     ],
     "mono_black|infect": [
       42.5
@@ -2584,7 +2584,7 @@
       33.5
     ],
     "ocelot|goblins": [
-      48.0
+      31.5
     ],
     "ocelot|infect": [
       33.5
@@ -2689,7 +2689,7 @@
       61.5
     ],
     "oops|goblins": [
-      71.0
+      70.0
     ],
     "oops|infect": [
       51.5
@@ -2794,7 +2794,7 @@
       48.0
     ],
     "painter|goblins": [
-      53.5
+      53.0
     ],
     "painter|infect": [
       40.0
@@ -2899,7 +2899,7 @@
       51.0
     ],
     "prison|goblins": [
-      50.5
+      47.5
     ],
     "prison|infect": [
       35.5
@@ -3004,7 +3004,7 @@
       41.0
     ],
     "reanimator|goblins": [
-      54.5
+      53.5
     ],
     "reanimator|infect": [
       41.0
@@ -3109,7 +3109,7 @@
       46.0
     ],
     "show|goblins": [
-      44.5
+      43.0
     ],
     "show|infect": [
       35.0
@@ -3214,7 +3214,7 @@
       62.0
     ],
     "sneak_a|goblins": [
-      64.5
+      63.0
     ],
     "sneak_a|infect": [
       46.5
@@ -3319,7 +3319,7 @@
       59.0
     ],
     "sneak_b|goblins": [
-      65.5
+      62.0
     ],
     "sneak_b|infect": [
       51.5
@@ -3424,7 +3424,7 @@
       31.0
     ],
     "storm|goblins": [
-      34.0
+      31.5
     ],
     "storm|infect": [
       31.0
@@ -3529,7 +3529,7 @@
       64.5
     ],
     "ur_delver|goblins": [
-      85.5
+      82.5
     ],
     "ur_delver|infect": [
       49.5
@@ -3634,7 +3634,7 @@
       77.0
     ],
     "ur_tempo|goblins": [
-      90.5
+      88.5
     ],
     "ur_tempo|infect": [
       70.0
@@ -3739,7 +3739,7 @@
       39.0
     ],
     "uwx|goblins": [
-      55.5
+      41.5
     ],
     "uwx|infect": [
       23.5
@@ -3844,7 +3844,7 @@
       50.0
     ],
     "wan_shi_tong|goblins": [
-      52.5
+      44.5
     ],
     "wan_shi_tong|infect": [
       16.0
