@@ -239,6 +239,38 @@ Fix: 5 gates added.
 
 Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
 
+## Iter 8 — Glacial Chasm attempt (REVERTED — deck-composition tradeoff lesson)
+
+After iter 7 shipped Exploration+Loam, attempted to close Lands' remaining bottom matchups (vs dnt 0.215, uwx 0.260, oops 0.310) with **Glacial Chasm** — a defensive land that prevents all damage to controller, with cumulative upkeep cost.
+
+### What was implemented (then reverted)
+- `cards.py`: added 1× Glacial Chasm to lands deck (dropped 1× Yavimaya for slot)
+- `game.py`: `PlayerState.has_chasm_protection()` helper checking lands for tag='chasm'
+- `engine.py`: combat_declare unblocked-damage section now checks `defender_player.has_chasm_protection()`; lands strategy added cumulative-upkeep tracking via `chasm_age` attribute on the perm (sac when can't pay)
+- `decks/burn.py`: `deal_face_damage` checks chasm
+- `sim.py`: land-priority function deploys Chasm at life ≤ N when opp pressure threshold met
+
+### What went wrong
+**Two attempts, both regressed:**
+
+1. **First attempt** (life ≤ 12 + opp_creature_power ≥ 4): Burn -4.6pp, Infect -8.5pp. Cumulative upkeep eats life faster than Chasm prevents in matchups where the damage path isn't life-based (Infect = poison) or where the prevented damage is comparable to upkeep cost.
+
+2. **Second attempt** (life ≤ 5 + opp_power ≥ life — emergency-only): Goblins -8.2pp, Infect -7.1pp. Even at emergency thresholds, the **deck-composition tradeoff** of dropping 1× Yavimaya for Glacial Chasm hurts. ~30% of games see Chasm in hand by T5; if not deployed, it's a dead card. Removing 1 green source also occasionally costs Crop Rotation activations.
+
+### Lesson — engine fix is correct, deck slot is wrong
+The damage-prevention engine work is sound (verified by DNT +5.9pp on first attempt — exactly the matchup Chasm targets). But:
+
+- Adding Chasm at the cost of a Yavimaya is net-negative because Yavimaya was a more reliable contributor (every game) than Chasm (rare deployment + sometimes dead in hand)
+- The deployment heuristic in `_pick_land()` competes with other utility lands (Tabernacle especially vs Goblins), causing trade-off losses
+- Cumulative upkeep makes Chasm net-neutral or net-negative in many matchups
+
+**Future approach for Manu / next session**:
+1. Add Chasm WITHOUT removing Yavimaya — i.e., expand the deck to 61 cards or drop a different non-utility slot (Disruptor Flute is 3× and rarely used — could drop 1 to make room).
+2. Or implement Chasm as a **Crop-Rotation-tutorable** target only — keep it in deck but don't draw into it naturally; only fetch via Crop Rotation when life is critical.
+3. Or implement **Punishing Fire + Grove of the Burnwillows** instead — different defensive layer (kills creatures, doesn't lock combat) that doesn't consume life via upkeep.
+
+All of these are larger commitments than fit in this iteration. **Reverted entirely**; iter 7 (Exploration+Loam) work is preserved and remains shipped.
+
 ## Iter 7 — Lands Exploration + Loam (SHIPPED, +9.5pp weighted, first T1 ρ move)
 
 After iter 6's TES revert, attacked the next-highest-leverage T1 calibration outlier — **lands** (sim 0.416 weighted, real meta share 6 %, gap -8.4pp). Per the lessons #24 (missing real cards) and #28 (bypass pattern), the right move was structural mechanic implementation, not bypass auditing.
