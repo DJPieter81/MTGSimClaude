@@ -46,15 +46,15 @@
     "cephalid": 40.1,
     "cloudpost": 51.3,
     "depths": 59.9,
-    "dimir": 46.2,
+    "dimir": 46.3,
     "dimir_b": 49.3,
     "dimir_c": 55.8,
     "dimir_d": 59.0,
     "dimir_flash": 45.4,
-    "dnt": 55.0,
-    "doomsday": 34.3,
+    "dnt": 54.9,
+    "doomsday": 34.4,
     "eight_cast": 41.0,
-    "eldrazi": 59.6,
+    "eldrazi": 59.5,
     "elves": 45.1,
     "goblins": 36.8,
     "infect": 56.8,
@@ -76,13 +76,13 @@
     "wan_shi_tong": 37.2
   },
   "w": {
-    "affinity": 57.3,
+    "affinity": 57.2,
     "belcher": 36.5,
     "boros": 55.1,
-    "bug": 55.0,
+    "bug": 54.9,
     "burn": 73.7,
     "cephalid": 42.6,
-    "cloudpost": 50.0,
+    "cloudpost": 49.9,
     "depths": 57.8,
     "dimir": 48.2,
     "dimir_b": 50.1,
@@ -90,17 +90,17 @@
     "dimir_d": 61.4,
     "dimir_flash": 47.9,
     "dnt": 58.3,
-    "doomsday": 32.9,
+    "doomsday": 32.7,
     "eight_cast": 43.5,
-    "eldrazi": 59.6,
+    "eldrazi": 59.5,
     "elves": 47.6,
     "goblins": 38.6,
     "infect": 56.3,
     "lands": 50.6,
     "mardu": 35.5,
     "mono_black": 52.7,
-    "ocelot": 49.6,
-    "oops": 57.6,
+    "ocelot": 49.5,
+    "oops": 57.5,
     "painter": 47.6,
     "prison": 44.0,
     "reanimator": 43.7,
@@ -108,7 +108,7 @@
     "sneak_a": 50.7,
     "sneak_b": 50.6,
     "storm": 43.4,
-    "ur_delver": 59.8,
+    "ur_delver": 60.0,
     "ur_tempo": 63.6,
     "uwx": 58.7,
     "wan_shi_tong": 39.9
@@ -154,7 +154,7 @@
       66.0
     ],
     "affinity|doomsday": [
-      74.5
+      73.5
     ],
     "affinity|eight_cast": [
       81.5
@@ -469,7 +469,7 @@
       37.0
     ],
     "bug|doomsday": [
-      85.5
+      85.0
     ],
     "bug|eight_cast": [
       56.5
@@ -784,7 +784,7 @@
       81.5
     ],
     "cloudpost|doomsday": [
-      41.0
+      40.5
     ],
     "cloudpost|eight_cast": [
       76.5
@@ -994,7 +994,7 @@
       24.0
     ],
     "dimir|doomsday": [
-      78.5
+      79.0
     ],
     "dimir|eight_cast": [
       48.5
@@ -1099,7 +1099,7 @@
       27.5
     ],
     "dimir_b|doomsday": [
-      83.0
+      82.5
     ],
     "dimir_b|eight_cast": [
       71.5
@@ -1204,7 +1204,7 @@
       40.0
     ],
     "dimir_c|doomsday": [
-      81.5
+      81.0
     ],
     "dimir_c|eight_cast": [
       66.5
@@ -1519,7 +1519,7 @@
       83.5
     ],
     "dnt|doomsday": [
-      54.5
+      54.0
     ],
     "dnt|eight_cast": [
       74.5
@@ -1597,10 +1597,10 @@
       19.5
     ],
     "doomsday|burn": [
-      11.0
+      12.0
     ],
     "doomsday|cephalid": [
-      33.5
+      34.5
     ],
     "doomsday|cloudpost": [
       51.5
@@ -1612,13 +1612,13 @@
       27.0
     ],
     "doomsday|dimir_b": [
-      19.0
+      17.5
     ],
     "doomsday|dimir_c": [
       22.0
     ],
     "doomsday|dimir_d": [
-      29.0
+      28.5
     ],
     "doomsday|dimir_flash": [
       15.5
@@ -1627,25 +1627,25 @@
       46.5
     ],
     "doomsday|eight_cast": [
-      51.5
+      52.0
     ],
     "doomsday|eldrazi": [
-      25.5
+      26.5
     ],
     "doomsday|elves": [
-      33.0
+      34.0
     ],
     "doomsday|goblins": [
       38.0
     ],
     "doomsday|infect": [
-      29.5
+      30.0
     ],
     "doomsday|lands": [
       53.5
     ],
     "doomsday|mardu": [
-      35.0
+      35.5
     ],
     "doomsday|mono_black": [
       24.0
@@ -1654,10 +1654,10 @@
       30.5
     ],
     "doomsday|oops": [
-      41.5
+      41.0
     ],
     "doomsday|painter": [
-      52.5
+      53.0
     ],
     "doomsday|prison": [
       51.0
@@ -1675,7 +1675,7 @@
       48.5
     ],
     "doomsday|storm": [
-      44.5
+      45.0
     ],
     "doomsday|ur_delver": [
       12.5
@@ -1837,7 +1837,7 @@
       58.0
     ],
     "eldrazi|doomsday": [
-      76.0
+      75.5
     ],
     "eldrazi|eight_cast": [
       69.5
@@ -2152,7 +2152,7 @@
       59.5
     ],
     "infect|doomsday": [
-      66.0
+      65.5
     ],
     "infect|eight_cast": [
       67.5
@@ -2572,7 +2572,7 @@
       35.5
     ],
     "ocelot|doomsday": [
-      70.5
+      70.0
     ],
     "ocelot|eight_cast": [
       44.5
@@ -2677,7 +2677,7 @@
       62.0
     ],
     "oops|doomsday": [
-      61.5
+      61.0
     ],
     "oops|eight_cast": [
       63.0
@@ -3202,7 +3202,7 @@
       69.5
     ],
     "sneak_a|doomsday": [
-      57.0
+      56.5
     ],
     "sneak_a|eight_cast": [
       65.0
@@ -3412,7 +3412,7 @@
       40.5
     ],
     "storm|doomsday": [
-      57.5
+      57.0
     ],
     "storm|eight_cast": [
       42.5
@@ -3517,7 +3517,7 @@
       54.0
     ],
     "ur_delver|doomsday": [
-      84.0
+      85.0
     ],
     "ur_delver|eight_cast": [
       70.0
@@ -3727,7 +3727,7 @@
       29.5
     ],
     "uwx|doomsday": [
-      84.5
+      84.0
     ],
     "uwx|eight_cast": [
       51.0
