@@ -307,14 +307,34 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
             goblin_count += 1
             log_fn(f"Vial ({vc}) → {vial_target.name}")
 
-    # ── Deploy remaining cheap creatures ────────────────────────────────────
-    for tag in ('cratermaker', 'warchief', 'expert', 'prospector'):
+    # ── Deploy remaining creatures (cheap → mid → big) ────────────────────
+    # Ringleader (CMC 4): hard-cast for value; reveals top 4, all goblins to
+    # hand. Critical engine card — was missing from this loop, so Ringleader
+    # sat in hand all game vs aggro matchups (goblins vs burn 8.5 % at iter
+    # 10 confirms catastrophic outcome).
+    # Pashalik Mons (CMC 3 zombie): also a goblin, attacks/blocks.
+    for tag in ('cratermaker', 'warchief', 'expert', 'prospector',
+                'pashalik', 'sling', 'ringleader'):
         crea = player.find_tag(tag)
         if crea and rem >= crea.cmc:
             _b = [rem]
             def _resolve_crea(c):
                 player.put_creature_in_play(c)
                 log_fn(f"{c.name}")
+                # Ringleader ETB: reveal top 4, take all goblins to hand
+                if c.tag == 'ringleader':
+                    GOB_TAGS = {'lackey', 'matron', 'ringleader', 'warchief',
+                                'expert', 'sling', 'cratermaker', 'pashalik',
+                                'prospector', 'fury', 'muxus'}
+                    revealed = player.library[:4]
+                    taken = []
+                    for card in revealed:
+                        if card.is_creature() and card.tag in GOB_TAGS:
+                            player.library.remove(card)
+                            player.hand.append(card)
+                            taken.append(card.name)
+                    if taken:
+                        log_fn(f"  Ringleader reveals → takes {', '.join(taken)}", True)
             if cast_spell(player, opponent, gs, crea, _b, log_fn, log_entries,
                           on_resolve=_resolve_crea):
                 goblin_count += 1
