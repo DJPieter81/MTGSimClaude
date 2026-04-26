@@ -125,7 +125,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     5. Attack with infect creature + all free pump spells
     6. Track poison counters — 10 = lethal
     """
-    from engine import _try_counter_any, bowmasters_triggers, cast_spell
+    from engine import _try_counter_any, bowmasters_triggers, cast_spell, opp_can_cast
     from rules import Permanent
 
     mana = total_mana
@@ -317,7 +317,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     if opp_removal_threat:
         # Try Vines of Vastwood first — kicked if we can afford it (2 mana)
         vines = player.find_tag('vines')
-        if vines and mana >= 1:
+        if vines and mana >= 1 and opp_can_cast(vines, mana, gs, caster=player):
             kicked = (mana >= 2)
             player.remove_from_hand(vines)
             cost = 2 if kicked else 1
@@ -339,7 +339,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
         # If still no hexproof, try Blossoming Defense
         if not has_hexproof:
             defense = player.find_tag('defense')
-            if defense and mana >= 1:
+            if defense and mana >= 1 and opp_can_cast(defense, mana, gs, caster=player):
                 player.remove_from_hand(defense)
                 if not _try_counter_any(player, opponent, gs, defense, log_entries):
                     has_hexproof = True
@@ -355,9 +355,12 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── Cast free pump spells ────────────────────────────────────────────────
     # Invigorate: free (alt cost: opp gains 3 life), +4/+4
+    # Note: even though Invigorate is paid via alt cost (alt cost path doesn't
+    # spend mana), Chalice triggers on CMC of the SPELL, not the cost paid
+    # (CR 601.2f / 117.9c). Same for Mutagenic Growth and Berserk below.
     for _ in range(4):
         inv = player.find_tag('invigorate')
-        if inv:
+        if inv and opp_can_cast(inv, mana, gs, caster=player):
             player.remove_from_hand(inv)
             if not _try_counter_any(player, opponent, gs, inv, log_entries):
                 pump_bonus += 4
@@ -375,7 +378,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     # Mutagenic Growth: free (pay 2 life), +2/+2
     for _ in range(4):
         mut = player.find_tag('mutagenic')
-        if mut:
+        if mut and opp_can_cast(mut, mana, gs, caster=player):
             player.remove_from_hand(mut)
             if not _try_counter_any(player, opponent, gs, mut, log_entries):
                 pump_bonus += 2
@@ -393,7 +396,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     # Remaining Vines of Vastwood: cast kicked for +4/+4 + hexproof
     for _ in range(2):
         vines = player.find_tag('vines')
-        if vines and mana >= 2:
+        if vines and mana >= 2 and opp_can_cast(vines, mana, gs, caster=player):
             player.remove_from_hand(vines)
             if not _try_counter_any(player, opponent, gs, vines, log_entries):
                 pump_bonus += 4
@@ -412,7 +415,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     # Remaining Blossoming Defense: +2/+2 + hexproof
     for _ in range(2):
         defense = player.find_tag('defense')
-        if defense and mana >= 1:
+        if defense and mana >= 1 and opp_can_cast(defense, mana, gs, caster=player):
             player.remove_from_hand(defense)
             if not _try_counter_any(player, opponent, gs, defense, log_entries):
                 pump_bonus += 2
@@ -433,7 +436,7 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     berserk_count = 0
     for _ in range(4):
         bsk = player.find_tag('berserk')
-        if bsk and mana >= 1:
+        if bsk and mana >= 1 and opp_can_cast(bsk, mana, gs, caster=player):
             player.remove_from_hand(bsk)
             if not _try_counter_any(player, opponent, gs, bsk, log_entries):
                 berserk_count += 1
