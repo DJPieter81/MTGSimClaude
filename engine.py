@@ -4201,6 +4201,26 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         cast_spell(player, opponent, gs, lurrus, budget,
                    log_fn, log_entries, on_resolve=_resolve_lurrus)
 
+    # ── Lurrus rebuy: recur Lotus Petal from GY each turn ──
+    # Lurrus's text: "During each of your turns, you may cast one permanent
+    # spell with mana value 2 or less from your graveyard." For Doomsday's
+    # decklist this means Lotus Petal (CMC 0, free) — gives +1 mana per turn
+    # while Lurrus survives, accelerating combo by ~1 turn over a 2-3 turn
+    # Lurrus lifespan vs aggro. Track usage via gs._lurrus_used_<turn>.
+    lurrus_in_play = any(c.card.tag == 'lurrus' for c in player.creatures)
+    lurrus_used_this_turn = getattr(gs, '_lurrus_used_turn', -1) == gs.turn
+    if lurrus_in_play and not lurrus_used_this_turn:
+        # Priority: recur Lotus Petal (free mana). Future enhancement: also
+        # consider Oracle (CMC 2 backup win-con) and Veil (CMC 1 protection).
+        petal_in_gy = next((c for c in player.graveyard if c.tag == 'petal'), None)
+        if petal_in_gy:
+            player.graveyard.remove(petal_in_gy)
+            player.exile.append(petal_in_gy)  # Petal sacs to GY normally;
+                                              # exile here since we just used it
+            budget[0] += 1
+            gs._lurrus_used_turn = gs.turn
+            log_fn(f"Lurrus rebuy → Lotus Petal from GY (+1 mana, budget={budget[0]})")
+
     # ── Pre-DD: rituals for mana acceleration ──
     # Only cast rituals if DD is already in hand — otherwise save mana for cantrips
     # that dig for DD. Rituals drawn by cantrips are cast inside the cantrip loop.
