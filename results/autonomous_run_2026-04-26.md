@@ -239,6 +239,32 @@ Fix: 5 gates added.
 
 Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
 
+## Iter 6 — TES bypass attempt (REVERTED — important timing lesson)
+
+Targeted `decks/tes.py` for the same bypass treatment — 33 raw sites, 14 confirmed TRUE BYPASS via Explore audit (Probe, cantrips, Dark Ritual, Veil, Burning Wish, Infernal Tutor ×2, Tendrils, Empty, FoW, Ad Nauseam).
+
+**Two-step learning**:
+
+1. **First attempt** used `opp_can_cast()` directly (same pattern as infect/affinity fixes). 5-opp avg crashed from 0.480 → 0.110 (-37pp), with Burn matchup dropping -45pp. **Root cause**: `opp_can_cast()` calls `can_afford()` which checks untapped lands. TES tracks mana via a local int counter (Petals/Rituals/LED produce floating mana, not from untapped lands). By the time TES reaches Step 6 (Wish/Tendrils), all lands are tapped, so `can_afford()` falsely blocks the cast even when the local counter has plenty of mana.
+
+2. **Second attempt** used a tax-only helper that skips `can_afford` and only checks Chalice/Trini/Thalia. 5-opp avg moved **only +1.2pp at n=500** (per-matchup: prison +6.2pp, painter +5.5pp, eldrazi -6.9pp, burn -3.1pp, dimir +4.4pp). **The expected direction (TES drops vs Chalice decks) materialised only on eldrazi** — because Eldrazi reliably deploys T1 Chalice via Eldrazi Temple's extra mana. Prison/painter/uwx Chalice typically arrives T2-T4, by which point TES has often already won via T1-T2 storm chain.
+
+Per the plan's regression policy ("Keep if (a) TES vs Chalice decks drops AND (b) cross-deck mean |Δ| ≤ 3pp AND (c) tests pass"), gate (a) failed at the aggregate. **Reverted**.
+
+### Lesson (added to `CROSS_PROJECT_SYNC.md` lesson 28)
+
+For storm-class combo decks, the bypass fix is correct in code but rarely moves WR because:
+- Opponent Chalice typically lands T2+, after Storm has T1-T2 kill window
+- Storm's local `mana` counter (from rituals/petals) doesn't pair with `opp_can_cast()` — must use a tax-only helper that skips `can_afford`
+- Only opponents with reliable T1 Chalice (Eldrazi) see meaningful WR shifts
+
+**For Manu's storm port**: the fix is a correctness-only commit; don't expect calibration improvement. **Drop-in tax-only helper template is in lesson 28**.
+
+### What didn't get attempted
+
+- Opportunistic batch on belcher / sneak_a / sneak_b / depths — dropped after the TES result confirmed combo decks generally show minimal aggregate WR move from this fix. The same timing argument applies to all storm-class combo decks.
+- Worth a future audit of NON-storm decks with bypass patterns (e.g. eldrazi's own bypasses, if any) since those would be operating against opponents who actually have time to land Chalice.
+
 ## Cross-project lesson 28 (Modern alert)
 
 The bypass pattern is **systematic** — found in infect (7 sites), affinity (5 sites). Raw site counts of `player.remove_from_hand` calls in unaudited deck files:
