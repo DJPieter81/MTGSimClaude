@@ -127,7 +127,57 @@ Both iter-1 and iter-2 gate reports saved (`results/gate_report_2026-04-26.json`
 
 ---
 
-## Commits shipped (4 total on the branch)
+## ⚠️ Critical calibration finding — sim is anti-correlated with real-world meta
+
+While the affinity work shipped, an external-validation pass surfaced a much deeper issue:
+
+**Spearman ρ between sim WR rank and real-world meta-share rank, by tier filter:**
+
+| Filter | Apr 20 | Iter 1 | Iter 2 | n |
+|---|---|---|---|---|
+| T1 only (share ≥ 5 %) | **-0.452** | **-0.452** | **-0.452** | 8 |
+| T1+T2 (share ≥ 3 %) | -0.152 | -0.178 | -0.178 | 14 |
+| All meta-listed (≥1 %) | -0.011 | +0.035 | +0.030 | 36 |
+
+**Higher = better calibration. Negative = inverse.** The simulator's top-WR decks are **literally the inverse** of the real-world top decks at the T1 level (ρ = -0.452). This is below the bar to use the matrix for tournament hypothesizing — at this correlation, picking the deck with the highest sim WR would give worse expected results than a random T1 deck.
+
+### What's driving the inversion (T1 decks, real meta share ≥ 5 %)
+
+| Deck | Real share | Sim WR | Gap vs 50 % |
+|---|---|---|---|
+| ocelot | 12 % | 0.511 | +1.1pp |
+| dimir | 6 % | 0.495 | -0.5pp |
+| **doomsday** | 6 % | **0.337** | **-16.3pp** ← biggest miss |
+| **lands** | 6 % | **0.416** | -8.4pp |
+| oops | 6 % | 0.576 | +7.6pp |
+| **prison** | 6 % | **0.439** | -6.1pp |
+| ur_delver | 6 % | 0.600 | +10.0pp |
+| dimir_b | 5 % | 0.523 | +2.3pp |
+
+3 of 8 T1 decks (doomsday, lands, prison) are >5pp below 50 % — they're treated as bottom-tier in sim despite being top-tier in real meta.
+
+Meanwhile the sim's TOP-5 by weighted EV are: burn (0.724, 2 % share), ur_tempo (0.654, 2 % share), dimir_d (0.632, 1 % share), infect (0.619, 2 % share), dimir_c (0.609, 2 % share). These are all real-world fringe decks.
+
+### Hypothesis for the inversion
+
+1. **AI bias toward simple linear strategies** — Burn is "cast everything face" which is easy to heuristic. Ocelot/Dimir are nuanced midrange decks that need adaptive play.
+2. **Combo-deck punishment** — Doomsday/Prison/Lands need adaptive piloting around opponent's interaction, plus deep multi-turn pile/lock construction. Per `CROSS_PROJECT_SYNC.md` lesson #24, doomsday is missing the cards that make its real-world race plan work; this same problem likely affects Prison and Lands.
+3. **Tempo over-execution** — UR Tempo / UR Delver / Infect all benefit from the AI's perfect bolt timing and counter sequencing. Real humans miss spots.
+
+### Implication for the user's earlier question
+
+The user asked: *"what level of grade do we need before tournament hypothesizing?"*
+
+**Concrete answer**: the T1 Spearman ρ needs to flip from -0.452 to **at least +0.5** — meaning the sim's top decks should be the same decks players are showing up with in the meta, not the inverse. The simulator currently can't be trusted to suggest a tournament deck — its top picks (Burn, UR Tempo) are real-world fringe choices.
+
+To get there:
+- Fix the 3 underperforming T1 decks (doomsday -16.3pp, lands -8.4pp, prison -6.1pp). These each need 4-6h of strategy work.
+- Verify the AI isn't over-piloting Burn/UR-Tempo (run the LLM-gate eval to see if a smarter opponent-model pulls these down).
+- Once T1 ρ > +0.3, expand to T1+T2 and target ρ > +0.5 there.
+
+This is the most actionable next-priority item to surface from this run.
+
+
 
 ```
 79dbaf5 chore(matrix): re-sim iter 2 post-F5 — weighted 63.2→57.4 %
