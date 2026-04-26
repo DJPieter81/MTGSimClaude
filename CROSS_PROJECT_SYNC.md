@@ -182,6 +182,46 @@ results/neural_logs/
 
     **Updated rule of thumb:** decklist audits work when there's an obvious quantitative gap (1 of a 4-of, missing companion, missing fast mana). For decks with broader weakness, the real fix is in the strategy code — typically 50-200 lines of careful logic, not a 1-line edit. **For Manu**: the audit pattern transfers, but expect 2-3 obvious wins out of every 5-10 candidates. Don't burn cycles on candidates with uniform weakness — those signal strategy gaps that need their own iteration.
 
+26. **Affinity over-tuning recipe (2026-04-26 iter 13/14) — applies to Manu's affinity if it sits >65 % flat WR.** Legacy's affinity was at 72.5 % flat / 70.7 % weighted (rank #1, +4pp gap to #2). Three sequential fixes dropped it to 57.7 % flat / 57.4 % weighted (rank #6) — a -13.3pp recalibration. **For Manu's affinity port, check these three things in order — F1 is the heaviest hitter:**
+
+    **F1 — Maindeck Force of Will is unrealistic** *(top driver, single biggest single-edit win in the session)*. Real Legacy 8-Cast does NOT run main FoW — the deck has no blue critical mass beyond 3 Monitor + 2 Cannoneer. With 4 Seat-of-the-Synod + 4 FoW the deck plays like a control deck, pre-emptively countering opponent T1-T2 combo turns. Swap: 4× FoW → 4× Frogmite (real 8-Cast staple, affinity 2/2 for {4}). Legacy result: 5-opp avg 67.9 % → 58.0 % (-9.9pp). Combo matchups dropped hardest: oops 60→31 % (-29pp), lands 71→54 %, doomsday 94→80 %.
+
+    **F2 — Patchwork Automaton accumulates power_mod across turns** *(Oracle text bug, not just a balance issue)*. The card text is "+1/+1 for each artifact spell you've cast THIS TURN" — a per-turn buff that recalculates each turn. The simulator was accumulating: a T3 Automaton became 8/8 from T2's 4 artifacts plus T3's 3 more. Fix: at start of each turn, reset Automaton's `power_mod`/`toughness_mod` to 0 (matching the existing Cannoneer `cant_be_blocked` reset pattern), then SET (not +=) to `artifacts_cast_this_turn`. Legacy result: 5-opp avg 54.0 % → 50.7 % (-3.3pp). Burn dropped -16pp (a turn-2 8/8 trampler was killing Burn by T3); ur_tempo dropped -12pp; eldrazi -11.5pp; cloudpost -11pp. **This is a clean rules-correctness fix — port it directly if Manu's affinity has the same code shape.**
+
+    **F3 — Emry recursion ignores the "Emry dies to removal" reality** *(strategy fix)*. Real Emry is a 1/2 that gets bolted on sight; the simulator never modeled removal targeting her. This let her recur 4/4 Cannoneers and 7-cmc Monitors at affinity-reduced cost every turn — a recurring 2-mana 4/4 trampler is unrealistic in any tempo or aggro matchup. Restrict Emry to recurring true 0-cost artifacts only (Petal, Bauble, Urza's Bauble, Mox Opal). These are the only targets that survive the "Emry dies" reality test — they enter and sacrifice/cantrip immediately, so the value is captured before she can be killed. Legacy result: 5-opp avg 58.0 % → 54.0 % (-4.0pp). Dimir dropped -9.5pp (biggest move; Emry-recurring-Cannoneer was the dimir kill).
+
+    **F4 — Cap Cannoneer counters at +2/+2 per turn (cap variant)** *(reverted — DON'T port the cap-at-2 form)*. Capping the per-artifact-ETB +1/+1 counters at min(triggers, 2) hurt the matchups where Cannoneer was the legitimate finisher (bug, dimir, oops moved up); net -0.8pp. The cap-at-2 form is wrong because the *real* card has a {2} payment cost per trigger that the simulator was skipping — see F4-alt below.
+
+    **F4-alt — Cannoneer pay-{2}-per-trigger (rules-correct)** *(reverted at -0.2pp WR; ship as code-correctness regardless if Manu cares about rules fidelity)*. Real Cannoneer Oracle: "Whenever an artifact you control enters the battlefield, you may pay {2}. When you do, put a +1/+1 counter on Kappa Cannoneer and it can't be blocked this turn." The simulator was applying every trigger for free. Implementation: cap by `min(cannoneer_triggers, mana // 2)`, deduct `affordable * 2` from mana. Legacy result: -0.2pp WR (within noise) — affinity rarely has spare mana when Cannoneer triggers, so the {2} gate doesn't fire often enough to swing combined WR. **Ship as a code-correctness commit even though it's WR-neutral.**
+
+    **F5 — Tighten `_keep_affinity` mulligan** *(reverted; counterintuitive failure mode)*. Tightening the keep predicate from `fast_mana ≥ 1 AND (threats OR engine)` to `(2+ lands OR 1 land + 2 fast mana) AND (threats OR engine)` *raised* WR by +3pp. Hypothesis: London-mull-to-6 with bottoming sharpens the kept hand more than the original lenient predicate did. **Translation for Manu: don't expect mulligan tightening alone to lower a deck's WR under London mull.** Mulligan tightening is the right tool when the deck is keeping objectively bad hands — for affinity at 16 fast-mana sources, the keep predicate isn't the bottleneck.
+
+    **Manabase deferred** — both Legacy's affinity and presumably Manu's ran 15 lands vs real-list ~22. Combined with 16 fast-mana sources (4 Petal + 4 Opal + 8 baubles), the deck never floods or stalls. Skipped this pass due to interaction risk with `_affinity_cost`. If Manu's affinity is still over-tuned after F1+F2+F3, this is the next lever — but careful because adding lands changes affinity-cost arithmetic.
+
+27. **Calibration-health metric — use Spearman ρ between sim WR rank and real-world meta-share rank as the headline grade for the simulator.** Discovered while looking for an external-validation pass on 2026-04-26. Result on Legacy after iter-2 affinity recalibration:
+
+    | Filter | Spearman ρ | n | Reading |
+    |---|---|---|---|
+    | T1 only (real share ≥ 5 %) | **-0.452** | 8 | sim's top decks are *literally the inverse* of real-world top decks |
+    | T1+T2 (≥ 3 %) | -0.178 | 14 | weak inverse |
+    | All meta-listed (≥ 1 %) | +0.030 | 36 | basically uncorrelated |
+
+    **What this number means**: a simulator with ρ = +1.0 perfectly predicts which decks win tournaments. ρ = 0 is uncorrelated. ρ = -1.0 says picking the highest-sim-WR deck *guarantees* the worst real-world result. Legacy is at -0.45 on T1, meaning the matrix at this stage cannot be trusted to suggest a tournament deck — its top picks (Burn 0.724, UR Tempo 0.654, Dimir D 0.632, Infect, Dimir C) are all real-world fringe (1-2 % share). The T1 decks the meta is actually built around (Doomsday 0.337, Lands 0.416, Prison 0.439) sit in the bottom cluster.
+
+    **Why the inversion**: AI bias toward simple linear strategies (Burn = "cast everything face") + combo-deck punishment (Doomsday/Prison/Lands need adaptive piloting around interaction + multi-turn pile/lock construction) + tempo over-execution (Delver/Murktide benefit from perfect bolt timing real humans miss).
+
+    **Bar to "tournament-grade" simulator**: T1 ρ ≥ +0.5. Currently -0.45. The gap closes by (a) fixing the 3 underperforming T1 decks (each 4-6h dedicated work; doomsday needs the missing-cards work documented in lesson #24, lands and prison are unaudited at the time of writing), (b) verifying Burn/UR-Tempo aren't being over-piloted by the heuristic AI (LLM-gate eval — single matchup at $2 with prompt caching once a `sk-ant-…` key is set in env). **For Manu**: run the same Spearman computation on Manu's matrix vs Modern's meta-share table. If you also see ρ < 0 on T1, the same prioritisation applies (top combo/control decks need strategy work; tempo/aggro need over-piloting checks).
+
+    **The one-liner for Manu's CLI** (drop-in, modulo `meta_ev` JSON path + `MATCHUP_META` import):
+    ```python
+    pairs = [(d, ev[d], MATCHUP_META[d]['share']) for d in ev
+             if MATCHUP_META.get(d, {}).get('share', 0) >= 0.05]
+    wr_rank = {d: i for i, (d,_,_) in enumerate(sorted(pairs, key=lambda x:-x[1]))}
+    sh_rank = {d: i for i, (d,_,_) in enumerate(sorted(pairs, key=lambda x:-x[2]))}
+    n = len(pairs)
+    rho = 1 - 6*sum((wr_rank[d]-sh_rank[d])**2 for d in wr_rank)/(n*(n*n-1))
+    ```
+
 ## Out of scope for the cross-project sync
 - Modern uses `gs.player1` / `gs.player2`, Legacy uses `gs.p1` / `gs.p2`. The `state_encoder.py` port to Modern must rename the slot accessors. All other features (life, hand, lands, etc.) are named identically in both repos.
 - Modern's `combat_manager.py` and `turn_planner.py` are not present in Legacy — the `lookahead.py` mutators may need additional helpers to handle Modern's richer combat / multi-ordering decisions.
