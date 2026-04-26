@@ -419,50 +419,6 @@ def deal_damage(gs, source_tag, target_player, amount, damage_type='normal',
 
 # ─── Mana & Cost Checking ──────────────────────────────────────────────────
 
-# Tags that indicate "redundant disruption/setup" in opponent hand. Used by
-# _tks_pick_exile() to decide between targeted vs random exile. Cards in this
-# set are typically run as 4-ofs and easily replaceable, so removing one is
-# less impactful than removing a key win-con. Conversely, when the opp's hand
-# is FULL of these (storm-class decks, reanimator), random.choice is more
-# disruptive than targeted because random will likely hit one of N redundant
-# disruption pieces — denying the opponent's mana setup or counter coverage.
-_TKS_REDUNDANT_TAGS = frozenset({
-    # Cantrips / dig
-    'bs', 'ponder', 'probe', 'ouat', 'opt',
-    # Rituals
-    'darkrit', 'cabalrit', 'rite',
-    # Counters
-    'daze', 'fow', 'fluster', 'fon', 'pact', 'spact', 'mindbreak',
-    # Reanimate suite (each does the same thing)
-    'reanimate', 'animate', 'exhume', 'entomb',
-    # Discard
-    'therapy', 'grief',
-})
-
-
-def _tks_pick_exile(opp_nonland_hand):
-    """Pick the best card for TKS / similar exile-on-ETB to remove from hand.
-
-    Iter 9 research found that targeted exile (win_cond > combo > engine >
-    highest CMC) BEATS random for "single-key" decks (TES +16.9pp on eldrazi
-    at n=300, sneak_a +8.2pp, infect +4.0pp). But it LOSES to random for
-    decks with N redundant payoffs (storm -7.4pp, reanimator -5.8pp, show
-    -4.0pp, oops -3.5pp) — random is more disruptive because it likely hits
-    a critical mana ritual or cantrip rather than one of N redundant win-cons.
-
-    Heuristic: count cards in opp's hand tagged as redundant
-    disruption/setup. If 3+, use random. Else, use targeted-pick.
-    """
-    redundant_count = sum(1 for c in opp_nonland_hand
-                          if c.tag in _TKS_REDUNDANT_TAGS)
-    if redundant_count >= 3:
-        return random.choice(opp_nonland_hand)
-    return (next((c for c in opp_nonland_hand if c.win_condition), None)
-            or next((c for c in opp_nonland_hand if c.is_combo_piece), None)
-            or next((c for c in opp_nonland_hand if getattr(c, 'engine', False)), None)
-            or max(opp_nonland_hand, key=lambda c: c.cmc))
-
-
 def opp_can_cast(card: Card, om: int, gs: GameState, caster=None) -> bool:
     """Single mana+colour gateway for any player casting a spell.
     caster: the PlayerState casting the spell. Defaults to gs.p2 for backward compat.
@@ -3409,10 +3365,13 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             if opponent.hand:
                 nonlands = [cc for cc in opponent.hand if not cc.is_land()]
                 if nonlands:
-                    # Iter 11: opp-aware via _tks_pick_exile. Targeted vs random
-                    # picked based on count of redundant disruption tags in
-                    # opp's hand (≥3 → random; else targeted).
-                    ex = _tks_pick_exile(nonlands)
+                    # Priority: win condition > combo piece > engine > highest CMC
+                    # (highest CMC = most expensive = most disruptive to remove from hand).
+                    # Was random.choice — exiled trivial cards 60-80% of the time.
+                    ex = (next((cc for cc in nonlands if cc.win_condition), None)
+                          or next((cc for cc in nonlands if cc.is_combo_piece), None)
+                          or next((cc for cc in nonlands if getattr(cc, 'engine', False)), None)
+                          or max(nonlands, key=lambda c: c.cmc))
                     opponent.hand.remove(ex); opponent.exile.append(ex)
                     log_fn(f"TKS exiles {ex.name}", True)
         cast_spell(player, opponent, gs, tks, budget, log_fn, log_entries,
@@ -3489,10 +3448,15 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Threats ──
     # ── Threats — deploy all affordable creatures each turn (biggest first) ──
     # TKS first (hand disruption is high-value)
-    # Iter 11: opp-aware exile via _tks_pick_exile. Iter-9 research showed
-    # targeted exile is +16.9pp on TES vs eldrazi but -7.4pp on storm —
-    # the difference is opponent-deck redundancy. The helper picks targeted
-    # vs random based on count of redundant disruption tags in opp's hand.
+    # NOTE: keeping random.choice here despite the prison TKS targeting fix
+    # (commit 2f44673). Tested on eldrazi at n=300 across 9 matchups: targeted
+    # exile of win-cons gave +16.9pp on TES and +8.2pp on sneak_a, but
+    # -7.4pp on storm, -5.8pp on reanimator, -4.0pp on show. For decks with
+    # MULTIPLE redundant payoffs (storm, reanimator, show), targeted exile of
+    # one win-con is recoverable via cantrips; random exile is more disruptive
+    # because it likely hits a critical mana ritual or cantrip instead.
+    # Aggregate +1.23pp is positive but below threshold; per-matchup variance
+    # is too high to justify the change for eldrazi specifically.
     tks = player.find_tag('tks')
     if tks and opp_can_cast(tks, budget[0], gs, caster=player):
         def _resolve_tks(c):
@@ -3500,8 +3464,7 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
             if opponent.hand:
                 nonlands = [cc for cc in opponent.hand if not cc.is_land()]
                 if nonlands:
-                    ex = _tks_pick_exile(nonlands)
-                    opponent.hand.remove(ex); opponent.exile.append(ex)
+                    ex = random.choice(nonlands); opponent.hand.remove(ex); opponent.exile.append(ex)
                     log_fn(f"TKS exiles {ex.name}", True)
         cast_spell(player, opponent, gs, tks, budget, log_fn, log_entries,
                    on_resolve=_resolve_tks)
