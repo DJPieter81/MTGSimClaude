@@ -141,9 +141,11 @@ def make_affinity_deck() -> List[Card]:
 
     # ── Spells (8) ───────────────────────────────────────────────────────────
 
-    # Force of Will
-    d += [instant('Force of Will', 5, {'U': 1, 'generic': 4}, {'U'},
-                  tag='fow', free_cast_if_blue=True)] * 4
+    # Frogmite — affinity for artifacts (real 8-Cast staple, replaces maindeck FoW)
+    for _ in range(4):
+        c = creature('Frogmite', 4, {'generic': 4}, set(), 2, 2, tag='frogmite')
+        c.affinity_artifacts = True
+        d.append(c)
 
     # Thoughtcast: affinity for artifacts, draw 2
     d += [sorcery('Thoughtcast', 5, {'U': 1, 'generic': 4}, {'U'},
@@ -874,7 +876,7 @@ def test_affinity():
         'emry': 4, 'automaton': 4, 'emissary': 4, 'monitor': 4,
         'cannoneer': 2,
         'petal': 4, 'bauble': 4, 'ubauble': 4, 'opal': 4,
-        'fow': 4, 'cast': 4,
+        'frogmite': 4, 'cast': 4,
         'boots': 1, 'spear': 1, 'sink': 1,
     }
     for tag, count in expected.items():
@@ -887,9 +889,9 @@ def test_affinity():
     assert land_count == 15, f"Land count {land_count} != 15"
     results.append(f"OK  Land count = {land_count}")
 
-    # Test 4: Creature count = 18
+    # Test 4: Creature count = 22 (18 base + 4 Frogmite from FoW swap)
     creature_count = sum(1 for c in deck if c.card_type == CardType.CREATURE)
-    assert creature_count == 18, f"Creature count {creature_count} != 18"
+    assert creature_count == 22, f"Creature count {creature_count} != 22"
     results.append(f"OK  Creature count = {creature_count}")
 
     # Test 5: Artifact count = 17 (4 Petal + 4 Bauble + 4 Ubauble + 4 Opal + 1 Boots + 1 Spear - wait, count them)
@@ -908,10 +910,10 @@ def test_affinity():
     assert getattr(cannoneer, 'affinity_artifacts', False), "Cannoneer should have affinity"
     results.append("OK  Kappa Cannoneer has trample + affinity")
 
-    # Test 8: FoW has free_cast_if_blue
-    fow = next(c for c in deck if c.tag == 'fow')
-    assert getattr(fow, 'free_cast_if_blue', False), "FoW should have free_cast_if_blue"
-    results.append("OK  Force of Will is free-castable")
+    # Test 8: Frogmite has affinity (replaced maindeck FoW)
+    frogmite = next(c for c in deck if c.tag == 'frogmite')
+    assert getattr(frogmite, 'affinity_artifacts', False), "Frogmite should have affinity"
+    results.append("OK  Frogmite has affinity")
 
     # Test 9: Affinity cost calculation
     class MockPlayer:
