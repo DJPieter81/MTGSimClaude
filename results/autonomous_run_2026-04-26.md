@@ -239,6 +239,64 @@ Fix: 5 gates added.
 
 Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
 
+## Iter 7 — Lands Exploration + Loam (SHIPPED, +9.5pp weighted, first T1 ρ move)
+
+After iter 6's TES revert, attacked the next-highest-leverage T1 calibration outlier — **lands** (sim 0.416 weighted, real meta share 6 %, gap -8.4pp). Per the lessons #24 (missing real cards) and #28 (bypass pattern), the right move was structural mechanic implementation, not bypass auditing.
+
+### What was missing
+1. **Exploration ×4** in deck — never cast, no engine support (`game.py:play_land` had a hard `land_played_this_turn` limit)
+2. **Life from the Loam ×4** in deck — never cast, no dredge mechanism, no recursion of Wasteland from GY
+
+### Implementation (3 files)
+
+**`game.py PlayerState`**: new field `extra_land_drops_used: int`, new methods `_exploration_count()` and `can_play_extra_land()`. `play_land()` now allows extra drops when an Exploration permanent is in play. `untap_all()` resets the counter.
+
+**`sim.py` protagonist land-drop block** (~L549-580): replaced single-shot `if not land_played_this_turn` with a loop `for _ in range(1 + b._exploration_count())`. Prefers Wasteland > Saga > combo lands when picking extras. Logs `[Exploration]` marker on bonus drops.
+
+**`engine.py _strategy_lands`**: Cast Exploration via `cast_spell()` as soon as available. After cast, attempt extra land drops inline. Cast Loam (1G) when 2+ mana available — returns up to 3 land cards from GY to hand (priority Wasteland > Saga > Tabernacle > Maze > Ghost Quarter > Tomb > combo). **Simulated dredge**: if Loam in GY and 3+ cards in library, mill 3 and return Loam to hand.
+
+### Per-matchup impact (n=500)
+
+| Opponent | Before | After | Δ |
+|---|---|---|---|
+| dnt | 0.190 | 0.208 | +1.8pp |
+| uwx | 0.290 | 0.284 | -0.6pp |
+| dimir_d | 0.415 | 0.460 | +4.5pp |
+| oops | 0.265 | 0.331 | +6.6pp |
+| ocelot | 0.330 | 0.417 | **+8.7pp** |
+| **5-opp avg** | 0.298 | 0.340 | **+4.2pp** |
+
+Tempo/midrange matchups (ocelot, dimir_d) gained most from the Exploration tempo boost. DNT/UWX still tough — lands needs Glacial Chasm (life-prevention lock vs aggro) for those, deferred to a future iteration.
+
+### Aggregate matrix re-sim (iter 7)
+
+**Lands weighted EV: 0.416 → 0.511 (+9.5pp)** — out of the bottom cluster, now nearly mid-tier. New top/bottom 5 lists no longer include lands.
+
+**T1 Spearman ρ moved for the first time this session**:
+| Filter | orig (Apr 20) | iter 4 | iter 7 |
+|---|---|---|---|
+| T1 only (n=8) | -0.452 | -0.452 | **-0.429** |
+| T1+T2 (n=14) | -0.152 | -0.178 | -0.169 |
+| All meta (n=36) | -0.011 | +0.045 | +0.061 |
+
+The T1 ρ improvement is small but it's the first signal that calibration is moving. To flip T1 ρ positive, the remaining work is on doomsday (still 0.335, gap -16.5pp) and prison (0.439, gap -6.1pp). Each is a structural project of similar scope.
+
+**Cross-deck stability**: mean |Δ| weighted EV vs iter 4 = 0.94pp ≤ 3pp gate.
+
+Top 10 most-moved decks vs iter 4: only lands (+9.5pp) is significant; the others (-1 to -2pp on dimir variants, ocelot, ur_tempo) reflect those decks' previously-easy matchup vs lands now becoming closer to fair.
+
+Commits: `4b64f7c` (lands fix), `f9bee1c` (matrix re-sim).
+
+### What's left for lands
+
+Worst remaining matchups:
+- vs dnt 0.215 — Thalia tax + Stoneforge clock outraces lands
+- vs uwx 0.260 — control wins long game
+- vs oops 0.310 — fast combo
+- vs sneak_a 0.390 — T2-T3 Show & Tell into Emrakul
+
+All four would benefit from **Glacial Chasm** (life-gain on ETB + skip combat damage = lock vs aggro/tempo). Real Lands runs 1-2 copies. Adding it to the deck + implementing the "skip combat damage to controller" effect is ~50 lines and should close another 5-10pp on these matchups. Deferred to next session.
+
 ## Iter 6 — TES bypass attempt (REVERTED — important timing lesson)
 
 Targeted `decks/tes.py` for the same bypass treatment — 33 raw sites, 14 confirmed TRUE BYPASS via Explore audit (Probe, cantrips, Dark Ritual, Veil, Burning Wish, Infernal Tutor ×2, Tendrils, Empty, FoW, Ad Nauseam).
