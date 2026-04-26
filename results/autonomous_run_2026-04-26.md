@@ -209,6 +209,57 @@ fff907f fix(affinity): remove 4× maindeck FoW, add 4× Frogmite — 5opp 67.9�
 
 ---
 
+## Iter 4 — Infect Chalice-bypass fix (SHIPPED, +11.6pp on prison vs infect)
+
+While auditing prison (T1, sim 0.439, real share 6 %, gap -6.1pp), discovered the actual root cause was in **infect's strategy**, not prison's. Infect's pump spells (Mutagenic Growth, Invigorate, Berserk, Vines of Vastwood, Blossoming Defense) all bypass `opp_can_cast()` — they do `player.remove_from_hand(spell)` directly without checking Chalice/Trinisphere/Thalia. Chalice on 1 should hard-counter all of these (all CMC 1) but the simulator silently let them through.
+
+Fix: gated all 7 pump deployment sites behind `opp_can_cast(spell, mana, gs, caster=player)`. Imports updated.
+
+**Impact at n=300**:
+- prison vs infect: 0.235 → 0.351 (**+11.6pp**) — biggest single matchup move of the entire session
+- prison vs ur_tempo: 0.310 → 0.392 (+8.2pp)
+- prison 5-opp avg: 0.294 → 0.323 (+2.9pp)
+
+**Aggregate matrix re-sim (iter 4 at n=200)**:
+- infect weighted EV: 0.619 → **0.560 (-5.84pp)** — over-tuning was partly bypass-dependent
+- prison weighted EV: 0.439 → 0.439 (0.0pp) — the +11.6pp prison-vs-infect cell doesn't aggregate to weighted EV because infect's meta share is only 2 %
+- Cross-deck stability: 0.16pp ≤ 3pp ✅
+
+Commits: `f71b09c` (infect.py fix), `a779b8b` (matrix re-sim).
+
+## Iter 5 — Affinity Chalice-bypass fix (SHIPPED, code-correctness)
+
+Same bypass pattern found in **affinity**: 5 sites bypassed `opp_can_cast` — Lotus Petal, Mishra's Bauble, Urza's Bauble, Mox Opal (all CMC 0 → Chalice X=0), Lavaspur Boots, Shadowspear (both CMC 1). Trinisphere also wasn't enforced — affinity's "free" artifacts should be taxed to 3 mana under Trinisphere.
+
+Fix: 5 gates added.
+
+**Impact at n=200**:
+- affinity 5-opp avg: 0.507 → 0.476 (**-3.1pp toward 50 %**)
+- vs prison: 0.541, vs painter: 0.500, vs eldrazi: 0.561 — all calibrated near mid-tier post-fix
+
+Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
+
+## Cross-project lesson 28 (Modern alert)
+
+The bypass pattern is **systematic** — found in infect (7 sites), affinity (5 sites). Raw site counts of `player.remove_from_hand` calls in unaudited deck files:
+
+| File | `remove_from_hand` count | Notes |
+|---|---|---|
+| `decks/tes.py` | **33** | Storm combo — highest exposure; would ignore Chalice on 1 vs prison/painter/uwx |
+| `decks/belcher.py` | 7 | Storm-class combo |
+| `decks/sneak_b.py` | 7 | |
+| `decks/affinity.py` | 1 (post-fix) | Sink into Stupor manual cast |
+| `decks/depths.py` | 5 | |
+| `decks/sneak_a.py` | 5 | |
+| `decks/goblins.py` | 6 | Activated abilities — verify each site |
+| `decks/eldrazi.py` | 3 | |
+| `decks/cloudpost.py` | 2 | |
+| `decks/eight_cast.py` | 2 | |
+
+The user reported affinity is also too high in Manu (Modern). The same bypass pattern is the likely culprit. **Lesson 28 added to `CROSS_PROJECT_SYNC.md` with detection one-liner + fix template** — recommend Manu run the audit immediately.
+
+Commit: `b107530`.
+
 ## Iter 3 — Lands audit (REVERTED, useful findings)
 
 After iter 2, attempted to attack the calibration-health #1 priority — **lands** (T1, sim 0.416, real meta share 6 %, gap -8.4pp). 5-opp baseline at n=200 against worst matchups: dnt 0.190, uwx 0.290, dimir_d 0.415, oops 0.265, ocelot 0.330 — avg **0.298**.
