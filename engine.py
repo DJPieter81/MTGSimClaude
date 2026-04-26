@@ -3641,12 +3641,106 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
 def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
     gs.strat_log.log_decision(
         gs.turn, 'lands',
-        candidates=['crop_rotation', 'depths', 'stage', 'marit_lage', 'exploration', 'pass'],
+        candidates=['exploration', 'loam', 'crop_rotation', 'depths', 'stage',
+                    'marit_lage', 'pass'],
         chosen='entry',
         reason=(f"mana={total_mana}, lands={len(player.lands)}, "
                 f"depths_out={any(l.card.tag=='depths' for l in player.lands)}"))
 
     budget = [total_mana]
+
+    # ── Exploration: cheap engine, deploy ASAP ───────────────────────────
+    # Real Lands plays Exploration on T1 to get a 2nd land drop. The engine
+    # tracks Exploration count via PlayerState._exploration_count() and
+    # `play_land` allows extra drops in sim.py's land-play loop. After this
+    # cast, the SAME turn's land drop has already been used; the bonus drops
+    # apply NEXT turn (and every subsequent turn). However, if multiple
+    # lands are still in hand, the lands strategy below will trigger
+    # additional drops via play_land() inline.
+    expl = player.find_tag('exploration')
+    if expl and opp_can_cast(expl, budget[0], gs, caster=player):
+        def _resolve_expl(c):
+            from game import Permanent as _P
+            perm = _P(card=c, controller=('b' if player is gs.p1 else 'o'))
+            player.enchantments.append(perm)
+            log_fn("Exploration — extra land drop per turn")
+        cast_spell(player, opponent, gs, expl, budget, log_fn, log_entries,
+                   on_resolve=_resolve_expl)
+        total_mana = budget[0]
+
+    # ── Bonus land drops: if Exploration is in play and we have lands in
+    # hand, play extra ones now. (sim.py's land loop runs BEFORE strategies
+    # are called, so explorations cast THIS turn enable extra drops only
+    # in this strategy's window.)
+    while player.can_play_extra_land():
+        nl = next((c for c in player.hand if c.is_land()), None)
+        if not nl:
+            break
+        # Prefer Wasteland / Tabernacle / Saga first (immediate utility)
+        priority = {'wl': 0, 'tab': 1, 'saga': 2, 'depths': 3, 'stage': 3,
+                    'yavimaya': 4, 'tomb': 5, 'bog': 6, 'gq': 6, 'maze': 7,
+                    'karakas': 7, 'boseiju': 8, 'forest': 9}
+        nl = min((c for c in player.hand if c.is_land()),
+                 key=lambda c: priority.get(c.tag, 5))
+        played = player.play_land(nl)
+        if not played:
+            break
+        log_fn(f"Land: {nl.name} [Exploration]")
+        gs.apply_continuous_effects(played)
+
+    # ── Life from the Loam: cast and recur up to 3 lands from GY ─────────
+    # Real Lands abuses Loam: Wasteland → GY → Loam returns Wasteland to hand
+    # → play it next turn → Wasteland again. The dredge mechanic isn't
+    # modelled here; we approximate it by allowing Loam to be cast each
+    # turn it's in hand or dredged from GY (via simulated dredge: when Loam
+    # in GY and budget ≥ 2, mill 3 to bring it back).
+    loam_in_hand = player.find_tag('loam')
+    loam_in_gy = next((c for c in player.graveyard if c.tag == 'loam'), None)
+    # Simulated dredge: if Loam is in GY and we'd otherwise draw, dredge it.
+    # Implementation: at the start of each lands turn, if Loam is in GY and
+    # we have at least 3 cards in library, mill 3 cards and return Loam to hand.
+    if loam_in_gy and not loam_in_hand and len(player.library) >= 3:
+        # Mill 3 (lands and spells alike — a real cost of dredge)
+        for _ in range(3):
+            if player.library:
+                milled = player.library.pop(0)
+                player.graveyard.append(milled)
+        player.graveyard.remove(loam_in_gy)
+        player.hand.append(loam_in_gy)
+        log_fn(f"Loam dredged (mill 3 → {len(player.graveyard)} GY)")
+        loam_in_hand = loam_in_gy
+
+    # Cast Loam if in hand and 2+ mana — return up to 3 lands from GY to hand.
+    if loam_in_hand and budget[0] >= 2:
+        gy_lands = [c for c in player.graveyard if c.is_land()]
+        if gy_lands:  # only worth casting if there are lands to return
+            def _resolve_loam(c):
+                # Return up to 3 land cards from GY to hand. Priority: Wasteland
+                # (re-use destruction) > Saga (chapter ticks) > others.
+                pri = {'wl': 0, 'saga': 1, 'tab': 2, 'maze': 3, 'gq': 4,
+                       'tomb': 5, 'depths': 6, 'stage': 6}
+                returnable = sorted([cc for cc in player.graveyard if cc.is_land()],
+                                    key=lambda x: pri.get(x.tag, 5))[:3]
+                for ln in returnable:
+                    player.graveyard.remove(ln)
+                    player.hand.append(ln)
+                player.add_to_grave(c)
+                names = ', '.join(ln.name for ln in returnable)
+                log_fn(f"Life from the Loam → returns [{names}]")
+            cast_spell(player, opponent, gs, loam_in_hand, budget,
+                       log_fn, log_entries, on_resolve=_resolve_loam)
+            total_mana = budget[0]
+            # After Loam, replay an extra land if Exploration permits
+            while player.can_play_extra_land():
+                nl = next((c for c in player.hand if c.is_land()), None)
+                if not nl:
+                    break
+                played = player.play_land(nl)
+                if not played:
+                    break
+                log_fn(f"Land: {nl.name} [Exploration post-Loam]")
+                gs.apply_continuous_effects(played)
+
     crop = player.find_tag('crop')
     if crop and opp_can_cast(crop, budget[0], gs, caster=player):
         def _resolve_crop(c):
