@@ -636,6 +636,13 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
                         if c.card_type == _CT.ARTIFACT
                         or c.tag in ARTIFACT_CREATURE_TAGS]
 
+        # Restrict Emry recursion to true 0-cost artifacts (petal/bauble/opal).
+        # Real Emry is a 1/2 that gets bolted on sight; recurring 4/4 Cannoneers
+        # and 7-cmc Monitors at affinity-reduced cost every turn assumes she
+        # always survives, which the simulator doesn't model.
+        gy_artifacts = [c for c in gy_artifacts
+                        if c.tag in ('petal', 'bauble', 'ubauble', 'opal')]
+
         if gy_artifacts:
             # Base CMCs for artifact creatures (used to compute affinity costs)
             _CREATURE_BASE_CMC = {
