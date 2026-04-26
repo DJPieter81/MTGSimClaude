@@ -3365,7 +3365,14 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
             if opponent.hand:
                 nonlands = [cc for cc in opponent.hand if not cc.is_land()]
                 if nonlands:
-                    ex = random.choice(nonlands); opponent.hand.remove(ex); opponent.exile.append(ex)
+                    # Priority: win condition > combo piece > engine > highest CMC
+                    # (highest CMC = most expensive = most disruptive to remove from hand).
+                    # Was random.choice — exiled trivial cards 60-80% of the time.
+                    ex = (next((cc for cc in nonlands if cc.win_condition), None)
+                          or next((cc for cc in nonlands if cc.is_combo_piece), None)
+                          or next((cc for cc in nonlands if getattr(cc, 'engine', False)), None)
+                          or max(nonlands, key=lambda c: c.cmc))
+                    opponent.hand.remove(ex); opponent.exile.append(ex)
                     log_fn(f"TKS exiles {ex.name}", True)
         cast_spell(player, opponent, gs, tks, budget, log_fn, log_entries,
                    on_resolve=_resolve_tks)
