@@ -239,6 +239,52 @@ Fix: 5 gates added.
 
 Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
 
+## Iter 9 — Prison TKS targeting fix (SHIPPED, T1+T2 ρ moved -0.169 → -0.121)
+
+After iter 8's Glacial Chasm revert, audited prison strategy code via verbose game traces. Found a clear bug: TKS used `random.choice(nonlands)` to pick its exile target. Random selection means TKS exiled trivial cards (Cabal Therapy, Spirit Guides, Lotus Petals) most of the time, leaving the actual win conditions (Show and Tell, Balustrade Spy, Emrakul) in opponent's hand to combo through.
+
+### Fix
+Targeted exile priority in `engine.py:3361`:
+1. `win_condition` (Show and Tell, Balustrade Spy, Tendrils)
+2. `is_combo_piece` (Doomsday, Sneak Attack, Empty)
+3. `engine` flag (Lurrus, Emry, Phyrexian Tower)
+4. Highest CMC (most expensive = most disruptive to remove from hand)
+
+### Per-matchup impact (n=500)
+| Opponent | Before | After | Δ |
+|---|---|---|---|
+| infect | 0.304 | 0.351 | **+4.7pp** ★ (TKS exiles Glistener / pump) |
+| sneak_a | 0.294 | 0.343 | **+4.9pp** ★ (TKS exiles SaT / Emrakul) |
+| oops | 0.236 | 0.226 | -1.0pp (noise) |
+| ur_tempo | 0.409 | 0.381 | -2.8pp (noise; tempo has many redundant cards) |
+| burn | 0.365 | 0.355 | -1.0pp (noise) |
+| **avg** | **0.322** | **0.331** | +0.94pp |
+
+### Iter 9 matrix re-sim
+- Prison weighted EV: **0.440 → 0.440** (no aggregate move)
+- Cross-deck mean |Δ|: 0.33pp (very stable; only prison's matches changed)
+- **T1+T2 Spearman ρ: -0.169 → -0.121 (+0.048)** ← meaningful calibration win
+- T1 ρ: unchanged at -0.429
+- All-decks ρ: +0.061 → +0.084 (+0.023)
+
+The improvement shows up in T1+T2 ρ (not T1) because prison's targeted matchups are mostly T2 decks (sneak_a, infect). Prison's own weighted EV barely shifts because the improvements (+4.7pp on infect at 2% share + +4.9pp on sneak_a at 4% share) average to a tiny weighted contribution.
+
+### Same bug found in eldrazi — REVERTED
+The same `random.choice` TKS targeting exists in `_strategy_eldrazi` (engine.py:3458). Tested at n=300 across 9 matchups:
+- TES +16.9pp, sneak_a +8.2pp, infect +4.0pp ← targeted is much better
+- storm -7.4pp, reanimator -5.8pp, show -4.0pp ← random was better
+
+For decks with multiple redundant payoffs (storm/reanimator/show — many tendrils + many rituals + many cantrips), targeted exile of one win-con is recoverable via cantrips. Random exile is more disruptive in expectation because it likely hits a critical mana ritual or cantrip instead.
+
+Net +1.23pp aggregate but per-matchup variance too high. **Reverted with detailed code comment** at engine.py:3450 documenting the research finding for future iteration.
+
+### Lesson — TKS targeting depends on opponent deck redundancy
+- Decks with **single key card** (Show and Tell deck, infect's combo creature, Balustrade Spy): targeted-best-exile clearly wins
+- Decks with **N redundant payoffs** (storm-class, reanimator-class): random exile may be better because it hits the most-frequent card type (rituals/cantrips), not the rarest
+- Future improvement: opponent-aware TKS targeting. If `opponent.deck_key in {tes, storm, reanimator}`: random-pick weighted toward CMC. Else: priority-pick.
+
+Commits: `2f44673` (prison TKS fix), `caa14c3` (iter 9 matrix re-sim).
+
 ## Iter 8 — Glacial Chasm attempt (REVERTED — deck-composition tradeoff lesson)
 
 After iter 7 shipped Exploration+Loam, attempted to close Lands' remaining bottom matchups (vs dnt 0.215, uwx 0.260, oops 0.310) with **Glacial Chasm** — a defensive land that prevents all damage to controller, with cumulative upkeep cost.
