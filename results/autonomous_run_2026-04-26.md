@@ -239,6 +239,74 @@ Fix: 5 gates added.
 
 Commit: `ee7877d`. Did not run a full matrix re-sim for this one (would have given a 4th matrix; cumulative impact is small relative to iter 1-2 affinity work).
 
+## Iter 13 — Goblins Ringleader deployment (SHIPPED, +4.2pp weighted)
+
+After iter 12's TKS revert, audited goblins (sim 0.386 weighted, T3 — not in bottom-5 calibration metric but still suspiciously low for a deck where the simulator showed catastrophic 8.5 % vs Burn). Real Legacy goblins is ~50-55 % vs Burn.
+
+### Bug
+The deploy-creatures loop iterated over `('cratermaker', 'warchief', 'expert', 'prospector')` — **missing Goblin Ringleader (CMC 4)**. Real Goblins runs Ringleader as the key value engine (reveal top 4, all goblins to hand). Without deploy logic, Ringleader sat dead in hand all game. Verbose game trace at seed=7 confirmed: goblins drew Ringleader, never cast it, lost to Burn at T8.
+
+### Fix (decks/goblins.py:310)
+Extended deploy loop to `('cratermaker', 'warchief', 'expert', 'prospector', 'pashalik', 'sling', 'ringleader')`. Added Ringleader's ETB effect inline: reveal top 4 of library, move all goblin creatures to hand.
+
+### Per-matchup at n=300
+| Opponent | Before | After | Δ |
+|---|---|---|---|
+| burn | 0.085 | 0.128 | **+4.3pp** ★ |
+| dimir | 0.275 | 0.321 | **+4.6pp** ★ |
+| ur_tempo | 0.075 | 0.101 | +2.6pp |
+| eldrazi | 0.155 | 0.179 | +2.4pp |
+| ur_delver, dimir_d, affinity, depths | various | various | within noise |
+| **avg** | — | — | **+1.67pp** |
+
+### Iter 13 matrix re-sim
+- **Goblins weighted EV: 0.386 → 0.427 (+4.16pp)** — out of bottom cluster
+- Cross-deck mean |Δ|: 0.12pp (only goblins moved, as expected)
+- T1 ρ: unchanged at -0.429 (goblins is T3)
+- T1+T2 ρ: unchanged at -0.121
+- All-decks ρ: +0.084 → +0.081 (tiny)
+
+T1 ρ unchanged because goblins is a T3 deck. The weighted improvement is genuine but doesn't pull T1 ρ.
+
+Commits: `77ee196` (Ringleader fix), `fbd5dda` (matrix re-sim).
+
+## Iter 12 — WST audit (no fix shipped — Cloudpost lock dominates)
+
+While auditing wan_shi_tong (T3, 0.395 weighted), traced 20 games vs the worst matchup (vs cloudpost at 7%). Result: **0/20 wins**, all losses to "Cloudpost: Karn Lattice lock" on T6-T8.
+
+WST's strategy taps out for Sanctifier T3 + Teferi T4-T5, leaving no Counterspell mana on T6-T7 when Cloudpost casts Karn (then immediately wishes for Mycosynth Lattice, locking out opp's lands).
+
+### Why this isn't a quick fix
+Real WST plan vs Cloudpost: hold Counterspell mana from T4 onward, only deploy threats with leftover mana. The simulator's strategy doesn't sequence reactive vs proactive plays based on opponent archetype — it just deploys whatever fits the budget each turn.
+
+Fix would require either:
+1. Strategy code that detects "opp is ramp-combo" and prioritises mana for counters
+2. Add a `MatchupCategory.RAMP_COMBO` decision-context flag and gate Teferi/Sanctifier deployment when matchup matches AND counterspell in hand
+
+This is structural strategy work — bigger scope than the iter-13 Ringleader fix. Documented for future session.
+
+## Iter 12 retry — Opp-aware TKS with critical-card heuristic (REVERTED)
+
+After iter 11's revert, retried opp-aware TKS with a refined heuristic: count win_cons + combo_pieces in opp hand only (not the broader "redundant tags" set). Threshold ≥2 → random; else targeted.
+
+### Per-matchup at n=300 (looked OK)
+- Eldrazi avg +5.53pp (TES +13.5pp ★, infect +5.0pp ★, dimir +3.4pp; storm -10.1pp, oops -2.5pp)
+- Prison avg +5.83pp (oops +6.9pp ★, reanimator +5.1pp ★, storm +3.1pp ★, ur_tempo +2.5pp)
+
+### Matrix re-sim (told a different story again)
+- Prison weighted: 0.440 → 0.434 (-0.56pp)
+- Eldrazi weighted: 0.595 → 0.595 (0pp)
+- **T1+T2 ρ: -0.121 → -0.134 (-0.013 regression)** — same direction as iter 11
+- All-decks ρ: +0.084 → +0.077 (-0.007)
+
+**Reverted**. Two consecutive opp-aware TKS attempts have regressed the calibration metric at the matrix level despite looking positive in n=300 spot-checks. The dynamic heuristic doesn't aggregate cleanly across 36 deck pairings.
+
+### Lesson — "spot-check positive ≠ matrix positive" (now twice confirmed)
+Future opp-aware TKS work should:
+1. Use **per-deck hardcoded list** instead of dynamic heuristic (eliminates threshold tuning)
+2. **Test on full matrix at n=200 first**, NOT n=300 spot-checks
+3. Or accept that the targeted-vs-random distinction isn't worth more iteration cycles — the iter 9 "prison-targeted-only" stance is the stable equilibrium
+
 ## Iter 11 — Opp-aware TKS targeting (REVERTED — heuristic was too eager)
 
 After iter 9's prison TKS targeting and iter 10's Lurrus rebuy, attempted to combine the iter-9 research findings: "targeted exile beats random for single-key decks; random beats targeted for redundant-payoff decks". Built a shared helper `_tks_pick_exile(opp_nonland_hand)` that picks targeted vs random based on count of redundant disruption tags in opp's hand (≥3 → random, else targeted).
