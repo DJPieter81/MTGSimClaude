@@ -1959,11 +1959,11 @@ def run_rules_tests():
     # ── Audit: Card attributes (Oracle text correctness) ───────────────────
     from cards import DECKS as ALL_DECKS
     bug_deck_ = ALL_DECKS['bug']()
-    murktide_  = next((c for c in bug_deck_ if c.name == 'Murktide Regent'), None)
-    borrower_  = next((c for c in bug_deck_ if c.name == 'Brazen Borrower'), None)
-    bowm_      = next((c for c in bug_deck_ if c.name == 'Orcish Bowmasters'), None)
-    tamiyo_    = next((c for c in bug_deck_ if c.name == 'Tamiyo, Inquisitive Student'), None)
-    daze_card_ = next((c for c in bug_deck_ if c.name == 'Daze'), None)
+    murktide_  = next((c for c in bug_deck_ if c.name == 'Murktide Regent'), None)  # abstraction-allow: test fixture (audit/rules-test block)
+    borrower_  = next((c for c in bug_deck_ if c.name == 'Brazen Borrower'), None)  # abstraction-allow: test fixture (audit/rules-test block)
+    bowm_      = next((c for c in bug_deck_ if c.name == 'Orcish Bowmasters'), None)  # abstraction-allow: test fixture (audit/rules-test block)
+    tamiyo_    = next((c for c in bug_deck_ if c.name == 'Tamiyo, Inquisitive Student'), None)  # abstraction-allow: test fixture (audit/rules-test block)
+    daze_card_ = next((c for c in bug_deck_ if c.name == 'Daze'), None)  # abstraction-allow: test fixture (audit/rules-test block)
 
     test("Murktide has flying (BUG deck)",   murktide_.flying if murktide_ else 'MISSING',  True)
     test("Murktide has delve (BUG deck)",    murktide_.delve  if murktide_ else 'MISSING',  True)
@@ -2005,7 +2005,7 @@ def run_rules_tests():
         bowm_perm = Perm_(card=bowm_card, controller='b', summoning_sick=False)
         gs_orc.p1.creatures.append(bowm_perm)
     orc_log = []; bowmasters_triggers(1, gs_orc, orc_log)
-    orc_in_creatures = any(p.name == 'Orc Army' for p in gs_orc.p1.creatures)
+    orc_in_creatures = any(p.name == 'Orc Army' for p in gs_orc.p1.creatures)  # abstraction-allow: test fixture (audit/rules-test block)
     test("Orc Army: added to creatures list (real permanent)", orc_in_creatures, True)
 
     # ── Audit: BUG deck is exactly 60 cards ────────────────────────────────
@@ -2307,8 +2307,8 @@ def run_rules_tests():
         from rules import Permanent as _Perm, LandPermanent as _LP
         from game import GameState as _GS, PlayerState as _PS
         _burn = _DECKS['burn']()
-        _bolt = next(c for c in _burn if c.name == 'Lightning Bolt')
-        _mt = next(c for c in _burn if c.name == 'Mountain')
+        _bolt = next(c for c in _burn if c.name == 'Lightning Bolt')  # abstraction-allow: test fixture (audit/rules-test block)
+        _mt = next(c for c in _burn if c.name == 'Mountain')  # abstraction-allow: test fixture (audit/rules-test block)
         _p1 = _PS(name='b', hand=[], library=[])
         _p2 = _PS(name='o', hand=[_bolt], library=[])
         _gs = _GS(p1=_p1, p2=_p2)
@@ -2328,7 +2328,7 @@ def run_rules_tests():
         test("Trinisphere @ 2 mountains cannot cast Bolt", _occ(_bolt, 2, _gs, _p2), False)
         _gs.trinisphere_active = False
         # Thalia +1 tax on noncreature spells
-        _thalia = next(c for c in _DECKS['dnt']() if c.name == 'Thalia, Guardian of Thraben')
+        _thalia = next(c for c in _DECKS['dnt']() if c.name == 'Thalia, Guardian of Thraben')  # abstraction-allow: test fixture (audit/rules-test block)
         _p1.creatures.append(_Perm(card=_thalia, controller='b'))
         test("Thalia on opp: Bolt @ 2 mountains can cast",
              _occ(_bolt, 2, _gs, _p2), True)

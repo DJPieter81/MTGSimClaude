@@ -598,10 +598,10 @@ def london_mulligan(deck_fn, keep_fn, matchup: str = '', trace: bool = False) ->
                 else: tags.append('land')
             else:
                 if c.is_creature(): tags.append(f"creature {c.base_power}/{c.base_toughness}")
-                elif c.card_type.name == 'INSTANT': tags.append('instant')
-                elif c.card_type.name == 'SORCERY': tags.append('sorcery')
-                elif c.card_type.name == 'ARTIFACT': tags.append('artifact')
-                elif c.card_type.name == 'PLANESWALKER': tags.append('planeswalker')
+                elif c.card_type.name == 'INSTANT': tags.append('instant')  # abstraction-allow: card_type enum check, not card name
+                elif c.card_type.name == 'SORCERY': tags.append('sorcery')  # abstraction-allow: card_type enum check, not card name
+                elif c.card_type.name == 'ARTIFACT': tags.append('artifact')  # abstraction-allow: card_type enum check, not card name
+                elif c.card_type.name == 'PLANESWALKER': tags.append('planeswalker')  # abstraction-allow: card_type enum check, not card name
                 tags.append(f"CMC {c.cmc}")
                 if c.is_combo_piece: tags.append('combo')
                 if c.win_condition: tags.append('win-con')
