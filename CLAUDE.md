@@ -1,5 +1,33 @@
 # MTGSimClaude — Legacy Format Monte Carlo Simulator
 
+## ABSTRACTION CONTRACT (read before any engine/AI code change)
+
+The slogan "no patches, solve holistically" does not bind. These rules do. They apply to every change in the engine/AI Python files at root (`sim.py`, `game.py`, `engine.py`, `gameplan.py`, `goal_engine.py`, `lookahead.py`, `rollout.py`, `interaction.py`, etc.). They do NOT apply to `decks/*.py` — deck plugins legitimately reference card names by design. Before writing the diff, answer all four:
+
+1. **Class size** — how many of Legacy's card pool could legitimately hit this code path? If fewer than 10, you are patching. Stop. Find the mechanic.
+2. **Subsystem** — which single module owns this rule? If the change spans 2+ modules, the boundary is wrong; fix the boundary first.
+3. **Failing test, rule-phrased** — write the test before the fix. The test name describes the *mechanic*, not the card. If you can't phrase the rule without naming a card, you don't understand the bug yet.
+4. **Knowledge location** — card-specific knowledge lives in oracle text, card flags (`is_combo_piece`, `win_condition`, tags), or `decks/*.py` plugin modules. NEVER in the engine/AI core files.
+
+### Hard prohibitions (CI-enforceable)
+
+- **No new `card.name == "X"` or `name in {…}` outside `decks/` and `import_deck.py`.** Pre-commit ratchet (`tools/check_abstraction.py`) blocks any commit that *increases* the count from `tools/abstraction_baseline.json`. Reducing the count requires explicitly lowering the baseline. True exceptions (enum checks, test fixtures) get `# abstraction-allow: <reason>` on the line.
+- **No new numeric threshold without a test that names the rule.** A literal `0.7` with no comment, no constant name, and no test is a magic number.
+- **No fix without a failing test in the same diff.** Test goes red first, then the fix lands and turns it green. Both in the same commit.
+- **No second diagnostic phase on an outlier without a replay-based root cause first.** Documentation is not progress.
+- **No plan-file proliferation at root.** Root-level `.md` is restricted to: `README.md`, `CLAUDE.md`, `PLANNING.md`, `CROSS_PROJECT_SYNC.md`. New design/plan docs go in `docs/design/` or `docs/proposals/` with frontmatter. Single-shot task files (`OVERNIGHT_*.md`, `*_PLAYBOOK.md`) go in `docs/history/plans/` once finished.
+- **No `_V[0-9]+.md` filename versioning anywhere.** Supersession is recorded via frontmatter `superseded_by`, never by spawning a `_V2` sibling. `tools/check_doc_hygiene.py` enforces both rules.
+
+### Loop-break (session protocol)
+
+If three consecutive commits target the same outlier deck without moving the win rate toward its expected band: **halt**. Run a replay against the worst matchup, identify the exact turn where EV diverges from correct play, name the responsible subsystem in writing in `docs/`. No further code until that document exists. This is the cure for the diagnostic-loop trap.
+
+### Enforcement
+
+`.github/workflows/abstraction-contract.yml` runs both checks on every push to `main` and every PR. Cannot be bypassed regardless of how the commit was made (web UI, github.dev, fresh container, local clone). The script `tools/check_abstraction.py` is the single source of truth — runnable standalone (`python tools/check_abstraction.py [--list]`).
+
+---
+
 ## Quick Start
 
 ```bash

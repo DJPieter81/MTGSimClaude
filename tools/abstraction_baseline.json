@@ -1,0 +1,4 @@
+{
+  "hardcoded_name_count": 13,
+  "_comment": "Abstraction-contract ratchet baseline for MTGSimClaude. Counts hardcoded card-name conditionals in *.py outside decks/ and import_deck.py (which legitimately reference cards). Current 13 hits are mostly false positives — sim.py test fixtures (lines 1962-2331) and game.py card-type-enum checks (601-604). Could be ratcheted down by tagging each with '# abstraction-allow: <reason>'. Pre-eminent rule is that count cannot grow. See CLAUDE.md ABSTRACTION CONTRACT."
+}
