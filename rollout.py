@@ -20,6 +20,7 @@ from typing import Optional
 
 from engine import play_turn
 from config import GameRules as GR
+from game import score_timeout
 
 
 def _resolve_outcome(gs) -> int:
@@ -27,13 +28,7 @@ def _resolve_outcome(gs) -> int:
     `sim.run_game` for timeouts."""
     if gs.game_over and gs.winner:
         return 1 if gs.winner == "p1" else 0
-    p1_score = (sum(c.power for c in gs.p1.creatures) * 2
-                + len(gs.p1.creatures) * 3 + len(gs.p1.lands)
-                + max(0, gs.p1.life - gs.p2.life))
-    p2_score = (sum(c.power for c in gs.p2.creatures) * 2
-                + len(gs.p2.creatures) * 3 + len(gs.p2.lands)
-                + max(0, gs.p2.life - gs.p1.life))
-    return 1 if p1_score >= p2_score else 0
+    return 1 if score_timeout(gs.p1, gs.p2) >= score_timeout(gs.p2, gs.p1) else 0
 
 
 def rollout_to_end(gs, max_turns_remaining: int = 5,

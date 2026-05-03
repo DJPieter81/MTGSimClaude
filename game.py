@@ -10,7 +10,7 @@ v2 fixes:
 
 import random
 from dataclasses import dataclass, field
-from config import GameRules as GR
+from config import GameRules as GR, TimeoutScoring as TSC
 from typing import List, Dict, Optional
 from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
                    StackObject, StackType, MTGRules)
@@ -553,6 +553,22 @@ class GameState:
         self.b2b_on_board = active
         self.p1.apply_b2b(active)
         self.p2.apply_b2b(active)
+
+    def on_permanent_destroyed(self, perm) -> None:
+        """Centralized cleanup for global continuous-effect flags when a
+        permanent leaves the battlefield. Engine-side destroy/exile sites
+        call this so they don't have to know which tags own which flags.
+
+        Tag-keyed (legitimate per CLAUDE.md: tags are an explicit
+        abstraction layer; card names are not). Add new global-flag
+        permanents here, never in engine.py.
+        """
+        tag = perm.card.tag
+        if   tag == 'chalice': self.chalice_x = None
+        elif tag == 'bridge':  self.bridge_on_board = False
+        elif tag == 'moon':    self.set_moon(False)
+        elif tag == 'b2b':     self.set_b2b(False)
+        elif tag == 'trini':   self.trinisphere_active = False
 
     def apply_continuous_effects(self, perm) -> None:
         """CR 613 — apply all currently active global continuous effects to a
@@ -1106,3 +1122,16 @@ def can_afford(player: 'PlayerState', cost: dict) -> bool:
     # Generic from total remainder
     total_remaining = sum(available_by_color.values())
     return total_remaining >= remaining.get('generic', 0)
+
+
+def score_timeout(player: 'PlayerState', opponent: 'PlayerState') -> int:
+    """Board-state tiebreak score for one side at simulation timeout.
+
+    Single source of truth for the formula previously inlined in sim.py,
+    rollout.py, verbose_table.py, and scripts/collect_mulligan_q.py.
+    Higher score wins. Weights live in config.TimeoutScoring.
+    """
+    return (sum(c.power for c in player.creatures) * TSC.POWER_WEIGHT
+            + len(player.creatures) * TSC.CREATURE_COUNT_WEIGHT
+            + len(player.lands) * TSC.LAND_WEIGHT
+            + max(0, player.life - opponent.life))

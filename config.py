@@ -231,6 +231,21 @@ class InteractionParams:
 
 
 # ═══════════════════════════════════════════════════════════════════
+# THREAT LEVELS  (single source of truth — re-exported from interaction.py)
+# ═══════════════════════════════════════════════════════════════════
+
+class ThreatLevel:
+    """Categorical threat severity used by classify_threat() and the
+    counter/removal priority logic. Defined here so config-layer modules
+    (ThreatConfig, ClockDelta) can reference the same integers without
+    importing interaction.py and creating a circular dependency."""
+    MUST_ANSWER_NOW = 4   # combo / win-con — resolve = likely lose
+    HIGH            = 3   # engine / lock / haste — permanent advantage
+    MEDIUM          = 2   # fair threat answerable next turn
+    LOW             = 1   # cantrip / ritual / minor spell
+
+
+# ═══════════════════════════════════════════════════════════════════
 # THREAT CONFIG  (drives classify_threat in interaction.py)
 # ═══════════════════════════════════════════════════════════════════
 
@@ -240,11 +255,11 @@ class ThreatConfig:
     Maps tag → base ThreatLevel (can be overridden by matchup context).
     """
 
-    # ThreatLevel constants (mirrors interaction.py)
-    MUST   = 4
-    HIGH   = 3
-    MEDIUM = 2
-    LOW    = 1
+    # Aliases of ThreatLevel — kept for the compact tag-level table below.
+    MUST   = ThreatLevel.MUST_ANSWER_NOW
+    HIGH   = ThreatLevel.HIGH
+    MEDIUM = ThreatLevel.MEDIUM
+    LOW    = ThreatLevel.LOW
 
     # Per-tag overrides: {tag: level}
     # Tags not listed fall through to type-based defaults
@@ -375,6 +390,61 @@ class MulliganScoring:
     SCORE_OTHER = 1          # everything else
 
 
+# ═══════════════════════════════════════════════════════════════════
+# TIMEOUT SCORING  (board-state tiebreak when sim hits MAX_TURNS)
+# ═══════════════════════════════════════════════════════════════════
+
+class TimeoutScoring:
+    """Weights for the board-state tiebreak used at simulation timeout.
+
+    Score per side = power*POWER + creatures*CREATURE_COUNT
+                   + lands*LAND + max(0, life - opp_life)
+    Higher score wins. life_delta has implicit weight 1.
+    """
+    POWER_WEIGHT          = 2
+    CREATURE_COUNT_WEIGHT = 3
+    LAND_WEIGHT           = 1
+
+
+# ═══════════════════════════════════════════════════════════════════
+# DISCARD-TARGET PRIORITY  (Thoughtseize / Hymn / Cabal Therapy)
+# ═══════════════════════════════════════════════════════════════════
+
+class TSTargetPriority:
+    """Priority weights for proactive discard targeting. Higher = strip first.
+
+    All entries are role-based (win_condition, lock_piece, engine, …) — no
+    card-name knowledge. Branch order matters in interaction.best_proactive_target;
+    these constants set the magnitudes only."""
+    WIN_CONDITION       = 100
+    COMBO_PIECE         =  90
+    MIRROR_DRAW_TRIGGER =  85   # draw-punisher in mirrors
+    LOCK_PIECE          =  80
+    ENGINE              =  70
+    FREE_COUNTER        =  65   # CMC>=3 free-cast-if-blue
+    MIRROR_FREE_CAST    =  60   # cheaper free-cast in mirror only
+    HASTE_CREATURE      =  60
+    HIGH_CMC_CREATURE   =  50   # CMC >= 4
+    MID_CMC_CREATURE    =  40   # CMC >= 2
+    REMOVAL             =  30
+    RITUAL              =  25   # mana ritual — delays combo
+    BASELINE            =  10   # cantrips / misc nonland
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CLOCK DELTA  (numeric translation of ThreatLevel for clock.py-style scoring)
+# ═══════════════════════════════════════════════════════════════════
+
+class ClockDelta:
+    """Threat-level → clock-delta (turns). Negative means the threat
+    actually buys time (cantrip-class). Used by threat_level_to_clock_delta
+    in interaction.py."""
+    MUST_ANSWER_NOW =  3.5
+    HIGH            =  1.2
+    MEDIUM          =  0.3
+    LOW             = -0.1
+
+
 # Convenience: export everything at module level
 CR = CardRoles
 IP = InteractionParams
@@ -384,3 +454,6 @@ GR = GameRules
 CT = CombatThresholds
 CL = CounterLogic
 MS = MulliganScoring
+TS = TSTargetPriority
+TSC = TimeoutScoring
+CD = ClockDelta

@@ -13,7 +13,7 @@ from typing import List, Optional
 from rules import MTGRules, StackType, Card
 from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
                    instant, sorcery, artifact, creature)
-from game import GameState, PlayerState, london_mulligan, opp_keep
+from game import GameState, PlayerState, london_mulligan, opp_keep, score_timeout
 from engine import opp_turn, play_turn, update_goyf
 from config import GameRules as GR, CombatThresholds as CT
 
@@ -228,12 +228,8 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
 
     # Timeout resolution: score board position
     if not gs.game_over:
-        p1_score = (sum(c.power for c in gs.p1.creatures) * 2 +
-                    len(gs.p1.creatures) * 3 + len(gs.p1.lands) +
-                    max(0, gs.p1.life - gs.p2.life))
-        p2_score = (sum(c.power for c in gs.p2.creatures) * 2 +
-                    len(gs.p2.creatures) * 3 + len(gs.p2.lands) +
-                    max(0, gs.p2.life - gs.p1.life))
+        p1_score = score_timeout(gs.p1, gs.p2)
+        p2_score = score_timeout(gs.p2, gs.p1)
 
         if p1_score > p2_score:
             gs.winner = 'p1'

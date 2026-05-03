@@ -9,7 +9,7 @@ import sys, random
 sys.path.insert(0, '.')
 
 from cards import DECKS
-from game import PlayerState, GameState, london_mulligan, opp_keep
+from game import PlayerState, GameState, london_mulligan, opp_keep, score_timeout
 from engine import opp_turn
 from sim import protagonist_turn
 from deck_registry import get_keep_fn
@@ -273,12 +273,8 @@ def run_table_game(matchup, seed=None, protagonist='bug'):
 
     # ── Timeout heuristic ──
     if not gs.game_over:
-        pro_power = sum(c.power for c in gs.p1.creatures)
-        opp_power = sum(c.power for c in gs.p2.creatures)
-        pro_score = (pro_power * 2 + len(gs.p1.creatures) * 3
-                     + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life))
-        opp_score = (opp_power * 2 + len(gs.p2.creatures) * 3
-                     + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life))
+        pro_score = score_timeout(gs.p1, gs.p2)
+        opp_score = score_timeout(gs.p2, gs.p1)
         if pro_score >= opp_score:
             gs.winner = 'p1'
             gs.win_reason = f"Board/life advantage after T{display_turn}"
@@ -368,12 +364,8 @@ def run_game_data(matchup, seed=None, protagonist='bug'):
 
     # Timeout heuristic — if game didn't end, score board position
     if not gs.game_over:
-        pro_power = sum(c.power for c in gs.p1.creatures)
-        opp_power = sum(c.power for c in gs.p2.creatures)
-        pro_score = (pro_power * 2 + len(gs.p1.creatures) * 3
-                     + len(gs.p1.lands) + max(0, gs.p1.life - gs.p2.life))
-        opp_score = (opp_power * 2 + len(gs.p2.creatures) * 3
-                     + len(gs.p2.lands) + max(0, gs.p2.life - gs.p1.life))
+        pro_score = score_timeout(gs.p1, gs.p2)
+        opp_score = score_timeout(gs.p2, gs.p1)
         if pro_score >= opp_score:
             gs.winner = 'p1'
             gs.win_reason = f"Board/life advantage after T{display_turn}"

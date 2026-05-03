@@ -39,6 +39,26 @@ _ORC_ARMY_PROTO = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
                        base_power=0, base_toughness=0, gy_type='creature')
 
 
+def _destroy_permanent_targets(gs, controller, targets) -> list[str]:
+    """Move target permanents from `controller`'s artifact-or-enchantment
+    zone to its graveyard. Routes global continuous-effect cleanup through
+    `gs.on_permanent_destroyed()` so engine-side code stays card-agnostic.
+
+    Returns the names of permanents actually destroyed (silently skips any
+    target no longer in the zone — protects against double-resolution)."""
+    names = []
+    for t in targets:
+        tlist = (controller.artifacts if t in controller.artifacts
+                 else controller.enchantments)
+        if t not in tlist:
+            continue
+        tlist.remove(t)
+        controller.add_to_grave(t.card)
+        names.append(t.name)
+        gs.on_permanent_destroyed(t)
+    return names
+
+
 def _select_attackers(player, opponent, hold_tags=CT.HOLD_ATTACK_TAGS, desperate_life=CT.DESPERATE_LIFE):
     """Shared attacker selection for aggro/midrange strategies.
     Returns list of creatures to attack with. Holds back value engines and 0-power."""
@@ -1475,10 +1495,7 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.add_to_grave(ad_target.card)
             log_fn(f"Abrupt Decay [uncounterable] → {ad_target.name} (CMC {ad_target.cmc}≤3)",
                 key=True)
-            if ad_target.card.tag == 'chalice': gs.chalice_x = None
-            elif ad_target.card.tag == 'bridge': gs.bridge_on_board = False
-            elif ad_target.card.tag == 'moon':   gs.set_moon(False)
-            elif ad_target.card.tag == 'b2b':    gs.set_b2b(False)
+            gs.on_permanent_destroyed(ad_target)
             update_goyf(gs)
 
     # ── Fatal Push — C1: needs 1B ──
@@ -1611,16 +1628,7 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             if targets:
                 def _resolve_fov(c):
                     player.add_to_grave(c)
-                    names = []
-                    for t in targets:
-                        tlist = opponent.artifacts if t in opponent.artifacts else opponent.enchantments
-                        if t in tlist:
-                            tlist.remove(t)
-                            opponent.add_to_grave(t.card)
-                            names.append(t.name)
-                            if t.card.tag == 'chalice': gs.chalice_x = None
-                            elif t.card.tag == 'bridge': gs.bridge_on_board = False
-                            elif t.card.tag == 'trini':  gs.trinisphere_active = False
+                    names = _destroy_permanent_targets(gs, opponent, targets)
                     log_fn(f"★ Force of Vigor (paid {'{1}{G}{G}'}) → destroys {' + '.join(names)}", key=True)
                 cast_spell(player, opponent, gs, fov_paid, budget, log_fn, log_entries,
                            on_resolve=_resolve_fov, cost_override=3)
@@ -1916,17 +1924,7 @@ def _p1_force_of_vigor(gs, target_tags, log_list):
     b.remove_from_hand(fov)
     b.remove_from_hand(green_pitch)
     b.exile.append(green_pitch)
-    names = []
-    for t in targets:
-        tlist = gs.p2.artifacts if t in gs.p2.artifacts else gs.p2.enchantments
-        if t in tlist:
-            tlist.remove(t)
-            gs.p2.add_to_grave(t.card)
-            names.append(t.name)
-            if t.card.tag == 'chalice': gs.chalice_x = None
-            elif t.card.tag == 'bridge': gs.bridge_on_board = False
-            elif t.card.tag == 'moon':   gs.set_moon(False)
-            elif t.card.tag == 'b2b':    gs.set_b2b(False)
+    names = _destroy_permanent_targets(gs, gs.p2, targets)
     update_goyf(gs)
     log_list.append(f"★ BUG Force of Vigor (free on opp's turn, exiles {green_pitch.name})"
                     f" → destroys {' + '.join(names)}")
@@ -1949,17 +1947,7 @@ def _force_of_vigor_generic(responder, active, gs, target_tags, log_list):
     responder.remove_from_hand(fov)
     responder.remove_from_hand(green_pitch)
     responder.exile.append(green_pitch)
-    names = []
-    for t in targets:
-        tlist = active.artifacts if t in active.artifacts else active.enchantments
-        if t in tlist:
-            tlist.remove(t)
-            active.add_to_grave(t.card)
-            names.append(t.name)
-            if t.card.tag == 'chalice': gs.chalice_x = None
-            elif t.card.tag == 'bridge': gs.bridge_on_board = False
-            elif t.card.tag == 'moon':   gs.set_moon(False)
-            elif t.card.tag == 'b2b':    gs.set_b2b(False)
+    names = _destroy_permanent_targets(gs, active, targets)
     update_goyf(gs)
     log_list.append(f"★ Force of Vigor (free on opp's turn, exiles {green_pitch.name})"
                     f" → destroys {' + '.join(names)}")
