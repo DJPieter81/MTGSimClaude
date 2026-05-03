@@ -44,7 +44,12 @@ def cmd_list():
         return 0.0
 
     from deck_registry import get_strategy
-    from sim import STRATEGIES
+    # NOTE: sim.py no longer exports STRATEGIES (deck_registry replaced the
+    # monolithic dict). Treat missing import as empty fallback.
+    try:
+        from sim import STRATEGIES  # type: ignore
+    except ImportError:
+        STRATEGIES = {}
 
     ranked = sorted(DECKS.keys(), key=lambda k: -_get_share(k))
     for k in ranked:
@@ -58,7 +63,11 @@ def cmd_deck(deck_key):
     """Show deck details: card list, strategy, tags."""
     from cards import DECKS, MATCHUP_META
     from deck_registry import get_strategy
-    from sim import STRATEGIES
+    # See cmd_list note — STRATEGIES dict was deprecated in favor of deck_registry.
+    try:
+        from sim import STRATEGIES  # type: ignore
+    except ImportError:
+        STRATEGIES = {}
 
     if deck_key not in DECKS:
         print(f"Unknown deck: {deck_key}")
@@ -450,7 +459,11 @@ Import a new deck:
         cmd_field(args.field, args.n, args.seed)
     elif args.matrix:
         decks = args.deck_list if args.deck_list else None
-        cmd_matrix(decks, args.n, args.decks or 8, args.seed, decks_arg=decks)
+        # `args.decks or 8` was a bug: --decks 0 (intended "all decks") was
+        # falsy and silently became 8. Use explicit None check so 0 means
+        # "no top-tier limit" and falls through to all-decks.
+        top_tier = 8 if args.decks is None else args.decks
+        cmd_matrix(decks, args.n, top_tier, args.seed, decks_arg=decks)
     elif args.verbose:
         cmd_verbose(args.verbose[0], args.verbose[1], args.seed)
     elif args.trace:
