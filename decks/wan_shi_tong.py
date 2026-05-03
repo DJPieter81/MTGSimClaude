@@ -16,8 +16,13 @@ def make_wst_deck():
     # Creatures (10)
     d += [creature('Wan Shi Tong, Librarian', 4, {'W':1,'U':1,'generic':2}, {'W','U'}, 3, 5,
                    tag='wst', engine=True, flying=True)] * 4
+    # Sanctifier en-Vec (3 — was 2).  Real Bo1 Wan Shi Tong runs 2-3 main
+    # specifically because Burn is a top-meta deck.  At 2 copies, the deck
+    # rarely draws one in time vs Burn (~22% in opener); at 3 it's ~32%.
+    # The card is already wired via `pro_red=True` and burn's deal_face_damage
+    # checks for opponent-side pro_red creatures.
     d += [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'}, 2, 2,
-                   tag='sanctifier', pro_red=True)] * 2
+                   tag='sanctifier', pro_red=True)] * 3
     d += [creature('Snapcaster Mage', 2, {'U':1,'generic':1}, {'U'}, 2, 1,
                    tag='snap', flash=True)] * 2
     # Lock piece (4)
@@ -33,13 +38,13 @@ def make_wst_deck():
                   is_removal=True, is_mass_removal=True)] * 3
     d += [sorcery('Supreme Verdict', 4, {'W':2,'U':1,'generic':1}, {'W','U'}, tag='verdict',
                   is_removal=True, is_mass_removal=True)] * 2
-    # Counters (10)
+    # Counters (9 — was 10; trimmed Counterspell to fit extra Sanctifier)
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow',
                   free_cast_if_blue=True)] * 4
     d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'}, tag='fon',
                   free_cast_if_blue=True)] * 1
     d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 2
-    d += [instant("Dovin's Veto", 2, {'W':1,'U':1}, {'W','U'}, tag='veto')] * 2
+    d += [instant("Dovin's Veto", 2, {'W':1,'U':1}, {'W','U'}, tag='veto')] * 1
     # Planeswalker (3)
     d += [planeswalker('Teferi, Time Raveler', 3, {'W':1,'U':1,'generic':1}, {'W','U'},
                        tag='teferi', engine=True)] * 3

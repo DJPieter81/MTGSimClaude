@@ -515,8 +515,14 @@ def make_eldrazi_deck() -> List[Card]:
     d += [utility_land('City of Traitors',['C','C'], 'city',  sac_on_land=True)] * 3
     # Eye of Ugin: {T}→nothing, but reduces Eldrazi costs by 2
     d += [utility_land('Eye of Ugin',     [],     'eye')] * 1
-    # Abundant Countryside: enters tapped, fetches any basic type
-    d += [fetch_land('Abundant Countryside', ['Forest','Plains','Island','Swamp','Mountain'])] * 4
+    # Wastes (colorless basic).  Real Legacy mono-brown Eldrazi runs basic
+    # Wastes for two reasons: (a) Wasteland-immune, (b) gives Abundant
+    # Countryside-style fetches a real target.  The prior list ran 4
+    # Abundant Countryside fetching Plains/Island/Swamp/Mountain/Forest, but
+    # the deck has no basics of any of those types — so every Countryside
+    # crack paid 1 life and produced no land.  Switched to 4 Wastes which
+    # tap for {C} (matching Cavern's output for Eldrazi spells).
+    d += [basic_land('Wastes', 'C', 'Wastes')] * 4
     # Wasteland: destroy target nonbasic
     d += [utility_land('Wasteland', ['C'], 'wl')] * 4
 
