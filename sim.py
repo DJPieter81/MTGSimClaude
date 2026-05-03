@@ -2455,6 +2455,28 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Storm tier-1 check (error: {_e})", False, True)
 
+    # ── Cephalid: Brainstorm uses real resolve_cantrip (not draw 1) ─────────
+    # Pre-fix the deck's cantrip handler hand-rolled "draw 1" for both BS and
+    # Ponder, halving Brainstorm's dig power and starving the combo.  Step
+    # Through (wizardcycling) was also gated on the full 3-mana cast cost
+    # instead of the {U} activation cost.  Together these cost ~5pp WR.
+    # Mechanic: deck-local cantrip resolution must mirror the engine helper.
+    try:
+        import random as _rnd
+        _wins = 0
+        for _seed in [42, 7, 99, 1, 2, 3, 5, 11, 13, 17]:
+            _rnd.seed(_seed)
+            _r = run_game('cephalid', 'storm')
+            if _r.winner == 'p1':
+                _wins += 1
+        # Cephalid vs Storm at fixed seeds: at least 3/10 wins.  Pre-fix saw
+        # wins around 1-2/10 due to the cantrip + step-through bugs.
+        test("Cephalid vs Storm @ 10 fixed seeds: ≥ 3 wins",
+             _wins >= 3, True,
+             detail=f"got {_wins}/10 wins")
+    except Exception as _e:
+        test(f"Cephalid vs Storm smoke (error: {_e})", False, True)
+
     # ── Combo decks: chain-thinning cards present in sufficient count ───────
     # Doomsday's same-turn win uses Street Wraith cycling to chain through the
     # 5-card pile.  With <3 wraiths in the deck, the combo turn rarely has one
