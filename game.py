@@ -119,6 +119,13 @@ class PlayerState:
         self.extra_land_drops_used = 0
         self.draws_this_turn = 0
         self.spells_cast_this_turn = 0
+        # Counts cards moved to graveyard this turn via non-cast actions
+        # (cycling, sacrifices, discards).  The post-strategy Eidolon check in
+        # _execute_turn uses (_gy_growth - spells_cast_this_turn - _gy_via_non_cast)
+        # to estimate how many casts bypassed cast_spell — and cycled wraiths
+        # were getting incorrectly counted as missed spells, doubling Eidolon
+        # damage and wrongly killing Doomsday on its kill turn.
+        self._gy_via_non_cast = 0
         self.opp_cast_blue_black_this_turn = False
         self.mana.reset()
 

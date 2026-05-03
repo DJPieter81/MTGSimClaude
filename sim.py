@@ -451,6 +451,7 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     gs.veil_active = False
     gs.teferi_active = False
     b.spells_cast_this_turn = 0
+    b._gy_via_non_cast = 0
     # Resync eidolon_active — must check BOTH players each turn (fixes ghost trigger after death)
     gs.eidolon_active = (any(c.card.tag == 'eidolon' for c in gs.p1.creatures)
                          or any(c.card.tag == 'eidolon' for c in gs.p2.creatures))
@@ -785,10 +786,13 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     if gs.eidolon_active and not gs.game_over:
         _gy_nonland_after = sum(1 for c in b.graveyard if not c.is_land())
         _spells_via_cast_spell = getattr(b, 'spells_cast_this_turn', 0)
+        _gy_via_non_cast = getattr(b, '_gy_via_non_cast', 0)
         _gy_growth = max(0, _gy_nonland_after - _gy_nonland_before)
         # Spells that went through cast_spell already triggered Eidolon.
-        # Spells that bypassed it = gy_growth - spells_via_cast_spell (approx).
-        _missed_spells = max(0, _gy_growth - _spells_via_cast_spell)
+        # Cards that hit graveyard via non-cast actions (cycling, discards,
+        # sacrifices) aren't spells and must not trigger Eidolon.
+        # Missed casts = total grave growth − cast_spell casts − non-cast moves.
+        _missed_spells = max(0, _gy_growth - _spells_via_cast_spell - _gy_via_non_cast)
         if _missed_spells > 0:
             _eid_dmg = _missed_spells * 2
             b.life -= _eid_dmg

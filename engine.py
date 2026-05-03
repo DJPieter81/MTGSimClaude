@@ -4121,6 +4121,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             edge = player.find_tag('edge')
             if wraith and player.life > 2:
                 player.remove_from_hand(wraith); player.add_to_grave(wraith)
+                player._gy_via_non_cast = getattr(player, '_gy_via_non_cast', 0) + 1
                 player.life -= 2
                 gs.check_life_totals()
                 if gs.game_over: break
@@ -4129,6 +4130,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"  Street Wraith cycles (−2 life → {player.life}) — draws {drawn_name}")
             elif edge and player.lands:
                 player.remove_from_hand(edge); player.add_to_grave(edge)
+                player._gy_via_non_cast = getattr(player, '_gy_via_non_cast', 0) + 1
                 sac = player.lands.pop(); player.add_to_grave(sac.card)
                 drawn = player.draw(1)
                 drawn_name = drawn[0].name if drawn else 'nothing'
@@ -4242,12 +4244,16 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
 
     # Cast free cantrips (cycling) to dig — these don't cost mana
-    # Pre-DD wraith cycling is capped at 1 per turn: with 4 Wraiths in deck,
-    # uncapped cycling burned 8 life on dead turns vs aggro and starved the
-    # post-DD pile chain.  After the cap, the second+ wraith stays in hand
-    # for the kill turn where it actually thins the pile to a winning size.
-    pre_dd_wraith_cycles = 0
-    for _ in range(4):
+    # Wraith policy:
+    #   • If we already have DD in hand, preserve all Wraiths for the post-DD
+    #     pile chain (1 in hand on the kill turn is enough to start the chain).
+    #   • If we DON'T have DD, cycle Wraiths to dig — that's literally what
+    #     they're for.  Without aggressive digging vs Burn the deck never finds
+    #     DD before turn 6+ and dies to the clock.
+    # Life gate: only cycle if we'd survive opp's next attack with cycle cost.
+    opp_clock_dmg = max(2, sum(c.power for c in opponent.creatures
+                               if not c.summoning_sick))
+    for _ in range(6):
         # Prefer non-Wraith cantrips pre-DD: save Wraiths for post-DD pile cycling.
         can = None
         if not dd_ready:
@@ -4256,16 +4262,17 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         if not can:
             can = next((c for c in player.hand if c.is_cantrip and c.tag == 'edge'
                         and player.lands), None)
-        if not can and not dd_ready and pre_dd_wraith_cycles < 1:
+        # Pre-DD Wraith: cycle to dig as long as life can absorb opp's clock.
+        if (not can and not dd_ready
+                and player.life > opp_clock_dmg + 2):
             can = next((c for c in player.hand if c.is_cantrip and c.tag == 'wraith'
                         and player.life > 2), None)
-            if can is not None:
-                pre_dd_wraith_cycles += 1
         if not can:
             break
         if can.tag == 'wraith':
             # Cycling: activated ability, not a spell cast — bypass cast_spell
             player.remove_from_hand(can); player.add_to_grave(can)
+            player._gy_via_non_cast = getattr(player, '_gy_via_non_cast', 0) + 1
             player.life -= 2
             gs.check_life_totals()
             if gs.game_over: break
@@ -4277,6 +4284,7 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         elif can.tag == 'edge':
             # Cycling: activated ability, not a spell cast — bypass cast_spell
             player.remove_from_hand(can); player.add_to_grave(can)
+            player._gy_via_non_cast = getattr(player, '_gy_via_non_cast', 0) + 1
             if player.lands: sac = player.lands.pop(); player.add_to_grave(sac.card)
             log_fn(f"Edge of Autumn cycles (sac a land) — draws 1")
             player.draw(1)
@@ -4290,6 +4298,14 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                        on_resolve=lambda c: resolve_cantrip(player, c, gs, log_fn, log_entries))
         # Re-check DD readiness after each cantrip (may have drawn DD or ritual)
         dd = player.find_tag('dd')
+        # If we just drew DD, crack any Petals we still hold — they only matter
+        # for the DD-cast turn and were skipped at the top because dd was None.
+        if dd:
+            for petal in [c for c in list(player.hand) if c.tag == 'petal']:
+                player.remove_from_hand(petal)
+                player.add_to_grave(petal)
+                budget[0] += 1
+                log_fn(f"Lotus Petal → +1 mana (post-cantrip dig found DD)")
         # Also check for new rituals drawn by cantrips
         new_rits = [c for c in list(player.hand)
                     if c.tag == 'darkrit' and opp_can_cast(c, budget[0], gs, caster=player)]
