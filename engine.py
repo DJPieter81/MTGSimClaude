@@ -4242,6 +4242,11 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
 
     # Cast free cantrips (cycling) to dig — these don't cost mana
+    # Pre-DD wraith cycling is capped at 1 per turn: with 4 Wraiths in deck,
+    # uncapped cycling burned 8 life on dead turns vs aggro and starved the
+    # post-DD pile chain.  After the cap, the second+ wraith stays in hand
+    # for the kill turn where it actually thins the pile to a winning size.
+    pre_dd_wraith_cycles = 0
     for _ in range(4):
         # Prefer non-Wraith cantrips pre-DD: save Wraiths for post-DD pile cycling.
         can = None
@@ -4251,9 +4256,11 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         if not can:
             can = next((c for c in player.hand if c.is_cantrip and c.tag == 'edge'
                         and player.lands), None)
-        if not can and not dd_ready:
+        if not can and not dd_ready and pre_dd_wraith_cycles < 1:
             can = next((c for c in player.hand if c.is_cantrip and c.tag == 'wraith'
                         and player.life > 2), None)
+            if can is not None:
+                pre_dd_wraith_cycles += 1
         if not can:
             break
         if can.tag == 'wraith':
@@ -4331,10 +4338,17 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                 return
 
             # Build a 5-card pile optimized for Oracle win.
-            # Pile is filled with Street Wraiths so cycling chains through it,
-            # thinning the library to 0-1 cards for Oracle's ETB.
-            # Oracle in hand  → [Wraith, Wraith, Wraith, Wraith, X]
-            # Oracle NOT in hand → [Oracle, Wraith, Wraith, Wraith, Wraith]
+            # Real DD piles slot Brainstorm + LED + Lotus Petal + Wraith + Oracle so
+            # the kill goes off the same turn DD resolves, bleeding minimal life.
+            # The sim approximates that behaviour with a 3-Wraith pile (rather than
+            # 4): the chain needs 3 cycles instead of 4 to thin to lib=1, so Oracle
+            # wins after −6 life of cycling instead of −8.  The remaining two slots
+            # are paddings (Brainstorm + LED stand-ins) — without modeling LED's
+            # full mana it is the cleanest 5-card layout that matches reality on
+            # outcomes (same-turn or T+1 win) without inflating wraith count past
+            # what real lists run.
+            # Oracle in hand  → [Wraith, Wraith, Wraith, padding, padding]
+            # Oracle NOT in hand → [Oracle, Wraith, Wraith, Wraith, padding]
             oracle_in_hand = player.find_tag('oracle')
             from cards import sorcery
             padding = sorcery('Pile Card', 0, {}, set(), tag='pile_padding')
@@ -4342,11 +4356,11 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                 return creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'},
                                 3, 4, tag='wraith', is_cantrip=True)
             if oracle_in_hand:
-                player.library = [_make_wraith() for _ in range(4)] + [padding]
+                player.library = [_make_wraith() for _ in range(3)] + [padding, padding]
             else:
                 oracle_card = creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3,
                                        tag='oracle', win_condition=True)
-                player.library = [oracle_card] + [_make_wraith() for _ in range(4)]
+                player.library = [oracle_card] + [_make_wraith() for _ in range(3)] + [padding]
             gs._doomsday_pile_built = True
             log_fn(f"  Pile built: {len(player.library)} cards in library")
 

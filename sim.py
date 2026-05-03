@@ -511,6 +511,26 @@ def _execute_turn(gs, turn, b, o, who, matchup):
         lands_in_hand = [c for c in b.hand if c.is_land()]
         if not lands_in_hand:
             return None
+        # Filter out fetches that can't find anything in the current library
+        # (their basic-type targets are gone).  Cracking such a fetch costs 1
+        # life for nothing and on a sub-3 life total can lose the game outright.
+        # Triggers when Doomsday's pile replaces the library with non-basics or
+        # any deck has fully depleted the fetched basic types.
+        def _fetch_useful(c):
+            if not getattr(c, 'is_fetch', False):
+                return True
+            targets = getattr(c, 'fetch_targets', set())
+            if not targets:
+                return True
+            return any(targets.intersection(getattr(lib_card, 'subtypes', set()))
+                       for lib_card in b.library)
+        non_fetches = [c for c in lands_in_hand if not getattr(c, 'is_fetch', False)]
+        usable_fetches = [c for c in lands_in_hand if _fetch_useful(c)
+                          and getattr(c, 'is_fetch', False)]
+        if non_fetches or usable_fetches:
+            lands_in_hand = non_fetches + usable_fetches
+        else:
+            return None  # only useless fetches in hand — skip the land drop
         has_2drop = any(c.tag in ('chalice', 'trini', 'null_rod') or
                         (not c.is_land() and sum(c.mana_cost.values()) == 2)
                         for c in b.hand)
@@ -638,8 +658,28 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     _ts_mardu_vs_burn = (getattr(gs, 'p1_deck', '') == 'mardu'
                          and getattr(gs, 'p2_deck', '') == 'burn'
                          and b is gs.p1)
+    # Defer-to-combo: when the active deck has a same-turn combo line that
+    # consumes the only available mana, the shared TS step would burn the
+    # ritual-source and fizzle the combo.  Reanimator's T2 line is the
+    # canonical case (Land → Dark Ritual → Unmask → Reanimate); without this
+    # skip the strategy never fires, and the matchup vs Burn was 20%.
+    # Mechanic: shared preamble disruption defers when the strategy has its
+    # own kill line ready this turn.
+    _has_reanimate = any(c.tag in ('reanimate', 'exhume', 'animatedead') for c in b.hand)
+    _has_target_for_rean = (any(cc.tag in ('gris', 'archon', 'atraxa', 'emrakul')
+                                for cc in b.hand)
+                            or any((cc.win_condition or cc.is_combo_piece)
+                                   and cc.is_creature() for cc in b.graveyard))
+    _has_dark_rit = any(c.tag == 'darkrit' for c in b.hand)
+    _has_unmask_pitch = (any(c.tag == 'unmask' for c in b.hand)
+                         and any(c.tag in ('gris', 'archon', 'atraxa', 'emrakul')
+                                 for c in b.hand))
+    _ts_skip_combo_turn = (active_deck == 'reanimator'
+                           and _has_reanimate and _has_target_for_rean
+                           and (_has_dark_rit or _has_unmask_pitch))
     ts = b.find_tag('ts') or b.find_tag('thoughtseize')
-    if ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc) and not _ts_mardu_vs_burn:
+    if (ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc)
+            and not _ts_mardu_vs_burn and not _ts_skip_combo_turn):
         opp_nonland = [c for c in o.hand if not c.is_land()]
         if opp_nonland and b.life > 4:
             b.remove_from_hand(ts)
@@ -2366,6 +2406,57 @@ def run_rules_tests():
         test("run_any_bo3 returns game_wr",  'game_wr'  in _r, True)
     except Exception as _e:
         test(f"run_any_bo3 smoke (error: {_e})", False, True)
+
+    # ── Combo deck card costs match printed CMC ─────────────────────────────
+    # Doomsday's printed cost is {B}{B}{B} (CMC 3). A miscoded cost forces the
+    # combo turn 2+ turns later than reality, which dropped doomsday vs aggro
+    # WR to 12.5% (real Legacy: ~50%). Mechanic: deck builders must mirror the
+    # actual card or the strategy's mana gates lie.
+    try:
+        from cards import make_doomsday_deck as _mk_dd
+        _dd_cards = [c for c in _mk_dd() if c.tag == 'dd']
+        _dd = _dd_cards[0]
+        test("Doomsday: printed CMC is 3 (BBB)", _dd.cmc, 3)
+        test("Doomsday: mana cost is exactly BBB",
+             _dd.mana_cost, {'B': 3})
+    except Exception as _e:
+        test(f"Doomsday cost check (error: {_e})", False, True)
+
+    # ── Combo decks: chain-thinning cards present in sufficient count ───────
+    # Doomsday's same-turn win uses Street Wraith cycling to chain through the
+    # 5-card pile.  With <3 wraiths in the deck, the combo turn rarely has one
+    # in hand to start the chain, so Oracle ETBs against a too-large library.
+    # Mechanic: any "thin-via-cycle" combo deck must run enough cycle-cards
+    # (≥3) to make a hand-presence on the kill turn likely.
+    try:
+        _wraith_count = sum(1 for c in _mk_dd() if c.tag == 'wraith')
+        test("Doomsday: Street Wraith count ≥ 3 (chain reliability)",
+             _wraith_count >= 3, True,
+             detail=f"got {_wraith_count} wraiths")
+    except Exception as _e:
+        test(f"Doomsday wraith count check (error: {_e})", False, True)
+
+    # ── Shared preamble disruption defers to combo when combo can fire ──────
+    # When the active player's deck has a same-turn combo line that consumes
+    # the only available mana (e.g. Reanimator T2: Land → Dark Ritual → Unmask
+    # → Reanimate), the shared _execute_turn must NOT cast Thoughtseize first.
+    # Mechanic: shared preamble disruption is a luxury, combo mana is not.
+    # Regression test for reanimator vs burn 20% WR (lost 0/4 grade-D traces).
+    try:
+        import random as _rnd
+        _wins = 0
+        for _seed in [1, 2, 3, 7, 11, 13, 17, 19, 23, 42]:
+            _rnd.seed(_seed)
+            _r = run_game('reanimator', 'burn')
+            if _r.winner == 'p1':
+                _wins += 1
+        # Reanimator vs Burn at fixed mulligan keeps in real Legacy is 60-70%.
+        # Pre-fix the sim was 0-2/10. Set bar at ≥4/10 to catch regressions.
+        test("Reanimator vs Burn @ 10 fixed seeds: ≥ 4 wins",
+             _wins >= 4, True,
+             detail=f"got {_wins}/10 wins")
+    except Exception as _e:
+        test(f"Reanimator vs Burn smoke (error: {_e})", False, True)
 
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")

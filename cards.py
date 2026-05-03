@@ -561,37 +561,36 @@ def make_painter_deck() -> List[Card]:
 
 def make_doomsday_deck() -> List[Card]:
     d = []
-    d += [sorcery('Doomsday', 5, {'B':2,'generic':3}, {'B'}, tag='dd',
+    # Printed cost: {B}{B}{B} → CMC 3.  Earlier the deck had cmc=5 (BB+3 generic),
+    # forcing the combo turn 2 turns later than reality and cratering WR vs aggro.
+    d += [sorcery('Doomsday', 3, {'B':3}, {'B'}, tag='dd',
                   is_combo_piece=True)] * 4  # removed win_condition — only Oracle is the kill
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3, tag='oracle', win_condition=True)] * 4
-    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 4  # was 3
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 4
     d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 3
     d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 3
-    # Wraith count was 4; trimmed to 1 to fit Lurrus (iter 9) + Petal (iter 10).
-    # NOTE: post-DD pile is built via fresh `_make_wraith()` calls in the
-    # strategy (engine.py ~4176), so deck wraith count doesn't affect combo
-    # quality — only pre-DD cycling thinning. 1 wraith is sufficient.
-    # Wraith trimmed 4 → 1 (Lurrus + Petal). Pile post-DD is built via fresh
-    # `_make_wraith()` calls (engine.py ~4176) so deck count doesn't matter.
-    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 1
-    # Edge of Autumn dropped — Petal is strictly better fast mana.
-    # Lurrus of the Dream-Den — companion (iter 9).
+    # Street Wraith: needed in HAND on the DD turn to start the chain through
+    # the post-DD pile.  At 1 copy the chain rarely starts; 4 copies is the
+    # standard Legacy ratio and is what real-deck win lines assume.
+    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 4
+    # Lurrus of the Dream-Den — companion (1 copy, real Legacy DD lists).
     d += [creature("Lurrus of the Dream-Den", 2, {'B':1,'generic':1}, {'B'}, 3, 2,
-                   tag='lurrus', lifelink=True)] * 2
-    # Lotus Petal — fast mana for race-turn Doomsday casts (iter 10).
-    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
-    # 23 lands (-2 from baseline 25). Petal acts as +4 mana sources.
-    d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 3  # -1
+                   tag='lurrus', lifelink=True)] * 1
+    # Lotus Petal — fast mana for race-turn Doomsday casts.
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 3
+    # 22 lands.  Trimmed Forest (2 → 1) to fit the extra 3 wraiths net of
+    # Lurrus (2 → 1) and Petal (4 → 3).  Tropical Island still provides green.
+    d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 3
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
     d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 1
-    d += [basic_land('Island', 'U', 'Island')] * 4  # -1
+    d += [basic_land('Island', 'U', 'Island')] * 4
     d += [basic_land('Swamp', 'B', 'Swamp')] * 4
-    d += [basic_land('Forest', 'G', 'Forest')] * 2
+    d += [basic_land('Forest', 'G', 'Forest')] * 1
     assert len(d) == 60, f"Doomsday deck: {len(d)}"
     return d
 
