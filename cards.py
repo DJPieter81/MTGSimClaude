@@ -1847,27 +1847,43 @@ MATCHUP_META = {
 
 
 def make_storm_deck() -> List[Card]:
+    """Tier-1 Legacy ANT (Ad Nauseam Tendrils).
+    Reference: Bryant Cook lists 2024-2025 + recent Legacy Challenge top-8.
+
+    Key tier-1 cards: 4 Lion's Eye Diamond + 4 Lotus Petal + 4 Dark Ritual +
+    4 Cabal Ritual is the canonical "8 fast mana + 8 rituals" foundation.
+    Without 4 Lotus Petal the deck has only 4 free mana sources and can't
+    storm out reliably under pressure.
+    """
     d = []
-    # Rituals
-    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit')] * 4
-    d += [instant('Cabal Ritual', 2, {'B':1,'generic':1}, {'B'}, tag='cabalrit')] * 4
-    d += [artifact('Lion\'s Eye Diamond', 0, {}, tag='led', is_combo_piece=True)] * 4
-    # Tutors / draw
-    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs')] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder')] * 4
-    d += [sorcery('Infernal Tutor', 2, {'B':1,'generic':1}, {'B'}, tag='itutor', is_combo_piece=True)] * 4
-    d += [instant('Ad Nauseam', 5, {'B':2,'generic':3}, {'B'}, tag='adnauseam', is_combo_piece=True)] * 3
-    d += [sorcery('Past in Flames', 5, {'R':1,'generic':4}, {'R'}, tag='pif', is_combo_piece=True)] * 2
-    # Win condition
+    # Fast mana (12)
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',
+                  mana_ritual=True)] * 4
+    d += [instant('Cabal Ritual', 2, {'B':1,'generic':1}, {'B'}, tag='cabalrit',
+                  mana_ritual=True)] * 4
+    d += [artifact("Lion's Eye Diamond", 0, {}, tag='led',
+                   is_combo_piece=True, mana_ritual=True)] * 4
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    # Cantrips / tutors (12)
+    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
+    d += [sorcery('Infernal Tutor', 2, {'B':1,'generic':1}, {'B'}, tag='itutor',
+                  is_combo_piece=True)] * 4
+    # Engine spells (3) — Ad Nauseam + Past in Flames as redundant kill engines.
+    d += [instant('Ad Nauseam', 5, {'B':2,'generic':3}, {'B'}, tag='adnauseam',
+                  is_combo_piece=True)] * 2
+    d += [sorcery('Past in Flames', 5, {'R':1,'generic':4}, {'R'}, tag='pif',
+                  is_combo_piece=True)] * 1
+    # Win condition (4)
     d += [sorcery('Tendrils of Agony', 4, {'B':1,'generic':3}, {'B'}, tag='tendrils',
                   win_condition=True, is_combo_piece=True)] * 4
-    # Protection
-    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos')] * 4
-    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 3
-    # Discard
+    # Protection / disruption (11)
+    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow',
+                  free_cast_if_blue=True)] * 4
+    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos')] * 3
+    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 2
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 2
-    # 14 lands
+    # Lands (14) — fast mana base supports a low land count.
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3

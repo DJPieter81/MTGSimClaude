@@ -2443,6 +2443,18 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Doomsday LED count check (error: {_e})", False, True)
 
+    # ── Tier-1 ANT (Storm) runs 4 Lotus Petal alongside 4 LED ────────────────
+    # Without Petal, ANT has only 4 free mana sources (LED) and can't reliably
+    # storm out under pressure.  Adding 4 Petal swings storm vs dnt 34→50%.
+    try:
+        from cards import make_storm_deck as _mk_storm
+        _petal_count = sum(1 for c in _mk_storm() if c.tag == 'petal')
+        _storm_led = sum(1 for c in _mk_storm() if c.tag == 'led')
+        test("Storm (ANT): Lotus Petal count == 4", _petal_count, 4)
+        test("Storm (ANT): Lion's Eye Diamond count == 4", _storm_led, 4)
+    except Exception as _e:
+        test(f"Storm tier-1 check (error: {_e})", False, True)
+
     # ── Combo decks: chain-thinning cards present in sufficient count ───────
     # Doomsday's same-turn win uses Street Wraith cycling to chain through the
     # 5-card pile.  With <3 wraiths in the deck, the combo turn rarely has one
