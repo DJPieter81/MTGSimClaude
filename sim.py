@@ -2429,6 +2429,20 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Doomsday cost check (error: {_e})", False, True)
 
+    # ── Tier-1 Doomsday list runs Lion's Eye Diamond ────────────────────────
+    # Real Legacy Doomsday's fast-kill line is Doomsday → Lotus Petal/Land →
+    # Cast Brainstorm with LED in response (sac LED for UUU, Brainstorm draws
+    # 3 from pile, Oracle hits play).  Without LED in the maindeck the deck
+    # is structurally incapable of same-turn wins and falls behind any clock.
+    # Every tier-1 list runs 4 LED — anything less is not a real DD list.
+    try:
+        from cards import make_doomsday_deck as _mk_dd
+        _led_count = sum(1 for c in _mk_dd() if c.tag == 'led')
+        test("Doomsday: Lion's Eye Diamond count == 4 (tier-1 mandatory)",
+             _led_count, 4)
+    except Exception as _e:
+        test(f"Doomsday LED count check (error: {_e})", False, True)
+
     # ── Combo decks: chain-thinning cards present in sufficient count ───────
     # Doomsday's same-turn win uses Street Wraith cycling to chain through the
     # 5-card pile.  With <3 wraiths in the deck, the combo turn rarely has one

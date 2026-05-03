@@ -4141,29 +4141,88 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                 ctr = []; bowmasters_triggers(1, gs, ctr)
                 for m in ctr: log_entries.append(m)
 
+    # ── Helper: LED + Brainstorm same-turn dig.
+    # Real Legacy DD cracks LED in response to its own Brainstorm.  Sequence:
+    # cast LED, cast Brainstorm, sac LED in response (discard hand → +UUU),
+    # Brainstorm resolves drawing 3 from the post-DD pile.  In real play the
+    # caster picks WHAT to put back (always the useless cards), so Oracle and
+    # the cycle-enabling Wraith stay in hand.  The generic resolve_cantrip
+    # putback heuristic can't model that choice, so we simulate the outcome
+    # directly: pull Oracle (if in pile) plus a Wraith, leave paddings in
+    # library.  Returns True if the sequence fired.
+    def _try_led_brainstorm():
+        led = player.find_tag('led')
+        bs = next((c for c in player.hand if c.tag == 'bs'), None)
+        if not led or not bs:
+            return False
+        # Sac LED for 3 mana (modeled as generic).  Per real LED text, this
+        # ALSO discards hand — but the optimal sequencing keeps the cards we
+        # care about (Oracle once drawn) on the stack, so we model only the
+        # mana grant and let the Brainstorm draw bring needed cards in.
+        player.remove_from_hand(led)
+        player.exile.append(led)
+        player._gy_via_non_cast = getattr(player, '_gy_via_non_cast', 0) + 1
+        budget[0] += 3
+        log_fn(f"  ★ LED cracked (sac, discard) → +3 mana (={budget[0]})", True)
+        # Cast Brainstorm through cast_spell to fire Eidolon / counter window.
+        # On resolve: pick best 1 from top 3, put 2 worst back.
+        def _resolve_dd_brainstorm(c):
+            player.add_to_grave(c)
+            top3 = player.library[:3]
+            player.library = player.library[3:]
+            # Optimal pick: prefer Oracle, then Wraith, then anything else.
+            def pick_score(card):
+                if card.tag == 'oracle': return 0  # best
+                if card.tag == 'wraith': return 1
+                return 2
+            top3.sort(key=pick_score)
+            # Take all 3 to hand, then put 2 worst back on top of library.
+            keepers = top3[:1]
+            putback = top3[1:]
+            for k in keepers:
+                player.hand.append(k)
+            # Putback in reverse order so the worst is on top of library.
+            for p in reversed(putback):
+                player.library.insert(0, p)
+            log_fn(f"  Brainstorm via LED → keep {keepers[0].name}, "
+                   f"put back {len(putback)} (lib={len(player.library)})")
+        cast_spell(player, opponent, gs, bs, budget, log_fn, log_entries,
+                   on_resolve=_resolve_dd_brainstorm)
+        return True
+
     # ── Helper: cast Thassa's Oracle and check ETB win ──
+    # Oracle text: "When this creature enters, look at the top X cards of your
+    # library, where X is your devotion to blue. ... Then if your library has
+    # fewer cards in it than your devotion to blue, you win the game."
+    # Win condition is STRICT: library < devotion.  devotion == library does
+    # not win; the prior gate (devotion >= library) was over-casting Oracle
+    # and incorrectly declaring wins on the ETB.
     def _try_cast_oracle(avail_mana):
         oracle = player.find_tag('oracle')
         if not oracle or avail_mana < 2:
             return False
-        # Pre-check: only cast Oracle when devotion will be high enough to win.
-        # Oracle gives 2 blue devotion (UU); count other blue permanents too.
         expected_devotion = 2  # Oracle's own UU
         for c in player.creatures:
             expected_devotion += c.card.mana_cost.get('U', 0)
-        if expected_devotion < len(player.library):
-            return False  # don't waste Oracle if it won't win yet
+        # Don't cast unless library is strictly less than devotion.
+        if expected_devotion <= len(player.library):
+            return False
 
         def _resolve_oracle(c):
             player.put_creature_in_play(c)
             lib_size = len(player.library)
+            # Re-check at resolution: the strategy might have miscounted.
+            if lib_size >= expected_devotion:
+                log_fn(f"  Thassa's Oracle ETB — lib {lib_size} ≥ devotion "
+                       f"{expected_devotion}, no win", True)
+                return
             log_fn(f"  ★ Thassa's Oracle ETB — devotion {expected_devotion}, "
                    f"library {lib_size}", True)
             gs.game_over = True
             gs.kill_turn = gs.turn
             gs.winner = 'p1' if player is gs.p1 else 'p2'
             gs.win_reason = (f"Doomsday → Oracle (devotion {expected_devotion} "
-                             f"≥ library {lib_size})")
+                             f"> library {lib_size})")
 
         resolved = cast_spell(player, opponent, gs, oracle, budget,
                               log_fn, log_entries, on_resolve=_resolve_oracle)
@@ -4171,8 +4230,11 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn("  Oracle countered — Doomsday pile stranded")
         return True  # spell was attempted
 
-    # ── Post-DD turns: pile already built, just draw + cast Oracle ──
+    # ── Post-DD turns: pile already built ──
+    # First try LED + Brainstorm same-turn dig (puts Oracle in hand + thins),
+    # then cycle Wraiths to thin further, then cast Oracle.
     if dd_already_resolved:
+        _try_led_brainstorm()
         _cycle_draw_cards()
         if not gs.game_over:
             _try_cast_oracle(budget[0])
@@ -4244,29 +4306,43 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
 
     # Cast free cantrips (cycling) to dig — these don't cost mana
-    # Wraith policy:
-    #   • If we already have DD in hand, preserve all Wraiths for the post-DD
-    #     pile chain (1 in hand on the kill turn is enough to start the chain).
-    #   • If we DON'T have DD, cycle Wraiths to dig — that's literally what
-    #     they're for.  Without aggressive digging vs Burn the deck never finds
-    #     DD before turn 6+ and dies to the clock.
-    # Life gate: only cycle if we'd survive opp's next attack with cycle cost.
+    # Wraith policy: reserve 1 Wraith for the kill turn (Brainstorm via LED
+    # only nets 1 card to hand from the pile, so we need a pre-DD Wraith in
+    # hand to actually thin the post-DD library to 0-1 for Oracle).  Cycle
+    # any Wraiths beyond that one, gated on life headroom vs opp's clock.
+    # Brainstorm policy: if both LED and DD are in hand, SAVE Brainstorm for
+    # the LED-Brainstorm post-DD trick — it pulls Oracle from the pile and
+    # is the canonical fast-kill line.  Without this hold, Brainstorm gets
+    # cast pre-DD as a normal cantrip and the LED-BS trick almost never fires.
     opp_clock_dmg = max(2, sum(c.power for c in opponent.creatures
                                if not c.summoning_sick))
+    pre_dd_wraith_cycles = 0
+    wraith_in_hand_count = sum(1 for c in player.hand if c.tag == 'wraith')
+    pre_dd_wraith_budget = max(0, wraith_in_hand_count - 1)
+    led_in_hand = any(c.tag == 'led' for c in player.hand)
+    dd_in_hand = any(c.tag == 'dd' for c in player.hand)
+    save_bs_for_post_dd = led_in_hand and dd_in_hand
     for _ in range(6):
         # Prefer non-Wraith cantrips pre-DD: save Wraiths for post-DD pile cycling.
+        # Also save Brainstorm if LED+DD in hand (post-DD LED-BS is the kill).
         can = None
         if not dd_ready:
-            can = next((c for c in player.hand if c.is_cantrip and c.tag not in ('wraith', 'edge')
+            can = next((c for c in player.hand if c.is_cantrip
+                        and c.tag not in ('wraith', 'edge')
+                        and not (save_bs_for_post_dd and c.tag == 'bs')
                         and budget[0] >= 1), None)
         if not can:
             can = next((c for c in player.hand if c.is_cantrip and c.tag == 'edge'
                         and player.lands), None)
-        # Pre-DD Wraith: cycle to dig as long as life can absorb opp's clock.
+        # Pre-DD Wraith: cycle to dig as long as life can absorb opp's clock
+        # AND we have headroom above the kill-turn reserve.
         if (not can and not dd_ready
-                and player.life > opp_clock_dmg + 2):
+                and player.life > opp_clock_dmg + 2
+                and pre_dd_wraith_cycles < pre_dd_wraith_budget):
             can = next((c for c in player.hand if c.is_cantrip and c.tag == 'wraith'
                         and player.life > 2), None)
+            if can is not None:
+                pre_dd_wraith_cycles += 1
         if not can:
             break
         if can.tag == 'wraith':
@@ -4353,36 +4429,49 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                 gs.win_reason = f"Doomsday self-kill (life={player.life})"
                 return
 
-            # Build a 5-card pile optimized for Oracle win.
-            # Real DD piles slot Brainstorm + LED + Lotus Petal + Wraith + Oracle so
-            # the kill goes off the same turn DD resolves, bleeding minimal life.
-            # The sim approximates that behaviour with a 3-Wraith pile (rather than
-            # 4): the chain needs 3 cycles instead of 4 to thin to lib=1, so Oracle
-            # wins after −6 life of cycling instead of −8.  The remaining two slots
-            # are paddings (Brainstorm + LED stand-ins) — without modeling LED's
-            # full mana it is the cleanest 5-card layout that matches reality on
-            # outcomes (same-turn or T+1 win) without inflating wraith count past
-            # what real lists run.
-            # Oracle in hand  → [Wraith, Wraith, Wraith, padding, padding]
-            # Oracle NOT in hand → [Oracle, Wraith, Wraith, Wraith, padding]
+            # Build a 5-card pile optimized for the Brainstorm-LED kill.
+            # Layout when Brainstorm is in hand: [Wraith, Oracle, Wraith, padding, padding]
+            #   Brainstorm draws 3 → Wraith + Oracle + Wraith into hand;
+            #   put back 2 worst (Wraiths, since Oracle is win_condition).
+            #   Oracle resolves: lib=4 ≥ devotion=2 fails — but cycle 1 wraith
+            #   → lib=3, cycle again → lib=2, can't get devotion>lib without
+            #   the LED mana sequence.  So we want Oracle PRE-cast AFTER 3
+            #   wraith cycles thin lib to 0.
+            # Layout when Brainstorm NOT in hand: classic [W,W,W,padding,padding]
+            # — the chain wins via natural draw + cycling at higher life totals.
             oracle_in_hand = player.find_tag('oracle')
+            bs_in_hand = next((c for c in player.hand if c.tag == 'bs'), None)
             from cards import sorcery
             padding = sorcery('Pile Card', 0, {}, set(), tag='pile_padding')
             def _make_wraith():
                 return creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'},
                                 3, 4, tag='wraith', is_cantrip=True)
+            def _make_oracle():
+                return creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3,
+                                tag='oracle', win_condition=True)
             if oracle_in_hand:
+                # All 5 slots can be wraiths since Oracle is in hand for the
+                # final cast — but we cap wraiths at 3 so the chain doesn't
+                # require absorbing 8 life.
                 player.library = [_make_wraith() for _ in range(3)] + [padding, padding]
+            elif bs_in_hand:
+                # Brainstorm in hand → load top 3 of pile so Brainstorm pulls
+                # Wraith + Oracle + Wraith.  Oracle moves to hand, Wraiths
+                # can chain-cycle to thin the rest.
+                player.library = [_make_wraith(), _make_oracle(), _make_wraith(),
+                                  padding, padding]
             else:
-                oracle_card = creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3,
-                                       tag='oracle', win_condition=True)
-                player.library = [oracle_card] + [_make_wraith() for _ in range(3)] + [padding]
+                player.library = [_make_oracle()] + [_make_wraith() for _ in range(3)] + [padding]
             gs._doomsday_pile_built = True
             log_fn(f"  Pile built: {len(player.library)} cards in library")
 
             # DD's 3-mana cost was already deducted by cast_spell.
 
-            # Same-turn win attempt: cycle Wraiths from hand to thin pile + draw Oracle
+            # Same-turn win attempts, in order:
+            #   1. LED + Brainstorm: sac LED (+3 mana), draw 3 from pile.
+            #   2. Cycle any Wraiths in hand to chain through pile.
+            #   3. Cast Oracle if devotion > library size.
+            _try_led_brainstorm()
             _cycle_draw_cards()
 
             if not gs.game_over:
