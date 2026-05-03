@@ -171,6 +171,13 @@ results/neural_logs/
 10. **Both:** Hook MORE elective decisions per turn — *was* the highest-leverage open work item; Lever 6 (mulligan, the highest-leverage decision in the game) shipped in Legacy and STILL netted 0 pp combined. New highest-leverage open item: **the LLM advisor** (#11), since the in-codebase NN ceiling appears to be flat against well-tuned heuristics. Don't burn time on more Q-nets for already-tuned decisions until the LLM path has been validated.
 11. **Both:** Run the live LLM-gate eval (`sk-ant-…` key in env var, never in chat). Cost ≤ \$2 per 200-game eval at Opus 4.7 prices. The LLM brings *qualitatively different reasoning* the Q-net can't (matchup-aware sideboard logic, novel mulligan reasoning ("this hand has no early plays vs Burn"), strategic gates). This is the unvalidated lever and the most likely path to a non-zero WR delta on already-mature decks.
 12. **Done in Legacy (commit history will reflect):** `(state, action) → won?` Q-style discriminator (Lever 5) and counterfactual-rollout mulligan Q-net (Lever 6). Trained models at `models/q_ur_bolt_mode.pt` (94.2 % val acc) and `models/q_mulligan.pt` (62.7 % val acc). Modern can adopt the trainers + scorers + collectors verbatim. **But before porting** — read lessons #17, #19, #22 above. Q-nets at high val acc do not move WR on tuned heuristics; use the toolkit on (a) untuned strategies, or (b) for trace data + audit, not as a WR lever.
+13. **Modern (HIGH):** Audit combo decks against tier-1 lists.  Legacy's
+    2026-05-03 audit (PR #111, see `docs/lessons/2026-05-03_combo_deck_audit.md`)
+    found seven independent bugs in three decks — single-line fixes moved
+    matchup WRs by 12-27pp.  Modern decks were imported from MTGGoldfish
+    at some point and may have drifted; same audit workflow + same bug
+    classes very likely apply.  See lessons #26-#30 below for the bug
+    taxonomy and diagnostic workflow that found them.
 
 ## Lessons learned (continued)
 
@@ -283,6 +290,16 @@ results/neural_logs/
     Add `opp_can_cast` to the strategy's `from engine import ...` line.
 
     **Impact on calibration ρ**: affinity over-tuning (lesson 26) AND infect over-tuning (this lesson) were both partly maintained by Chalice bypass. Closing both shipped a -5.8pp infect drop in iter 4 and a -3.1pp affinity drop in iter 5 — both move the **calibration Spearman ρ** (lesson 27) closer to positive on the all-decks measure. T1 ρ specifically still requires fixing the underperforming T1 decks (doomsday, lands, prison) — those need structural strategy work beyond bypass auditing.
+
+29. **Combo deck audit produced six independent classes of bug** *(2026-05-03, PR #111, full writeup `docs/lessons/2026-05-03_combo_deck_audit.md`)*. Tracing the lowest-WR combo matchups (doomsday vs ur_delver 12.5%, reanimator vs burn 20%, depths vs burn 35%) found seven bugs — one card-data error (DD CMC=5 instead of BBB=3), two tier-1 omissions (Lion's Eye Diamond missing from DD, Lotus Petal missing from ANT), one off-by-one in a deck-name gate (combo-land priority hook hardcoded to `'lands'`, missed `'depths'`), one strategy/preamble interaction (Reanimator's T2 ritual mana eaten by shared `_execute_turn` Thoughtseize), one heuristic over-counting (Eidolon post-strategy treated cycled cards as missed casts), and one rule violation (Oracle ETB win used `≤` not `<`). Single-line fixes lifted depths vs burn 35→62% (+27pp) and storm vs dnt 34→50% (+16pp). **For Manu**: every Modern combo deck almost certainly has at least one of these bug classes. The diagnostic workflow is mechanical: rank matchups by `|sim_wr − expected_wr|`, generate 5-10 deep traces of the worst, read every line, then break down conditional WR by turn — discontinuities in the cast-turn → win-rate curve point at the bug. The bug taxonomy (cards.py / deck-construction / strategy-preamble / off-by-one-gate / heuristic / rule) is closed under Magic; future audits should classify each finding into one of those five buckets.
+
+    **Audit checklist for any combo deck** (Modern + Legacy):
+    1. Card data: every key combo card's `cmc` and `mana_cost` matches the printed card. Add a regression test naming the card.
+    2. Tier-1 conformance: deck contains the canonical 4-of staples from a current top-8 list (LED, Petal, Wraith, Brainstorm, Ponder, etc.). Add a regression test asserting the count.
+    3. Strategy/preamble: when the strategy needs T1-T2 mana for a combo line, no shared `_execute_turn` step (Thoughtseize, removal, Bowmasters flash) silently consumes that mana.
+    4. Single-deck gates: `grep` for `active_deck == '...'` and `deck in ('...',)` — if the gate controls a *mechanic* (combo-land priority, fast-mana priority), the right side should be a *class* of decks, not a single name.
+    5. Heuristic cardinality: any "post-strategy estimate based on graveyard growth" or similar proxy is suspect. Track the bypass channel (cycling, sacrifice, discard) explicitly.
+    6. Rule strictness: re-read each win-condition card's oracle text. Strict `<` vs loose `≤` is a recurring bug class (Oracle, Test of Endurance, Helix Pinnacle, Lab Maniac).
 
 ## Out of scope for the cross-project sync
 - Modern uses `gs.player1` / `gs.player2`, Legacy uses `gs.p1` / `gs.p2`. The `state_encoder.py` port to Modern must rename the slot accessors. All other features (life, hand, lands, etc.) are named identically in both repos.

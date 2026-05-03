@@ -560,38 +560,57 @@ def make_painter_deck() -> List[Card]:
 # ── Doomsday (60) ──────────────────────────────────────────────
 
 def make_doomsday_deck() -> List[Card]:
+    """Tier-1 Legacy Doomsday (Modern Horizons 3 era).
+    Reference: top-8 Legacy Challenge / Showcase lists 2025-2026.
+
+    Win line: Doomsday (BBB, half life) → choose 5-card pile → cast Brainstorm
+    with LED in response (sac LED for UUU/BBB while Brainstorm is on stack) →
+    draw 3 from pile (Wraith, Oracle, padding) → cycle Wraith to thin → cast
+    Oracle (UU) for the win.
+
+    LED is the critical missing piece — without it the strategy can't draw +
+    cast Oracle in the same turn DD resolves, and the deck dies to any clock
+    that hits before T+1.  Real Legacy DD vs Burn is ~40-50% precisely because
+    LED + Brainstorm gives a same-turn win at 10+ life.
+    """
     d = []
-    d += [sorcery('Doomsday', 5, {'B':2,'generic':3}, {'B'}, tag='dd',
-                  is_combo_piece=True)] * 4  # removed win_condition — only Oracle is the kill
+    # Combo core (8) — DD's printed cost is BBB → CMC 3.
+    d += [sorcery('Doomsday', 3, {'B':3}, {'B'}, tag='dd',
+                  is_combo_piece=True)] * 4
+    d += [creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3,
+                   tag='oracle', win_condition=True)] * 4
+    # Cantrips (8)
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
-    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [creature("Thassa's Oracle", 2, {'U':2}, {'U'}, 1, 3, tag='oracle', win_condition=True)] * 4
-    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',  mana_ritual=True)] * 4  # was 3
-    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos', is_removal=True)] * 3
-    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 3
-    # Wraith count was 4; trimmed to 1 to fit Lurrus (iter 9) + Petal (iter 10).
-    # NOTE: post-DD pile is built via fresh `_make_wraith()` calls in the
-    # strategy (engine.py ~4176), so deck wraith count doesn't affect combo
-    # quality — only pre-DD cycling thinning. 1 wraith is sufficient.
-    # Wraith trimmed 4 → 1 (Lurrus + Petal). Pile post-DD is built via fresh
-    # `_make_wraith()` calls (engine.py ~4176) so deck count doesn't matter.
-    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4, tag='wraith', is_cantrip=True)] * 1
-    # Edge of Autumn dropped — Petal is strictly better fast mana.
-    # Lurrus of the Dream-Den — companion (iter 9).
-    d += [creature("Lurrus of the Dream-Den", 2, {'B':1,'generic':1}, {'B'}, 3, 2,
-                   tag='lurrus', lifelink=True)] * 2
-    # Lotus Petal — fast mana for race-turn Doomsday casts (iter 10).
+    # Fast mana (12) — LED + Petal + Dark Ritual is the canonical T1 combo
+    # enabler.  LED at 4-of is mandatory; without it the deck can't combo
+    # same-turn off Doomsday.  Real Legacy DD lists run 4 LED.
+    d += [artifact("Lion's Eye Diamond", 0, {}, tag='led',
+                   is_combo_piece=True, mana_ritual=True)] * 4
     d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
-    # 23 lands (-2 from baseline 25). Petal acts as +4 mana sources.
-    d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 3  # -1
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',
+                  mana_ritual=True)] * 4
+    # Free cycler — 4 Wraiths for pile-chaining and pre-DD digging.
+    d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4,
+                   tag='wraith', is_cantrip=True)] * 4
+    # Protection (7) — FoW for opp combos, Veil/Fluster for stack interaction.
+    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow',
+                  free_cast_if_blue=True)] * 4
+    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos',
+                  is_removal=True)] * 2
+    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 1
+    # Companion (1)
+    d += [creature("Lurrus of the Dream-Den", 2, {'B':1,'generic':1}, {'B'},
+                   3, 2, tag='lurrus', lifelink=True)] * 1
+    # Lands (20) — fast mana base lets us cut to 20.  Tropical for Veil's G.
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
     d += [dual_land('Tropical Island', ['U','G'], ['Island','Forest'])] * 1
-    d += [basic_land('Island', 'U', 'Island')] * 4  # -1
-    d += [basic_land('Swamp', 'B', 'Swamp')] * 4
-    d += [basic_land('Forest', 'G', 'Forest')] * 2
+    d += [utility_land('Cavern of Souls', ['C'], 'cavern')] * 2
+    d += [basic_land('Island', 'U', 'Island')] * 5
+    d += [basic_land('Swamp', 'B', 'Swamp')] * 2
+    d += [basic_land('Forest', 'G', 'Forest')] * 1
     assert len(d) == 60, f"Doomsday deck: {len(d)}"
     return d
 
@@ -1828,27 +1847,43 @@ MATCHUP_META = {
 
 
 def make_storm_deck() -> List[Card]:
+    """Tier-1 Legacy ANT (Ad Nauseam Tendrils).
+    Reference: Bryant Cook lists 2024-2025 + recent Legacy Challenge top-8.
+
+    Key tier-1 cards: 4 Lion's Eye Diamond + 4 Lotus Petal + 4 Dark Ritual +
+    4 Cabal Ritual is the canonical "8 fast mana + 8 rituals" foundation.
+    Without 4 Lotus Petal the deck has only 4 free mana sources and can't
+    storm out reliably under pressure.
+    """
     d = []
-    # Rituals
-    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit')] * 4
-    d += [instant('Cabal Ritual', 2, {'B':1,'generic':1}, {'B'}, tag='cabalrit')] * 4
-    d += [artifact('Lion\'s Eye Diamond', 0, {}, tag='led', is_combo_piece=True)] * 4
-    # Tutors / draw
-    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs')] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder')] * 4
-    d += [sorcery('Infernal Tutor', 2, {'B':1,'generic':1}, {'B'}, tag='itutor', is_combo_piece=True)] * 4
-    d += [instant('Ad Nauseam', 5, {'B':2,'generic':3}, {'B'}, tag='adnauseam', is_combo_piece=True)] * 3
-    d += [sorcery('Past in Flames', 5, {'R':1,'generic':4}, {'R'}, tag='pif', is_combo_piece=True)] * 2
-    # Win condition
+    # Fast mana (12)
+    d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',
+                  mana_ritual=True)] * 4
+    d += [instant('Cabal Ritual', 2, {'B':1,'generic':1}, {'B'}, tag='cabalrit',
+                  mana_ritual=True)] * 4
+    d += [artifact("Lion's Eye Diamond", 0, {}, tag='led',
+                   is_combo_piece=True, mana_ritual=True)] * 4
+    d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
+    # Cantrips / tutors (12)
+    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
+    d += [sorcery('Infernal Tutor', 2, {'B':1,'generic':1}, {'B'}, tag='itutor',
+                  is_combo_piece=True)] * 4
+    # Engine spells (3) — Ad Nauseam + Past in Flames as redundant kill engines.
+    d += [instant('Ad Nauseam', 5, {'B':2,'generic':3}, {'B'}, tag='adnauseam',
+                  is_combo_piece=True)] * 2
+    d += [sorcery('Past in Flames', 5, {'R':1,'generic':4}, {'R'}, tag='pif',
+                  is_combo_piece=True)] * 1
+    # Win condition (4)
     d += [sorcery('Tendrils of Agony', 4, {'B':1,'generic':3}, {'B'}, tag='tendrils',
                   win_condition=True, is_combo_piece=True)] * 4
-    # Protection
-    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos')] * 4
-    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 3
-    # Discard
+    # Protection / disruption (11)
+    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow',
+                  free_cast_if_blue=True)] * 4
+    d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos')] * 3
+    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 2
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 2
-    # 14 lands
+    # Lands (14) — fast mana base supports a low land count.
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
     d += [dual_land('Underground Sea', ['U','B'], ['Island','Swamp'])] * 3
