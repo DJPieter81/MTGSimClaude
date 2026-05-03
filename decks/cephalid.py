@@ -256,25 +256,25 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
                    on_resolve=_resolve_chant)
 
     # ── Cantrips — dig for combo pieces ─────────────────────────────────────
+    # Use the engine's resolve_cantrip helper so Brainstorm correctly draws 3
+    # and puts 2 back (rather than the prior "draw 1" that was treating it as
+    # a Ponder-equivalent and tossing 2/3 of the dig).
+    from engine import resolve_cantrip
     for cantrip_tag in ('bs', 'ponder'):
         cantrip = player.find_tag(cantrip_tag)
         if cantrip and budget[0] >= 1:
-            def _resolve_cant(c):
-                player.add_to_grave(c)
-                player.draw(1)
-                log_fn(f"{c.name} — dig for combo")
-                if hasattr(gs, 'bowmasters_on_board') and gs.bowmasters_on_board:
-                    bowmasters_triggers(1, gs, log_entries,
-                                        controller='o' if player is gs.p1 else 'b')
             cast_spell(player, opponent, gs, cantrip, budget, log_fn, log_entries,
-                       on_resolve=_resolve_cant)
+                       on_resolve=lambda c: resolve_cantrip(player, c, gs, log_fn, log_entries))
             gs.check_life_totals()
             if gs.game_over:
                 return
 
     # ── Step Through — wizardcycling to tutor Illusionist ───────────────────
+    # Step Through has cost {1}{U}{U} (CMC 3) but its wizardcycling ability
+    # costs only {U} — that's the relevant cost when tutoring.  Gate on 1 mana
+    # available, not 3, to fire the cycle on the same turn we have ramp.
     step = player.find_tag('step')
-    if step and budget[0] >= 3 and not illusionist_in_play:
+    if step and budget[0] >= 1 and not illusionist_in_play:
         def _resolve_step(c):
             player.add_to_grave(c)
             target = next((cc for cc in player.library if cc.tag == 'illusionist'), None)
@@ -284,8 +284,13 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn("Step Through (wizardcycling) → Cephalid Illusionist to hand")
             else:
                 log_fn("Step Through (wizardcycling) — no Illusionist in library")
-        cast_spell(player, opponent, gs, step, budget, log_fn, log_entries,
-                   on_resolve=_resolve_step, cost_override=3)
+        # Wizardcycling is an activated ability (uncounterable), costs 1 mana.
+        # Bypass cast_spell's counter window — discard from hand directly,
+        # pay 1 mana, draw the tutor target.
+        player.remove_from_hand(step)
+        player._gy_via_non_cast = getattr(player, '_gy_via_non_cast', 0) + 1
+        budget[0] -= 1
+        _resolve_step(step)
 
     # ── Deploy Cephalid Illusionist (2 mana) ────────────────────────────────
     illusionist = player.find_tag('illusionist')
