@@ -540,10 +540,13 @@ def _execute_turn(gs, turn, b, o, who, matchup):
             if fast:
                 return fast
         is_artifact_deck = active_deck in ('affinity', 'eight_cast')
-        is_lands_deck = active_deck == 'lands'
-        # For Lands: check if we already have one combo piece on board
+        # Both Lands and Depths run the Dark Depths + Thespian's Stage combo —
+        # both need to prioritize the missing combo piece for their land drop,
+        # otherwise a "filler" basic gets played instead and the kill turn
+        # slips by one (Depths vs Burn was 35% before this fix).
+        is_combo_lands_deck = active_deck in ('lands', 'depths')
         needs_combo = False
-        if is_lands_deck:
+        if is_combo_lands_deck:
             has_d = any(l.card.tag == 'depths' for l in b.lands)
             has_s = any(l.card.tag == 'stage' for l in b.lands)
             needs_combo = (has_d and not has_s) or (has_s and not has_d) or (not has_d and not has_s)
@@ -555,8 +558,8 @@ def _execute_turn(gs, turn, b, o, who, matchup):
             if tag in ('ancient_tomb', 'city'): return 0
             if is_artifact_deck and tag == 'saga': return 0
             if is_artifact_deck and tag == 'seat': return 0
-            # Lands: prioritize the missing combo piece
-            if is_lands_deck and needs_combo and tag in ('depths', 'stage'): return 0
+            # Lands / Depths: prioritize the missing combo piece
+            if is_combo_lands_deck and needs_combo and tag in ('depths', 'stage'): return 0
             if c.is_basic: return 1
             if tag == 'wl': return 5
             return 3
@@ -2435,6 +2438,27 @@ def run_rules_tests():
              detail=f"got {_wraith_count} wraiths")
     except Exception as _e:
         test(f"Doomsday wraith count check (error: {_e})", False, True)
+
+    # ── Combo land prioritization extends beyond a single deck ──────────────
+    # Both Lands and Depths run the Dark Depths + Thespian's Stage combo, so
+    # _pick_land must prioritize the missing combo piece over filler basics
+    # for either deck.  Pre-fix, Depths was only handled for Lands; Depths
+    # played filler basics on the kill turn, slipping the combo by 1 turn and
+    # tanking depths vs burn to 35% (real Legacy ~60-65%).  Mechanic test:
+    # a regression pulls the matchup back below ~50%.
+    try:
+        import random as _rnd
+        _wins = 0
+        for _seed in [0, 1, 2, 3, 5, 7, 11, 13, 42, 99]:
+            _rnd.seed(_seed)
+            _r = run_game('depths', 'burn')
+            if _r.winner == 'p1':
+                _wins += 1
+        test("Depths vs Burn @ 10 fixed seeds: ≥ 5 wins (combo-land priority)",
+             _wins >= 5, True,
+             detail=f"got {_wins}/10 wins")
+    except Exception as _e:
+        test(f"Depths vs Burn smoke (error: {_e})", False, True)
 
     # ── Shared preamble disruption defers to combo when combo can fire ──────
     # When the active player's deck has a same-turn combo line that consumes
