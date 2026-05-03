@@ -12,40 +12,32 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, TYPE_CHECKING
 
-from config import MatchupCategory as MC, InteractionParams as IP
+from config import (MatchupCategory as MC, InteractionParams as IP,
+                    ThreatLevel, ClockDelta as CD, TSTargetPriority as TS)
 
 if TYPE_CHECKING:
     from game import GameState
 
 
-# ─────────────────────────────────────────────
-# Threat levels
-# ─────────────────────────────────────────────
-
-class ThreatLevel:
-    MUST_ANSWER_NOW = 4   # combo / win-con — resolve = likely lose
-    HIGH            = 3   # engine / lock / haste — permanent advantage
-    MEDIUM          = 2   # fair threat answerable next turn
-    LOW             = 1   # cantrip / ritual / minor spell
+# ThreatLevel is defined in config.py and re-exported here so existing
+# callers (`from interaction import ThreatLevel`) keep working.
+__all__ = ['ThreatLevel', 'classify_threat', 'best_proactive_target',
+           'threat_level_to_clock_delta', 'AnswerPlan']
 
 
 def threat_level_to_clock_delta(level: int) -> float:
-    """Convert the existing categorical ThreatLevel to a clock-delta float.
+    """Convert the categorical ThreatLevel to a clock-delta float.
 
     Bridge to clock.py-style scoring (PLANNING_REFERENCE §9 #4). Use this
     where a strategy needs a numeric threat weight instead of a category —
     letting it compose with other clock deltas (burn damage, new creature,
     removal) without refactoring the existing classify_threat() callers.
-
-    Mapping mirrors clock.py:
-        MUST_ANSWER_NOW → +3.5    HIGH → +1.2
-        MEDIUM          → +0.3    LOW  → -0.1
     """
     return {
-        ThreatLevel.MUST_ANSWER_NOW: 3.5,
-        ThreatLevel.HIGH:            1.2,
-        ThreatLevel.MEDIUM:          0.3,
-        ThreatLevel.LOW:            -0.1,
+        ThreatLevel.MUST_ANSWER_NOW: CD.MUST_ANSWER_NOW,
+        ThreatLevel.HIGH:            CD.HIGH,
+        ThreatLevel.MEDIUM:          CD.MEDIUM,
+        ThreatLevel.LOW:             CD.LOW,
     }.get(level, 0.0)
 
 
@@ -151,32 +143,25 @@ def best_proactive_target(gs, opponent=None):
     is_mirror = MC.is_mirror(gs)
 
     def score(c) -> int:
-        """Higher = strip this first."""
+        """Higher = strip this first. Branch order matters — first match wins."""
         if c.is_land(): return 0
-        # Win conditions and core combo pieces
-        if c.win_condition: return 100
-        if c.is_combo_piece: return 90
-        # Lock pieces / engines — snowball severely
-        if c.lock_piece: return 80
-        if c.engine: return 70
-        # Bowmasters in mirror — punishes every draw forever
-        if is_mirror and c.draw_trigger: return 85
-        # Counterspells — strip their protection in ALL matchups (not just mirror)
-        # FoW / FoN enable them to protect their combo; always worth stripping
-        if c.free_cast_if_blue and c.cmc >= 3: return 65  # FoW=5, FoN=3; not Brainstorm
-        # Mirror: lower-CMC free_cast (Brainstorm etc.) still valuable in mirror
-        if is_mirror and c.free_cast_if_blue: return 60
-        # Haste / immediate impact
-        if c.is_creature() and c.haste: return 60
-        # General high-CMC threats
-        if c.is_creature() and c.cmc >= 4: return 50
-        if c.is_creature() and c.cmc >= 2: return 40
-        # Mana rituals — delay their combo by 1 turn; worth stripping over cantrips
-        if c.mana_ritual: return 25
-        # Removal / disruption
-        if c.is_removal: return 30
-        # Low-impact (cantrips, etc.)
-        return 10
+        if c.win_condition: return TS.WIN_CONDITION
+        if c.is_combo_piece: return TS.COMBO_PIECE
+        if c.lock_piece: return TS.LOCK_PIECE
+        if c.engine: return TS.ENGINE
+        # Mirror-only: draw-punisher (e.g. Bowmasters) outranks lock/engine here
+        # but is checked AFTER them to preserve historical branch order.
+        if is_mirror and c.draw_trigger: return TS.MIRROR_DRAW_TRIGGER
+        # Counterspells — strip free protection in ALL matchups
+        if c.free_cast_if_blue and c.cmc >= 3: return TS.FREE_COUNTER
+        # Mirror only: cheaper free_cast (Brainstorm-class) still worth stripping
+        if is_mirror and c.free_cast_if_blue: return TS.MIRROR_FREE_CAST
+        if c.is_creature() and c.haste: return TS.HASTE_CREATURE
+        if c.is_creature() and c.cmc >= 4: return TS.HIGH_CMC_CREATURE
+        if c.is_creature() and c.cmc >= 2: return TS.MID_CMC_CREATURE
+        if c.mana_ritual: return TS.RITUAL
+        if c.is_removal: return TS.REMOVAL
+        return TS.BASELINE
 
     scored = [(score(c), c) for c in hand if not c.is_land()]
     if not scored:

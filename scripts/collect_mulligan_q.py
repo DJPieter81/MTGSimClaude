@@ -25,7 +25,7 @@ from typing import List
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import DECKS
-from game import GameState, PlayerState, _choose_best_n
+from game import GameState, PlayerState, _choose_best_n, score_timeout
 from config import GameRules as GR
 from engine import play_turn
 from deck_registry import get_keep_fn
@@ -81,13 +81,7 @@ def _play_from_hand(p1_deck: str, p2_deck: str,
     if gs.game_over and gs.winner:
         return 1 if gs.winner == 'p1' else 0
     # Tiebreak (same as run_game)
-    p1_score = (sum(c.power for c in gs.p1.creatures) * 2
-                + len(gs.p1.creatures) * 3 + len(gs.p1.lands)
-                + max(0, gs.p1.life - gs.p2.life))
-    p2_score = (sum(c.power for c in gs.p2.creatures) * 2
-                + len(gs.p2.creatures) * 3 + len(gs.p2.lands)
-                + max(0, gs.p2.life - gs.p1.life))
-    return 1 if p1_score >= p2_score else 0
+    return 1 if score_timeout(gs.p1, gs.p2) >= score_timeout(gs.p2, gs.p1) else 0
 
 
 def collect(p1: str, opponents: tuple[str, ...], n_per_opp: int,
