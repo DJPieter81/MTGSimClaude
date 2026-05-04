@@ -67,7 +67,7 @@ def make_ur_tempo_deck() -> List[Card]:
     d += [instant('Force of Will', 5, {'U': 1, 'generic': 4}, {'U'},
                   tag='fow', free_cast_if_blue=True)] * 4
 
-    d += [instant('Daze', 2, {'U': 1, 'generic': 1}, {'U'},
+    d += [instant('Daze', 1, {'U': 1}, {'U'},
                   tag='daze')] * 4
 
     # ── Lands (19) ───────────────────────────────────────────────────────────

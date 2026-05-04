@@ -63,7 +63,7 @@ def make_dimir_c_deck() -> List[Card]:
                   is_cantrip=True)] * 4
 
     # Daze
-    d += [instant('Daze', 2, {'U': 1, 'generic': 1}, {'U'},
+    d += [instant('Daze', 1, {'U': 1}, {'U'},
                   tag='daze')] * 3
 
     # Fatal Push: kills CMC ≤2 (or ≤4 with revolt)
@@ -231,17 +231,14 @@ def _strategy_dimir_c(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── 3. Cantrips ─────────────────────────────────────────────────────────
+    # Use engine resolve_cantrip so Brainstorm correctly draws 3 + puts 2 back
+    # (rather than the prior "draw 1" that halved Brainstorm's dig).
+    from engine import resolve_cantrip
     for cantrip_tag in ('bs', 'ponder'):
         cantrip = player.find_tag(cantrip_tag)
         if cantrip and budget[0] >= 1:
-            def _resolve_cant(c):
-                player.add_to_grave(c)
-                player.draw(1)
-                log_fn(f"{c.name} — cantrip")
-                bowmasters_triggers(1, gs, log_entries,
-                                    controller='o' if player is gs.p1 else 'b')
             cast_spell(player, opponent, gs, cantrip, budget, log_fn, log_entries,
-                       on_resolve=_resolve_cant)
+                       on_resolve=lambda c: resolve_cantrip(player, c, gs, log_fn, log_entries))
             break
 
     bauble = player.find_tag('bauble')

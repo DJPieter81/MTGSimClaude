@@ -135,7 +135,7 @@ def make_bug_deck() -> List[Card]:
     # Interaction (12)
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'}, tag='fon', free_cast_if_blue=True)] * 1
-    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 4
+    d += [instant('Daze', 1, {'U': 1}, {'U'}, tag='daze')] * 4
     d += [instant('Fatal Push', 1, {'B':1}, {'B'}, tag='push',    is_removal=True)] * 3
     d += [instant('Snuff Out', 4, {'B':1,'generic':3}, {'B'}, tag='snuffout', life_cost=4)] * 1
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 3
@@ -228,7 +228,7 @@ def make_dimir_deck() -> List[Card]:
     d += [sorcery('Ponder',      1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 3
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'},
                   tag='fow', free_cast_if_blue=True)]              * 4
-    d += [instant('Daze',        2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 3
+    d += [instant('Daze', 1, {'U': 1}, {'U'}, tag='daze')] * 3
     d += [instant('Fatal Push',  1, {'B':1}, {'B'}, tag='push',    is_removal=True)]  * 4
     d += [sorcery('Thoughtseize',1, {'B':1}, {'B'}, tag='ts')]    * 4
     # Other (4)
@@ -267,7 +267,7 @@ def make_dimir_b_deck() -> List[Card]:
     d += [sorcery('Ponder',      1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow',
                   free_cast_if_blue=True)] * 4
-    d += [instant('Daze',        2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 3
+    d += [instant('Daze', 1, {'U': 1}, {'U'}, tag='daze')] * 3
     d += [instant('Fatal Push',  1, {'B':1}, {'B'}, tag='push',    is_removal=True)] * 3
     d += [sorcery('Thoughtseize',1, {'B':1}, {'B'}, tag='ts')] * 4
     # Snuff Out: free (pay 4 life) if controlling a Swamp, destroy nonblack creature
@@ -305,7 +305,7 @@ def make_show_deck() -> List[Card]:
                    tag='emrakul', flying=True, trample=True, haste=True,
                    win_condition=True)] * 2
     d += [enchantment('Omniscience', 10, {'U':1,'generic':9}, {'U'}, tag='omni', win_condition=True)] * 2
-    d += [enchantment('Sneak Attack', 4, {'R':1,'generic':3}, {'R'}, tag='sneak', is_combo_piece=True, win_condition=True)] * 2
+    d += [enchantment('Sneak Attack', 3, {'R': 1, 'generic': 2}, {'R'}, tag='sneak', is_combo_piece=True, win_condition=True)] * 2
     # Cantrips (10)
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
@@ -317,7 +317,7 @@ def make_show_deck() -> List[Card]:
     # Fast mana (4)
     d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
     # Daze (2)
-    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 2
+    d += [instant('Daze', 1, {'U': 1}, {'U'}, tag='daze')] * 2
     # Lands (22)
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 4
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
@@ -727,7 +727,7 @@ def _bug_base(daze=3, ponder=3, kaito=2, bowm=4, bauble=2, snuff=1, extra_snuff=
     d += [make_kaito()] * kaito
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow',
                   free_cast_if_blue=True)] * 4
-    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * daze
+    d += [instant('Daze', 1, {'U': 1}, {'U'}, tag='daze')] * daze
     d += [instant('Fatal Push', 1, {'B':1}, {'B'}, tag='push', is_removal=True)] * 3
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 4
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
@@ -1998,7 +1998,7 @@ def make_ur_aggro_deck() -> List[Card]:
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder')] * 4
     # Counterspells
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Daze', 2, {'U':1,'generic':1}, {'U'}, tag='daze')] * 2
+    d += [instant('Daze', 1, {'U': 1}, {'U'}, tag='daze')] * 2
     # 20 lands
     d += [fetch_land('Scalding Tarn', ['Island','Mountain'])] * 4
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 2
