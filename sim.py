@@ -2469,6 +2469,27 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Eldrazi basic-land check (error: {_e})", False, True)
 
+    # ── TES: 4 Ponder (tier-1) ──────────────────────────────────────────────
+    # Real Bryant Cook lists run the full 4 BS + 4 Ponder cantrip package.
+    # Pre-fix the sim ran 4 BS + 2 Ponder, halving cantrip dig redundancy.
+    try:
+        from cards import DECKS as _DECKS_X1
+        _tes_ponder = sum(1 for c in _DECKS_X1['tes']() if c.tag == 'ponder')
+        test("TES: Ponder count == 4 (tier-1)", _tes_ponder, 4)
+    except Exception as _e:
+        test(f"TES Ponder check (error: {_e})", False, True)
+
+    # ── Belcher: 4 Tinder Wall + 4 Probe (tier-1) ────────────────────────────
+    # Tinder Wall is a free 2-mana ritual + Chrome Mox pitch target; Probe
+    # is a free cantrip + storm-count enabler.  Both are 4-of in real lists.
+    try:
+        _belch_tinder = sum(1 for c in _DECKS_X1['belcher']() if c.tag == 'tinder')
+        _belch_probe = sum(1 for c in _DECKS_X1['belcher']() if c.tag == 'probe')
+        test("Belcher: Tinder Wall count == 4 (tier-1)", _belch_tinder, 4)
+        test("Belcher: Gitaxian Probe count == 4 (tier-1)", _belch_probe, 4)
+    except Exception as _e:
+        test(f"Belcher tier-1 check (error: {_e})", False, True)
+
     # ── Wan Shi Tong: 3 Sanctifier en-Vec for the Burn matchup ──────────────
     # 2 copies → ~22% chance to have one in opener vs Burn, leaving the deck
     # exposed to Bolt/Lava Spike face damage.  Real Bo1 lists run 2-3 main

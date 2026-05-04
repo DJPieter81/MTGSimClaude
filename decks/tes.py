@@ -90,8 +90,9 @@ def make_tes_deck():
     for _ in range(4):
         d.append(instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True))
 
-    # Ponder: cantrip
-    for _ in range(2):
+    # Ponder: cantrip — 4-of in tier-1 TES (was 2; real Bryant Cook lists
+    # always run the full BS+Ponder package for cantrip redundancy).
+    for _ in range(4):
         d.append(sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True))
 
     # Ad Nauseam: draw cards until you hit CMC you can't pay
@@ -104,9 +105,11 @@ def make_tes_deck():
         d.append(sorcery('Tendrils of Agony', 4, {'B':2,'generic':2}, {'B'},
                          tag='tendrils', win_condition=True, is_combo_piece=True))
 
-    # ── Protection (8) ───────────────────────────────────────────────────────
-    # Veil of Summer: {G}, can't be countered, protects your spells
-    for _ in range(4):
+    # ── Protection (6) ───────────────────────────────────────────────────────
+    # Veil of Summer: {G}, can't be countered, protects your spells.
+    # Trimmed 4 → 2 to fit extra Ponders (TES needs cantrip redundancy more
+    # than reactive protection — Veil is only relevant vs blue/black).
+    for _ in range(2):
         d.append(instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos',
                          is_removal=True))  # is_removal used as 'disruptive' flag
 

@@ -85,8 +85,9 @@ def make_belcher_deck():
         d.append(sorcery('Desperate Ritual', 2, {'R': 1, 'generic': 1}, {'R'},
                          tag='desperate'))
 
-    # Tinder Wall: {G} creature, sac → add RR
-    for _ in range(2):
+    # Tinder Wall: {G} creature, sac → add RR (4-of in tier-1 Belcher: it's
+    # a free 2-mana ritual that pitches to Chrome Mox.  Was 2; bumped to 4.)
+    for _ in range(4):
         d.append(creature('Tinder Wall', 1, {'G': 1}, 'G',
                           power=0, toughness=1, tag='tinder'))
 
@@ -101,19 +102,24 @@ def make_belcher_deck():
         d.append(sorcery('Burning Wish', 2, {'R': 1, 'generic': 1}, {'R'},
                          tag='burning_wish', is_combo_piece=True))
 
-    # Empty the Warrens: {3R} storm — create 2 Goblin tokens per storm count
-    for _ in range(4):
+    # Empty the Warrens: {3R} storm — create 2 Goblin tokens per storm count.
+    # Trimmed 4 → 2 main; real Belcher runs 1-2 main and tutors more via
+    # Burning Wish from the sideboard.
+    for _ in range(2):
         d.append(sorcery('Empty the Warrens', 4, {'R': 1, 'generic': 3}, {'R'},
                          tag='empty', win_condition=True))
 
-    # Gitaxian Probe: 2 life, look at opp hand, draw 1
-    for _ in range(3):
+    # Gitaxian Probe: 2 life, look at opp hand, draw 1.  4-of in tier-1
+    # Belcher (was 3): free cantrip + storm count, doubles as info.
+    for _ in range(4):
         d.append(instant('Gitaxian Probe', 0, {}, set(), tag='probe',
                          life_cost=2, is_cantrip=True))
 
-    # ── Protection (3) ───────────────────────────────────────────────────────
-    # Veil of Summer: {G}, can't be countered, protects your spells
-    for _ in range(3):
+    # ── Protection (2) ───────────────────────────────────────────────────────
+    # Veil of Summer: {G}, can't be countered, protects your spells.
+    # Trimmed 3 → 2 to fit extra Probe / Tinder Wall — Belcher's race plan
+    # cares more about combo speed than reactive protection.
+    for _ in range(2):
         d.append(instant('Veil of Summer', 1, {'G': 1}, {'G'}, tag='vos'))
 
     assert len(d) == 60, f"Belcher deck: {len(d)} cards (expected 60)"
