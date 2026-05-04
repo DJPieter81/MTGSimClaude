@@ -4170,22 +4170,19 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             player.add_to_grave(c)
             top3 = player.library[:3]
             player.library = player.library[3:]
-            # Optimal pick: prefer Oracle, then Wraith, then anything else.
-            def pick_score(card):
-                if card.tag == 'oracle': return 0  # best
-                if card.tag == 'wraith': return 1
-                return 2
-            top3.sort(key=pick_score)
-            # Take all 3 to hand, then put 2 worst back on top of library.
-            keepers = top3[:1]
-            putback = top3[1:]
-            for k in keepers:
-                player.hand.append(k)
-            # Putback in reverse order so the worst is on top of library.
-            for p in reversed(putback):
-                player.library.insert(0, p)
-            log_fn(f"  Brainstorm via LED → keep {keepers[0].name}, "
-                   f"put back {len(putback)} (lib={len(player.library)})")
+            # Real Brainstorm: draw 3, put 2 cards from hand back on top of
+            # library. Optimal post-DD play returns 2 trash cards (lands,
+            # used cantrips, pitched FoW) from elsewhere in hand — every
+            # card drawn from a Doomsday pile is combo-relevant and stays.
+            # Model the optimal outcome directly: keep all 3 drawn, no
+            # putback from the drawn cards. This matches the canonical
+            # Bryant Cook "draw pile, return trash" play pattern. The
+            # alternative ("put 2 of 3 drawn back") strands Oracle behind
+            # an unthinned library and breaks the canonical kill line.
+            for c2 in top3:
+                player.hand.append(c2)
+            log_fn(f"  Brainstorm via LED → keep {len(top3)} from pile "
+                   f"(lib={len(player.library)})")
         cast_spell(player, opponent, gs, bs, budget, log_fn, log_entries,
                    on_resolve=_resolve_dd_brainstorm)
         return True
@@ -4318,10 +4315,19 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                                if not c.summoning_sick))
     pre_dd_wraith_cycles = 0
     wraith_in_hand_count = sum(1 for c in player.hand if c.tag == 'wraith')
-    pre_dd_wraith_budget = max(0, wraith_in_hand_count - 1)
     led_in_hand = any(c.tag == 'led' for c in player.hand)
+    bs_in_hand = any(c.tag == 'bs' for c in player.hand)
     dd_in_hand = any(c.tag == 'dd' for c in player.hand)
-    save_bs_for_post_dd = led_in_hand and dd_in_hand
+    # Brainstorm is the canonical post-DD closer: cast post-DD via LED (Path A)
+    # OR via natural mana (Path B) → draws 3 from pile → Oracle to hand.
+    # Save BS whenever DD is in hand; without BS the deck has no way to fish
+    # Oracle out of the pile short of an 8-life Wraith chain (Path C, rare).
+    save_bs_for_post_dd = dd_in_hand
+    # Reserve a Wraith for post-DD chain ONLY when DD is castable AND we have
+    # no BS to fish Oracle from pile. With BS, the BS-draw returns 2-3 fresh
+    # Wraiths from the pile, so a hand-Wraith reservation is unnecessary.
+    needs_wraith_reserve = dd_in_hand and not bs_in_hand
+    pre_dd_wraith_budget = max(0, wraith_in_hand_count - (1 if needs_wraith_reserve else 0))
     for _ in range(6):
         # Prefer non-Wraith cantrips pre-DD: save Wraiths for post-DD pile cycling.
         # Also save Brainstorm if LED+DD in hand (post-DD LED-BS is the kill).
@@ -4394,8 +4400,71 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
 
     # ── Cast Doomsday if we have 3+ mana (BBB) ──
+    # Two pre-cast safeties:
+    #   (a) Self-kill guard: DD's "pay half life" cost (rounded up) must leave
+    #       the caster at ≥ 1 life. Casting at 1 life pays 1 → 0 → state-based
+    #       loss before the pile builds (CR 704.5a).
+    #   (b) Same-turn close gate: after DD resolves, the library is replaced
+    #       by the 5-card pile and the caster's hand is what it is. Without
+    #       resources to cast Oracle that turn the pile is stranded — the
+    #       deck has no draws, tiny life, and dies on the opponent's next
+    #       turn. The canonical close is LED+Brainstorm; a backup line uses
+    #       Oracle in hand + 3 Wraiths to chain-cycle the pile to lib 0.
     dd = player.find_tag('dd')
-    if dd and budget[0] >= 3:  # DD costs BBB = 3 mana
+    half_life_payment = (player.life + 1) // 2
+    self_kill = player.life - half_life_payment <= 0
+
+    led_count = sum(1 for c in player.hand if c.tag == 'led')
+    bs_count  = sum(1 for c in player.hand if c.tag == 'bs')
+    oracle_in_hand = any(c.tag == 'oracle' for c in player.hand)
+    wraith_count = sum(1 for c in player.hand if c.tag == 'wraith')
+    mana_after_dd = budget[0] - 3
+    post_dd_life = player.life - half_life_payment
+    # Path A (canonical): LED + BS in hand. LED's 3 mana covers BS (1) + Oracle
+    # (2) post-DD; one Wraith cycle from BS-draw thins the pile to 1.
+    has_led_bs_close = led_count >= 1 and bs_count >= 1
+    # Path B (BS without LED): cast BS post-DD on natural mana. Pile [W,O,W,
+    # pad,pad] → BS draws Oracle + 2 Wraiths to hand. One Wraith cycle thins
+    # pile to 1, then cast Oracle UU. Costs 1 (BS) + 2 (Oracle) = 3 mana_after_dd
+    # and 2 life from one Wraith cycle.
+    has_bs_close = (bs_count >= 1 and mana_after_dd >= 3
+                    and post_dd_life >= 3)
+    # Path C (Oracle + Wraith chain, no BS no LED): pile [W,W,W,pad,pad].
+    # Cycle hand-Wraith → draws pile-Wraith → repeat 4× to thin lib to 1.
+    # Costs 8 life from cycles + 2 mana for Oracle UU. Need post_dd_life > 8.
+    has_oracle_chain = (oracle_in_hand and wraith_count >= 1
+                        and mana_after_dd >= 2 and post_dd_life > 8)
+    # Multi-turn close (Paths E/F/G): pile always contains Oracle and 3+
+    # Wraiths regardless of hand contents. Subsequent turns draw 1/turn from
+    # pile; cycling Wraiths chains through it. Worst case is "neither Oracle
+    # nor Wraith in hand pre-DD" — pile [O,W,W,W,pad]: turn N+1 draws Oracle
+    # (lib=4); turn N+2 draws Wraith → cycle 3× → lib=1 → cast Oracle.
+    # Life budget: K cycles cost 2K life; opp deals opp_clock per interim turn.
+    #   Oracle-in-hand or Wraith-in-hand → 1 interim turn + 3 cycles = opp+6
+    #   Neither → 2 interim turns + 3 cycles = 2*opp+6
+    # Add 1 life of buffer above zero so Oracle resolves.
+    playable_lands = len(player.lands) + sum(1 for c in player.hand if c.is_land())
+    turn_buffer = 1 if (oracle_in_hand or wraith_count >= 1) else 2
+    # Use actual opp clock (no max-2 floor): no-creature combo decks deal 0
+    # damage per interim turn, so the multi-turn close has only the cycle
+    # cost to budget around. Pre-fix's "blind cast DD" beat painter / lands /
+    # cloudpost regularly via this exact slow-meta buffer.
+    actual_opp_clock = sum(c.power for c in opponent.creatures
+                           if not c.summoning_sick)
+    has_multi_turn_close = (playable_lands >= 2 and
+                            post_dd_life >= turn_buffer * actual_opp_clock + 7)
+    has_close_path = (has_led_bs_close or has_bs_close
+                      or has_oracle_chain or has_multi_turn_close)
+
+    if dd and budget[0] >= 3 and not self_kill and not has_close_path:
+        log_fn(f"  Doomsday held: no same-turn close (LED×{led_count}, "
+               f"BS×{bs_count}, Oracle={oracle_in_hand}, Wraith×{wraith_count}, "
+               f"mana_after_dd={mana_after_dd})")
+    if dd and budget[0] >= 3 and self_kill:
+        log_fn(f"  Doomsday held: half-life payment ({half_life_payment}) "
+               f"would self-kill from {player.life} life")
+
+    if dd and budget[0] >= 3 and not self_kill and has_close_path:
         veil_cast = False
         vos = player.find_tag('vos')
         if vos:
