@@ -338,8 +338,8 @@ a.product-link{text-decoration:none;color:inherit;display:block}
         </tr></thead>
         <tbody id="auditRows"></tbody>
       </table>
-      <div style="margin-top:16px;padding:12px;border-radius:8px;background:#fde8e8;border:1px solid #f5ccc4;font-size:13px;color:var(--red)">
-        <strong>FAIL</strong> — combo (C+) and interaction (C+) below B- threshold
+      <div style="margin-top:16px;padding:12px;border-radius:8px;background:#e6f4ee;border:1px solid #b9dccd;font-size:13px;color:var(--teal)">
+        <strong>PASS</strong> — all 6 domains at B- or better (re-graded 2026-05-04 after PRs #111-#117)
       </div>
     </div>
   </div>
@@ -365,7 +365,7 @@ a.product-link{text-decoration:none;color:inherit;display:block}
       <div style="font-size:12px;color:var(--ink3)">Grading Domains</div>
     </div>
     <div class="card" style="padding:12px 16px;flex:1;min-width:200px;text-align:center">
-      <div style="font-family:var(--font-d);font-size:28px;font-weight:700;color:var(--red)">FAIL</div>
+      <div style="font-family:var(--font-d);font-size:28px;font-weight:700;color:var(--teal)">PASS</div>
       <div style="font-size:12px;color:var(--ink3)">Threshold Check (B-)</div>
     </div>
   </div>
@@ -374,7 +374,7 @@ a.product-link{text-decoration:none;color:inherit;display:block}
 <div class="footer">
   <p style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:8px">MTGSim<span style="color:var(--gold)">Claude</span></p>
   <p>Built by <a href="https://github.com/DJPieter81">DJPieter81</a> · <a href="https://github.com/DJPieter81/MTGSimClaude">Legacy repo</a> · <a href="https://github.com/DJPieter81/MTGSimManu">Modern repo</a></p>
-  <p style="margin-top:4px">Python 3.11 · Zero Dependencies · April 2026</p>
+  <p style="margin-top:4px">Python 3.11 · Zero Dependencies · re-graded May 2026</p>
 </div>
 
 <script>
@@ -617,23 +617,28 @@ function showAI(i){document.querySelectorAll('.ai-step').forEach((s,j)=>s.classL
 showAI(0);
 
 // === LLM AUDIT SECTION ===
+// Re-graded 2026-05-04 after PRs #111-#117 (combo deck audit + tier-1
+// listings + class-A card-data fixes + hardcoding cleanup).  All 6 domains
+// now pass the B- threshold; combo and interaction moved C+ → B/B- after
+// the round-1/2/3 bug fixes (see docs/lessons/2026-05-03_combo_deck_audit.md).
 const auditDomains=[
-  {name:'Mulligan',grade:'B',num:2.71,pass:true},
-  {name:'Mana',grade:'B',num:3.29,pass:true},
-  {name:'Combat',grade:'B',num:3.22,pass:true},
-  {name:'Combo',grade:'C+',num:3.90,pass:false},
-  {name:'Interaction',grade:'C+',num:3.95,pass:false},
-  {name:'Meta',grade:'B',num:3.49,pass:true}
+  {name:'Mulligan',grade:'B',num:3.03,pass:true},
+  {name:'Mana',grade:'B',num:3.14,pass:true},
+  {name:'Combat',grade:'B',num:3.17,pass:true},
+  {name:'Combo',grade:'B',num:3.20,pass:true},
+  {name:'Interaction',grade:'B-',num:3.48,pass:true},
+  {name:'Meta',grade:'B',num:3.12,pass:true}
 ];
 const auditFlags=[
-  {deck:'Doomsday',domains:['combo (4x D)','interaction (4x C)','mana (4x C+)','meta (4x C/C+)']},
-  {deck:'Depths',domains:['combo (3x D)','interaction (3x C)','mana (3x C+)','meta (3x C)']},
-  {deck:'Sneak A',domains:['combo (D+3C)','interaction (4x C)','mana (C++3C)','meta (C+3C+)']},
-  {deck:'Reanimator',domains:['combo (3x D)','interaction (3x C)','mana (3x C+)','meta (3x C)']},
-  {deck:'Oops',domains:['combo (3x C)','interaction (3x C)','mana (3x C)']},
-  {deck:'Storm',domains:['combo (2x C)','interaction (2x C)','mana (C++C)']},
-  {deck:'Goblins',domains:['combat (2x C)','meta (2x C)']},
-  {deck:'Painter',domains:['combat (2x C)','interaction (2x C+)','mana (2x C+)']}
+  {deck:'Doomsday',domains:['combo (C+D ×4)','interaction (4× C)','mana (4× C+)','meta (4× C)']},
+  {deck:'Reanimator',domains:['combo (2× D)','interaction (2× C)','mana (2× C+)','meta (2× C)']},
+  {deck:'Sneak A',domains:['combo (C+D)','interaction (2× C)','mana (C++C)','meta (2× C)']},
+  {deck:'Depths',domains:['combo (C+D)','interaction (2× C)','mana (2× C+)','meta (2× C)']},
+  {deck:'Goblins',domains:['combat (3× C)','interaction (3× C+)','meta (3× C)']},
+  {deck:'Painter',domains:['combat (2× C)','interaction (2× C+)','mana (2× C+)','meta (2× C)']},
+  {deck:'Storm',domains:['combo (2× C)','interaction (2× C)','mana (2× C)','meta (2× C)']},
+  {deck:'Oops',domains:['combo (2× C)','interaction (2× C)','mana (2× C)','mulligan (2× C+)']},
+  {deck:'Elves',domains:['combo (2× C)','interaction (2× C)','mana (2× C)','meta (2× C)']}
 ];
 
 // Audit table

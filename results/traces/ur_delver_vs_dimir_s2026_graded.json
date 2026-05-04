@@ -2,31 +2,31 @@
   "trace_file": "ur_delver_vs_dimir_s2026.json",
   "matchup": "ur_delver_vs_dimir",
   "seed": 2026,
-  "winner": "p1",
-  "win_reason": "Opp life reaches -2 on turn 8",
-  "kill_turn": 8,
-  "game_length": 8,
+  "winner": "p2",
+  "win_reason": "BUG life reaches -3 on turn 7",
+  "kill_turn": null,
+  "game_length": 7,
   "deck1": "ur_delver",
   "deck2": "dimir",
   "grades": {
-    "mulligan": "B+",
-    "mana": "B+",
-    "combat": "B",
+    "mulligan": "D",
+    "mana": "C+",
+    "combat": "C",
     "combo": "B",
-    "interaction": "B+",
-    "meta": "B",
-    "overall": "B+"
+    "interaction": "C",
+    "meta": "C",
+    "overall": "C"
   },
   "justifications": {
-    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
-    "mana": "Resource deployment supported a T8 win",
-    "combat": "Won through non-combat means",
+    "mulligan": "Mulled to 4; aggressive mulligan strategy backfired",
+    "mana": "Suboptimal mana utilization over 7 turns",
+    "combat": "Limited combat engagement",
     "combo": "Non-combo deck \u2014 domain not primary axis",
-    "interaction": "Interaction-backed win with measured disruption",
-    "meta": "Eventually closed the matchup",
-    "overall": "Average across 6 domains \u2014 won in 8 turns"
+    "interaction": "Disruption was insufficient \u2014 key threats went unanswered",
+    "meta": "Lost \u2014 limited decision points suggest structural disadvantage",
+    "overall": "Average across 6 domains \u2014 lost in 7 turns"
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Resource deployment supported a T8 win\ncombat: B \u2014 Won through non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 Interaction-backed win with measured disruption\nmeta: B \u2014 Eventually closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 8 turns",
+  "raw_response": "mulligan: D \u2014 Mulled to 4; aggressive mulligan strategy backfired\nmana: C+ \u2014 Suboptimal mana utilization over 7 turns\ncombat: C \u2014 Limited combat engagement\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C \u2014 Disruption was insufficient \u2014 key threats went unanswered\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C \u2014 Average across 6 domains \u2014 lost in 7 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-04-12T13:09:10.642413Z"
+  "graded_at": "2026-05-04T09:29:42.065690Z"
 }

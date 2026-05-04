@@ -2,31 +2,31 @@
   "trace_file": "bug_vs_storm_s42.json",
   "matchup": "bug_vs_storm",
   "seed": 42,
-  "winner": "p1",
-  "win_reason": "Opp life reaches -5 on turn 7",
-  "kill_turn": 7,
-  "game_length": 7,
+  "winner": "p2",
+  "win_reason": "ANT combo (Tendrils chain)",
+  "kill_turn": 6,
+  "game_length": 6,
   "deck1": "bug",
   "deck2": "storm",
   "grades": {
-    "mulligan": "B",
-    "mana": "B+",
-    "combat": "B",
+    "mulligan": "C+",
+    "mana": "C+",
+    "combat": "C",
     "combo": "B",
-    "interaction": "B+",
-    "meta": "B",
-    "overall": "B"
+    "interaction": "C",
+    "meta": "C",
+    "overall": "C+"
   },
   "justifications": {
-    "mulligan": "Mulled to 6; still won",
-    "mana": "Resource deployment supported a T7 win",
-    "combat": "Won through non-combat means",
+    "mulligan": "Mulled to 6; card disadvantage contributed to loss",
+    "mana": "Suboptimal mana utilization over 6 turns",
+    "combat": "Limited combat engagement",
     "combo": "Non-combo deck \u2014 domain not primary axis",
-    "interaction": "Interaction-backed win with measured disruption",
-    "meta": "Eventually closed the matchup",
-    "overall": "Average across 6 domains \u2014 won in 7 turns"
+    "interaction": "Disruption was insufficient \u2014 key threats went unanswered",
+    "meta": "Lost \u2014 limited decision points suggest structural disadvantage",
+    "overall": "Average across 6 domains \u2014 lost in 6 turns"
   },
-  "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: B+ \u2014 Resource deployment supported a T7 win\ncombat: B \u2014 Won through non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 Interaction-backed win with measured disruption\nmeta: B \u2014 Eventually closed the matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 7 turns",
+  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C+ \u2014 Suboptimal mana utilization over 6 turns\ncombat: C \u2014 Limited combat engagement\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C \u2014 Disruption was insufficient \u2014 key threats went unanswered\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 6 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-04-12T13:09:10.579330Z"
+  "graded_at": "2026-05-04T09:29:42.060029Z"
 }
