@@ -2534,6 +2534,35 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Reanimator vs Burn smoke (error: {_e})", False, True)
 
+    # ── Half-life cost spells must not self-kill (CR 119.5 + 704.5a) ───────
+    # A spell that pays "half your life rounded up" cannot be cast when the
+    # payment reduces life to 0 (state-based action: a player with 0 or less
+    # life loses). Doomsday is the only Legacy card today with this exact
+    # cost, but the rule is general — Necropotence, Yawgmoth's Bargain, and
+    # other "pay X life" effects are subject to the same constraint via
+    # CR 119.4 (you can't pay life you don't have).
+    # Pre-fix Doomsday strategy cast DD whenever budget ≥ 3 and DD was in
+    # hand, ignoring life total — produced ~3 self-kill losses per 450
+    # games across mid-meta opponents. Post-fix the strategy refuses to
+    # cast if the payment would reduce life ≤ 0.
+    try:
+        import random as _rnd
+        _self_kills = 0
+        _total = 0
+        for _opp in ['burn', 'ur_delver', 'goblins', 'mardu', 'mono_black',
+                     'storm', 'dimir', 'oops', 'ur_aggro']:
+            for _seed in range(50):
+                _rnd.seed(_seed)
+                _r = run_game('doomsday', _opp)
+                _total += 1
+                if _r.win_reason and 'self-kill' in _r.win_reason.lower():
+                    _self_kills += 1
+        test(f"Doomsday: half-life cost cannot self-kill across {_total} games",
+             _self_kills, 0,
+             detail=f"got {_self_kills} self-kills (pre-fix had 3)")
+    except Exception as _e:
+        test(f"Doomsday self-kill rule (error: {_e})", False, True)
+
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")
     if failed == 0:
