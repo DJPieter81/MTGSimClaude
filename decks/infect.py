@@ -76,7 +76,7 @@ def make_infect_deck():
     # ── Countermagic (4) ─────────────────────────────────────────────────────
     d += [instant('Force of Will', 5, {'U': 1, 'generic': 4}, {'U'},
                   tag='fow', free_cast_if_blue=True)] * 2
-    d += [instant('Daze', 2, {'U': 1, 'generic': 1}, {'U'},
+    d += [instant('Daze', 1, {'U': 1}, {'U'},
                   tag='daze')] * 2
 
     # ── Utility (2) ──────────────────────────────────────────────────────────

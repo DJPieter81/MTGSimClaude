@@ -106,7 +106,7 @@ def make_sneak_b_deck():
 
     # Sneak Attack x4
     for _ in range(4):
-        d.append(enchantment('Sneak Attack', 4, {'R': 1, 'generic': 3}, {'R'},
+        d.append(enchantment('Sneak Attack', 3, {'R': 1, 'generic': 2}, {'R'},
                              tag='sneak', is_combo_piece=True, win_condition=True))
 
     # Emrakul, the Aeons Torn x3
@@ -143,7 +143,7 @@ def make_sneak_b_deck():
 
     # Daze x2
     for _ in range(2):
-        d.append(instant('Daze', 2, {'U': 1, 'generic': 1}, {'U'}, tag='daze'))
+        d.append(instant('Daze', 1, {'U': 1}, {'U'}, tag='daze'))
 
     # Flusterstorm x2
     for _ in range(2):

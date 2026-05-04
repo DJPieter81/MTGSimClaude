@@ -2015,7 +2015,10 @@ def run_rules_tests():
         test("Brazen Borrower has flying",       borrower_.flying, True)
     test("Orcish Bowmasters has flash",      bowm_.flash      if bowm_     else 'MISSING',  True)
     test("Tamiyo CMC=1",                     tamiyo_.cmc      if tamiyo_   else -1,          1)
-    test("Daze CMC=2 (not 1)",               daze_card_.cmc   if daze_card_ else -1,         2)
+    # Daze's printed cost is {U} → CMC 1.  The {1} on Daze's text is the
+    # tax the OPPONENT pays to avoid the counter, not the caster's mana cost.
+    # Prior test asserted CMC=2, baking in a misread of the rule.
+    test("Daze CMC=1 (printed cost {U})",    daze_card_.cmc   if daze_card_ else -1,         1)
 
     # ── Audit: Bowmasters — 3 triggers for Brainstorm (3 draw events) ──────
     from game import GameState
@@ -2468,6 +2471,55 @@ def run_rules_tests():
              detail=f"got {_basics} basic lands")
     except Exception as _e:
         test(f"Eldrazi basic-land check (error: {_e})", False, True)
+
+    # ── TES: 4 Ponder (tier-1) ──────────────────────────────────────────────
+    # Real Bryant Cook lists run the full 4 BS + 4 Ponder cantrip package.
+    # Pre-fix the sim ran 4 BS + 2 Ponder, halving cantrip dig redundancy.
+    try:
+        from cards import DECKS as _DECKS_X1
+        _tes_ponder = sum(1 for c in _DECKS_X1['tes']() if c.tag == 'ponder')
+        test("TES: Ponder count == 4 (tier-1)", _tes_ponder, 4)
+    except Exception as _e:
+        test(f"TES Ponder check (error: {_e})", False, True)
+
+    # ── Belcher: 4 Tinder Wall + 4 Probe (tier-1) ────────────────────────────
+    # Tinder Wall is a free 2-mana ritual + Chrome Mox pitch target; Probe
+    # is a free cantrip + storm-count enabler.  Both are 4-of in real lists.
+    try:
+        _belch_tinder = sum(1 for c in _DECKS_X1['belcher']() if c.tag == 'tinder')
+        _belch_probe = sum(1 for c in _DECKS_X1['belcher']() if c.tag == 'probe')
+        test("Belcher: Tinder Wall count == 4 (tier-1)", _belch_tinder, 4)
+        test("Belcher: Gitaxian Probe count == 4 (tier-1)", _belch_probe, 4)
+    except Exception as _e:
+        test(f"Belcher tier-1 check (error: {_e})", False, True)
+
+    # ── Card-data CMC sanity check across all combo-relevant cards ──────────
+    # Round-5 audit found 18 (deck, card) pairs with CMC mismatches against
+    # printed cards.  Most prevalent: Daze (12 decks at cmc=2 instead of 1),
+    # Sneak Attack (3 decks at cmc=4 instead of 3).  Each costed real WR —
+    # Daze at cmc=2 means tempo decks could only cast it on T2+ instead of
+    # T1 free (pitching Island).  Lock the printed cost in via spot tests.
+    try:
+        from cards import DECKS as _DCD
+        _spot_decks = ['bug', 'sneak_a', 'show', 'cephalid', 'ur_delver']
+        _daze_cmcs = []
+        _sneak_cmcs = []
+        for dn in _spot_decks:
+            d = _DCD[dn]()
+            for c in d:
+                if c.name == 'Daze':  # abstraction-allow: test fixture (CMC audit)
+                    _daze_cmcs.append((dn, c.cmc))
+                if c.name == 'Sneak Attack':  # abstraction-allow: test fixture (CMC audit)
+                    _sneak_cmcs.append((dn, c.cmc))
+        for dn, cmc in _daze_cmcs:
+            if cmc != 1:
+                test(f"Daze CMC == 1 in deck '{dn}' (printed {{U}})", cmc, 1)
+        for dn, cmc in _sneak_cmcs:
+            if cmc != 3:
+                test(f"Sneak Attack CMC == 3 in deck '{dn}' (printed {{2}}{{R}})", cmc, 3)
+        test("Daze CMC consistent across decks", len(_daze_cmcs) > 0, True)
+    except Exception as _e:
+        test(f"Card-data CMC check (error: {_e})", False, True)
 
     # ── Wan Shi Tong: 3 Sanctifier en-Vec for the Burn matchup ──────────────
     # 2 copies → ~22% chance to have one in opener vs Burn, leaving the deck

@@ -71,7 +71,7 @@ def make_cephalid_deck():
 
     # Daze
     for _ in range(2):
-        d.append(instant('Daze', 2, {'U': 1, 'generic': 1}, {'U'}, tag='daze'))
+        d.append(instant('Daze', 1, {'U': 1}, {'U'}, tag='daze'))
 
     # Swords to Plowshares
     for _ in range(2):
