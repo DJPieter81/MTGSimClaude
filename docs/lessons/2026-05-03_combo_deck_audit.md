@@ -259,6 +259,65 @@ Tracking the WR deltas over four commits.
 | eldrazi vs storm | — | 59% |
 | wan_shi_tong vs burn | 30.5% | **40.5%** (+10pp) |
 
+### Round 7 — Belcher + TES tier-1, systematic Class A audit (PR #115)
+
+Two waves on a single PR.  First wave: Belcher Probe 3→4 + Tinder Wall
+2→4, TES Ponder 2→4 — small Class B cleanups continuing the lessons #29
+checklist question 2.
+
+Second wave: a **systematic** Class A audit using a `KNOWN[card_name]
+→ (cmc, mana_cost)` reference table grep-walked across all 36 deck
+builders.  The audit found **18 mismatches**, three of which were
+high-impact:
+
+- **Daze CMC=2 in 12 decks** (real CMC=1; printed cost `{U}`).  The
+  `{1}` in Daze's text is the *opponent's* tax, not the caster's mana
+  cost.  Sim was making Daze 1 mana more expensive everywhere → tempo
+  decks couldn't fire Daze T1.
+- **Sneak Attack CMC=4 in 3 decks** (real CMC=3; printed `{2}{R}`).
+  Sim made the kill turn 1 turn slower.
+- Misnamed regression test "Daze CMC=2 (not 1)" was *baking in the bug*.
+  Updated to assert CMC=1.
+
+Plus the cantrip resolve_cantrip pattern from PR #112 found in two
+more decks: **dimir_c and dimir_d** had the same hand-rolled
+`_resolve_cant(c)` doing `player.draw(1)` for both Brainstorm AND
+Ponder.  Both fixed to use `engine.resolve_cantrip()`.
+
+| Matchup | Before | After |
+|---|---|---|
+| dimir_c vs burn | 17.5% | 20% |
+| dimir_c vs storm | 39.5% | 43% |
+| dimir_d vs burn | 14.5% | 19% |
+| sneak_a vs bug | 39.5% | 45% |
+| sneak_a vs dimir | — | 50.5% |
+| belcher vs dimir | 36.5% | 39% |
+| belcher vs burn | 39.5% | 41.5% |
+
+**TES Brainstorm note:** initially attempted to apply the
+`resolve_cantrip` fix to TES, but TES's Brainstorm putback is tightly
+coupled to its combo-flow ordering.  The generic keep-val heuristic
+put combo-relevant cards back to library, regressing `tes vs dimir`
+38.5 → 31% at n=500.  **Reverted.**  TES's Brainstorm stays as the
+existing `draw(1)` approximation.  A full fix would need a per-deck
+Brainstorm policy hook on `resolve_cantrip` — flagged as a known sim
+simplification, not a regression bug.
+
+## Bug-class signal counts (after 7 rounds)
+
+| Bug class | Count |
+|---|---|
+| A. Card data | 17 (DD CMC, Daze ×12, Sneak Attack ×3, plus minor mana-color noise) |
+| B. Deck construction | 11 (LED in DD, Petal in Storm, Wraith count, Lurrus, Misty, Eldrazi basics, WST Sanctifier, Belcher Probe + Tinder, TES Ponder, etc.) |
+| C. Strategy/preamble | 1 (Reanimator T2 mana eaten by shared TS) |
+| D. Single-deck gate | 1 (combo-land priority hardcoded to `'lands'`) |
+| E. Heuristic over/under-counting | 1 (Eidolon post-strategy + cycled cards) |
+| F. Rule violation | 1 (Oracle ETB `≤` vs strict `<`) |
+| **Class A subtype: cantrip resolve_cantrip** | 3 (cephalid, dimir_c, dimir_d) |
+
+Strong skew toward Class A + Class B (deck data).  Engine-level bugs
+(C-F) are rarer but each fix has high blast radius.
+
 ## Tests added
 
 ```
@@ -273,6 +332,11 @@ Storm (ANT): Lion's Eye Diamond count == 4
 Cephalid vs Storm @ 10 fixed seeds: ≥ 3 wins
 Eldrazi: deck has ≥ 4 basic lands (Countryside / Wasteland-immune)
 Wan Shi Tong: Sanctifier en-Vec count == 3
+TES: Ponder count == 4 (tier-1)
+Belcher: Tinder Wall count == 4 (tier-1)
+Belcher: Gitaxian Probe count == 4 (tier-1)
+Card-data CMC consistency for Daze + Sneak Attack
+Daze CMC == 1 (was incorrectly enforced as == 2)
 ```
 
-149 → 160 total tests, all green.
+149 → 165 total tests, all green.
