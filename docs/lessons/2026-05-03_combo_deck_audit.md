@@ -148,17 +148,60 @@ These are findings that should port directly to Modern's combo decks.
 
 ## What this session did NOT fix
 
-- **Doomsday vs Burn still 10-13%.** The fundamental gap is that real
+- **Doomsday vs Burn still 8-10%.** The fundamental gap is that real
   Legacy DD has Cabal Therapy (sees opp hand, removes Bolt) which the
   sim doesn't model, and a faster discard suite. Real WR ~40-45%.
-  This is a deeper architectural gap, not a one-line fix.
-- **Painter vs Eldrazi 30% (was 38.5%).** The fetch-filter fix exposed
-  an Eldrazi deck-design flaw (Abundant Countryside fetches basics that
-  the deck doesn't have). Tentative `Wastes` fix was reverted to keep
-  scope tight; flagging for the next deck-list audit pass.
+  This is a deeper architectural gap, not a one-line fix. Round-3
+  re-audit confirmed: the deck IS already the canonical tier-1 list
+  (4 LED + 4 Petal + 4 Dark Ritual + 4 Wraith + 1 Lurrus). The
+  remaining gap is sim-architecture-level — sim doesn't model:
+  (a) Cabal Therapy's hand-look + name-a-card interaction
+  (b) Per-matchup pile construction (vs Burn: heavy lifegain pile;
+      vs Control: protection-heavy pile; sim uses one fixed structure)
+  Flagged as a separate multi-day workstream.
 - **No-DD-cast rate 34%.** When DD never gets drawn the strategy can't
   do anything useful. Not a strategy bug — RNG-bound. Could be
   improved with mulligan-for-DD logic, but that's a separate workstream.
+
+## Round 3 follow-up (PR #113, 2026-05-03 evening)
+
+Two of the deferred gaps from round 1 turned out to be Class B
+(deck-construction) bugs after all — not architectural. Both single-line
+fixes after digging into the deck-list data:
+
+### Eldrazi: Abundant Countryside fetches basics that didn't exist
+
+The deck ran 4 Abundant Countryside (a fetch land searching for *any*
+basic land type) but had **zero basics**. Every crack paid 1 life and
+produced no land — silently nerfing Eldrazi by ~4 effective mana
+sources. Replaced 4 Countryside with 4 basic Wastes (Wasteland-immune
+colorless mana — the canonical mono-brown Eldrazi fix).
+
+Sweep delta: `eldrazi vs burn` 39% → 48.5% (+9.5pp).
+
+The audit checklist gets a new question:
+> **Does every fetch in this deck have a valid target in the library?**
+> Specifically: for `fetch_targets={'Forest', 'Plains', ...}`, count
+> basics with matching subtypes in the deck. If zero, the fetch is
+> pure life-loss — replace it.
+
+### Wan Shi Tong: Sanctifier en-Vec underrepresented for Bo1
+
+WST is the canonical anti-Burn Legacy deck *specifically because*
+Sanctifier en-Vec has protection from red. At 2 copies the deck
+only saw Sanctifier in opener ~22% of games vs Burn — too rare for
+the matchup to feel like the lock it should be. Real Bo1 lists run
+2-3 main; bumped to 3.
+
+Sweep delta: `wan_shi_tong vs burn` 30.5% → 40.5% (+10pp).
+
+The audit checklist gets a new question:
+> **For each combo / control deck, is the matchup-specific hate card
+> at the count needed for a Bo1 sample of 200 games?** A 2-of card has
+> ~22% chance to be in opener; if the matchup hinges on that card
+> being seen, 3-of is the minimum for the sim to evaluate the
+> matchup faithfully. Real Bo3 lists run 1-2 main + sideboard, but
+> the sim is Bo1 and needs higher main counts.
 
 ## Numbers — round-by-round
 
@@ -201,6 +244,21 @@ Tracking the WR deltas over four commits.
 | doomsday vs storm | 32% | 37% |
 | doomsday vs lands | — | 41% |
 
+### Round 5 — Cephalid Brainstorm + wizardcycling (PR #112)
+
+| Matchup | Before | After |
+|---|---|---|
+| cephalid vs dimir | 31.7% | 36.5% |
+| cephalid vs lands | — | 60% |
+
+### Round 6 — Eldrazi basics + Wan Shi Tong Sanctifier (PR #113)
+
+| Matchup | Before | After |
+|---|---|---|
+| eldrazi vs burn | 39% | **48.5%** (+9.5pp) |
+| eldrazi vs storm | — | 59% |
+| wan_shi_tong vs burn | 30.5% | **40.5%** (+10pp) |
+
 ## Tests added
 
 ```
@@ -212,6 +270,9 @@ Reanimator vs Burn @ 10 fixed seeds: ≥ 4 wins
 Depths vs Burn @ 10 fixed seeds: ≥ 5 wins (combo-land priority)
 Storm (ANT): Lotus Petal count == 4
 Storm (ANT): Lion's Eye Diamond count == 4
+Cephalid vs Storm @ 10 fixed seeds: ≥ 3 wins
+Eldrazi: deck has ≥ 4 basic lands (Countryside / Wasteland-immune)
+Wan Shi Tong: Sanctifier en-Vec count == 3
 ```
 
-149 → 157 total tests, all green.
+149 → 160 total tests, all green.

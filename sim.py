@@ -2455,6 +2455,32 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Storm tier-1 check (error: {_e})", False, True)
 
+    # ── Eldrazi: deck must contain basics for Abundant Countryside fetches ──
+    # Pre-fix the deck ran 4 Abundant Countryside but had no basic land cards
+    # in the deck — every Countryside crack paid 1 life and produced no land,
+    # silently nerfing Eldrazi by ~4 effective mana sources.  Now runs 4
+    # basic Wastes (Wasteland-immune colorless mana).
+    try:
+        from cards import make_eldrazi_deck as _mk_eld
+        _basics = sum(1 for c in _mk_eld() if c.is_land() and c.is_basic)
+        test("Eldrazi: deck has ≥ 4 basic lands (Countryside / Wasteland-immune)",
+             _basics >= 4, True,
+             detail=f"got {_basics} basic lands")
+    except Exception as _e:
+        test(f"Eldrazi basic-land check (error: {_e})", False, True)
+
+    # ── Wan Shi Tong: 3 Sanctifier en-Vec for the Burn matchup ──────────────
+    # 2 copies → ~22% chance to have one in opener vs Burn, leaving the deck
+    # exposed to Bolt/Lava Spike face damage.  Real Bo1 lists run 2-3 main
+    # for that reason; bumped to 3 (sweep delta vs Burn: 30 → 40%).
+    try:
+        from cards import DECKS as _DECKS_X
+        _wst_sanct = sum(1 for c in _DECKS_X['wan_shi_tong']() if c.tag == 'sanctifier')
+        test("Wan Shi Tong: Sanctifier en-Vec count == 3",
+             _wst_sanct, 3)
+    except Exception as _e:
+        test(f"WST Sanctifier check (error: {_e})", False, True)
+
     # ── Cephalid: Brainstorm uses real resolve_cantrip (not draw 1) ─────────
     # Pre-fix the deck's cantrip handler hand-rolled "draw 1" for both BS and
     # Ponder, halving Brainstorm's dig power and starving the combo.  Step
