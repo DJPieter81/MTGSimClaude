@@ -151,20 +151,36 @@ class MatchupCategory:
     _BUILTIN_FAST    = frozenset({'oops'})
     _BUILTIN_TRIBAL  = frozenset({'elves'})
     _BUILTIN_TEMPO   = frozenset({'dimir', 'dimir_b', 'dimir_flash'})
+    # Decks running the Affinity / 8-Cast artifact-storm shell.  Used to gate
+    # land-pick priority for Urza's Saga / Seat of the Synod.
+    _BUILTIN_ARTIFACT = frozenset({'affinity', 'eight_cast'})
+    # Decks running the Dark Depths + Thespian's Stage land combo.  Used to
+    # gate `_pick_land`'s combo-piece priority hook.  NOTE: this is a *combo
+    # mechanic* category, distinct from `_BUILTIN_LAND` which marks decks
+    # whose primary plan revolves around lands (Lands runs the Loam engine,
+    # Show ramps via Show and Tell — neither runs the Depths combo).
+    _BUILTIN_DEPTHS_COMBO = frozenset({'lands', 'depths'})
+    # Decks where the shared `_execute_turn` Thoughtseize step would silently
+    # eat the T1-T2 combo mana.  Reanimator is the canonical case; other
+    # ritual-into-reanimate plans would join this set.
+    _BUILTIN_TS_DEFER = frozenset({'reanimator'})
 
     # Merged sets: built-in + auto-discovered from deck_registry
-    COMBO        = _BUILTIN_COMBO   | _registry_decks('combo')
-    MIRROR       = _BUILTIN_MIRROR  | _registry_decks('mirror')
-    TEMPO_MIRROR = _BUILTIN_TEMPO   | _registry_decks('tempo_mirror')
-    AGGRO        = _BUILTIN_AGGRO   | _registry_decks('aggro')
-    PRISON       = _BUILTIN_PRISON  | _registry_decks('prison')
-    GY_COMBO     = _BUILTIN_GY      | _registry_decks('gy_combo')
-    LAND_COMBO   = _BUILTIN_LAND    | _registry_decks('land_combo')
-    VIAL_DECKS   = _BUILTIN_VIAL    | _registry_decks('vial_decks')
-    DIMIR_ONLY   = _BUILTIN_DIMIR   | _registry_decks('dimir_only')
-    BOWM_DECKS   = _BUILTIN_BOWM    | _registry_decks('bowm_decks')
-    FAST_COMBO   = _BUILTIN_FAST    | _registry_decks('fast_combo')
-    TRIBAL       = _BUILTIN_TRIBAL  | _registry_decks('tribal')
+    COMBO         = _BUILTIN_COMBO   | _registry_decks('combo')
+    MIRROR        = _BUILTIN_MIRROR  | _registry_decks('mirror')
+    TEMPO_MIRROR  = _BUILTIN_TEMPO   | _registry_decks('tempo_mirror')
+    AGGRO         = _BUILTIN_AGGRO   | _registry_decks('aggro')
+    PRISON        = _BUILTIN_PRISON  | _registry_decks('prison')
+    GY_COMBO      = _BUILTIN_GY      | _registry_decks('gy_combo')
+    LAND_COMBO    = _BUILTIN_LAND    | _registry_decks('land_combo')
+    VIAL_DECKS    = _BUILTIN_VIAL    | _registry_decks('vial_decks')
+    DIMIR_ONLY    = _BUILTIN_DIMIR   | _registry_decks('dimir_only')
+    BOWM_DECKS    = _BUILTIN_BOWM    | _registry_decks('bowm_decks')
+    FAST_COMBO    = _BUILTIN_FAST    | _registry_decks('fast_combo')
+    TRIBAL        = _BUILTIN_TRIBAL  | _registry_decks('tribal')
+    ARTIFACT      = _BUILTIN_ARTIFACT       | _registry_decks('artifact')
+    DEPTHS_COMBO  = _BUILTIN_DEPTHS_COMBO   | _registry_decks('depths_combo')
+    TS_DEFER      = _BUILTIN_TS_DEFER       | _registry_decks('ts_defer')
 
     # Utility predicates
     @staticmethod

@@ -540,12 +540,12 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                          if c.tag in ('ancient_tomb', 'tomb', 'city')), None)
             if fast:
                 return fast
-        is_artifact_deck = active_deck in ('affinity', 'eight_cast')
+        is_artifact_deck = active_deck in _MC.ARTIFACT
         # Both Lands and Depths run the Dark Depths + Thespian's Stage combo —
         # both need to prioritize the missing combo piece for their land drop,
         # otherwise a "filler" basic gets played instead and the kill turn
         # slips by one (Depths vs Burn was 35% before this fix).
-        is_combo_lands_deck = active_deck in ('lands', 'depths')
+        is_combo_lands_deck = active_deck in _MC.DEPTHS_COMBO
         needs_combo = False
         if is_combo_lands_deck:
             has_d = any(l.card.tag == 'depths' for l in b.lands)
@@ -659,9 +659,8 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     # our loss in a race we're already behind in. Mardu's own strategy handles TS
     # for other matchups via _strategy_mardu. Other decks (BUG, Dimir, Storm) still
     # benefit from TS vs Burn (Eidolon/Fireblast are high-value strips for them).
-    _ts_mardu_vs_burn = (getattr(gs, 'p1_deck', '') == 'mardu'
-                         and getattr(gs, 'p2_deck', '') == 'burn'
-                         and b is gs.p1)
+    # Symmetric: fires whether Mardu is P1 or P2.
+    _ts_mardu_vs_burn = (active_deck == 'mardu' and opp_deck == 'burn')
     # Defer-to-combo: when the active deck has a same-turn combo line that
     # consumes the only available mana, the shared TS step would burn the
     # ritual-source and fizzle the combo.  Reanimator's T2 line is the
@@ -678,7 +677,7 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     _has_unmask_pitch = (any(c.tag == 'unmask' for c in b.hand)
                          and any(c.tag in ('gris', 'archon', 'atraxa', 'emrakul')
                                  for c in b.hand))
-    _ts_skip_combo_turn = (active_deck == 'reanimator'
+    _ts_skip_combo_turn = (active_deck in _MC.TS_DEFER
                            and _has_reanimate and _has_target_for_rean
                            and (_has_dark_rit or _has_unmask_pitch))
     ts = b.find_tag('ts') or b.find_tag('thoughtseize')
@@ -734,7 +733,9 @@ def _execute_turn(gs, turn, b, o, who, matchup):
         if stp and o.creatures and total_mana >= 1 and not gs.spell_blocked_by_chalice(stp.cmc):
             valid_stp = [c for c in o.creatures if c.card.tag != _mom_protected]
             target = max(valid_stp, key=lambda c: c.power) if valid_stp else None
-            opp_is_aggro = opp_deck in _MC.AGGRO or opp_deck == 'burn'
+            # Burn is already in _MC.AGGRO (config.py:_BUILTIN_AGGRO);
+            # the prior `or opp_deck == 'burn'` was redundant.
+            opp_is_aggro = opp_deck in _MC.AGGRO
             stp_threshold = CT.STP_THRESHOLD_AGGRO if opp_is_aggro else CT.STP_THRESHOLD_FAIR
             if target and target.power >= stp_threshold:
                 b.remove_from_hand(stp)
@@ -2492,6 +2493,23 @@ def run_rules_tests():
         test("Belcher: Gitaxian Probe count == 4 (tier-1)", _belch_probe, 4)
     except Exception as _e:
         test(f"Belcher tier-1 check (error: {_e})", False, True)
+
+    # ── MatchupCategory deck-membership stays in sync with sim.py gates ─────
+    # When sim.py's `_pick_land` and `_execute_turn` use `_MC.ARTIFACT`,
+    # `_MC.DEPTHS_COMBO`, and `_MC.TS_DEFER` to gate mechanic-specific
+    # behavior, those categories MUST contain at least the originally-
+    # hardcoded decks or the gates silently stop firing.  This pins the
+    # invariant that prevented Class D regressions (depths-combo-priority
+    # was hardcoded to `'lands'` for months — see lessons doc).
+    try:
+        from config import MatchupCategory as _MC_TEST
+        test("MC.ARTIFACT contains affinity",  'affinity'  in _MC_TEST.ARTIFACT, True)
+        test("MC.ARTIFACT contains eight_cast",'eight_cast'in _MC_TEST.ARTIFACT, True)
+        test("MC.DEPTHS_COMBO contains lands", 'lands'     in _MC_TEST.DEPTHS_COMBO, True)
+        test("MC.DEPTHS_COMBO contains depths",'depths'    in _MC_TEST.DEPTHS_COMBO, True)
+        test("MC.TS_DEFER contains reanimator",'reanimator'in _MC_TEST.TS_DEFER, True)
+    except Exception as _e:
+        test(f"MatchupCategory deck-membership check (error: {_e})", False, True)
 
     # ── Card-data CMC sanity check across all combo-relevant cards ──────────
     # Round-5 audit found 18 (deck, card) pairs with CMC mismatches against
