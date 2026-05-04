@@ -3,30 +3,30 @@
   "matchup": "storm_vs_dnt",
   "seed": 7,
   "winner": "p1",
-  "win_reason": "ANT combo (Ad Nauseam)",
-  "kill_turn": 5,
-  "game_length": 5,
+  "win_reason": "ANT combo (Tendrils chain)",
+  "kill_turn": 4,
+  "game_length": 4,
   "deck1": "storm",
   "deck2": "dnt",
   "grades": {
-    "mulligan": "B+",
-    "mana": "B+",
+    "mulligan": "B",
+    "mana": "A",
     "combat": "B",
-    "combo": "B+",
+    "combo": "A+",
     "interaction": "B",
     "meta": "A",
     "overall": "B+"
   },
   "justifications": {
-    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
-    "mana": "Won but took 5 turns \u2014 mana was adequate",
+    "mulligan": "Mulled to 6; still won",
+    "mana": "Fast kill (T4) implies efficient mana sequencing",
     "combat": "Combo deck \u2014 combat decisions minimal",
-    "combo": "Combo executed on T5 \u2014 efficient",
+    "combo": "Clean combo kill on T4 \u2014 optimal assembly",
     "interaction": "Combo resolved without needing protection",
     "meta": "Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness",
-    "overall": "Average across 6 domains \u2014 won in 5 turns"
+    "overall": "Average across 6 domains \u2014 won in 4 turns"
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 5 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: B+ \u2014 Combo executed on T5 \u2014 efficient\ninteraction: B \u2014 Combo resolved without needing protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 5 turns",
+  "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: A \u2014 Fast kill (T4) implies efficient mana sequencing\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: A+ \u2014 Clean combo kill on T4 \u2014 optimal assembly\ninteraction: B \u2014 Combo resolved without needing protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-04-12T13:09:10.639862Z"
+  "graded_at": "2026-05-04T09:29:42.065391Z"
 }

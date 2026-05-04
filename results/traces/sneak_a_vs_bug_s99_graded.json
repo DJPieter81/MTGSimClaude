@@ -2,31 +2,31 @@
   "trace_file": "sneak_a_vs_bug_s99.json",
   "matchup": "sneak_a_vs_bug",
   "seed": 99,
-  "winner": "p2",
-  "win_reason": "BUG life reaches -2 on turn 7",
-  "kill_turn": null,
-  "game_length": 7,
+  "winner": "p1",
+  "win_reason": "Sneak & Show: Show and Tell -> Emrakul lethal",
+  "kill_turn": 5,
+  "game_length": 5,
   "deck1": "sneak_a",
   "deck2": "bug",
   "grades": {
-    "mulligan": "B",
-    "mana": "C",
+    "mulligan": "B+",
+    "mana": "B+",
     "combat": "B",
-    "combo": "C",
-    "interaction": "C",
-    "meta": "C+",
-    "overall": "C+"
+    "combo": "B+",
+    "interaction": "B",
+    "meta": "A",
+    "overall": "B+"
   },
   "justifications": {
-    "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
-    "mana": "Lost in 7 turns \u2014 possible mana sequencing issues",
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Won but took 5 turns \u2014 mana was adequate",
     "combat": "Combo deck \u2014 combat decisions minimal",
-    "combo": "Failed to assemble combo \u2014 could not find pieces",
-    "interaction": "No protection deployed against disruption",
-    "meta": "Lost \u2014 played actively but could not overcome matchup",
-    "overall": "Average across 6 domains \u2014 lost in 7 turns"
+    "combo": "Combo executed on T5 \u2014 efficient",
+    "interaction": "Combo resolved without needing protection",
+    "meta": "Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness",
+    "overall": "Average across 6 domains \u2014 won in 5 turns"
   },
-  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C \u2014 Lost in 7 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: C \u2014 Failed to assemble combo \u2014 could not find pieces\ninteraction: C \u2014 No protection deployed against disruption\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 7 turns",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 5 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: B+ \u2014 Combo executed on T5 \u2014 efficient\ninteraction: B \u2014 Combo resolved without needing protection\nmeta: A \u2014 Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 5 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-04-12T13:09:10.634641Z"
+  "graded_at": "2026-05-04T09:29:42.064838Z"
 }
