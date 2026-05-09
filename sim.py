@@ -273,24 +273,44 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
         p2_deck=deck2,
     )
 
+# Threshold below which the multiprocessing pool overhead outweighs the speedup.
+# Calls smaller than this run serially even when parallel=True is requested.
+_PARALLEL_SWEEP_MIN_GAMES = 50
+
+
 def run_sweep(deck1: str, deck2: str, n_games: int = 100,
               use_neural_gates: bool = False,
               use_neural_scorer: bool = False,
               use_ensemble: bool = False,
               use_rollout: bool = False,
               use_q_scorer: bool = False,
-              use_q_mulligan: bool = False) -> dict:
+              use_q_mulligan: bool = False,
+              parallel: bool = True) -> dict:
     """
     Run n_games between deck1 and deck2, return stats.
     Returns dict with: p1_wins, p2_wins, p1_wr, avg_length, avg_kill_turn
+
+    parallel: when True (default) and n_games >= _PARALLEL_SWEEP_MIN_GAMES,
+              delegate to parallel.parallel_sweep for multiprocessing speedup.
+              Set parallel=False for single-process debugging / deterministic
+              traces.
     """
-    results = [run_game(deck1, deck2,
-                        use_neural_gates=use_neural_gates,
-                        use_neural_scorer=use_neural_scorer,
-                        use_ensemble=use_ensemble,
-                        use_rollout=use_rollout,
-                        use_q_scorer=use_q_scorer,
-                        use_q_mulligan=use_q_mulligan)
+    neural_flags = {
+        'use_neural_gates': use_neural_gates,
+        'use_neural_scorer': use_neural_scorer,
+        'use_ensemble': use_ensemble,
+        'use_rollout': use_rollout,
+        'use_q_scorer': use_q_scorer,
+        'use_q_mulligan': use_q_mulligan,
+    }
+
+    if parallel and n_games >= _PARALLEL_SWEEP_MIN_GAMES:
+        from parallel import parallel_sweep
+        # parallel_sweep returns the same dict shape this function builds.
+        return parallel_sweep(deck1, deck2, n_games=n_games,
+                              neural_flags=neural_flags)
+
+    results = [run_game(deck1, deck2, **neural_flags)
                for _ in range(n_games)]
     p1_wins = sum(1 for r in results if r.winner == 'p1')
     p2_wins = n_games - p1_wins
@@ -305,7 +325,8 @@ def run_sweep(deck1: str, deck2: str, n_games: int = 100,
     }
 
 
-def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -> dict:
+def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0,
+                    parallel: bool = True) -> dict:
     """
     Run every deck vs every deck and return a matrix of win rates.
     Returns dict of {(deck1, deck2): p1_win_rate}.
@@ -315,6 +336,9 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
         n_games: games per matchup pair.
         top_tier: if > 0 and decks is None, pick this many random decks
                   from the highest meta-share decks (always includes 'bug').
+        parallel: when True (default), delegate to parallel.parallel_meta_matrix
+                  for multiprocessing speedup. Set parallel=False for
+                  single-process debugging / deterministic traces.
 
     Usage:
         matrix = run_meta_matrix(['bug', 'dimir', 'ur_delver', 'storm'], n_games=200)
@@ -337,6 +361,10 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
         else:
             decks = sorted(DECKS.keys())
 
+    if parallel:
+        from parallel import parallel_meta_matrix
+        return parallel_meta_matrix(decks, n_games=n_games)
+
     matrix = {}
     total = len(decks) * (len(decks) - 1)
     done = 0
@@ -345,7 +373,7 @@ def run_meta_matrix(decks: list = None, n_games: int = 100, top_tier: int = 0) -
         for d2 in decks:
             if d1 == d2:
                 continue
-            stats = run_sweep(d1, d2, n_games)
+            stats = run_sweep(d1, d2, n_games, parallel=False)
             matrix[(d1, d2)] = stats['p1_wr']
             done += 1
             if done % 10 == 0:
@@ -2658,6 +2686,58 @@ def run_rules_tests():
              detail=f"got {_self_kills} self-kills (pre-fix had 3)")
     except Exception as _e:
         test(f"Doomsday self-kill rule (error: {_e})", False, True)
+
+    # ── run_sweep parallel parity ──────────────────────────────────────────
+    # Multiprocessing partitions the games into independent RNG streams (one
+    # per worker), so we cannot demand bit-identical win counts vs. the
+    # single-stream serial run. Two independent binomial samples of size N
+    # with success-rate p have expected |Δ| on the order of sqrt(2*N*p*q).
+    # For p≈0.5, N=60 that's ~5.5 wins (1 σ); a 2 σ bound (≈11 wins, ~18%
+    # of N) catches a real regression without flaking on the schedule jitter
+    # that mp.Pool introduces. Pick the larger of: 2 (the spec's per-cell
+    # floor for tiny N) and ⌈2·sqrt(N/2)⌉ (the 2 σ binomial bound at p=0.5).
+    import math as _math
+    def _parity_tol(n):
+        return max(2, int(_math.ceil(2 * _math.sqrt(n / 2))))
+    try:
+        import random as _rand
+        _N = 60
+        _PARITY_TOL = _parity_tol(_N)  # 11 wins for N=60
+        _rand.seed(2026)
+        _par = run_sweep('storm', 'burn', n_games=_N, parallel=True)
+        _rand.seed(2026)
+        _ser = run_sweep('storm', 'burn', n_games=_N, parallel=False)
+        _delta = abs(_par['p1_wins'] - _ser['p1_wins'])
+        test(f"run_sweep parallel parity (Δwins={_delta} ≤ {_PARITY_TOL})",
+             _delta <= _PARITY_TOL, True,
+             detail=f"par_wins={_par['p1_wins']} ser_wins={_ser['p1_wins']}")
+    except Exception as _e:
+        test(f"run_sweep parallel parity (error: {_e})", False, True)
+
+    # ── run_meta_matrix parallel parity ────────────────────────────────────
+    # Same statistical bound per cell. Small 4-deck subset keeps the test
+    # under ~30 seconds while still exercising the matchup-dispatch path.
+    try:
+        import random as _rand
+        _SUBSET = ['storm', 'burn', 'dimir', 'bug']
+        _N = 30
+        _CELL_TOL = _parity_tol(_N)  # 8 wins for N=30
+        _rand.seed(2026)
+        _par_m = run_meta_matrix(decks=_SUBSET, n_games=_N, parallel=True)
+        _rand.seed(2026)
+        _ser_m = run_meta_matrix(decks=_SUBSET, n_games=_N, parallel=False)
+        _bad = []
+        for _key in _par_m:
+            _pw = round(_par_m[_key] * _N)
+            _sw = round(_ser_m[_key] * _N)
+            if abs(_pw - _sw) > _CELL_TOL:
+                _bad.append((_key, _pw, _sw))
+        test(f"run_meta_matrix parallel parity ({len(_par_m)} cells, "
+             f"tol=±{_CELL_TOL} wins/{_N})",
+             len(_bad), 0,
+             detail=f"bad cells: {_bad[:3]}")
+    except Exception as _e:
+        test(f"run_meta_matrix parallel parity (error: {_e})", False, True)
 
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")

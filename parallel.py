@@ -12,8 +12,19 @@ from functools import partial
 
 
 def _run_games_worker(args):
-    """Worker: run N games for one matchup pair. Returns (deck1, deck2, wins, losses, kill_turns, lengths)."""
-    deck1, deck2, n_games, seed = args
+    """Worker: run N games for one matchup pair. Returns (deck1, deck2, wins, losses, kill_turns, lengths).
+
+    Task tuple shape:
+        (deck1, deck2, n_games, seed)                  — legacy 4-tuple, no neural flags
+        (deck1, deck2, n_games, seed, neural_flags)    — 5-tuple where neural_flags is a
+                                                         dict of bool kwargs forwarded to
+                                                         run_game (use_neural_gates, etc.)
+    """
+    if len(args) == 5:
+        deck1, deck2, n_games, seed, neural_flags = args
+    else:
+        deck1, deck2, n_games, seed = args
+        neural_flags = {}
     # Each worker needs its own random state
     if seed is not None:
         random.seed(seed)
@@ -23,7 +34,7 @@ def _run_games_worker(args):
     kill_turns = []
     lengths = []
     for _ in range(n_games):
-        r = run_game(deck1, deck2)
+        r = run_game(deck1, deck2, **neural_flags)
         if r.winner == 'p1':
             wins += 1
         if r.kill_turn:
@@ -32,11 +43,16 @@ def _run_games_worker(args):
     return (deck1, deck2, wins, n_games - wins, kill_turns, lengths)
 
 
-def parallel_sweep(deck1, deck2, n_games=100, n_workers=None):
+def parallel_sweep(deck1, deck2, n_games=100, n_workers=None, neural_flags=None):
     """Run n_games between two decks using multiprocessing.
-    Splits games across workers."""
+    Splits games across workers.
+
+    neural_flags: optional dict of run_game kwargs (use_neural_gates, etc.)
+                  to forward to each worker.
+    """
     if n_workers is None:
         n_workers = min(mp.cpu_count(), 8)
+    neural_flags = neural_flags or {}
 
     # Split games across workers
     chunk = max(1, n_games // n_workers)
@@ -46,7 +62,7 @@ def parallel_sweep(deck1, deck2, n_games=100, n_workers=None):
         n = min(chunk, remaining)
         if n <= 0:
             break
-        tasks.append((deck1, deck2, n, random.randint(0, 2**31)))
+        tasks.append((deck1, deck2, n, random.randint(0, 2**31), neural_flags))
         remaining -= n
 
     with mp.Pool(n_workers) as pool:
