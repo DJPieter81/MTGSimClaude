@@ -210,54 +210,19 @@ def compute_bo3_swings(deck):
 # Run sim data collection
 print("Collecting sim data for all decks...", flush=True)
 random.seed(2026)
-all_data = {}
 
-for dk in sorted(DECKS.keys()):
-    games = []
-    opps = [x for x in decks if x!=dk]
-    for i in range(2000):
-        opp = random.choice(opps)
-        try:
-            r = run_game(dk, opp)
-            hand_cards = list(r.p1_opening_hand) if r.p1_opening_hand else []
-            games.append({
-                'won': r.winner=='p1',
-                'kill_turn': r.kill_turn or r.game_length,
-                'hand': hand_cards,
-                'opp': opp,
-                'logs': r.log_lines[:12] if r.log_lines else [],
-                'length': r.game_length,
-                'mulls': r.p1_mulls or 0,
-            })
-        except: pass
-    
-    wins = [g for g in games if g['won']]
-    kt_counts = Counter(min(g['kill_turn'],10) for g in wins)
-    total_wins = max(len(wins),1)
-    kt_dist = {t: round(kt_counts.get(t,0)/total_wins*100,1) for t in range(1,11)}
-    
-    hand_groups = defaultdict(lambda: {'wins':0,'total':0})
-    for g in games:
-        if not g['hand']: continue
-        lands = sum(1 for c in g['hand'] if any(x in c.lower() for x in ['mountain','island','forest','swamp','plains','sea','tarn','strand','delta','mesa','foothills','mire','heath','catacombs','tomb','city','cavern','temple','port','waste','vantage','islet','ring','saga','depths','stage','bayou','volcanic','tropical','underground','tundra','savannah','scrubland','badlands','plateau','taiga','field','post','tower','mine','karakas','boseiju','otawara','seat','vault','foundry','den','arbor','nexus','mishra','urza']))
-        lands = min(lands, 7)
-        key = str(lands) + 'L-' + str(len(g['hand'])-lands) + 'S'
-        hand_groups[key]['total'] += 1
-        if g['won']: hand_groups[key]['wins'] += 1
-    
-    archetypes = [(k,round(d['wins']/d['total']*100,1),d['total']) for k,d in hand_groups.items() if d['total']>=10]
-    archetypes.sort(key=lambda x:-x[1])
-    baseline = round(len(wins)/max(len(games),1)*100,1)
-    
-    all_data[dk] = {
-        'kt_dist': kt_dist,
-        'archetypes': archetypes[:6],
-        'baseline': baseline,
-        'win_ex': sorted([g for g in wins if g['hand'] and g['kill_turn']<=8], key=lambda g:g['kill_turn'])[:2],
-        'loss_ex': [g for g in games if not g['won'] and g['hand']][:1],
-        'avg_kill': round(sum(g['kill_turn'] for g in wins)/total_wins,1) if wins else 0,
-    }
-    print(f"  {dk}: {len(games)} games, {len(wins)} wins, avg T{all_data[dk]['avg_kill']}", flush=True)
+# Parallelise per-deck data collection. Each deck's 2,000 games are
+# independent so we fan out one task per deck across a process pool.
+# The worker (in parallel.py) does exactly what the previous inline
+# loop did and returns a dict matching the all_data[dk] schema.
+# `decks` (from meta_fresh.json) is the opponent pool; `DECKS.keys()`
+# is the set we collect data for. They overlap heavily but aren't
+# identical so we pass both explicitly.
+from parallel import parallel_gen_guides
+all_data = parallel_gen_guides(sorted(DECKS.keys()),
+                               opp_pool=decks,
+                               n_games=2000,
+                               seed=2026)
 
 print(f"\nGenerating HTML guides...", flush=True)
 
