@@ -104,6 +104,20 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 
 ## Next Session Priorities
 
+> **Detailed plan**: see [`docs/plans/2026-05-09_next_session.md`](docs/plans/2026-05-09_next_session.md) for the full breakdown including P0/P1/P2 priorities, time estimates, and a loop-break signal for Doomsday.
+
+### P0 — Burn rebalancing (Bo3-style maindeck reweighting)
+Burn at 70.5% avg WR (real Legacy ~50-55%). Add main-deck anti-burn cards: WST Sanctifier 3→4, UWX +2-3 Sanctifier, DnT Solitude 2→3. Verify burn vs field drops to 55-60%. Est. 1-2 hours.
+
+### P1 — Mardu Grief/Fury structural gap (33.9% → ~50%)
+Trace audit of mardu vs dimir_b / mardu vs ur_delver. Likely Class C bug (evoke pitch interacting with shared TS). Est. 2-3 hours.
+
+### P1 — Doomsday architectural close-out
+Loop-break in effect: do NOT attempt another single-line DD fix. Write an architectural design doc for Cabal Therapy + per-matchup pile FIRST (see `docs/lessons/2026-05-03_combo_deck_audit.md` Round 3 follow-up).
+
+### P2 (parking lot)
+LED-BS per-matchup pile variants · Mindbreak Trap modeling · `pro_red` → `protection_from_color(color)` generalisation · Bo3 sideboard sim refresh.
+
 ### Shipped in PR #77 / #80 / #81 (April 2026)
 
 - Matrix re-run n=200, symmetrise_matrix(), all fixes baked in
