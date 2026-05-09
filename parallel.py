@@ -160,3 +160,142 @@ def parallel_field(deck, opponents, n_games=100, n_workers=None):
         results = pool.map(_run_games_worker, tasks)
 
     return results
+
+
+# ---------------------------------------------------------------------------
+# gen_guides.py data-collection worker
+# ---------------------------------------------------------------------------
+# `gen_guides.py` builds per-deck stats (kill-turn distribution, hand-archetype
+# WR, win/loss exemplars) by playing N=2000 games per deck against random
+# opponents drawn from the meta deck list. Each deck is independent so the
+# whole 36-deck loop is embarrassingly parallel. The worker below does
+# exactly what `gen_guides.py` did inline; the parent stitches per-deck
+# dicts back into `all_data`.
+
+# Land-name fragments used to count lands in an opening hand. Mirrors the
+# inline list `gen_guides.py` used before this worker existed; defined as a
+# module-level constant so the worker is self-contained and picklable.
+_GEN_GUIDES_LAND_FRAGMENTS = (
+    'mountain', 'island', 'forest', 'swamp', 'plains', 'sea', 'tarn',
+    'strand', 'delta', 'mesa', 'foothills', 'mire', 'heath', 'catacombs',
+    'tomb', 'city', 'cavern', 'temple', 'port', 'waste', 'vantage',
+    'islet', 'ring', 'saga', 'depths', 'stage', 'bayou', 'volcanic',
+    'tropical', 'underground', 'tundra', 'savannah', 'scrubland',
+    'badlands', 'plateau', 'taiga', 'field', 'post', 'tower', 'mine',
+    'karakas', 'boseiju', 'otawara', 'seat', 'vault', 'foundry', 'den',
+    'arbor', 'nexus', 'mishra', 'urza',
+)
+
+
+def _gen_guides_worker(args):
+    """Collect gen_guides per-deck stats for one deck.
+
+    Mirrors the body of gen_guides.py's old 36-deck loop. Returns
+    (deck_key, all_data_entry) where all_data_entry has the same keys
+    the inline loop produced: kt_dist, archetypes, baseline, win_ex,
+    loss_ex, avg_kill.
+
+    `opp_pool` is the list of opponent keys to sample from (gen_guides
+    uses meta_fresh.json's deck list, which can differ from cards.DECKS).
+    """
+    from collections import Counter, defaultdict
+    deck_key, n_games, seed, opp_pool = args
+    if seed is not None:
+        random.seed(seed)
+
+    from sim import run_game
+
+    games = []
+    opps = [x for x in opp_pool if x != deck_key]
+    for _ in range(n_games):
+        opp = random.choice(opps)
+        try:
+            r = run_game(deck_key, opp)
+            hand_cards = list(r.p1_opening_hand) if r.p1_opening_hand else []
+            games.append({
+                'won': r.winner == 'p1',
+                'kill_turn': r.kill_turn or r.game_length,
+                'hand': hand_cards,
+                'opp': opp,
+                'logs': r.log_lines[:12] if r.log_lines else [],
+                'length': r.game_length,
+                'mulls': r.p1_mulls or 0,
+            })
+        except Exception:
+            # Same per-game guard as the original inline loop: a single bad
+            # game shouldn't poison the whole deck (let alone the pool).
+            pass
+
+    wins = [g for g in games if g['won']]
+    kt_counts = Counter(min(g['kill_turn'], 10) for g in wins)
+    total_wins = max(len(wins), 1)
+    kt_dist = {t: round(kt_counts.get(t, 0) / total_wins * 100, 1)
+               for t in range(1, 11)}
+
+    hand_groups = defaultdict(lambda: {'wins': 0, 'total': 0})
+    for g in games:
+        if not g['hand']:
+            continue
+        lands = sum(1 for c in g['hand']
+                    if any(x in c.lower() for x in _GEN_GUIDES_LAND_FRAGMENTS))
+        lands = min(lands, 7)
+        key = str(lands) + 'L-' + str(len(g['hand']) - lands) + 'S'
+        hand_groups[key]['total'] += 1
+        if g['won']:
+            hand_groups[key]['wins'] += 1
+
+    archetypes = [(k, round(d['wins'] / d['total'] * 100, 1), d['total'])
+                  for k, d in hand_groups.items() if d['total'] >= 10]
+    archetypes.sort(key=lambda x: -x[1])
+    baseline = round(len(wins) / max(len(games), 1) * 100, 1)
+
+    entry = {
+        'kt_dist': kt_dist,
+        'archetypes': archetypes[:6],
+        'baseline': baseline,
+        'win_ex': sorted(
+            [g for g in wins if g['hand'] and g['kill_turn'] <= 8],
+            key=lambda g: g['kill_turn'])[:2],
+        'loss_ex': [g for g in games if not g['won'] and g['hand']][:1],
+        'avg_kill': (round(sum(g['kill_turn'] for g in wins) / total_wins, 1)
+                     if wins else 0),
+        'n_games': len(games),
+        'n_wins': len(wins),
+    }
+    return (deck_key, entry)
+
+
+def parallel_gen_guides(decks_list, opp_pool=None, n_games=2000,
+                        n_workers=None, seed=None):
+    """Parallelise gen_guides.py's per-deck data collection.
+
+    Each deck in `decks_list` runs `n_games` games against random
+    opponents drawn from `opp_pool` (defaults to `decks_list` itself)
+    in its own worker process. Returns `{deck_key: all_data_entry}`
+    matching the structure the previous serial loop produced.
+    """
+    if n_workers is None:
+        n_workers = min(mp.cpu_count(), 8)
+    if seed is not None:
+        random.seed(seed)
+
+    decks_list = list(decks_list)
+    opp_pool = list(opp_pool) if opp_pool is not None else decks_list
+    tasks = [(dk, n_games, random.randint(0, 2**31), opp_pool)
+             for dk in sorted(decks_list)]
+    total = len(tasks)
+
+    print(f"  Running gen_guides data collection: {total} decks "
+          f"x {n_games} games across {n_workers} workers...", flush=True)
+
+    out = {}
+    done = 0
+    with mp.Pool(n_workers) as pool:
+        for deck_key, entry in pool.imap_unordered(_gen_guides_worker, tasks):
+            out[deck_key] = entry
+            done += 1
+            print(f"  [{done}/{total}] {deck_key}: {entry['n_games']} games, "
+                  f"{entry['n_wins']} wins, avg T{entry['avg_kill']}",
+                  flush=True)
+
+    return out
