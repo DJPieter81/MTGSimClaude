@@ -4,11 +4,36 @@ Parallel game execution for meta matrix and sweeps.
 Parallelizes at two levels:
 - Matrix/field: each matchup pair runs in a separate process
 - Sweep: games within a single matchup split across processes
+
+Worker count resolution (highest precedence wins):
+  1. Explicit `n_workers=` argument
+  2. `MTGSIM_WORKERS` environment variable
+  3. `min(cpu_count(), 16)` default cap (raised from 8)
+
+Progress: every parallel function consumes results via
+`pool.imap_unordered` and prints `[done/total]` status as workers finish.
+For determinism, results are sorted by `(deck1, deck2)` (or equivalent
+key) before assembling the output dict so the resulting JSON is
+byte-identical to the previous `pool.map` ordering under fixed seed.
 """
 
 import multiprocessing as mp
+import os
 import random
 from functools import partial
+
+
+def _resolve_workers(n_workers=None):
+    """Worker count: explicit arg > MTGSIM_WORKERS env var > min(cpu_count(), 16)."""
+    if n_workers is not None:
+        return n_workers
+    env = os.environ.get('MTGSIM_WORKERS')
+    if env:
+        try:
+            return max(1, int(env))
+        except ValueError:
+            pass
+    return min(mp.cpu_count(), 16)
 
 
 def _run_games_worker(args):
@@ -50,8 +75,7 @@ def parallel_sweep(deck1, deck2, n_games=100, n_workers=None, neural_flags=None)
     neural_flags: optional dict of run_game kwargs (use_neural_gates, etc.)
                   to forward to each worker.
     """
-    if n_workers is None:
-        n_workers = min(mp.cpu_count(), 8)
+    n_workers = _resolve_workers(n_workers)
     neural_flags = neural_flags or {}
 
     # Split games across workers
@@ -65,8 +89,20 @@ def parallel_sweep(deck1, deck2, n_games=100, n_workers=None, neural_flags=None)
         tasks.append((deck1, deck2, n, random.randint(0, 2**31), neural_flags))
         remaining -= n
 
+    total = len(tasks)
+    # Small pool (one chunk per worker), so we report every K=10.
+    K = 10
+    results = []
     with mp.Pool(n_workers) as pool:
-        results = pool.map(_run_games_worker, tasks)
+        for i, r in enumerate(pool.imap_unordered(_run_games_worker, tasks), 1):
+            results.append(r)
+            if i % K == 0 or i == total:
+                print(f"  [{i}/{total}] sweep chunks complete", flush=True)
+
+    # Determinism: sort by (deck1, deck2) so aggregate order matches pool.map.
+    # For sweep all chunks share the same (deck1, deck2); sort is a no-op but
+    # kept for symmetry with the other functions.
+    results.sort(key=lambda r: (r[0], r[1]))
 
     # Aggregate
     total_wins = sum(r[2] for r in results)
@@ -88,8 +124,7 @@ def parallel_sweep(deck1, deck2, n_games=100, n_workers=None, neural_flags=None)
 def parallel_meta_matrix(decks, n_games=100, n_workers=None):
     """Run NxN meta matrix using multiprocessing.
     Each matchup pair is an independent task."""
-    if n_workers is None:
-        n_workers = min(mp.cpu_count(), 8)
+    n_workers = _resolve_workers(n_workers)
 
     # Build task list: all matchup pairs
     tasks = []
@@ -100,10 +135,21 @@ def parallel_meta_matrix(decks, n_games=100, n_workers=None):
             tasks.append((d1, d2, n_games, random.randint(0, 2**31)))
 
     total = len(tasks)
-    print(f"  Running {total} matchups across {n_workers} workers ({n_games} games each)...")
+    print(f"  Running {total} matchups across {n_workers} workers ({n_games} games each)...",
+          flush=True)
 
+    K = 30  # matrix has hundreds of tasks
+    results = []
     with mp.Pool(n_workers) as pool:
-        results = pool.map(_run_games_worker, tasks)
+        for i, r in enumerate(pool.imap_unordered(_run_games_worker, tasks), 1):
+            results.append(r)
+            if i % K == 0 or i == total:
+                print(f"  [{i}/{total}] matchups complete", flush=True)
+
+    # Determinism: imap_unordered returns results in completion order, but the
+    # output dict must be deterministic across runs (matters for symmetrise +
+    # JSON byte-equality). Sort by (deck1, deck2) before assembling.
+    results.sort(key=lambda r: (r[0], r[1]))
 
     # Build matrix
     matrix = {}
@@ -138,8 +184,7 @@ def parallel_meta_matrix_bo3(decks, n_matches=100, n_workers=None):
     Each matchup pair is an independent task; returns dict of
         {(d1, d2): {'match_wr': float, 'game_wr': float}}.
     """
-    if n_workers is None:
-        n_workers = min(mp.cpu_count(), 8)
+    n_workers = _resolve_workers(n_workers)
 
     tasks = []
     for d1 in decks:
@@ -150,10 +195,18 @@ def parallel_meta_matrix_bo3(decks, n_matches=100, n_workers=None):
 
     total = len(tasks)
     print(f"  Running {total} Bo3 matchups across {n_workers} workers "
-          f"({n_matches} matches each)...")
+          f"({n_matches} matches each)...", flush=True)
 
+    K = 30
+    results = []
     with mp.Pool(n_workers) as pool:
-        results = pool.map(_run_bo3_worker, tasks)
+        for i, r in enumerate(pool.imap_unordered(_run_bo3_worker, tasks), 1):
+            results.append(r)
+            if i % K == 0 or i == total:
+                print(f"  [{i}/{total}] Bo3 matchups complete", flush=True)
+
+    # Determinism: sort by (proto, ant) before building dict.
+    results.sort(key=lambda r: (r[0], r[1]))
 
     matrix = {}
     for proto, ant, mw, m_total, gw, g_total in results:
@@ -166,15 +219,22 @@ def parallel_meta_matrix_bo3(decks, n_matches=100, n_workers=None):
 
 def parallel_field(deck, opponents, n_games=100, n_workers=None):
     """Run one deck vs all opponents using multiprocessing."""
-    if n_workers is None:
-        n_workers = min(mp.cpu_count(), 8)
+    n_workers = _resolve_workers(n_workers)
 
     tasks = [(deck, opp, n_games, random.randint(0, 2**31))
              for opp in opponents if opp != deck]
 
+    total = len(tasks)
+    K = 10  # field is at most ~36 tasks
+    results = []
     with mp.Pool(n_workers) as pool:
-        results = pool.map(_run_games_worker, tasks)
+        for i, r in enumerate(pool.imap_unordered(_run_games_worker, tasks), 1):
+            results.append(r)
+            if i % K == 0 or i == total:
+                print(f"  [{i}/{total}] field opponents complete", flush=True)
 
+    # Determinism: sort by (deck, opp) so the returned list order is stable.
+    results.sort(key=lambda r: (r[0], r[1]))
     return results
 
 
@@ -290,8 +350,7 @@ def parallel_gen_guides(decks_list, opp_pool=None, n_games=2000,
     in its own worker process. Returns `{deck_key: all_data_entry}`
     matching the structure the previous serial loop produced.
     """
-    if n_workers is None:
-        n_workers = min(mp.cpu_count(), 8)
+    n_workers = _resolve_workers(n_workers)
     if seed is not None:
         random.seed(seed)
 

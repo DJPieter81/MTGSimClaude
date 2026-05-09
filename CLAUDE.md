@@ -43,7 +43,15 @@ python3 refresh_all.py
 
 # Full refresh with matrix re-run — ~7 min
 python3 refresh_all.py --resim 200
+
+# Override worker pool size for any parallel entrypoint (sweep/matrix/field/gen_guides)
+MTGSIM_WORKERS=16 python3 refresh_all.py --resim 200
 ```
+
+**`MTGSIM_WORKERS`** — sets the parallel worker count for `parallel.py`
+entrypoints (sweep, matrix, field, gen_guides). Resolution order:
+explicit `n_workers=` arg > `MTGSIM_WORKERS` env var > `min(cpu_count(), 16)`.
+The default cap was raised from 8 to 16 in PR C.
 
 **Always read `PLANNING.md` first** — it has known issues, stale data warnings, and session priorities.
 
