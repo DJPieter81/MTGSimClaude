@@ -33,7 +33,7 @@ If three consecutive commits target the same outlier deck without moving the win
 ```bash
 # Verify installation
 python3 -c "from sim import run_rules_tests; run_rules_tests()"
-# Should print: 147 passed, 0 failed
+# Should print: 172 passed, 0 failed
 
 # Run a game
 python3 -c "from sim import run_game; r = run_game('ur_delver', 'dimir'); print(r.winner, r.win_reason)"
@@ -43,7 +43,15 @@ python3 refresh_all.py
 
 # Full refresh with matrix re-run — ~7 min
 python3 refresh_all.py --resim 200
+
+# Override worker pool size for any parallel entrypoint (sweep/matrix/field/gen_guides)
+MTGSIM_WORKERS=16 python3 refresh_all.py --resim 200
 ```
+
+**`MTGSIM_WORKERS`** — sets the parallel worker count for `parallel.py`
+entrypoints (sweep, matrix, field, gen_guides). Resolution order:
+explicit `n_workers=` arg > `MTGSIM_WORKERS` env var > `min(cpu_count(), 16)`.
+The default cap was raised from 8 to 16 in PR C.
 
 **Always read `PLANNING.md` first** — it has known issues, stale data warnings, and session priorities.
 
@@ -61,18 +69,25 @@ r = run_game('storm', 'burn')
 r = run_game('storm')  # legacy shorthand: BUG vs storm
 ```
 
-### run_sweep(deck1, deck2, n_games=100)
+### run_sweep(deck1, deck2, n_games=100, parallel=True)
 Run N games, return stats dict with `p1_wr`, `p1_wins`, `p2_wins`, `avg_length`, `avg_kill`.
+By default uses `parallel.parallel_sweep` when `n_games >= 50` (multiprocessing
+~3-4× speedup). Pass `parallel=False` for single-process debugging or to get a
+deterministic, in-order trace.
 ```python
-s = run_sweep('bug', 'storm', n_games=200)
+s = run_sweep('bug', 'storm', n_games=200)              # parallel (default)
+s = run_sweep('bug', 'storm', n_games=200, parallel=False)  # debug / single-process
 print(f"{s['p1_wr']:.1%}")
 ```
 
-### run_meta_matrix(decks=None, n_games=100, top_tier=0)
+### run_meta_matrix(decks=None, n_games=100, top_tier=0, parallel=True)
 Run every deck vs every deck. Returns `{(d1, d2): win_rate}`.
+By default uses `parallel.parallel_meta_matrix` (one process per matchup pair).
+Pass `parallel=False` for single-process debugging.
 ```python
 matrix = run_meta_matrix(top_tier=8, n_games=100)       # 8 random top-meta decks
 matrix = run_meta_matrix(decks=['bug','storm','dimir'])  # explicit list
+matrix = run_meta_matrix(decks=['bug','storm'], parallel=False)  # debug
 ```
 
 ### Other functions

@@ -22,8 +22,8 @@ import json
 import os
 import re
 import sys
-import time
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
@@ -482,25 +482,49 @@ def main():
             print("ERROR: Set ANTHROPIC_API_KEY environment variable (or use --local)")
             sys.exit(1)
 
-        import anthropic
         client = None
         if not args.dry_run:
+            import anthropic
             import httpx as _httpx
             http_client = _httpx.Client(verify=False)
             client = anthropic.Anthropic(api_key=api_key, http_client=http_client)
 
         print(f"Grading {len(trace_paths)} traces with {args.model}...")
-        graded = 0
+
+        # Pre-filter: skip already-graded traces unless --force.
+        pending = []
         for tp in trace_paths:
             graded_path = tp.with_name(tp.stem + '_graded.json')
             if graded_path.exists() and not args.force:
                 print(f"  ⊘ {tp.name} already graded, skipping (use --force to re-grade)")
                 continue
-            result = grade_one_api(tp, client, model=args.model, dry_run=args.dry_run)
-            if result:
-                graded += 1
-                time.sleep(0.5)
-        print(f"\nGraded {graded}/{len(trace_paths)} traces.")
+            pending.append(tp)
+
+        graded = 0
+        total = len(pending)
+        # ThreadPoolExecutor: Anthropic SDK is thread-safe and handles 429 backoff
+        # internally, so a shared client + 8 workers replaces the serial loop +
+        # time.sleep(0.5) pacing. File IO is per-trace (distinct *_graded.json
+        # paths) so concurrent writes are safe.
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            futures = {
+                ex.submit(grade_one_api, tp, client,
+                          model=args.model, dry_run=args.dry_run): tp
+                for tp in pending
+            }
+            done = 0
+            for fut in as_completed(futures):
+                done += 1
+                try:
+                    result = fut.result()
+                except Exception as e:
+                    tp = futures[fut]
+                    print(f"  ✗ unexpected error for {tp.name}: {e}")
+                    result = None
+                if result:
+                    graded += 1
+                print(f"  [{done}/{total}] complete")
+        print(f"\nGraded {graded}/{total} traces.")
 
     if not args.dry_run:
         print(f"Next: python3 scripts/grade_traces.py --report")
