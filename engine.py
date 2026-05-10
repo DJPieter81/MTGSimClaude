@@ -22,7 +22,9 @@ from cards import DECKS, artifact, creature
 from gameplan import GAMEPLANS, assess, active_goal, Goal
 from interaction import (best_proactive_target, classify_threat, ThreatLevel)
 from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as IP,
-                    GameRules as GR, CombatThresholds as CT, CounterLogic as CL)
+                    GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
+                    RaceThresholds as RT, WastelandPriority as WP,
+                    BurnLethal as BL, Elves as EL)
 
 
 # ─────────────────────────────────────────────
@@ -161,11 +163,13 @@ def assess_board(player, opponent):
     ttd = (player.life / opp_power)    if opp_power > 0 else 999
     has_threats  = any(c.is_creature() for c in player.hand)
 
-    if ttk <= 3 and ttd <= 3:
+    if ttk <= RT.TTK_RACE and ttd <= RT.TTK_RACE:
         state = 'racing'
-    elif board_power > opp_power + 2 or threat_count > opp_threats + 1:
+    elif (board_power > opp_power + RT.BOARD_POWER_GAP
+          or threat_count > opp_threats + RT.THREAT_GAP):
         state = 'ahead'
-    elif opp_power > board_power + 2 or opp_threats > threat_count + 1:
+    elif (opp_power > board_power + RT.BOARD_POWER_GAP
+          or opp_threats > threat_count + RT.THREAT_GAP):
         state = 'behind'
     else:
         state = 'parity'
@@ -731,7 +735,11 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
         elif atk.power >= 3:
             # Chump if attacker deals significant damage and we have spare blockers
             # Don't chump with our last creature unless defender near lethal
-            spare_threshold = 1 if defender_player.life <= atk.power * 2 else 2
+            spare_threshold = (
+                CT.CHUMP_SPARE_DESPERATE
+                if defender_player.life <= atk.power * CT.CHUMP_DESPERATE_LIFE_MULTIPLIER
+                else CT.CHUMP_SPARE_NORMAL
+            )
             if len(available_blockers) >= spare_threshold:
                 # Pick lowest-value blocker (lowest power = least offensive value)
                 chump = min(legal, key=lambda b: b.power)
@@ -1022,7 +1030,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         is_major_threat = False
 
     is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
-    if is_minor_threat and total_counters <= 2:
+    if is_minor_threat and total_counters <= CL.FOW_MINOR_THREAT_COUNTER_FLOOR:
         if gs.trace:
             log_list.append(f"    → {d_label} evaluates: minor threat + only {total_counters} counter(s) — PASSES")
             log_list.append(f"    → {spell_card.name} RESOLVES")
@@ -1109,12 +1117,15 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             if is_combo:
                 pay_threshold = CL.DAZE_PAY_PROB_COMBO  # combo decks often tap out
             elif gs.turn <= 2:
-                pay_threshold = 0.15 if caster_spare >= 1 else 0.10  # was 0.0 — small chance even tapped out
+                pay_threshold = (CL.DAZE_PAY_PROB_T2_SPARE if caster_spare >= 1
+                                 else CL.DAZE_PAY_PROB_T2_TAPPED)
             elif gs.turn == 3:
-                pay_threshold = 0.50 if caster_spare >= 1 else 0.20
+                pay_threshold = (CL.DAZE_PAY_PROB_T3_SPARE if caster_spare >= 1
+                                 else CL.DAZE_PAY_PROB_T3_TAPPED)
             else:
                 # T4+: opponent almost always has spare mana to pay {1}
-                pay_threshold = 0.85 if caster_spare >= 1 else 0.45
+                pay_threshold = (CL.DAZE_PAY_PROB_T4_SPARE if caster_spare >= 1
+                                 else CL.DAZE_PAY_PROB_T4_TAPPED)
             can_pay = (spell_card.cmc >= 1 and
                        random.random() < pay_threshold)
             if can_pay:
@@ -1264,10 +1275,10 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             score = 0
             produces = land.effective_produces()
             # Combo lands (Dark Depths / Thespian's Stage) are highest priority
-            if land.card.tag in ('depths', 'stage'): score += 50
-            if produces & opp_spell_colours: score += 10  # cuts a colour opp needs NOW
-            if land.card.mana_ritual: score += 5  # cuts mana-ritual lands (Tomb, City)
-            if land.is_fetch:               score += 2   # denies future fixing
+            if land.card.tag in ('depths', 'stage'): score += WP.COMBO_LAND_WEIGHT
+            if produces & opp_spell_colours: score += WP.COLOUR_CUT_WEIGHT
+            if land.card.mana_ritual: score += WP.MANA_RITUAL_LAND_WEIGHT
+            if land.is_fetch:               score += WP.FETCH_WEIGHT
             return score
         eligible = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)
                     and (not l.card.is_basic and l.card.is_land())]
@@ -2188,7 +2199,7 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
     # ── Priority 1c: Deploy cheap mana elves to reach 3 for Heritage activation ──
     for tag in ['llanowar', 'mystic', 'nettle']:
         elf_card = player.find_tag(tag)
-        if elf_card and mana_ref[0] >= 1 and elf_count() < 3:
+        if elf_card and mana_ref[0] >= 1 and elf_count() < EL.HERITAGE_TARGET_ELVES:
             player.remove_from_hand(elf_card)
             if not _try_counter_any(player, opponent, gs, elf_card, log_entries):
                 player.put_creature_in_play(elf_card)
@@ -3089,7 +3100,7 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
     # Simple model: opp blocks biggest attackers first with any available creature.
     my_attackers = [c for c in player.creatures if not c.summoning_sick and c.power > 0]
     board_dmg = max(0, sum(c.power for c in my_attackers) - sum(b.toughness for b in opponent.creatures[:len(my_attackers)]))
-    lethal_with_bolts = (opponent.life - board_dmg) <= 3 * len(bolts)
+    lethal_with_bolts = (opponent.life - board_dmg) <= CL.BURN_DAMAGE_DEFAULT * len(bolts)
     for bolt in bolts:
         if not opp_can_cast(bolt, budget[0], gs, caster=player):
             break
@@ -3816,9 +3827,9 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
         def _wl_pri(land):
             score = 0
             p = land.effective_produces()
-            if p & bug_spell_colours: score += 10  # cuts colour BUG needs now
-            if land.card.tag in ('dual',): score += 3  # duals are hardest to replace
-            if land.is_fetch: score += 2
+            if p & bug_spell_colours: score += WP.COLOUR_CUT_WEIGHT
+            if land.card.tag in ('dual',): score += WP.DUAL_LAND_WEIGHT
+            if land.is_fetch: score += WP.FETCH_WEIGHT
             return score
         eligible = [l for l in opponent.lands if MTGRules.wasteland_can_target(l)]
         wt = max(eligible, key=_wl_pri, default=None)
@@ -5365,7 +5376,8 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                 opp_has_backup = sum(1 for c2 in opponent.hand
                                      if c2.tag in ('fow','fon','fluster','daze')) >= 2
                 can_fluster = (fluster and last_ctr in ('fow','fon','daze')
-                               and not opp_has_backup and _rr.random() < 0.65)
+                               and not opp_has_backup
+                               and _rr.random() < CL.FLUSTERSTORM_FIZZLE_PROB)
                 player.add_to_grave(c)
                 if can_fluster:
                     player.remove_from_hand(fluster); player.add_to_grave(fluster)
@@ -5902,7 +5914,7 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
         candidates = [c for c in opponent.creatures
                       if bolt_priority(c) < 99 and _can_target(c, _bolt_mana_after)]
         target = min(candidates, key=bolt_priority) if candidates else None
-        face_threshold = 17 if vs_burn else 9
+        face_threshold = BL.VS_BURN if vs_burn else BL.DEFAULT
         go_face = (target is None and opponent.life <= face_threshold)
         if target or go_face:
             def _resolve_bolt_mardu(c, _t=target, _face=go_face):

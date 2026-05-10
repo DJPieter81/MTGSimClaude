@@ -370,6 +370,12 @@ class CombatThresholds:
     SNUFF_LIFE_BUFFER = 8                                 # need > 8 life to cast Snuff Out
     SNUFF_LIFE_FLOOR_AGGRO = 6                            # need > 6 life to Snuff vs aggro
     BURN_COUNTER_LIFE = 12                                # counter burn at <= 12 life (was 7 — POP went uncountered)
+    # Chump-block sparing: only chump if we have at least N spare blockers.
+    # Threshold drops by 1 when defender's life ≤ atk.power * MULTIPLIER
+    # (close to lethal — chump aggressively).
+    CHUMP_DESPERATE_LIFE_MULTIPLIER = 2
+    CHUMP_SPARE_DESPERATE = 1
+    CHUMP_SPARE_NORMAL    = 2
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -389,6 +395,28 @@ class CounterLogic:
     DAZE_PAY_PROB_COMBO = 0.55   # probability combo opponent pays for Daze
     DAZE_PAY_PROB_FAIR = 0.30    # probability fair opponent pays for Daze
     BURN_DAMAGE_DEFAULT = 3      # default damage for a burn spell
+
+    # Turn-indexed Daze pay probability (caster's perspective). Two columns:
+    # SPARE  — caster has at least 1 mana left after casting the spell
+    # TAPPED — caster has zero spare mana (must pull a mana source from somewhere)
+    # T2 row is also used for any earlier turn (T1 should rarely happen but
+    # is treated identically to T2). T4_* covers T4 and later.
+    DAZE_PAY_PROB_T2_SPARE  = 0.15
+    DAZE_PAY_PROB_T2_TAPPED = 0.10
+    DAZE_PAY_PROB_T3_SPARE  = 0.50
+    DAZE_PAY_PROB_T3_TAPPED = 0.20
+    DAZE_PAY_PROB_T4_SPARE  = 0.85
+    DAZE_PAY_PROB_T4_TAPPED = 0.45
+
+    # FoW gate for "minor" threats (e.g. tamiyo, borrow): only spend a
+    # counter on these when total counters in hand is strictly above this
+    # floor — preserves stack depth for must-answer spells.
+    FOW_MINOR_THREAT_COUNTER_FLOOR = 2
+
+    # Flusterstorm follow-up: probability that Fluster is cast as a bridge
+    # over a previously-resolved counter (FoW/FoN/Daze) when no opponent
+    # backup is visible.
+    FLUSTERSTORM_FIZZLE_PROB = 0.65
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -461,6 +489,85 @@ class ClockDelta:
     LOW             = -0.1
 
 
+# ═══════════════════════════════════════════════════════════════════
+# RACING / BOARD-STATE THRESHOLDS  (engine.evaluate_position)
+# ═══════════════════════════════════════════════════════════════════
+
+class RaceThresholds:
+    """Cutoffs for the 'racing / ahead / behind / parity' classification.
+
+    TTK_RACE     — both ttk and ttd ≤ this many turns → 'racing'
+    BOARD_POWER_GAP — board_power exceeds opp_power by *more than* this → 'ahead'
+    THREAT_GAP   — creature count exceeds opp's by *more than* this → 'ahead'
+    """
+    TTK_RACE        = 3
+    BOARD_POWER_GAP = 2
+    THREAT_GAP      = 1
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WASTELAND TARGET PRIORITY  (engine._wl_priority + _wl_pri)
+# ═══════════════════════════════════════════════════════════════════
+
+class WastelandPriority:
+    """Per-target weights for Wasteland targeting.
+
+    Higher score wins. Used for both BUG's Wasteland (vs combo lands /
+    colour-cuts) and the symmetric opponent path. Weights are additive — a
+    Dark Depths that also produces a needed colour scores
+    COMBO_LAND_WEIGHT + COLOUR_CUT_WEIGHT.
+    """
+    COMBO_LAND_WEIGHT       = 50  # Dark Depths / Thespian's Stage
+    COLOUR_CUT_WEIGHT       = 10  # cuts a colour the opponent needs now
+    MANA_RITUAL_LAND_WEIGHT = 5   # Ancient Tomb / City of Traitors
+    DUAL_LAND_WEIGHT        = 3   # duals are the hardest to replace
+    FETCH_WEIGHT            = 2   # denies future colour fixing
+
+
+# ═══════════════════════════════════════════════════════════════════
+# BURN FACE-LETHAL THRESHOLDS  (engine Mardu/Boros bolt-face plan)
+# ═══════════════════════════════════════════════════════════════════
+
+class BurnLethal:
+    """Life thresholds at which to point Bolt-class burn at the opponent's
+    face (instead of a creature).
+
+    VS_BURN — vs a Burn opponent: race, go-face whenever opp.life ≤ this
+    DEFAULT — vs anyone else: go-face when board damage + bolts can finish
+    """
+    VS_BURN = 17
+    DEFAULT = 9
+
+
+# ═══════════════════════════════════════════════════════════════════
+# ELVES SUBROUTINE THRESHOLDS  (decks/elves dispatch via engine)
+# ═══════════════════════════════════════════════════════════════════
+
+class Elves:
+    """Tribal thresholds for the Elves strategy."""
+    # Heritage Druid taps three elves for {GGG}; deploy mana elves until
+    # the on-board elf count reaches this number.
+    HERITAGE_TARGET_ELVES = 3
+
+
+# ═══════════════════════════════════════════════════════════════════
+# MULLIGAN-TIME TS PRIORITY  (sim._ts_priority — additive scale)
+# ═══════════════════════════════════════════════════════════════════
+
+class MulliganTSPriority:
+    """Priority weights for the mulligan-time Thoughtseize evaluator
+    (`sim._ts_priority`).
+
+    Distinct from `TSTargetPriority` (which uses a 10/100 scale for the
+    proactive in-game discard logic). These weights are additive with the
+    target's CMC and creature base_power, so they live on a smaller scale.
+    """
+    WIN_CONDITION = 10
+    COMBO_PIECE   = 8
+    COUNTER       = 6   # tag in {fow, fon, daze, fluster}
+    CREATURE_BASE = 3   # added to base_power for any creature
+
+
 # Convenience: export everything at module level
 CR = CardRoles
 IP = InteractionParams
@@ -473,3 +580,8 @@ MS = MulliganScoring
 TS = TSTargetPriority
 TSC = TimeoutScoring
 CD = ClockDelta
+RT = RaceThresholds
+WP = WastelandPriority
+BL = BurnLethal
+EL = Elves
+MTSP = MulliganTSPriority
