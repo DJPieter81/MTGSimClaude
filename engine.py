@@ -5442,6 +5442,21 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
         chosen='entomb_reanimate' if has_entomb and has_reanimate else 'pass',
         reason=f"mana={mana}, entomb={has_entomb}, reanimate={has_reanimate}, target={has_target}")
 
+    # Protection-decision log via combo_engine. Behaviour-preserving —
+    # the strategy's existing FoW casts happen via _try_counter_any
+    # downstream; this call only surfaces a 'protect'-keyword decision
+    # to the heuristic grader when opponent's BHI suggests a free
+    # counter is likely. See docs/design/2026-05-09_combo_engine_architecture.md.
+    from combo_engine import combo_protection_check as _cpc_rean
+    _pd_r = _cpc_rean(player, opponent, gs)
+    if _pd_r.defer or _pd_r.hold is not None:
+        gs.strat_log.log_decision(
+            gs.turn, 'reanimator',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if _pd_r.defer
+                    else f'hold_{getattr(_pd_r.hold, "tag", "card")}'),
+            reason=_pd_r.reason)
+
     # ── Step 1: Lotus Petal — only crack if combo path exists ──────────────
     # Check: do we have Entomb+Reanimate, or target in GY + Reanimate?
     has_entomb = player.find_tag('entomb') is not None

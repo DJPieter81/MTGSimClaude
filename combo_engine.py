@@ -32,11 +32,18 @@ class AssemblyPath:
     name combo pieces. Engine/AI code consults this via the deck-registry
     `'combo'` metadata; deck modules construct it from their own card
     knowledge.
+
+    `target_tags` (optional) — when non-empty, the path is satisfied only
+    if AT LEAST ONE tag in this set is also present in
+    hand/graveyard. Use this to model "needs a creature target" lines
+    (Reanimator) or "needs a damage source" lines (Belcher). Empty set
+    (default) means the path has no target requirement (Storm/Tendrils).
     """
     tag:           str
     required_tags: frozenset
     mana_cost:     int
     turns_to_kill: int
+    target_tags:   frozenset = frozenset()
 
 
 @dataclass(frozen=True)
@@ -83,14 +90,53 @@ def log_combo_decision(log_fn, *, turn, deck, phase, chosen, reason,
 # ─── Predicates (Phases 2-5 implement) ───────────────────────────────────
 
 def is_combo_ready_this_turn(player, gs) -> bool:
-    """True iff every piece in the deck's `combo.pieces` is in
-    hand/board AND mana is sufficient for the cheapest assembly path
-    in `combo.assembly_paths`.
+    """True iff at least one declared `AssemblyPath` is satisfiable from
+    the current player's hand+graveyard (tags) AND the active mana floor
+    (`gs._executing_mana` if set, otherwise the count of untapped lands).
 
-    Phase 3 implements this. Used by `engine._execute_turn` to skip the
-    shared discard preamble when combo is ready.
+    The predicate is consulted by the shared discard preamble in
+    `sim._execute_turn` to skip the preamble when the combo is ready —
+    otherwise discard would burn the only mana source and fizzle the
+    line. Reanimator T2 is the canonical case (Land → Dark Ritual →
+    Unmask → Reanimate); without the skip the matchup vs Burn drops to
+    ~20%.
+
+    Returns False (cleanly) for any deck without `'combo'` metadata, so
+    the predicate is safe to call from the shared preamble unconditionally.
     """
-    raise NotImplementedError("Phase 3 implements is_combo_ready_this_turn")
+    from deck_registry import get_combo_meta
+
+    own_deck_key = gs.p1_deck if player is gs.p1 else gs.p2_deck
+    cm = get_combo_meta(own_deck_key)
+    if cm is None:
+        return False
+
+    paths = cm.get('assembly_paths', ())
+    if not paths:
+        return False
+
+    # Tags currently available — pieces in hand OR (for graveyard-targets)
+    # in the graveyard. The deck-registry `pieces` schema doesn't
+    # distinguish zones; we accept either as "present".
+    available = {getattr(c, 'tag', None) for c in player.hand}
+    available |= {getattr(c, 'tag', None) for c in player.graveyard}
+    available.discard(None)
+
+    # Mana floor: prefer caller-supplied `_executing_mana` (set by
+    # sim._execute_turn before dispatch); fall back to untapped lands.
+    mana = getattr(gs, '_executing_mana', None)
+    if mana is None:
+        mana = sum(1 for ld in player.lands if not ld.tapped)
+
+    for path in paths:
+        if not (path.required_tags.issubset(available) and path.mana_cost <= mana):
+            continue
+        # Optional target requirement: when non-empty, at least one
+        # target tag must be available too.
+        if path.target_tags and not (path.target_tags & available):
+            continue
+        return True
+    return False
 
 
 def combo_protection_check(player, opponent, gs) -> ProtectionDecision:

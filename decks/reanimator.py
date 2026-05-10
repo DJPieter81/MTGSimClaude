@@ -6,6 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import make_reanimator_deck
+from combo_engine import AssemblyPath
 
 
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
@@ -32,6 +33,12 @@ def _keep_reanimator(hand, matchup=''):
 
 # ─── DECK_META ───────────────────────────────────────────────────────────────
 
+# Reanimator's combo-readiness rule (consumed by combo_engine.is_combo_ready_this_turn
+# and the shared discard preamble in sim._execute_turn): the deck can fire
+# T1-T2 if it has a reanimate-class spell AND a target (in hand or graveyard)
+# AND a mana source — either Dark Ritual in hand OR Unmask-pitch with target.
+# See combo.assembly_paths below for the two principal lines.
+
 DECK_META = {
     'key':        'reanimator',
     'name':       'Reanimator',
@@ -41,4 +48,33 @@ DECK_META = {
     'categories': {'combo', 'gy_combo'},
     'interaction': {'speed': 2, 'resilience': 2, 'uses_graveyard': True, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.02,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # See docs/design/2026-05-09_combo_engine_architecture.md.
+    'combo': {
+        'pieces': frozenset({
+            'reanimate', 'exhume', 'animatedead',                 # reanimate-class
+            'gris', 'archon', 'atraxa', 'emrakul',                # targets
+            'darkrit', 'petal', 'unmask', 'entomb',               # enablers
+        }),
+        'protection_tags': frozenset({'fow', 'fon', 'daze'}),
+        # Cartesian product: {reanimate, exhume, animatedead} × {darkrit, unmask}
+        # — six paths, each specific enough that the predicate captures the
+        # OLD hardcoded check's "any reanimate-class spell × any enabler"
+        # disjunction. Mana_cost=1 throughout: Dark Ritual nets +2 (covers
+        # exhume/animatedead's higher base cost) and Unmask is alt-cast for
+        # free (the chain still needs 1 land to cast the reanimate spell).
+        # Target must be present in hand or graveyard.
+        'assembly_paths': tuple(
+            AssemblyPath(
+                tag=f'{enabler}_{rean}',
+                required_tags=frozenset({rean, enabler}),
+                mana_cost=1,
+                turns_to_kill=1,
+                target_tags=frozenset({'gris', 'archon', 'atraxa', 'emrakul'}),
+            )
+            for enabler in ('darkrit', 'unmask')
+            for rean    in ('reanimate', 'exhume', 'animatedead')
+        ),
+        'preamble_skip': True,    # skip shared TS preamble when ready
+    },
 }
