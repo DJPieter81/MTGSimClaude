@@ -1,0 +1,113 @@
+"""
+combo_engine.py — single owner of combo-deck decision-making.
+
+See docs/design/2026-05-09_combo_engine_architecture.md.
+
+Phase 1 implements `log_combo_decision` and the dataclasses; the three
+predicate functions are stubs (NotImplementedError) until Phases 2/3/5
+land their behaviour.
+
+The `log_combo_decision` line format is the canonical source of decisions
+parsed by `llm_judge.collect()` (which keys the heuristic grader's
+`strategic_decisions`). Format:
+
+    T<turn> [<deck>] [phase:<phase>] chose <chosen> from [<candidates>] — <reason>
+
+Tests in `sim.run_rules_tests` round-trip the format through
+`llm_judge.collect`'s parser to pin this contract.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Optional
+
+
+# ─── Dataclasses ─────────────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class AssemblyPath:
+    """One way for a combo deck to assemble its win condition.
+
+    `required_tags` is a frozenset of tag strings (NOT card names) that
+    name combo pieces. Engine/AI code consults this via the deck-registry
+    `'combo'` metadata; deck modules construct it from their own card
+    knowledge.
+    """
+    tag:           str
+    required_tags: frozenset
+    mana_cost:     int
+    turns_to_kill: int
+
+
+@dataclass(frozen=True)
+class ProtectionDecision:
+    """Result of consulting opponent's known disruption before going off.
+
+    `defer` — should the strategy hold this turn instead of firing combo?
+    `hold`  — the Card to keep in hand as protection (None if defer=False
+              or no protection is possible).
+    `reason` — short human-readable reason; goes into the
+               `strategic_decisions` log line.
+    """
+    defer:  bool
+    hold:   object  # Card or None — typed as object to avoid circular import
+    reason: str
+
+
+# ─── Decision emitter (Phase 1) ──────────────────────────────────────────
+
+def log_combo_decision(log_fn, *, turn, deck, phase, chosen, reason,
+                       candidates=None) -> None:
+    """Emit a single strategic-decision line into the game log.
+
+    The format is the contract consumed by `llm_judge.collect()` (which
+    populates `trace['strategic_decisions']` for the heuristic grader and
+    the LLM rubric).
+
+    Args:
+        log_fn:     the strategy's `log_fn` callback (engine pattern).
+        turn:       int — `gs.turn`.
+        deck:       str — deck key (e.g. 'storm').
+        phase:      str — one of {'mulligan','mana','combat','combo',
+                                  'interaction','meta','setup'}.
+        chosen:     str — the chosen action label.
+        reason:     str — short human-readable justification.
+        candidates: list[str] | None — optional alternatives considered.
+    """
+    cands = candidates if candidates is not None else []
+    cand_str = '[' + ', '.join(str(c) for c in cands) + ']'
+    log_fn(f"T{turn} [{deck}] [phase:{phase}] chose {chosen} "
+           f"from {cand_str} — {reason}")
+
+
+# ─── Predicates (Phases 2-5 implement) ───────────────────────────────────
+
+def is_combo_ready_this_turn(player, gs) -> bool:
+    """True iff every piece in the deck's `combo.pieces` is in
+    hand/board AND mana is sufficient for the cheapest assembly path
+    in `combo.assembly_paths`.
+
+    Phase 3 implements this. Used by `engine._execute_turn` to skip the
+    shared discard preamble when combo is ready.
+    """
+    raise NotImplementedError("Phase 3 implements is_combo_ready_this_turn")
+
+
+def combo_protection_check(player, opponent, gs) -> ProtectionDecision:
+    """Consult `bhi.py` for opponent's known disruption. If opponent has a
+    free counter visible AND player has a card with a tag in
+    `combo.protection_tags`, return defer=True with that card as hold.
+
+    Phase 2 implements this. Pure function — no state mutation.
+    """
+    raise NotImplementedError("Phase 2 implements combo_protection_check")
+
+
+def fastest_assemble_plan(player, gs, paths) -> Optional[AssemblyPath]:
+    """Pick the lowest-`(turns_to_kill, mana_cost)` `AssemblyPath` from
+    `paths` that the player can satisfy (all `required_tags` present,
+    mana available).
+
+    Phase 5 implements this. Returns None if no path is satisfiable.
+    """
+    raise NotImplementedError("Phase 5 implements fastest_assemble_plan")
