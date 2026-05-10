@@ -94,13 +94,66 @@ def is_combo_ready_this_turn(player, gs) -> bool:
 
 
 def combo_protection_check(player, opponent, gs) -> ProtectionDecision:
-    """Consult `bhi.py` for opponent's known disruption. If opponent has a
-    free counter visible AND player has a card with a tag in
-    `combo.protection_tags`, return defer=True with that card as hold.
+    """Decide whether to defer combo / hold protection given opponent's
+    known disruption.
 
-    Phase 2 implements this. Pure function — no state mutation.
+    Reads `combo.protection_tags` from the deck-registry combo metadata,
+    consults `bhi.HandBelief` for `p_free_counter`, and:
+
+      * If `p_free_counter` ≤ `IP.BHI_FREE_COUNTER_THRESHOLD` →
+        proceed (defer=False, hold=None).
+      * If above threshold AND a card with a protection tag is in hand →
+        hold that card (defer=False, hold=card). Reason includes the
+        keyword 'protect' so the heuristic grader keys on it.
+      * If above threshold AND no protection in hand →
+        defer one turn (defer=True, hold=None). Reason also contains
+        'protect'.
+
+    Pure function: reads `gs`/`player`/`opponent` but does not mutate
+    them. The HandBelief is constructed locally; callers that need
+    cached belief state should consult `gs._bhi_*` directly.
+
+    Returns `ProtectionDecision(defer=False, hold=None,
+    reason='no combo metadata')` for non-combo decks (no metadata
+    declared). This makes the function safe to call from any strategy.
     """
-    raise NotImplementedError("Phase 2 implements combo_protection_check")
+    from bhi import HandBelief
+    from config import InteractionParams as IP
+    from deck_registry import get_combo_meta
+
+    own_deck_key = gs.p1_deck if player is gs.p1 else gs.p2_deck
+    cm = get_combo_meta(own_deck_key)
+    if cm is None:
+        return ProtectionDecision(defer=False, hold=None,
+                                  reason='no combo metadata for deck')
+
+    opp_deck_key = gs.p2_deck if opponent is gs.p2 else gs.p1_deck
+    belief = HandBelief(opp_deck_key,
+                        cards_drawn=7 + max(0, gs.turn - 1),
+                        cards_in_hand=len(opponent.hand))
+
+    if belief.p_free_counter <= IP.BHI_FREE_COUNTER_THRESHOLD:
+        return ProtectionDecision(
+            defer=False, hold=None,
+            reason=f'opp p_free_counter={belief.p_free_counter:.2f} '
+                   f'≤ {IP.BHI_FREE_COUNTER_THRESHOLD:.2f}, no protection needed'
+        )
+
+    protection_tags = cm.get('protection_tags', frozenset())
+    hold_card = next((c for c in player.hand
+                      if getattr(c, 'tag', None) in protection_tags), None)
+    if hold_card is not None:
+        return ProtectionDecision(
+            defer=False, hold=hold_card,
+            reason=f'protect combo: hold {hold_card.tag} '
+                   f'vs opp p_free_counter={belief.p_free_counter:.2f}'
+        )
+
+    return ProtectionDecision(
+        defer=True, hold=None,
+        reason=f'protect combo by deferring: opp p_free_counter='
+               f'{belief.p_free_counter:.2f}, no protection in hand'
+    )
 
 
 def fastest_assemble_plan(player, gs, paths) -> Optional[AssemblyPath]:

@@ -6,6 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import make_storm_deck
+from combo_engine import AssemblyPath
 
 
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
@@ -46,4 +47,24 @@ DECK_META = {
     'categories': {'combo'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': True, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.01,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # See docs/design/2026-05-09_combo_engine_architecture.md.
+    'combo': {
+        'pieces': frozenset({
+            'tendrils', 'itutor', 'adnauseam', 'pif',          # win conditions
+            'ritual', 'darkrit', 'cabalrit', 'petal', 'led',   # mana engines
+        }),
+        'protection_tags': frozenset({'fow', 'fon', 'daze', 'fluster', 'veil'}),
+        # Phase 5 will populate full assembly paths; Phase 2 declares the
+        # primary line so combo_protection_check has a non-empty schema.
+        'assembly_paths': (
+            AssemblyPath(
+                tag='ritual_chain_tendrils',
+                required_tags=frozenset({'tendrils'}),
+                mana_cost=4,            # storm count + Tendrils cost
+                turns_to_kill=1,
+            ),
+        ),
+        'preamble_skip': False,         # Storm has no shared discard preamble
+    },
 }

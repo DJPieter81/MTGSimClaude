@@ -2816,17 +2816,15 @@ def run_rules_tests():
         test("ProtectionDecision dataclass accepts (defer, hold, reason)",
              (_pd.defer, _pd.hold, _pd.reason), (False, None, 'no threat'))
 
-        # 6. Predicate stubs raise NotImplementedError until their phases
-        #    land — pin the contract that they must be implemented, not
-        #    silently no-op'd, when consumers wire them up.
-        for _fn_name in ('is_combo_ready_this_turn',
-                         'combo_protection_check', 'fastest_assemble_plan'):
+        # 6. Predicate stubs (Phases 3 & 5 still pending). Phase 2 has
+        #    landed combo_protection_check, so it's no longer a stub.
+        for _fn_name in ('is_combo_ready_this_turn', 'fastest_assemble_plan'):
             _fn = getattr(_ce, _fn_name)
             try:
                 if _fn_name == 'fastest_assemble_plan':
                     _fn(None, None, [])
                 else:
-                    _fn(None, None) if _fn_name == 'is_combo_ready_this_turn' else _fn(None, None, None)
+                    _fn(None, None)
                 _raised = False
             except NotImplementedError:
                 _raised = True
@@ -2837,6 +2835,75 @@ def run_rules_tests():
 
     except Exception as _e:
         test(f"combo_engine architecture invariants (error: {_e})", False, True)
+
+    # ── Phase 2: combo_protection_check rule-level tests ──────────────
+    # Pure-function tests — no game loop. Build minimal GameState +
+    # PlayerState fixtures and verify the three branches of the rule.
+    try:
+        import combo_engine as _ce2
+        from cards import DECKS as _DK
+        from game import GameState as _GS, PlayerState as _PS
+        from rules import Card as _Card, CardType as _CT
+
+        # Storm has combo metadata; build a minimal gs with storm as p1.
+        # Opponent needs cards_in_hand>0 for BHI to compute a real prior.
+        _filler = _Card(name='_filler', card_type=_CT.LAND, cmc=0, mana_cost={},
+                        colors=set(), gy_type='land')
+        _filler.tag = 'filler'
+        _p1 = _PS(name='p1', hand=[], library=[])
+        _p2 = _PS(name='p2', hand=[_filler] * 7, library=[])
+        _gs2 = _GS(p1=_p1, p2=_p2, p1_deck='storm', p2_deck='dimir')
+        _gs2.turn = 3
+
+        # Branch 1: opp has high p_free_counter, player has FoW in hand.
+        # Build a real FoW from the storm deck.
+        _storm_cards = _DK['storm']()
+        _fow = next((c for c in _storm_cards if c.tag == 'fow'), None)
+        if _fow is None:
+            # Fallback: synthesize a card with tag='fow'
+            _fow = _Card(name='Force of Will', card_type=_CT.INSTANT, cmc=5,
+                         mana_cost={'U': 1}, colors={'U'}, gy_type='instant')
+            _fow.tag = 'fow'
+        _p1.hand = [_fow]
+
+        # opp = dimir → high p_free_counter (built-in profile)
+        _pd = _ce2.combo_protection_check(_p1, _p2, _gs2)
+        test("combo_protection_check: hold returned when protection in hand and opp threat",
+             _pd.hold is not None, True,
+             detail=f"got pd={_pd}")
+        test("combo_protection_check: reason contains keyword 'protect' when threat",
+             'protect' in _pd.reason.lower(), True,
+             detail=f"reason='{_pd.reason}'")
+
+        # Branch 2: opp has high p_free_counter, NO protection in hand.
+        _p1.hand = []
+        _pd2 = _ce2.combo_protection_check(_p1, _p2, _gs2)
+        test("combo_protection_check: defer=True when threat and no protection in hand",
+             _pd2.defer, True,
+             detail=f"got pd={_pd2}")
+        test("combo_protection_check: defer reason still contains 'protect' keyword",
+             'protect' in _pd2.reason.lower(), True)
+
+        # Branch 3: opp deck with low p_free_counter (e.g. burn) → proceed.
+        _p2.hand = [_filler] * 7  # restore filler for BHI prior
+        _gs3 = _GS(p1=_p1, p2=_p2, p1_deck='storm', p2_deck='burn')
+        _gs3.turn = 3
+        _pd3 = _ce2.combo_protection_check(_p1, _p2, _gs3)
+        test("combo_protection_check: defer=False vs no-counter opp",
+             _pd3.defer, False,
+             detail=f"got pd={_pd3}")
+        test("combo_protection_check: hold=None vs no-counter opp",
+             _pd3.hold, None)
+
+        # Branch 4: non-combo deck → returns no-op decision.
+        _gs4 = _GS(p1=_p1, p2=_p2, p1_deck='bug', p2_deck='dimir')
+        _gs4.turn = 3
+        _pd4 = _ce2.combo_protection_check(_p1, _p2, _gs4)
+        test("combo_protection_check: non-combo deck returns defer=False, hold=None",
+             (_pd4.defer, _pd4.hold), (False, None))
+
+    except Exception as _e:
+        test(f"combo_protection_check rule tests (error: {_e})", False, True)
 
     # ── run_sweep parallel parity ──────────────────────────────────────────
     # Multiprocessing partitions the games into independent RNG streams (one
