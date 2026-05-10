@@ -15,7 +15,9 @@ from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
                    instant, sorcery, artifact, creature)
 from game import GameState, PlayerState, london_mulligan, opp_keep, score_timeout
 from engine import opp_turn, play_turn, update_goyf
-from config import GameRules as GR, CombatThresholds as CT
+from config import (GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
+                    RaceThresholds as RT, WastelandPriority as WP,
+                    BurnLethal as BL, Elves as EL, MulliganTSPriority as MTSP)
 
 
 @dataclass
@@ -721,10 +723,10 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                 total_mana -= 1
                 def _ts_priority(c):
                     score = 0
-                    if c.win_condition: score += 10
-                    if c.is_combo_piece: score += 8
-                    if c.tag in ('fow', 'fon', 'daze', 'fluster'): score += 6
-                    if c.is_creature(): score += 3 + c.base_power
+                    if c.win_condition: score += MTSP.WIN_CONDITION
+                    if c.is_combo_piece: score += MTSP.COMBO_PIECE
+                    if c.tag in ('fow', 'fon', 'daze', 'fluster'): score += MTSP.COUNTER
+                    if c.is_creature(): score += MTSP.CREATURE_BASE + c.base_power
                     score += c.cmc
                     return score
                 best = max(opp_nonland, key=_ts_priority)
@@ -2686,6 +2688,50 @@ def run_rules_tests():
              detail=f"got {_self_kills} self-kills (pre-fix had 3)")
     except Exception as _e:
         test(f"Doomsday self-kill rule (error: {_e})", False, True)
+
+    # ── Phase 0: lifted-constant mechanical tests ─────────────────────
+    # Each test names the *rule* the constant embodies, not a specific
+    # card or deck. These pin the post-cleanup invariants so a future
+    # tweak to the literals can't silently invert the strategic intent.
+    test("racing detection ttk threshold is a positive turn count",
+         RT.TTK_RACE >= 1, True)
+    test("racing 'ahead' requires strictly larger board-power gap than threat gap",
+         RT.BOARD_POWER_GAP > RT.THREAT_GAP, True)
+
+    test("wasteland combo-land weight outranks any per-colour/fix bonus",
+         WP.COMBO_LAND_WEIGHT > (WP.COLOUR_CUT_WEIGHT + WP.MANA_RITUAL_LAND_WEIGHT
+                                 + WP.DUAL_LAND_WEIGHT + WP.FETCH_WEIGHT), True)
+    test("wasteland colour-cut outranks dual-land and fetch tiebreakers",
+         WP.COLOUR_CUT_WEIGHT > WP.DUAL_LAND_WEIGHT > WP.FETCH_WEIGHT, True)
+
+    test("burn-lethal threshold is strictly higher when racing burn than otherwise",
+         BL.VS_BURN > BL.DEFAULT, True)
+
+    test("daze pay-probability is monotone non-decreasing in turn (spare column)",
+         CL.DAZE_PAY_PROB_T2_SPARE <= CL.DAZE_PAY_PROB_T3_SPARE
+         <= CL.DAZE_PAY_PROB_T4_SPARE, True)
+    test("daze pay-probability is monotone non-decreasing in turn (tapped column)",
+         CL.DAZE_PAY_PROB_T2_TAPPED <= CL.DAZE_PAY_PROB_T3_TAPPED
+         <= CL.DAZE_PAY_PROB_T4_TAPPED, True)
+    test("daze pay-probability is higher with spare mana at every turn",
+         (CL.DAZE_PAY_PROB_T2_SPARE >= CL.DAZE_PAY_PROB_T2_TAPPED and
+          CL.DAZE_PAY_PROB_T3_SPARE >= CL.DAZE_PAY_PROB_T3_TAPPED and
+          CL.DAZE_PAY_PROB_T4_SPARE >= CL.DAZE_PAY_PROB_T4_TAPPED), True)
+
+    test("chump-spare drops by exactly 1 when defender is near lethal",
+         CT.CHUMP_SPARE_NORMAL - CT.CHUMP_SPARE_DESPERATE, 1)
+
+    test("FoW minor-threat counter floor is a non-negative count",
+         CL.FOW_MINOR_THREAT_COUNTER_FLOOR >= 0, True)
+
+    test("Heritage Druid target-elf count matches its activation cost",
+         EL.HERITAGE_TARGET_ELVES, 3)
+
+    test("flusterstorm fizzle probability is a valid probability",
+         0.0 < CL.FLUSTERSTORM_FIZZLE_PROB <= 1.0, True)
+
+    test("mulligan-time TS priority orders: win > combo > counter > creature-base",
+         MTSP.WIN_CONDITION > MTSP.COMBO_PIECE > MTSP.COUNTER > MTSP.CREATURE_BASE, True)
 
     # ── run_sweep parallel parity ──────────────────────────────────────────
     # Multiprocessing partitions the games into independent RNG streams (one
