@@ -13,6 +13,16 @@ DECK_META schema:
         'keep':       callable|None, # mulligan keep(hand, matchup) → bool. None = use default.
         'categories': set[str],      # e.g. {'combo', 'land_combo', 'fast_combo'}
         'meta_share': float,         # metagame share (0.0-1.0)
+        'combo':      dict|None,     # OPTIONAL — combo-engine metadata, schema below
+    }
+
+Combo metadata schema (only for decks in 'combo' category — see
+combo_engine.py and docs/design/2026-05-09_combo_engine_architecture.md):
+    'combo': {
+        'pieces':          set[str],         # tag strings naming combo pieces
+        'protection_tags': set[str],         # tags that can protect (fow, fon, …)
+        'assembly_paths':  list[AssemblyPath],  # combo_engine.AssemblyPath
+        'preamble_skip':   bool,             # skip shared discard preamble when ready
     }
 
 Valid categories:
@@ -106,6 +116,29 @@ def get_categories(key):
     """Get category set for a deck key."""
     meta = get_meta(key)
     return meta.get('categories', set()) if meta else set()
+
+
+def get_combo_meta(key):
+    """Get combo-engine metadata for a deck key.
+
+    Returns the `'combo'` dict declared in the deck's `DECK_META`, or None
+    if the deck doesn't declare combo metadata. Validates the four
+    required keys when present; raises KeyError on a malformed entry.
+    """
+    meta = get_meta(key)
+    if not meta:
+        return None
+    cm = meta.get('combo')
+    if cm is None:
+        return None
+    required = ('pieces', 'protection_tags', 'assembly_paths', 'preamble_skip')
+    missing = [k for k in required if k not in cm]
+    if missing:
+        raise KeyError(
+            f"deck {key!r} 'combo' metadata missing keys: {missing}. "
+            f"See deck_registry.py docstring for schema."
+        )
+    return cm
 
 
 def get_meta_share(key):

@@ -2733,6 +2733,111 @@ def run_rules_tests():
     test("mulligan-time TS priority orders: win > combo > counter > creature-base",
          MTSP.WIN_CONDITION > MTSP.COMBO_PIECE > MTSP.COUNTER > MTSP.CREATURE_BASE, True)
 
+    # ── Phase 1: combo_engine architecture invariants ─────────────────
+    # These pin the *boundary* the module owns. Behaviour for the three
+    # NotImplementedError predicates lands in Phases 2/3/5.
+    try:
+        import combo_engine as _ce
+        from llm_judge import collect as _llm_collect  # noqa: F401  (import-side check)
+
+        # 1. Decision-line format round-trips through llm_judge.collect()'s
+        #    parser. Build a fake log line via log_combo_decision and run
+        #    the same regex/split logic collect() uses.
+        _captured = []
+        _ce.log_combo_decision(_captured.append, turn=4, deck='storm',
+                               phase='combo', chosen='kill_C',
+                               reason='ritual chain → tendrils for lethal',
+                               candidates=['kill_C', 'pass'])
+        _line = _captured[0]
+        # Reproduce the parser shape collect() uses:
+        _hdr, _rest = _line.split(' chose ', 1)
+        _action, _why = _rest.split(' — ', 1)
+        _chosen_field = _action.split(' from ', 1)[0].strip()
+        _phase_field = _hdr.split('[phase:', 1)[1].split(']')[0]
+        _deck_field = _hdr.split('[', 1)[1].split(']')[0]
+        _turn_field = int(_hdr.split()[0].lstrip('T'))
+        test("log_combo_decision: parsed deck matches input",
+             _deck_field, 'storm')
+        test("log_combo_decision: parsed phase matches input",
+             _phase_field, 'combo')
+        test("log_combo_decision: parsed turn matches input",
+             _turn_field, 4)
+        test("log_combo_decision: parsed chosen matches input",
+             _chosen_field, 'kill_C')
+        test("log_combo_decision: parsed reason contains the keyword 'tendrils'",
+             'tendrils' in _why, True)
+
+        # 2. combo_engine.py owns zero card-name string literals — checked
+        #    via grep on the source. Any new card-name `==` would violate
+        #    the ABSTRACTION CONTRACT; pin it now.
+        from pathlib import Path as _P
+        _src = (_P(__file__).resolve().parent / 'combo_engine.py').read_text()
+        import re as _re
+        _bad = _re.findall(r'\.name\s*==\s*[\'"]', _src)
+        test("combo_engine.py owns zero card-name == literals",
+             len(_bad), 0,
+             detail=f"hits: {_bad[:3]}")
+
+        # 3. Deck-registry combo-meta schema validates: every deck that
+        #    declares 'combo' has all four required keys, and every other
+        #    deck returns None cleanly.
+        from deck_registry import get_all_keys as _gak, get_combo_meta as _gcm
+        _bad_decks = []
+        for _k in _gak():
+            try:
+                _cm = _gcm(_k)
+            except KeyError as _e:
+                _bad_decks.append((_k, str(_e)))
+        test("deck_registry.get_combo_meta validates schema for all decks",
+             _bad_decks, [],
+             detail=f"violations: {_bad_decks[:2]}")
+
+        # 4. AssemblyPath dataclass requires all four fields.
+        try:
+            _ap = _ce.AssemblyPath(tag='hexmage', required_tags=frozenset({'depths', 'hexmage'}),
+                                   mana_cost=2, turns_to_kill=1)
+            _ap_ok = (_ap.tag == 'hexmage' and _ap.mana_cost == 2
+                      and _ap.turns_to_kill == 1
+                      and 'depths' in _ap.required_tags)
+        except TypeError:
+            _ap_ok = False
+        test("AssemblyPath dataclass accepts all four required fields",
+             _ap_ok, True)
+        try:
+            _ce.AssemblyPath(tag='x')  # missing required positional
+            _ap_partial = True
+        except TypeError:
+            _ap_partial = False
+        test("AssemblyPath dataclass rejects partial construction",
+             _ap_partial, False)
+
+        # 5. ProtectionDecision dataclass schema.
+        _pd = _ce.ProtectionDecision(defer=False, hold=None, reason='no threat')
+        test("ProtectionDecision dataclass accepts (defer, hold, reason)",
+             (_pd.defer, _pd.hold, _pd.reason), (False, None, 'no threat'))
+
+        # 6. Predicate stubs raise NotImplementedError until their phases
+        #    land — pin the contract that they must be implemented, not
+        #    silently no-op'd, when consumers wire them up.
+        for _fn_name in ('is_combo_ready_this_turn',
+                         'combo_protection_check', 'fastest_assemble_plan'):
+            _fn = getattr(_ce, _fn_name)
+            try:
+                if _fn_name == 'fastest_assemble_plan':
+                    _fn(None, None, [])
+                else:
+                    _fn(None, None) if _fn_name == 'is_combo_ready_this_turn' else _fn(None, None, None)
+                _raised = False
+            except NotImplementedError:
+                _raised = True
+            except Exception:
+                _raised = False
+            test(f"{_fn_name} stub raises NotImplementedError",
+                 _raised, True)
+
+    except Exception as _e:
+        test(f"combo_engine architecture invariants (error: {_e})", False, True)
+
     # ── run_sweep parallel parity ──────────────────────────────────────────
     # Multiprocessing partitions the games into independent RNG streams (one
     # per worker), so we cannot demand bit-identical win counts vs. the
