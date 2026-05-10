@@ -697,19 +697,19 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     # canonical case (Land → Dark Ritual → Unmask → Reanimate); without this
     # skip the strategy never fires, and the matchup vs Burn was 20%.
     # Mechanic: shared preamble disruption defers when the strategy has its
-    # own kill line ready this turn.
-    _has_reanimate = any(c.tag in ('reanimate', 'exhume', 'animatedead') for c in b.hand)
-    _has_target_for_rean = (any(cc.tag in ('gris', 'archon', 'atraxa', 'emrakul')
-                                for cc in b.hand)
-                            or any((cc.win_condition or cc.is_combo_piece)
-                                   and cc.is_creature() for cc in b.graveyard))
-    _has_dark_rit = any(c.tag == 'darkrit' for c in b.hand)
-    _has_unmask_pitch = (any(c.tag == 'unmask' for c in b.hand)
-                         and any(c.tag in ('gris', 'archon', 'atraxa', 'emrakul')
-                                 for c in b.hand))
-    _ts_skip_combo_turn = (active_deck in _MC.TS_DEFER
-                           and _has_reanimate and _has_target_for_rean
-                           and (_has_dark_rit or _has_unmask_pitch))
+    # own kill line ready this turn. Generalised — any deck declaring
+    # `combo.preamble_skip=True` and a satisfiable `assembly_paths` entry
+    # opts in. See docs/design/2026-05-09_combo_engine_architecture.md.
+    from combo_engine import is_combo_ready_this_turn as _iscr
+    from deck_registry import get_combo_meta as _gcm
+    _cm = _gcm(active_deck)
+    if _cm is not None and _cm.get('preamble_skip', False):
+        # Surface the current mana floor to the predicate so it can
+        # evaluate the cheapest assembly path against actual resources.
+        gs._executing_mana = total_mana
+        _ts_skip_combo_turn = _iscr(b, gs)
+    else:
+        _ts_skip_combo_turn = False
     ts = b.find_tag('ts') or b.find_tag('thoughtseize')
     if (ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc)
             and not _ts_mardu_vs_burn and not _ts_skip_combo_turn):
@@ -2816,22 +2816,18 @@ def run_rules_tests():
         test("ProtectionDecision dataclass accepts (defer, hold, reason)",
              (_pd.defer, _pd.hold, _pd.reason), (False, None, 'no threat'))
 
-        # 6. Predicate stubs (Phases 3 & 5 still pending). Phase 2 has
-        #    landed combo_protection_check, so it's no longer a stub.
-        for _fn_name in ('is_combo_ready_this_turn', 'fastest_assemble_plan'):
-            _fn = getattr(_ce, _fn_name)
-            try:
-                if _fn_name == 'fastest_assemble_plan':
-                    _fn(None, None, [])
-                else:
-                    _fn(None, None)
-                _raised = False
-            except NotImplementedError:
-                _raised = True
-            except Exception:
-                _raised = False
-            test(f"{_fn_name} stub raises NotImplementedError",
-                 _raised, True)
+        # 6. Predicate stub (Phase 5 still pending). Phases 2 & 3 have
+        #    landed their predicates, so only fastest_assemble_plan remains
+        #    NotImplementedError.
+        try:
+            _ce.fastest_assemble_plan(None, None, [])
+            _raised = False
+        except NotImplementedError:
+            _raised = True
+        except Exception:
+            _raised = False
+        test("fastest_assemble_plan stub raises NotImplementedError",
+             _raised, True)
 
     except Exception as _e:
         test(f"combo_engine architecture invariants (error: {_e})", False, True)
@@ -2904,6 +2900,75 @@ def run_rules_tests():
 
     except Exception as _e:
         test(f"combo_protection_check rule tests (error: {_e})", False, True)
+
+    # ── Phase 3: is_combo_ready_this_turn rule-level tests ────────────
+    # Pure-function tests — no game loop. Build minimal hand fixtures
+    # and verify the predicate against Reanimator's two assembly paths.
+    try:
+        import combo_engine as _ce3
+        from cards import DECKS as _DK
+        from game import GameState as _GS, PlayerState as _PS
+
+        _rean_cards = _DK['reanimator']()
+        _reanimate = next((c for c in _rean_cards if c.tag == 'reanimate'), None)
+        _darkrit   = next((c for c in _rean_cards if c.tag == 'darkrit'), None)
+        _unmask    = next((c for c in _rean_cards if c.tag == 'unmask'), None)
+        _gris      = next((c for c in _rean_cards if c.tag == 'gris'), None)
+
+        # Branch 1: deck has no combo metadata → False.
+        _p1 = _PS(name='p1', hand=[], library=[])
+        _p2 = _PS(name='p2', hand=[], library=[])
+        _gs5 = _GS(p1=_p1, p2=_p2, p1_deck='bug', p2_deck='dimir')
+        _gs5._executing_mana = 5
+        test("is_combo_ready: returns False for deck without combo metadata",
+             _ce3.is_combo_ready_this_turn(_p1, _gs5), False)
+
+        # Branch 2: required tags missing → False.
+        _gs6 = _GS(p1=_p1, p2=_p2, p1_deck='reanimator', p2_deck='dimir')
+        _gs6._executing_mana = 5
+        _p1.hand = [_reanimate] if _reanimate else []  # has reanimate but no enabler
+        test("is_combo_ready: required tags missing yields False",
+             _ce3.is_combo_ready_this_turn(_p1, _gs6), False)
+
+        # Branch 2b: required tags + mana but NO target → False.
+        if _reanimate and _darkrit:
+            _p1.hand = [_reanimate, _darkrit]
+            _p1.graveyard = []
+            _gs6._executing_mana = 5
+            test("is_combo_ready: target_tags requirement enforced (no target → False)",
+                 _ce3.is_combo_ready_this_turn(_p1, _gs6), False)
+
+        # Branch 3: all required tags present + target + mana sufficient → True.
+        if _reanimate and _darkrit and _gris:
+            _p1.hand = [_reanimate, _darkrit]
+            _p1.graveyard = [_gris]
+            _gs6._executing_mana = 1  # path A mana_cost
+            test("is_combo_ready: pieces+target+mana satisfy darkrit_reanimate → True",
+                 _ce3.is_combo_ready_this_turn(_p1, _gs6), True)
+
+            # Branch 4: mana short by one → False.
+            _gs6._executing_mana = 0
+            test("is_combo_ready: mana short by one → False",
+                 _ce3.is_combo_ready_this_turn(_p1, _gs6), False)
+
+        # Branch 5: alternate path satisfied (unmask line, target in hand) → True.
+        if _reanimate and _unmask and _gris:
+            _p1.hand = [_reanimate, _unmask, _gris]
+            _p1.graveyard = []
+            _gs6._executing_mana = 1
+            test("is_combo_ready: alternate assembly path also satisfies → True",
+                 _ce3.is_combo_ready_this_turn(_p1, _gs6), True)
+
+        # Branch 6: graveyard tags count toward 'available' set (split zones).
+        if _reanimate and _darkrit and _gris:
+            _p1.hand = [_darkrit]
+            _p1.graveyard = [_reanimate, _gris]
+            _gs6._executing_mana = 1
+            test("is_combo_ready: graveyard tags count as available pieces",
+                 _ce3.is_combo_ready_this_turn(_p1, _gs6), True)
+
+    except Exception as _e:
+        test(f"is_combo_ready_this_turn rule tests (error: {_e})", False, True)
 
     # ── run_sweep parallel parity ──────────────────────────────────────────
     # Multiprocessing partitions the games into independent RNG streams (one
