@@ -5281,6 +5281,22 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     has_mana_base = total_mana >= 1 or len(rituals) >= 1
     safe_to_combo = (veil_protecting or storm_desperate or
                      (has_mana_base and not opp_has_free_counter))
+
+    # Emit a 'protect'-keyword strategic decision via the combo_engine
+    # protection check. Behaviour-preserving — `safe_to_combo` above is
+    # the actual gate; this call only surfaces the keyword to the
+    # heuristic grader (interaction-domain rule keys on 'protect' in
+    # reason / 'force' in chosen).
+    from combo_engine import combo_protection_check as _cpc
+    _pd = _cpc(player, opponent, gs)
+    if _pd.defer or _pd.hold is not None:
+        gs.strat_log.log_decision(
+            gs.turn, 'storm',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if _pd.defer
+                    else f'hold_{getattr(_pd.hold, "tag", "card")}'),
+            reason=_pd.reason)
+
     itutor   = player.find_tag('itutor')
     led      = player.find_tag('led')
     adnaus   = player.find_tag('adnauseam')
