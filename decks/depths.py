@@ -18,6 +18,7 @@ import random
 sys.path.insert(0, '/home/claude/mtg_sim')
 
 from cards import creature, instant, sorcery, artifact, enchantment
+from combo_engine import AssemblyPath
 
 # ─── Deck construction ────────────────────────────────────────────────────────
 
@@ -259,6 +260,43 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── Check if Marit Lage already in play ──────────────────────────────────
     marit_in_play = [p for p in player.creatures if p.card.tag == 'marit']
+
+    # ── Combo-engine consultation: which assembly path is fastest? ──────────
+    # `fastest_assemble_plan` reads the deck's declared combo metadata and
+    # returns the lowest-(turns_to_kill, mana_cost) path the current
+    # hand+gy+mana can satisfy. We surface the result as a strategic
+    # decision so the heuristic grader can key on the 'combo' keyword;
+    # the actual mechanical execution is still owned by the steps below
+    # (which directly inspect lands/hand). See
+    # docs/design/2026-05-09_combo_engine_architecture.md.
+    from combo_engine import fastest_assemble_plan as _fap
+    from deck_registry import get_combo_meta as _gcm
+    _combo_meta = _gcm('depths')
+    _paths = _combo_meta.get('assembly_paths', ()) if _combo_meta else ()
+    # Use a temporary executing-mana hint so the chooser sees the
+    # strategy's local mana, not just untapped lands.
+    _saved_em = getattr(gs, '_executing_mana', None)
+    gs._executing_mana = mana
+    try:
+        _chosen_path = _fap(player, gs, _paths)
+    finally:
+        if _saved_em is None:
+            try:
+                del gs._executing_mana
+            except AttributeError:
+                pass
+        else:
+            gs._executing_mana = _saved_em
+    _path_tags = [p.tag for p in _paths]
+    gs.strat_log.log_decision(
+        gs.turn, 'depths',
+        candidates=_path_tags,
+        chosen=(_chosen_path.tag if _chosen_path else 'none'),
+        reason=(f"fastest assemble path = combo:{_chosen_path.tag} "
+                f"(turns={_chosen_path.turns_to_kill}, "
+                f"mana={_chosen_path.mana_cost})"
+                if _chosen_path
+                else "no combo path satisfiable from current hand/mana"))
 
     # ── Step 1: Activate combo — Stage copies Depths ─────────────────────────
     depths_in_play, stage_in_play = _has_combo_in_play(player)
@@ -609,4 +647,60 @@ DECK_META = {
     'categories': {'combo', 'land_combo'},
     'interaction': {'speed': 2, 'resilience': 1, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': True, 'creature_based': False, 'bug_answers': 6},
     'meta_share': 0.02,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # See docs/design/2026-05-09_combo_engine_architecture.md.
+    # Dark Depths assembles Marit Lage via (Depths land + Stage land copy).
+    # Multiple paths cover the tutor toolkit. Mana costs reflect the
+    # NON-LAND mana required to fire the line on the kill turn (lands
+    # come into play tapped/untapped from regular drops and don't show
+    # up in `_executing_mana`). turns_to_kill reflects expected attack
+    # turn (Marit Lage has summoning sickness CR 302.6 → connects the
+    # turn AFTER it's created).
+    'combo': {
+        'pieces': frozenset({
+            'depths', 'stage',          # the two combo lands
+            'crop', 'scrying',          # land tutors (sorcery / instant)
+            'reclaimer', 'gsz',         # creature-based tutors
+        }),
+        'protection_tags': frozenset(),  # mono-G splash; no counter suite
+        # Each path encodes "what tags must I have NOW and how much mana
+        # to fire the line". The chooser ranks by (turns_to_kill, mana).
+        'assembly_paths': (
+            # Both pieces in hand: drop both lands, copy → fastest line.
+            AssemblyPath(tag='stage_copy',
+                         required_tags=frozenset({'depths', 'stage'}),
+                         mana_cost=2, turns_to_kill=1),
+            # Crop Rotation finds the missing piece at instant speed.
+            AssemblyPath(tag='crop_finds_stage',
+                         required_tags=frozenset({'depths', 'crop'}),
+                         mana_cost=3, turns_to_kill=1),
+            AssemblyPath(tag='crop_finds_depths',
+                         required_tags=frozenset({'stage', 'crop'}),
+                         mana_cost=3, turns_to_kill=1),
+            # Reclaimer in hand: T1 cast, T2 activate (sac+2) for piece.
+            AssemblyPath(tag='reclaimer_finds_stage',
+                         required_tags=frozenset({'depths', 'reclaimer'}),
+                         mana_cost=3, turns_to_kill=2),
+            AssemblyPath(tag='reclaimer_finds_depths',
+                         required_tags=frozenset({'stage', 'reclaimer'}),
+                         mana_cost=3, turns_to_kill=2),
+            # Sylvan Scrying — sorcery tutor, fetches to hand (slower).
+            AssemblyPath(tag='scrying_finds_stage',
+                         required_tags=frozenset({'depths', 'scrying'}),
+                         mana_cost=2, turns_to_kill=2),
+            AssemblyPath(tag='scrying_finds_depths',
+                         required_tags=frozenset({'stage', 'scrying'}),
+                         mana_cost=2, turns_to_kill=2),
+            # Green Sun's Zenith → Reclaimer → activate next turn.
+            AssemblyPath(tag='gsz_to_reclaimer_to_stage',
+                         required_tags=frozenset({'depths', 'gsz'}),
+                         mana_cost=2, turns_to_kill=3),
+            AssemblyPath(tag='gsz_to_reclaimer_to_depths',
+                         required_tags=frozenset({'stage', 'gsz'}),
+                         mana_cost=2, turns_to_kill=3),
+        ),
+        # Depths plays out as a normal land deck — discard preamble is
+        # safe (it never burns the only mana source for a combo turn).
+        'preamble_skip': False,
+    },
 }

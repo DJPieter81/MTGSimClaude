@@ -2816,18 +2816,22 @@ def run_rules_tests():
         test("ProtectionDecision dataclass accepts (defer, hold, reason)",
              (_pd.defer, _pd.hold, _pd.reason), (False, None, 'no threat'))
 
-        # 6. Predicate stub (Phase 5 still pending). Phases 2 & 3 have
-        #    landed their predicates, so only fastest_assemble_plan remains
-        #    NotImplementedError.
+        # 6. All three predicates have landed (Phase 5 implements
+        #    fastest_assemble_plan); confirm none of them still raise
+        #    NotImplementedError on a trivial call.
+        _impl_checks = []
         try:
-            _ce.fastest_assemble_plan(None, None, [])
-            _raised = False
+            _ce.fastest_assemble_plan(
+                _PS_dummy := type('S', (), {'hand': [], 'graveyard': [], 'lands': []})(),
+                type('G', (), {'_executing_mana': 0})(),
+                [])
+            _impl_checks.append(True)
         except NotImplementedError:
-            _raised = True
+            _impl_checks.append(False)
         except Exception:
-            _raised = False
-        test("fastest_assemble_plan stub raises NotImplementedError",
-             _raised, True)
+            _impl_checks.append(True)  # any non-NIE exception is fine
+        test("fastest_assemble_plan no longer raises NotImplementedError",
+             all(_impl_checks), True)
 
     except Exception as _e:
         test(f"combo_engine architecture invariants (error: {_e})", False, True)
@@ -2969,6 +2973,135 @@ def run_rules_tests():
 
     except Exception as _e:
         test(f"is_combo_ready_this_turn rule tests (error: {_e})", False, True)
+
+    # ── Phase 5: fastest_assemble_plan rule-level tests ─────────────────
+    # Pure-function tests — no game loop. Mechanical tests phrased as
+    # rules (no card-name dependencies): the chooser must rank by
+    # (turns_to_kill, mana_cost), respect satisfiability constraints,
+    # and not mutate inputs.
+    try:
+        import combo_engine as _ce4
+        from game import GameState as _GS4, PlayerState as _PS4
+        from rules import Card as _Card4, CardType as _CT4
+
+        def _mk_card(tag):
+            c = _Card4(name=f'_t_{tag}', card_type=_CT4.SORCERY, cmc=0,
+                       mana_cost={}, colors=set(), gy_type='sorcery')
+            c.tag = tag
+            return c
+
+        # Rule 1: lowest turns_to_kill wins among satisfiable paths.
+        _p_fast  = _ce4.AssemblyPath(tag='fast', required_tags=frozenset({'a'}),
+                                     mana_cost=5, turns_to_kill=1)
+        _p_slow  = _ce4.AssemblyPath(tag='slow', required_tags=frozenset({'a'}),
+                                     mana_cost=1, turns_to_kill=4)
+        _pl1 = _PS4(name='p1', hand=[_mk_card('a')], library=[])
+        _gsA = _GS4(p1=_pl1, p2=_PS4(name='p2', hand=[], library=[]),
+                    p1_deck='depths', p2_deck='dimir')
+        _gsA._executing_mana = 5
+        _r1 = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_slow, _p_fast])
+        test("fastest_assemble_plan: lowest turns_to_kill wins regardless of mana_cost",
+             _r1.tag if _r1 else None, 'fast')
+
+        # Rule 2: ties on turns_to_kill broken by mana_cost (cheapest first).
+        _p_cheap = _ce4.AssemblyPath(tag='cheap',  required_tags=frozenset({'a'}),
+                                     mana_cost=1, turns_to_kill=2)
+        _p_pricy = _ce4.AssemblyPath(tag='pricy',  required_tags=frozenset({'a'}),
+                                     mana_cost=4, turns_to_kill=2)
+        _gsA._executing_mana = 4
+        _r2 = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_pricy, _p_cheap])
+        test("fastest_assemble_plan: ties on turns broken by mana_cost (cheapest first)",
+             _r2.tag if _r2 else None, 'cheap')
+
+        # Rule 3: returns None when nothing is satisfiable.
+        _p_need = _ce4.AssemblyPath(tag='need_b', required_tags=frozenset({'b'}),
+                                    mana_cost=1, turns_to_kill=1)
+        _gsA._executing_mana = 5
+        _r3 = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_need])
+        test("fastest_assemble_plan: returns None when no required_tags satisfiable",
+             _r3, None)
+
+        # Rule 3b: mana shortfall yields None.
+        _p_costly = _ce4.AssemblyPath(tag='costly', required_tags=frozenset({'a'}),
+                                      mana_cost=10, turns_to_kill=1)
+        _gsA._executing_mana = 2
+        _r3b = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_costly])
+        test("fastest_assemble_plan: returns None when mana_cost exceeds available mana",
+             _r3b, None)
+
+        # Rule 3c: target_tags non-empty but not satisfied → None.
+        _p_targ = _ce4.AssemblyPath(tag='need_target',
+                                    required_tags=frozenset({'a'}),
+                                    mana_cost=0, turns_to_kill=1,
+                                    target_tags=frozenset({'wincon'}))
+        _gsA._executing_mana = 5
+        _r3c = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_targ])
+        test("fastest_assemble_plan: returns None when target_tags non-empty and not present",
+             _r3c, None)
+
+        # Rule 4: pure function — does not mutate hand, graveyard, paths, or gs.
+        _hand_before = list(_pl1.hand)
+        _gy_before = list(_pl1.graveyard)
+        _paths_in = [_p_fast, _p_slow, _p_cheap]
+        _paths_snapshot = list(_paths_in)
+        _em_before = _gsA._executing_mana
+        _ce4.fastest_assemble_plan(_pl1, _gsA, _paths_in)
+        test("fastest_assemble_plan: does not mutate player.hand",
+             _pl1.hand, _hand_before)
+        test("fastest_assemble_plan: does not mutate player.graveyard",
+             _pl1.graveyard, _gy_before)
+        test("fastest_assemble_plan: does not reorder caller's paths argument",
+             _paths_in, _paths_snapshot)
+        test("fastest_assemble_plan: does not mutate gs._executing_mana",
+             _gsA._executing_mana, _em_before)
+
+        # Rule 5: accepts paths as list, tuple, or generator (any iterable).
+        _r5_list  = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_fast, _p_cheap])
+        _r5_tuple = _ce4.fastest_assemble_plan(_pl1, _gsA, (_p_fast, _p_cheap))
+        _r5_gen   = _ce4.fastest_assemble_plan(_pl1, _gsA, (p for p in [_p_fast, _p_cheap]))
+        test("fastest_assemble_plan: accepts list",
+             _r5_list.tag if _r5_list else None, 'fast')
+        test("fastest_assemble_plan: accepts tuple",
+             _r5_tuple.tag if _r5_tuple else None, 'fast')
+        test("fastest_assemble_plan: accepts generator",
+             _r5_gen.tag if _r5_gen else None, 'fast')
+
+        # Rule 6: graveyard tags count toward 'available' (split-zone parity
+        # with is_combo_ready_this_turn).
+        _pl_gy = _PS4(name='p1', hand=[], library=[], graveyard=[_mk_card('a')])
+        _gsB = _GS4(p1=_pl_gy, p2=_PS4(name='p2', hand=[], library=[]),
+                    p1_deck='depths', p2_deck='dimir')
+        _gsB._executing_mana = 5
+        _r6 = _ce4.fastest_assemble_plan(_pl_gy, _gsB, [_p_fast])
+        test("fastest_assemble_plan: graveyard tags count as available pieces",
+             _r6.tag if _r6 else None, 'fast')
+
+        # Rule 7: empty paths → None.
+        test("fastest_assemble_plan: empty paths returns None",
+             _ce4.fastest_assemble_plan(_pl1, _gsA, []), None)
+
+    except Exception as _e:
+        test(f"fastest_assemble_plan rule tests (error: {_e})", False, True)
+
+    # ── Phase 5: depths deck declares combo metadata + path coverage ────
+    try:
+        from deck_registry import get_combo_meta as _gcm5
+        _dm = _gcm5('depths')
+        test("depths declares 'combo' metadata block",
+             _dm is not None, True)
+        if _dm is not None:
+            _paths5 = _dm.get('assembly_paths', ())
+            test("depths declares at least one assembly_path",
+                 len(_paths5) >= 1, True)
+            # Every path must reference the two combo lands somewhere in
+            # required_tags — the assembly fundamentally needs them.
+            _land_tags = {'depths', 'stage'}
+            _bad_paths = [p.tag for p in _paths5
+                          if not (_land_tags & p.required_tags)]
+            test("depths assembly_paths all reference depths or stage tag",
+                 _bad_paths, [])
+    except Exception as _e:
+        test(f"depths combo metadata tests (error: {_e})", False, True)
 
     # ── run_sweep parallel parity ──────────────────────────────────────────
     # Multiprocessing partitions the games into independent RNG streams (one
