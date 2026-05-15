@@ -1,4 +1,4 @@
-# MTGSimClaude LLM Audit — 2026-05-04
+# MTGSimClaude LLM Audit — 2026-05-15
 
 **N=41 traces graded** | Model(s): heuristic-v1
 
@@ -10,8 +10,8 @@
 | mana | B | elves_vs_dnt_s2026 (C) | elves_vs_dnt_s99 (A) |
 | combat | B | bug_vs_storm_s42 (C) | bug_vs_storm_s2026 (B) |
 | combo | C+ | depths_vs_burn_s99 (D) | elves_vs_dnt_s99 (A+) |
-| interaction | C+ | bug_vs_storm_s42 (C) | bug_vs_storm_s2026 (B+) |
-| meta | C+ | bug_vs_storm_s42 (C) | elves_vs_dnt_s42 (A) |
+| interaction | C+ | depths_vs_burn_s7 (C) | bug_vs_storm_s2026 (A) |
+| meta | B | depths_vs_burn_s7 (C) | elves_vs_dnt_s42 (A) |
 
 ## Per-trace summary
 
@@ -20,17 +20,17 @@
 - **mana**: B — Resource deployment supported a T10 win
 - **combat**: B — Won through non-combat means
 - **combo**: B — Non-combo deck — domain not primary axis
-- **interaction**: B+ — Interaction-backed win with measured disruption
+- **interaction**: A — Heavy disruption (9 decisions) enabled win
 - **meta**: B — Eventually closed the matchup
-- **overall**: B — Average across 6 domains — won in 10 turns
+- **overall**: B+ — Average across 6 domains — won in 10 turns
 
 ### bug_vs_storm_s42 — p2 won on turn 6
 - **mulligan**: C+ — Mulled to 6; card disadvantage contributed to loss
 - **mana**: C+ — Suboptimal mana utilization over 6 turns
 - **combat**: C — Limited combat engagement
 - **combo**: B — Non-combo deck — domain not primary axis
-- **interaction**: C — Disruption was insufficient — key threats went unanswered
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **interaction**: C+ — Disruption was not enough to prevent opponent plan
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 6 turns
 
 ### bug_vs_storm_s7 — p1 won on turn 9
@@ -38,16 +38,16 @@
 - **mana**: B — Resource deployment supported a T9 win
 - **combat**: B — Won through non-combat means
 - **combo**: B — Non-combo deck — domain not primary axis
-- **interaction**: B+ — Interaction-backed win with measured disruption
+- **interaction**: A — Heavy disruption (10 decisions) enabled win
 - **meta**: B — Eventually closed the matchup
-- **overall**: B — Average across 6 domains — won in 9 turns
+- **overall**: B+ — Average across 6 domains — won in 9 turns
 
 ### bug_vs_storm_s99 — p1 won on turn 6
 - **mulligan**: B+ — Kept 7; won — opening hand was adequate
 - **mana**: B+ — Resource deployment supported a T6 win
 - **combat**: B — Won through non-combat means
 - **combo**: B — Non-combo deck — domain not primary axis
-- **interaction**: B+ — Interaction-backed win with measured disruption
+- **interaction**: A — Heavy disruption (5 decisions) enabled win
 - **meta**: B+ — Efficiently closed the matchup
 - **overall**: B+ — Average across 6 domains — won in 6 turns
 
@@ -93,7 +93,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 6 turns
 
 ### doomsday_vs_ur_delver_s7 — p2 won on turn None
@@ -102,7 +102,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: D — Failed to assemble combo — disrupted early
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 5 turns
 
 ### doomsday_vs_ur_delver_s99 — p2 won on turn None
@@ -111,7 +111,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: D — Failed to assemble combo — disrupted early
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 5 turns
 
 ### elves_vs_dnt_s2026 — p2 won on turn None
@@ -120,7 +120,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 7 turns
 
 ### elves_vs_dnt_s42 — p1 won on turn 6
@@ -138,7 +138,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 9 turns
 
 ### elves_vs_dnt_s99 — p1 won on turn 4
@@ -183,7 +183,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 10 turns
 
 ### oops_vs_dimir_s7 — p2 won on turn None
@@ -192,7 +192,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 14 turns
 
 ### oops_vs_dimir_s99 — p1 won on turn 6
@@ -291,7 +291,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 7 turns
 
 ### sneak_a_vs_bug_s99 — p1 won on turn 5
@@ -327,7 +327,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 7 turns
 
 ### storm_vs_dnt_s7 — p1 won on turn 4
@@ -345,7 +345,7 @@
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
 - **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 8 turns
 
 ### ur_delver_vs_dimir_s2026 — p2 won on turn None
@@ -354,8 +354,8 @@
 - **combat**: C — Limited combat engagement
 - **combo**: B — Non-combo deck — domain not primary axis
 - **interaction**: C — Disruption was insufficient — key threats went unanswered
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
-- **overall**: C — Average across 6 domains — lost in 7 turns
+- **meta**: C+ — Lost — played actively but could not overcome matchup
+- **overall**: C+ — Average across 6 domains — lost in 7 turns
 
 ### ur_delver_vs_dimir_s42 — p1 won on turn 9
 - **mulligan**: B+ — Kept 7; won — opening hand was adequate
@@ -393,18 +393,18 @@
 - **doomsday.combo** (4/41 traces C or below): doomsday_vs_ur_delver_s2026 (D), doomsday_vs_ur_delver_s42 (C), doomsday_vs_ur_delver_s7 (D), doomsday_vs_ur_delver_s99 (D)
 - **doomsday.interaction** (4/41 traces C or below): doomsday_vs_ur_delver_s2026 (C), doomsday_vs_ur_delver_s42 (C), doomsday_vs_ur_delver_s7 (C), doomsday_vs_ur_delver_s99 (C)
 - **doomsday.mana** (4/41 traces C or below): doomsday_vs_ur_delver_s2026 (C+), doomsday_vs_ur_delver_s42 (C+), doomsday_vs_ur_delver_s7 (C+), doomsday_vs_ur_delver_s99 (C+)
-- **doomsday.meta** (4/41 traces C or below): doomsday_vs_ur_delver_s2026 (C), doomsday_vs_ur_delver_s42 (C), doomsday_vs_ur_delver_s7 (C), doomsday_vs_ur_delver_s99 (C)
+- **doomsday.meta** (4/41 traces C or below): doomsday_vs_ur_delver_s2026 (C), doomsday_vs_ur_delver_s42 (C+), doomsday_vs_ur_delver_s7 (C+), doomsday_vs_ur_delver_s99 (C+)
 - **elves.combo** (2/41 traces C or below): elves_vs_dnt_s2026 (C), elves_vs_dnt_s7 (C)
 - **elves.interaction** (2/41 traces C or below): elves_vs_dnt_s2026 (C), elves_vs_dnt_s7 (C)
 - **elves.mana** (2/41 traces C or below): elves_vs_dnt_s2026 (C), elves_vs_dnt_s7 (C)
-- **elves.meta** (2/41 traces C or below): elves_vs_dnt_s2026 (C), elves_vs_dnt_s7 (C)
+- **elves.meta** (2/41 traces C or below): elves_vs_dnt_s2026 (C+), elves_vs_dnt_s7 (C+)
 - **goblins.combat** (3/41 traces C or below): goblins_vs_uwx_s42 (C), goblins_vs_uwx_s7 (C), goblins_vs_uwx_s99 (C)
 - **goblins.interaction** (3/41 traces C or below): goblins_vs_uwx_s42 (C+), goblins_vs_uwx_s7 (C+), goblins_vs_uwx_s99 (C+)
 - **goblins.meta** (3/41 traces C or below): goblins_vs_uwx_s42 (C), goblins_vs_uwx_s7 (C), goblins_vs_uwx_s99 (C)
 - **oops.combo** (2/41 traces C or below): oops_vs_dimir_s42 (C), oops_vs_dimir_s7 (C)
 - **oops.interaction** (2/41 traces C or below): oops_vs_dimir_s42 (C), oops_vs_dimir_s7 (C)
 - **oops.mana** (2/41 traces C or below): oops_vs_dimir_s42 (C), oops_vs_dimir_s7 (C)
-- **oops.meta** (2/41 traces C or below): oops_vs_dimir_s42 (C), oops_vs_dimir_s7 (C)
+- **oops.meta** (2/41 traces C or below): oops_vs_dimir_s42 (C+), oops_vs_dimir_s7 (C+)
 - **oops.mulligan** (2/41 traces C or below): oops_vs_dimir_s42 (C+), oops_vs_dimir_s7 (C+)
 - **painter.combat** (2/41 traces C or below): painter_vs_eldrazi_s42 (C), painter_vs_eldrazi_s99 (C)
 - **painter.interaction** (2/41 traces C or below): painter_vs_eldrazi_s42 (C+), painter_vs_eldrazi_s99 (C+)
@@ -417,8 +417,8 @@
 - **sneak_a.combo** (2/41 traces C or below): sneak_a_vs_bug_s2026 (D), sneak_a_vs_bug_s7 (C)
 - **sneak_a.interaction** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C), sneak_a_vs_bug_s7 (C)
 - **sneak_a.mana** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C+), sneak_a_vs_bug_s7 (C)
-- **sneak_a.meta** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C), sneak_a_vs_bug_s7 (C)
+- **sneak_a.meta** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C), sneak_a_vs_bug_s7 (C+)
 - **storm.combo** (2/41 traces C or below): storm_vs_dnt_s42 (C), storm_vs_dnt_s99 (C)
 - **storm.interaction** (2/41 traces C or below): storm_vs_dnt_s42 (C), storm_vs_dnt_s99 (C)
 - **storm.mana** (2/41 traces C or below): storm_vs_dnt_s42 (C), storm_vs_dnt_s99 (C)
-- **storm.meta** (2/41 traces C or below): storm_vs_dnt_s42 (C), storm_vs_dnt_s99 (C)
+- **storm.meta** (2/41 traces C or below): storm_vs_dnt_s42 (C+), storm_vs_dnt_s99 (C+)

@@ -28,5 +28,5 @@
   },
   "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: B+ \u2014 Resource deployment supported a T7 win\ncombat: B \u2014 Won through non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 Interaction-backed win with measured disruption\nmeta: B \u2014 Eventually closed the matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 7 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-04T09:29:42.065973Z"
+  "graded_at": "2026-05-15T18:38:58.404911Z"
 }
