@@ -1,20 +1,22 @@
 """
-combo_engine.py — single owner of combo-deck decision-making.
+combo_engine.py — combo-deck decision predicates + dataclasses.
 
-See docs/design/2026-05-09_combo_engine_architecture.md.
+See docs/design/2026-05-09_combo_engine_architecture.md (Phase 1,
+superseded for the logging concern by
+docs/design/2026-05-15_post-phase-6-re-architecture.md Phase A).
 
-Phase 1 implements `log_combo_decision` and the dataclasses; the three
-predicate functions are stubs (NotImplementedError) until Phases 2/3/5
-land their behaviour.
+Provides three pure-function predicates consumed by combo-deck
+strategies and by the shared discard preamble in `sim._execute_turn`:
 
-The `log_combo_decision` line format is the canonical source of decisions
-parsed by `llm_judge.collect()` (which keys the heuristic grader's
-`strategic_decisions`). Format:
+  * `is_combo_ready_this_turn(player, gs)`     — Phase 3.
+  * `combo_protection_check(player, opponent, gs)` — Phase 2.
+  * `fastest_assemble_plan(player, gs, paths)` — Phase 5.
 
-    T<turn> [<deck>] [phase:<phase>] chose <chosen> from [<candidates>] — <reason>
-
-Tests in `sim.run_rules_tests` round-trip the format through
-`llm_judge.collect`'s parser to pin this contract.
+Strategic-decision logging is now centralised in
+`strategic_logger.StrategicLogger.log_decision(..., phase=)`. The
+former `log_combo_decision` helper was retired in Phase A — its only
+caller (decks/goblins.py) now uses `gs.strat_log.log_decision` with
+the new `phase=` override.
 """
 from __future__ import annotations
 
@@ -59,32 +61,6 @@ class ProtectionDecision:
     defer:  bool
     hold:   object  # Card or None — typed as object to avoid circular import
     reason: str
-
-
-# ─── Decision emitter (Phase 1) ──────────────────────────────────────────
-
-def log_combo_decision(log_fn, *, turn, deck, phase, chosen, reason,
-                       candidates=None) -> None:
-    """Emit a single strategic-decision line into the game log.
-
-    The format is the contract consumed by `llm_judge.collect()` (which
-    populates `trace['strategic_decisions']` for the heuristic grader and
-    the LLM rubric).
-
-    Args:
-        log_fn:     the strategy's `log_fn` callback (engine pattern).
-        turn:       int — `gs.turn`.
-        deck:       str — deck key (e.g. 'storm').
-        phase:      str — one of {'mulligan','mana','combat','combo',
-                                  'interaction','meta','setup'}.
-        chosen:     str — the chosen action label.
-        reason:     str — short human-readable justification.
-        candidates: list[str] | None — optional alternatives considered.
-    """
-    cands = candidates if candidates is not None else []
-    cand_str = '[' + ', '.join(str(c) for c in cands) + ']'
-    log_fn(f"T{turn} [{deck}] [phase:{phase}] chose {chosen} "
-           f"from {cand_str} — {reason}")
 
 
 # ─── Predicates (Phases 2-5 implement) ───────────────────────────────────

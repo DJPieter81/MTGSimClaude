@@ -13,7 +13,7 @@ sys.path.insert(0, '.')
 
 from cards import creature, instant, sorcery, artifact
 from rules import Card, CardType
-from combo_engine import AssemblyPath, log_combo_decision
+from combo_engine import AssemblyPath
 
 
 # Tag set used as the "Goblin tribe" filter for the Lackey-style cheat trigger.
@@ -409,14 +409,12 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
             best = max(tribe_in_hand, key=lambda c: (c.cmc, c.name))
             candidates = [f"{c.name}(cmc={c.cmc})" for c in tribe_in_hand]
             n_attackers = len(attackers)
-            log_combo_decision(
-                log_fn,
-                turn=gs.turn,
-                deck='goblins',
-                phase='combat',
+            gs.strat_log.log_decision(
+                gs.turn, 'goblins',
+                candidates=candidates,
                 chosen=f'attack with {n_attackers} goblins',
                 reason=f'lackey trigger cheats {best.tag}',
-                candidates=candidates,
+                phase='combat',
             )
             player.remove_from_hand(best)
             perm = player.put_creature_in_play(best)

@@ -1,9 +1,21 @@
 ---
 title: combo_engine — architecture
-status: accepted
+status: superseded-in-part
 date: 2026-05-09
 phase: Phase 1 of B+ rubric lift
 supersedes: null
+superseded_by: docs/design/2026-05-15_post-phase-6-re-architecture.md
+superseded_scope: |
+  The "decision emitter" concern (log_combo_decision) is retired in
+  Phase A of the post-Phase-6 re-architecture. The strategic-decision
+  log format remains identical, but the canonical emitter is now
+  StrategicLogger.log_decision in strategic_logger.py — with an
+  optional `phase=` override that preserves the Phase 4 use case
+  (`phase='combat'` for combat-trigger logging without a gameplan entry).
+
+  The three predicate functions (is_combo_ready_this_turn,
+  combo_protection_check, fastest_assemble_plan) remain accurate as
+  described here until Phase B replaces them with a Plan algebra.
 ---
 
 # combo_engine — architecture

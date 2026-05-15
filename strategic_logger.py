@@ -26,11 +26,30 @@ class StrategicLogger:
         # Per-deck GoalEngine cache (lazy — only hit if enabled + call-site asks)
         self._plan_cache: dict = {}
 
-    def log_decision(self, turn: int, deck: str, candidates, chosen, reason: str) -> None:
+    def log_decision(self, turn: int, deck: str, candidates, chosen, reason: str,
+                     phase: str = None) -> None:
+        """Record a strategic decision.
+
+        Args:
+            turn:       game turn (gs.turn).
+            deck:       active deck key.
+            candidates: iterable of option labels considered.
+            chosen:     the option label selected.
+            reason:     short justification.
+            phase:      OPTIONAL override. When provided, this exact phase
+                        label is used in the dump (e.g. 'combat' for a
+                        Goblin-Lackey trigger). When None (default), the
+                        gameplan lookup (`_phase_for`) supplies the phase.
+                        Phase A unified `combo_engine.log_combo_decision`
+                        into this method; the override parameter preserves
+                        Phase 4's `phase='combat'` semantics without forcing
+                        a gameplan entry.
+        """
         if not self.enabled:
             return
-        # Enrich with gameplan phase label when a plan exists for this deck
-        phase = self._phase_for(deck, turn)
+        # Enrich with gameplan phase label unless caller supplied an override
+        if phase is None:
+            phase = self._phase_for(deck, turn)
         self.entries.append({
             'turn': turn,
             'deck': deck,
