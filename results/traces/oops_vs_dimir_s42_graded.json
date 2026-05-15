@@ -14,7 +14,7 @@
     "combat": "B",
     "combo": "C",
     "interaction": "C",
-    "meta": "C",
+    "meta": "C+",
     "overall": "C+"
   },
   "justifications": {
@@ -23,10 +23,10 @@
     "combat": "Combo deck \u2014 combat decisions minimal",
     "combo": "Failed to assemble combo \u2014 could not find pieces",
     "interaction": "No protection deployed against disruption",
-    "meta": "Lost \u2014 limited decision points suggest structural disadvantage",
+    "meta": "Lost \u2014 played actively but could not overcome matchup",
     "overall": "Average across 6 domains \u2014 lost in 10 turns"
   },
-  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 10 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: C \u2014 Failed to assemble combo \u2014 could not find pieces\ninteraction: C \u2014 No protection deployed against disruption\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 10 turns",
+  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 10 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: C \u2014 Failed to assemble combo \u2014 could not find pieces\ninteraction: C \u2014 No protection deployed against disruption\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 10 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-04T09:29:42.062848Z"
+  "graded_at": "2026-05-15T18:38:58.396375Z"
 }
