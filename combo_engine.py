@@ -204,9 +204,43 @@ def combo_protection_check(player, opponent, gs) -> ProtectionDecision:
 
 def fastest_assemble_plan(player, gs, paths) -> Optional[AssemblyPath]:
     """Pick the lowest-`(turns_to_kill, mana_cost)` `AssemblyPath` from
-    `paths` that the player can satisfy (all `required_tags` present,
-    mana available).
+    `paths` that the player can satisfy.
 
-    Phase 5 implements this. Returns None if no path is satisfiable.
+    Satisfaction criteria mirror `is_combo_ready_this_turn`:
+      * `required_tags` ⊆ `available` (hand ∪ graveyard tags), AND
+      * `target_tags` ∩ `available` ≠ ∅ when `target_tags` is non-empty, AND
+      * `mana_cost` ≤ `gs._executing_mana` (falling back to count of
+        untapped lands if `_executing_mana` is unset).
+
+    Pure function: reads `player`/`gs`/`paths` but does not mutate them.
+    Accepts `paths` as any iterable (list, tuple, generator) — sorted
+    locally before iteration.
+
+    Returns the cheapest satisfiable `AssemblyPath`, or `None` if nothing
+    in `paths` is satisfiable.
     """
-    raise NotImplementedError("Phase 5 implements fastest_assemble_plan")
+    # Tags currently available — pieces in hand OR graveyard. Same
+    # split-zone semantics as is_combo_ready_this_turn.
+    available = {getattr(c, 'tag', None) for c in player.hand}
+    available |= {getattr(c, 'tag', None) for c in player.graveyard}
+    available.discard(None)
+
+    # Mana floor: prefer caller-supplied `_executing_mana`, fall back to
+    # untapped lands.
+    mana = getattr(gs, '_executing_mana', None)
+    if mana is None:
+        mana = sum(1 for ld in player.lands if not ld.tapped)
+
+    # Sort by (turns_to_kill, mana_cost) so we consider the fastest
+    # cheapest plan first. tuple() materialises generator inputs.
+    ordered = sorted(tuple(paths), key=lambda p: (p.turns_to_kill, p.mana_cost))
+
+    for path in ordered:
+        if not path.required_tags.issubset(available):
+            continue
+        if path.target_tags and not (path.target_tags & available):
+            continue
+        if path.mana_cost > mana:
+            continue
+        return path
+    return None
