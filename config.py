@@ -7,8 +7,34 @@ Design principles:
   - engine.py, interaction.py, gameplan.py import from here.
   - Tunable parameters are named constants — change here, propagates everywhere.
   - Card role sets use frozenset for O(1) membership testing.
+
+Some tunable thresholds are data-driven: their canonical value lives in
+`config/calibration.json`, produced by tools/calibrate_bhi_threshold.py
+(Phase D of the post-Phase-6 re-architecture). When that file is
+missing or unreadable, the hardcoded fallback in the class definition
+applies.
 """
 from __future__ import annotations
+
+import json as _json
+import os as _os
+
+
+def _load_calibrated(name: str, fallback):
+    """Read `name` from config/calibration.json, else return fallback.
+
+    Loads `values` dict from the JSON file next to this module. Quiet
+    fallback on FileNotFoundError or JSONDecodeError so a fresh checkout
+    works before the calibration file is committed.
+    """
+    path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                         'config', 'calibration.json')
+    try:
+        with open(path) as f:
+            data = _json.load(f)
+    except (FileNotFoundError, _json.JSONDecodeError, OSError):
+        return fallback
+    return data.get('values', {}).get(name, fallback)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -242,7 +268,12 @@ class InteractionParams:
     # BHI (Bayesian Hand Inference) thresholds — HandBelief probabilities above
     # which strategies should treat opponent as holding specific threats.
     # Used by _strategy_storm, _strategy_oops, _strategy_doomsday combo gates.
-    BHI_FREE_COUNTER_THRESHOLD = 0.40  # p_free_counter: FoW/FoN pitch cast
+    # The free-counter threshold is calibrated via the regression-sweep
+    # harness — see config/calibration.json + tools/calibrate_bhi_threshold.py
+    # (Phase D of docs/design/2026-05-15_post-phase-6-re-architecture.md).
+    # Hardcoded fallback (0.40) applies when the calibration JSON is
+    # missing or unreadable.
+    BHI_FREE_COUNTER_THRESHOLD = _load_calibrated('BHI_FREE_COUNTER_THRESHOLD', 0.40)
     BHI_COUNTER_THRESHOLD      = 0.55  # p_counter: any counter in hand
 
 

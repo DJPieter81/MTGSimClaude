@@ -3084,6 +3084,63 @@ def run_rules_tests():
     except Exception as _e:
         test(f"regression_sweep rule tests (error: {_e})", False, True)
 
+    # ── Phase D: calibration JSON loader rule-level tests ─────────────
+    # Pure-function tests on config._load_calibrated. The actual
+    # calibration sweep is exercised by `tools/calibrate_bhi_threshold.py`,
+    # not by this in-process suite (~20s per run, too slow for tests).
+    try:
+        import importlib as _impD, json as _jsonD, os as _osD, tempfile as _tD
+        import config as _cfgD
+        from pathlib import Path as _PD
+
+        # Rule 1: fallback returned when calibration file is missing.
+        # Temporarily point _load_calibrated at a non-existent path.
+        _real_dir = _osD.path.dirname(_osD.path.abspath(_cfgD.__file__))
+        _orig_path = _PD(_real_dir) / 'config' / 'calibration.json'
+        _backup_data = None
+        if _orig_path.exists():
+            _backup_data = _orig_path.read_text()
+            _orig_path.rename(_orig_path.with_suffix('.json.test-bak'))
+        try:
+            test("config._load_calibrated: missing file → fallback",
+                 _cfgD._load_calibrated('NONEXISTENT_KEY', 0.42), 0.42)
+        finally:
+            if _backup_data is not None:
+                _orig_path.with_suffix('.json.test-bak').rename(_orig_path)
+
+        # Rule 2: known calibrated key returns the JSON value (after file
+        # restore). BHI_FREE_COUNTER_THRESHOLD should be present and
+        # numeric in the committed calibration.
+        _val = _cfgD._load_calibrated('BHI_FREE_COUNTER_THRESHOLD', None)
+        test("config._load_calibrated: BHI_FREE_COUNTER_THRESHOLD is numeric",
+             isinstance(_val, (int, float)) and _val is not None, True,
+             detail=f"got {_val!r}")
+        test("config._load_calibrated: BHI_FREE_COUNTER_THRESHOLD ∈ [0, 1]",
+             0.0 <= float(_val) <= 1.0 if _val is not None else False, True)
+
+        # Rule 3: unknown key returns the fallback even when file exists.
+        test("config._load_calibrated: unknown key → fallback",
+             _cfgD._load_calibrated('NOT_A_REAL_KEY', 0.99), 0.99)
+
+        # Rule 4: IP.BHI_FREE_COUNTER_THRESHOLD reflects the calibrated
+        # value (i.e. the wiring in InteractionParams is active).
+        from config import InteractionParams as _IPD
+        test("InteractionParams.BHI_FREE_COUNTER_THRESHOLD sources from calibration.json",
+             _IPD.BHI_FREE_COUNTER_THRESHOLD, _val if _val is not None else 0.40)
+
+        # Rule 5: calibration.json has the four required top-level keys
+        # so future readers can rely on the schema.
+        _calib_path = _PD(_real_dir) / 'config' / 'calibration.json'
+        if _calib_path.exists():
+            with _calib_path.open() as _f:
+                _cdata = _jsonD.load(_f)
+            for _k in ('_meta', 'values', 'summary', 'data'):
+                test(f"calibration.json top-level key `{_k}` present",
+                     _k in _cdata, True)
+
+    except Exception as _e:
+        test(f"calibration loader rule tests (error: {_e})", False, True)
+
     # ── Phase 5: depths deck declares combo metadata + path coverage ────
     try:
         from deck_registry import get_combo_meta as _gcm5

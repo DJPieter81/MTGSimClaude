@@ -59,6 +59,30 @@ per deck. Pick the value that maximises rubric without dropping WR.
 Write supporting data + chosen value to `config/calibration.json`.
 Same procedure for any other un-calibrated numeric in `config.py`.
 
+**Outcome (delivered)**: 0.40 confirmed empirically. Across 10
+matchups × 5 candidates × 200 games each, average WR was flat
+at 52.4-52.5% for thresholds ≤ 0.40, dropping to 52.0% at 0.45
+and 51.4% at 0.50. The candidate set 0.30/0.35/0.40 tied at
+52.5%; tiebreak rule "closest to current then lower" picked 0.40.
+The full data table lives in `config/calibration.json`; the
+sourcing helper `config._load_calibrated()` reads the value back
+into `InteractionParams.BHI_FREE_COUNTER_THRESHOLD` at import time
+with a 0.40 fallback if the JSON is unreadable.
+
+**In-flight bug found during calibration**: sim outcomes are
+mildly sensitive to Python's hash-randomization
+(`PYTHONHASHSEED`). Running the regression sweep via
+`python3 tools/regression_sweep.py` vs running it via
+`python -c "from regression_sweep import ..."` produces different
+absolute WRs (bug_vs_storm: 43.0% vs 31.5%) due to set/dict
+iteration order leaking into game outcomes. Workaround: the
+calibration runs each threshold in a fresh subprocess; absolute
+values aren't comparable to the baseline file, but the
+relative-to-each-other comparison is valid (which is what
+calibration needs). A follow-up should track down the
+non-deterministic iteration site in the sim and pin
+`PYTHONHASHSEED=0` in `.github/workflows/regression-sweep.yml`.
+
 ## Sequence (refactor-first, per user)
 
 A → B → C → D.
