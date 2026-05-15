@@ -2865,8 +2865,117 @@ def run_rules_tests():
         test("Phase B: GameView is frozen (immutable)",
              type(_gv).__dataclass_params__.frozen, True)
 
+        # 8. Phase B2 subtype invariants — AssemblyPath stays as the
+        #    backward-compatible base; four deck-shape subtypes name
+        #    what their mechanic actually needs.
+        for _sub in ('StormPath', 'ReanimatePath', 'LandComboPath', 'TribalPath'):
+            test(f"Phase B2: {_sub} subtype exists in combo_engine",
+                 hasattr(_ce, _sub), True)
+            test(f"Phase B2: {_sub} extends AssemblyPath",
+                 issubclass(getattr(_ce, _sub), _ce.AssemblyPath), True)
+
     except Exception as _e:
         test(f"combo_engine architecture invariants (error: {_e})", False, True)
+
+    # ── Phase B2: subtype is_satisfiable rule-level tests ─────────────
+    # Each subtype's is_satisfiable must return True iff all required
+    # fields are present in the view (tags in hand/graveyard) and the
+    # mana floor is met. Pure-function tests; no game loop.
+    try:
+        from combo_engine import (
+            AssemblyPath as _APb2, StormPath as _SP, ReanimatePath as _RP,
+            LandComboPath as _LP, TribalPath as _TP, GameView as _GVb2,
+        )
+        def _mkview(tags, mana):
+            return _GVb2(own_deck='x', opp_deck='y',
+                         available=frozenset(tags), hand=(),
+                         mana=mana, turn=1, opp_hand_size=7)
+
+        # StormPath: required win-condition tag + mana floor.
+        _sp = _SP(tag='ant', required_tags=frozenset({'tendrils'}),
+                  mana_cost=4, turns_to_kill=1, needed_storm_count=10)
+        test("StormPath: satisfiable iff win-condition tag in available + mana floor met",
+             _sp.is_satisfiable(_mkview({'tendrils'}, 4)), True)
+        test("StormPath: unsatisfiable when win-condition tag missing",
+             _sp.is_satisfiable(_mkview({'ritual'}, 4)), False)
+        test("StormPath: unsatisfiable when mana floor not met",
+             _sp.is_satisfiable(_mkview({'tendrils'}, 3)), False)
+        test("StormPath: needed_storm_count is a typed field, default 0",
+             _SP(tag='x', required_tags=frozenset(), mana_cost=0,
+                 turns_to_kill=1).needed_storm_count, 0)
+
+        # ReanimatePath: reanimate_tag + enabler_tag + target + mana.
+        _rp = _RP(tag='rean', required_tags=frozenset({'reanimate', 'darkrit'}),
+                  mana_cost=1, turns_to_kill=1,
+                  target_tags=frozenset({'gris', 'archon'}),
+                  enabler_tag='darkrit', reanimate_tag='reanimate')
+        test("ReanimatePath: satisfiable iff reanimate+enabler+target+mana all met",
+             _rp.is_satisfiable(_mkview({'reanimate', 'darkrit', 'gris'}, 1)), True)
+        test("ReanimatePath: unsatisfiable when reanimate_tag missing",
+             _rp.is_satisfiable(_mkview({'darkrit', 'gris'}, 1)), False)
+        test("ReanimatePath: unsatisfiable when enabler_tag missing",
+             _rp.is_satisfiable(_mkview({'reanimate', 'gris'}, 1)), False)
+        test("ReanimatePath: unsatisfiable when target_tags absent",
+             _rp.is_satisfiable(_mkview({'reanimate', 'darkrit'}, 1)), False)
+        test("ReanimatePath: graveyard target counts (any one of target_tags)",
+             _rp.is_satisfiable(_mkview({'reanimate', 'darkrit', 'archon'}, 1)), True)
+
+        # LandComboPath (trivial line — no tutor enabler).
+        _lp_triv = _LP(tag='triv',
+                       required_tags=frozenset({'depths', 'stage'}),
+                       mana_cost=2, turns_to_kill=1,
+                       required_lands=frozenset({'depths', 'stage'}),
+                       enabler_tag=None)
+        test("LandComboPath: trivial line satisfiable iff both lands in hand",
+             _lp_triv.is_satisfiable(_mkview({'depths', 'stage'}, 2)), True)
+        test("LandComboPath: trivial line unsatisfiable when one land missing",
+             _lp_triv.is_satisfiable(_mkview({'depths'}, 2)), False)
+
+        # LandComboPath (tutor line — held-land + enabler).
+        _lp_tut = _LP(tag='crop_stage',
+                      required_tags=frozenset({'depths', 'crop'}),
+                      mana_cost=3, turns_to_kill=1,
+                      required_lands=frozenset({'depths'}),
+                      enabler_tag='crop')
+        test("LandComboPath: tutor line satisfiable iff held-land+enabler+mana",
+             _lp_tut.is_satisfiable(_mkview({'depths', 'crop'}, 3)), True)
+        test("LandComboPath: tutor line unsatisfiable when held-land missing",
+             _lp_tut.is_satisfiable(_mkview({'stage', 'crop'}, 3)), False)
+        test("LandComboPath: tutor line unsatisfiable when enabler missing",
+             _lp_tut.is_satisfiable(_mkview({'depths'}, 3)), False)
+
+        # TribalPath (cheat line — Lackey + tribe payoff).
+        _tp = _TP(tag='lackey_cheat',
+                  required_tags=frozenset({'lackey'}),
+                  mana_cost=1, turns_to_kill=2,
+                  target_tags=frozenset({'muxus', 'matron'}),
+                  tribe_tags=frozenset({'muxus', 'matron'}),
+                  cheat_enabler_tag='lackey')
+        test("TribalPath: cheat line satisfiable iff enabler+tribe+mana",
+             _tp.is_satisfiable(_mkview({'lackey', 'muxus'}, 1)), True)
+        test("TribalPath: cheat line unsatisfiable when cheat_enabler missing",
+             _tp.is_satisfiable(_mkview({'muxus'}, 1)), False)
+        test("TribalPath: cheat line unsatisfiable when no tribe payoff available",
+             _tp.is_satisfiable(_mkview({'lackey'}, 1)), False)
+
+        # TribalPath (hardcast — no cheat enabler, generic required_tags).
+        _tp_hc = _TP(tag='hardcast',
+                     required_tags=frozenset({'muxus'}),
+                     mana_cost=6, turns_to_kill=1,
+                     tribe_tags=frozenset(), cheat_enabler_tag='')
+        test("TribalPath: hardcast satisfiable iff required tag + mana floor",
+             _tp_hc.is_satisfiable(_mkview({'muxus'}, 6)), True)
+        test("TribalPath: hardcast unsatisfiable when mana floor not met",
+             _tp_hc.is_satisfiable(_mkview({'muxus'}, 5)), False)
+
+        # Base AssemblyPath (unmigrated decks) — unchanged semantics.
+        _base = _APb2(tag='base', required_tags=frozenset({'x'}),
+                      mana_cost=1, turns_to_kill=1)
+        test("AssemblyPath base: backward-compatible default for unmigrated decks",
+             _base.is_satisfiable(_mkview({'x'}, 1)), True)
+
+    except Exception as _e:
+        test(f"Phase B2 subtype rule tests (error: {_e})", False, True)
 
     # ── Phase B: combo_plan() unified-entry-point rule-level tests ────
     # Phase B replaces is_combo_ready_this_turn + combo_protection_check

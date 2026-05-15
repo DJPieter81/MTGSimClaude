@@ -18,7 +18,7 @@ import random
 sys.path.insert(0, '/home/claude/mtg_sim')
 
 from cards import creature, instant, sorcery, artifact, enchantment
-from combo_engine import AssemblyPath
+from combo_engine import LandComboPath
 
 # ─── Deck construction ────────────────────────────────────────────────────────
 
@@ -670,41 +670,61 @@ DECK_META = {
             'reclaimer', 'gsz',         # creature-based tutors
         }),
         'protection_tags': frozenset(),  # mono-G splash; no counter suite
-        # Each path encodes "what tags must I have NOW and how much mana
-        # to fire the line". The chooser ranks by (turns_to_kill, mana).
+        # Phase B2 migrated to LandComboPath. Each path declares which
+        # combo land(s) must be in hand (`required_lands`) and which
+        # tutor (if any) fetches the missing piece (`enabler_tag`).
+        # The chooser ranks by (turns_to_kill, mana).
         'assembly_paths': (
             # Both pieces in hand: drop both lands, copy → fastest line.
-            AssemblyPath(tag='stage_copy',
-                         required_tags=frozenset({'depths', 'stage'}),
-                         mana_cost=2, turns_to_kill=1),
+            LandComboPath(tag='stage_copy',
+                          required_tags=frozenset({'depths', 'stage'}),
+                          mana_cost=2, turns_to_kill=1,
+                          required_lands=frozenset({'depths', 'stage'}),
+                          enabler_tag=None),
             # Crop Rotation finds the missing piece at instant speed.
-            AssemblyPath(tag='crop_finds_stage',
-                         required_tags=frozenset({'depths', 'crop'}),
-                         mana_cost=3, turns_to_kill=1),
-            AssemblyPath(tag='crop_finds_depths',
-                         required_tags=frozenset({'stage', 'crop'}),
-                         mana_cost=3, turns_to_kill=1),
+            LandComboPath(tag='crop_finds_stage',
+                          required_tags=frozenset({'depths', 'crop'}),
+                          mana_cost=3, turns_to_kill=1,
+                          required_lands=frozenset({'depths'}),
+                          enabler_tag='crop'),
+            LandComboPath(tag='crop_finds_depths',
+                          required_tags=frozenset({'stage', 'crop'}),
+                          mana_cost=3, turns_to_kill=1,
+                          required_lands=frozenset({'stage'}),
+                          enabler_tag='crop'),
             # Reclaimer in hand: T1 cast, T2 activate (sac+2) for piece.
-            AssemblyPath(tag='reclaimer_finds_stage',
-                         required_tags=frozenset({'depths', 'reclaimer'}),
-                         mana_cost=3, turns_to_kill=2),
-            AssemblyPath(tag='reclaimer_finds_depths',
-                         required_tags=frozenset({'stage', 'reclaimer'}),
-                         mana_cost=3, turns_to_kill=2),
+            LandComboPath(tag='reclaimer_finds_stage',
+                          required_tags=frozenset({'depths', 'reclaimer'}),
+                          mana_cost=3, turns_to_kill=2,
+                          required_lands=frozenset({'depths'}),
+                          enabler_tag='reclaimer'),
+            LandComboPath(tag='reclaimer_finds_depths',
+                          required_tags=frozenset({'stage', 'reclaimer'}),
+                          mana_cost=3, turns_to_kill=2,
+                          required_lands=frozenset({'stage'}),
+                          enabler_tag='reclaimer'),
             # Sylvan Scrying — sorcery tutor, fetches to hand (slower).
-            AssemblyPath(tag='scrying_finds_stage',
-                         required_tags=frozenset({'depths', 'scrying'}),
-                         mana_cost=2, turns_to_kill=2),
-            AssemblyPath(tag='scrying_finds_depths',
-                         required_tags=frozenset({'stage', 'scrying'}),
-                         mana_cost=2, turns_to_kill=2),
+            LandComboPath(tag='scrying_finds_stage',
+                          required_tags=frozenset({'depths', 'scrying'}),
+                          mana_cost=2, turns_to_kill=2,
+                          required_lands=frozenset({'depths'}),
+                          enabler_tag='scrying'),
+            LandComboPath(tag='scrying_finds_depths',
+                          required_tags=frozenset({'stage', 'scrying'}),
+                          mana_cost=2, turns_to_kill=2,
+                          required_lands=frozenset({'stage'}),
+                          enabler_tag='scrying'),
             # Green Sun's Zenith → Reclaimer → activate next turn.
-            AssemblyPath(tag='gsz_to_reclaimer_to_stage',
-                         required_tags=frozenset({'depths', 'gsz'}),
-                         mana_cost=2, turns_to_kill=3),
-            AssemblyPath(tag='gsz_to_reclaimer_to_depths',
-                         required_tags=frozenset({'stage', 'gsz'}),
-                         mana_cost=2, turns_to_kill=3),
+            LandComboPath(tag='gsz_to_reclaimer_to_stage',
+                          required_tags=frozenset({'depths', 'gsz'}),
+                          mana_cost=2, turns_to_kill=3,
+                          required_lands=frozenset({'depths'}),
+                          enabler_tag='gsz'),
+            LandComboPath(tag='gsz_to_reclaimer_to_depths',
+                          required_tags=frozenset({'stage', 'gsz'}),
+                          mana_cost=2, turns_to_kill=3,
+                          required_lands=frozenset({'stage'}),
+                          enabler_tag='gsz'),
         ),
         # Depths plays out as a normal land deck — discard preamble is
         # safe (it never burns the only mana source for a combo turn).
