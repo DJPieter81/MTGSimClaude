@@ -261,24 +261,28 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Check if Marit Lage already in play ──────────────────────────────────
     marit_in_play = [p for p in player.creatures if p.card.tag == 'marit']
 
-    # ── Combo-engine consultation: which assembly path is fastest? ──────────
-    # `fastest_assemble_plan` reads the deck's declared combo metadata and
-    # returns the lowest-(turns_to_kill, mana_cost) path the current
-    # hand+gy+mana can satisfy. We surface the result as a strategic
-    # decision so the heuristic grader can key on the 'combo' keyword;
-    # the actual mechanical execution is still owned by the steps below
-    # (which directly inspect lands/hand). See
-    # docs/design/2026-05-09_combo_engine_architecture.md.
-    from combo_engine import fastest_assemble_plan as _fap
+    # ── Combo-engine consultation: which plan should we follow? ────────────
+    # `combo_plan` consolidates protection-check + assembly-path chooser
+    # behind one entry point. Returns Execute(path) / Hold(card) / Defer()
+    # / NoPlan(). We surface the result as a strategic decision so the
+    # heuristic grader can key on the 'combo' keyword; the actual
+    # mechanical execution is still owned by the steps below (which
+    # directly inspect lands/hand). See
+    # docs/design/2026-05-15_post-phase-6-re-architecture.md (Phase B).
+    from combo_engine import (
+        combo_plan as _combo_plan, Execute as _Execute,
+        Hold as _Hold, Defer as _Defer,
+    )
     from deck_registry import get_combo_meta as _gcm
     _combo_meta = _gcm('depths')
     _paths = _combo_meta.get('assembly_paths', ()) if _combo_meta else ()
-    # Use a temporary executing-mana hint so the chooser sees the
+    _path_tags = [p.tag for p in _paths]
+    # Use a temporary executing-mana hint so the planner sees the
     # strategy's local mana, not just untapped lands.
     _saved_em = getattr(gs, '_executing_mana', None)
     gs._executing_mana = mana
     try:
-        _chosen_path = _fap(player, gs, _paths)
+        _plan_d = _combo_plan(player, opponent, gs)
     finally:
         if _saved_em is None:
             try:
@@ -287,16 +291,19 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                 pass
         else:
             gs._executing_mana = _saved_em
-    _path_tags = [p.tag for p in _paths]
+    if isinstance(_plan_d, _Execute):
+        _chosen_label = _plan_d.path.tag
+    elif isinstance(_plan_d, _Hold):
+        _chosen_label = f'hold_{getattr(_plan_d.card, "tag", "card")}'
+    elif isinstance(_plan_d, _Defer):
+        _chosen_label = 'defer'
+    else:
+        _chosen_label = 'none'
     gs.strat_log.log_decision(
         gs.turn, 'depths',
-        candidates=_path_tags,
-        chosen=(_chosen_path.tag if _chosen_path else 'none'),
-        reason=(f"fastest assemble path = combo:{_chosen_path.tag} "
-                f"(turns={_chosen_path.turns_to_kill}, "
-                f"mana={_chosen_path.mana_cost})"
-                if _chosen_path
-                else "no combo path satisfiable from current hand/mana"))
+        candidates=_path_tags + ['hold', 'defer', 'none'],
+        chosen=_chosen_label,
+        reason=_plan_d.reason)
 
     # ── Step 1: Activate combo — Stage copies Depths ─────────────────────────
     depths_in_play, stage_in_play = _has_combo_in_play(player)

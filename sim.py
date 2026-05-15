@@ -693,21 +693,21 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     _ts_mardu_vs_burn = (active_deck == 'mardu' and opp_deck == 'burn')
     # Defer-to-combo: when the active deck has a same-turn combo line that
     # consumes the only available mana, the shared TS step would burn the
-    # ritual-source and fizzle the combo.  Reanimator's T2 line is the
+    # ritual-source and fizzle the combo. Reanimator's T2 line is the
     # canonical case (Land → Dark Ritual → Unmask → Reanimate); without this
     # skip the strategy never fires, and the matchup vs Burn was 20%.
-    # Mechanic: shared preamble disruption defers when the strategy has its
-    # own kill line ready this turn. Generalised — any deck declaring
-    # `combo.preamble_skip=True` and a satisfiable `assembly_paths` entry
-    # opts in. See docs/design/2026-05-09_combo_engine_architecture.md.
-    from combo_engine import is_combo_ready_this_turn as _iscr
+    # Mechanic: shared preamble disruption defers when the strategy has an
+    # Execute plan ready this turn. Generalised — any deck declaring
+    # `combo.preamble_skip=True` and a satisfiable assembly path opts in.
+    # See docs/design/2026-05-15_post-phase-6-re-architecture.md (Phase B).
+    from combo_engine import combo_plan as _combo_plan, Execute as _Execute
     from deck_registry import get_combo_meta as _gcm
     _cm = _gcm(active_deck)
     if _cm is not None and _cm.get('preamble_skip', False):
-        # Surface the current mana floor to the predicate so it can
-        # evaluate the cheapest assembly path against actual resources.
+        # Surface the current mana floor to the planner so it can
+        # evaluate paths against actual resources.
         gs._executing_mana = total_mana
-        _ts_skip_combo_turn = _iscr(b, gs)
+        _ts_skip_combo_turn = isinstance(_combo_plan(b, o, gs), _Execute)
     else:
         _ts_skip_combo_turn = False
     ts = b.find_tag('ts') or b.find_tag('thoughtseize')
@@ -2819,277 +2819,201 @@ def run_rules_tests():
         test("AssemblyPath dataclass rejects partial construction",
              _ap_partial, False)
 
-        # 5. ProtectionDecision dataclass schema.
-        _pd = _ce.ProtectionDecision(defer=False, hold=None, reason='no threat')
-        test("ProtectionDecision dataclass accepts (defer, hold, reason)",
-             (_pd.defer, _pd.hold, _pd.reason), (False, None, 'no threat'))
+        # 5. Phase B invariants — old predicate trio is gone, Plan algebra
+        #    is the unified entry point. See
+        #    docs/design/2026-05-15_post-phase-6-re-architecture.md (Phase B).
+        test("Phase B: combo_plan exists",
+             callable(getattr(_ce, 'combo_plan', None)), True)
+        test("Phase B: is_combo_ready_this_turn retired",
+             hasattr(_ce, 'is_combo_ready_this_turn'), False)
+        test("Phase B: combo_protection_check retired",
+             hasattr(_ce, 'combo_protection_check'), False)
+        test("Phase B: fastest_assemble_plan retired",
+             hasattr(_ce, 'fastest_assemble_plan'), False)
+        test("Phase B: ProtectionDecision retired (replaced by Hold/Defer)",
+             hasattr(_ce, 'ProtectionDecision'), False)
 
-        # 6. All three predicates have landed (Phase 5 implements
-        #    fastest_assemble_plan); confirm none of them still raise
-        #    NotImplementedError on a trivial call.
-        _impl_checks = []
-        try:
-            _ce.fastest_assemble_plan(
-                _PS_dummy := type('S', (), {'hand': [], 'graveyard': [], 'lands': []})(),
-                type('G', (), {'_executing_mana': 0})(),
-                [])
-            _impl_checks.append(True)
-        except NotImplementedError:
-            _impl_checks.append(False)
-        except Exception:
-            _impl_checks.append(True)  # any non-NIE exception is fine
-        test("fastest_assemble_plan no longer raises NotImplementedError",
-             all(_impl_checks), True)
+        # 6. Plan algebra has four variants, all frozen dataclasses, all
+        #    expose a `reason` field. Strategies switch on isinstance.
+        for _variant in ('Execute', 'Hold', 'Defer', 'NoPlan'):
+            test(f"Phase B: Plan variant `{_variant}` exists in combo_engine",
+                 hasattr(_ce, _variant), True)
+        _np = _ce.NoPlan(reason='no metadata')
+        test("Phase B: NoPlan carries a reason field",
+             _np.reason, 'no metadata')
+        _hp = _ce.Hold(reason='hold force', card=None)
+        test("Phase B: Hold carries card + reason fields",
+             (_hp.card, _hp.reason), (None, 'hold force'))
+        _ep = _ce.Execute(reason='combo:tag', path=_ap)
+        test("Phase B: Execute carries path + reason fields",
+             (_ep.path is _ap, _ep.reason), (True, 'combo:tag'))
+
+        # 7. GameView is constructible from a real GameState.
+        from game import GameState as _GS_v, PlayerState as _PS_v
+        _v_p1 = _PS_v(name='p1', hand=[], library=[])
+        _v_p2 = _PS_v(name='p2', hand=[], library=[])
+        _v_gs = _GS_v(p1=_v_p1, p2=_v_p2, p1_deck='storm', p2_deck='dimir')
+        _v_gs.turn = 3
+        _v_gs._executing_mana = 5
+        _gv = _ce.GameView.from_state(_v_p1, _v_p2, _v_gs)
+        test("Phase B: GameView.from_state populates own_deck",
+             _gv.own_deck, 'storm')
+        test("Phase B: GameView.from_state populates opp_deck",
+             _gv.opp_deck, 'dimir')
+        test("Phase B: GameView.from_state surfaces mana floor",
+             _gv.mana, 5)
+        test("Phase B: GameView is frozen (immutable)",
+             type(_gv).__dataclass_params__.frozen, True)
 
     except Exception as _e:
         test(f"combo_engine architecture invariants (error: {_e})", False, True)
 
-    # ── Phase 2: combo_protection_check rule-level tests ──────────────
-    # Pure-function tests — no game loop. Build minimal GameState +
-    # PlayerState fixtures and verify the three branches of the rule.
+    # ── Phase B: combo_plan() unified-entry-point rule-level tests ────
+    # Phase B replaces is_combo_ready_this_turn + combo_protection_check
+    # + fastest_assemble_plan with combo_plan() returning one of
+    # Execute / Hold / Defer / NoPlan. All tests are pure (no game loop)
+    # and exercise the four Plan variants by branch.
     try:
-        import combo_engine as _ce2
+        import combo_engine as _cep
         from cards import DECKS as _DK
         from game import GameState as _GS, PlayerState as _PS
         from rules import Card as _Card, CardType as _CT
 
-        # Storm has combo metadata; build a minimal gs with storm as p1.
-        # Opponent needs cards_in_hand>0 for BHI to compute a real prior.
-        _filler = _Card(name='_filler', card_type=_CT.LAND, cmc=0, mana_cost={},
-                        colors=set(), gy_type='land')
-        _filler.tag = 'filler'
-        _p1 = _PS(name='p1', hand=[], library=[])
-        _p2 = _PS(name='p2', hand=[_filler] * 7, library=[])
-        _gs2 = _GS(p1=_p1, p2=_p2, p1_deck='storm', p2_deck='dimir')
-        _gs2.turn = 3
-
-        # Branch 1: opp has high p_free_counter, player has FoW in hand.
-        # Build a real FoW from the storm deck.
+        # Fixture helpers
+        def _mkfill():
+            c = _Card(name='_filler', card_type=_CT.LAND, cmc=0,
+                      mana_cost={}, colors=set(), gy_type='land')
+            c.tag = 'filler'
+            return c
         _storm_cards = _DK['storm']()
         _fow = next((c for c in _storm_cards if c.tag == 'fow'), None)
         if _fow is None:
-            # Fallback: synthesize a card with tag='fow'
-            _fow = _Card(name='Force of Will', card_type=_CT.INSTANT, cmc=5,
-                         mana_cost={'U': 1}, colors={'U'}, gy_type='instant')
+            _fow = _Card(name='Force of Will', card_type=_CT.INSTANT,
+                         cmc=5, mana_cost={'U': 1}, colors={'U'},
+                         gy_type='instant')
             _fow.tag = 'fow'
-        _p1.hand = [_fow]
-
-        # opp = dimir → high p_free_counter (built-in profile)
-        _pd = _ce2.combo_protection_check(_p1, _p2, _gs2)
-        test("combo_protection_check: hold returned when protection in hand and opp threat",
-             _pd.hold is not None, True,
-             detail=f"got pd={_pd}")
-        test("combo_protection_check: reason contains keyword 'protect' when threat",
-             'protect' in _pd.reason.lower(), True,
-             detail=f"reason='{_pd.reason}'")
-
-        # Branch 2: opp has high p_free_counter, NO protection in hand.
-        _p1.hand = []
-        _pd2 = _ce2.combo_protection_check(_p1, _p2, _gs2)
-        test("combo_protection_check: defer=True when threat and no protection in hand",
-             _pd2.defer, True,
-             detail=f"got pd={_pd2}")
-        test("combo_protection_check: defer reason still contains 'protect' keyword",
-             'protect' in _pd2.reason.lower(), True)
-
-        # Branch 3: opp deck with low p_free_counter (e.g. burn) → proceed.
-        _p2.hand = [_filler] * 7  # restore filler for BHI prior
-        _gs3 = _GS(p1=_p1, p2=_p2, p1_deck='storm', p2_deck='burn')
-        _gs3.turn = 3
-        _pd3 = _ce2.combo_protection_check(_p1, _p2, _gs3)
-        test("combo_protection_check: defer=False vs no-counter opp",
-             _pd3.defer, False,
-             detail=f"got pd={_pd3}")
-        test("combo_protection_check: hold=None vs no-counter opp",
-             _pd3.hold, None)
-
-        # Branch 4: non-combo deck → returns no-op decision.
-        _gs4 = _GS(p1=_p1, p2=_p2, p1_deck='bug', p2_deck='dimir')
-        _gs4.turn = 3
-        _pd4 = _ce2.combo_protection_check(_p1, _p2, _gs4)
-        test("combo_protection_check: non-combo deck returns defer=False, hold=None",
-             (_pd4.defer, _pd4.hold), (False, None))
-
-    except Exception as _e:
-        test(f"combo_protection_check rule tests (error: {_e})", False, True)
-
-    # ── Phase 3: is_combo_ready_this_turn rule-level tests ────────────
-    # Pure-function tests — no game loop. Build minimal hand fixtures
-    # and verify the predicate against Reanimator's two assembly paths.
-    try:
-        import combo_engine as _ce3
-        from cards import DECKS as _DK
-        from game import GameState as _GS, PlayerState as _PS
-
         _rean_cards = _DK['reanimator']()
         _reanimate = next((c for c in _rean_cards if c.tag == 'reanimate'), None)
         _darkrit   = next((c for c in _rean_cards if c.tag == 'darkrit'), None)
-        _unmask    = next((c for c in _rean_cards if c.tag == 'unmask'), None)
         _gris      = next((c for c in _rean_cards if c.tag == 'gris'), None)
 
-        # Branch 1: deck has no combo metadata → False.
+        # Branch 1: no combo metadata → NoPlan.
         _p1 = _PS(name='p1', hand=[], library=[])
-        _p2 = _PS(name='p2', hand=[], library=[])
-        _gs5 = _GS(p1=_p1, p2=_p2, p1_deck='bug', p2_deck='dimir')
-        _gs5._executing_mana = 5
-        test("is_combo_ready: returns False for deck without combo metadata",
-             _ce3.is_combo_ready_this_turn(_p1, _gs5), False)
+        _p2 = _PS(name='p2', hand=[_mkfill() for _ in range(7)], library=[])
+        _gs = _GS(p1=_p1, p2=_p2, p1_deck='bug', p2_deck='dimir')
+        _gs.turn = 3
+        _gs._executing_mana = 5
+        _plan = _cep.combo_plan(_p1, _p2, _gs)
+        test("combo_plan: deck without combo metadata returns NoPlan",
+             isinstance(_plan, _cep.NoPlan), True)
 
-        # Branch 2: required tags missing → False.
-        _gs6 = _GS(p1=_p1, p2=_p2, p1_deck='reanimator', p2_deck='dimir')
-        _gs6._executing_mana = 5
-        _p1.hand = [_reanimate] if _reanimate else []  # has reanimate but no enabler
-        test("is_combo_ready: required tags missing yields False",
-             _ce3.is_combo_ready_this_turn(_p1, _gs6), False)
+        # Branch 2: storm + threat-opp + protection in hand → Hold.
+        _p1.hand = [_fow]
+        _gs2 = _GS(p1=_p1, p2=_p2, p1_deck='storm', p2_deck='dimir')
+        _gs2.turn = 3
+        _plan2 = _cep.combo_plan(_p1, _p2, _gs2)
+        test("combo_plan: protection in hand vs counter-threat opp → Hold",
+             isinstance(_plan2, _cep.Hold), True,
+             detail=f"got {type(_plan2).__name__}")
+        test("combo_plan: Hold.card is the protection card",
+             getattr(_plan2, 'card', None) is _fow, True)
+        test("combo_plan: Hold.reason contains keyword 'protect'",
+             'protect' in _plan2.reason.lower(), True)
 
-        # Branch 2b: required tags + mana but NO target → False.
-        if _reanimate and _darkrit:
-            _p1.hand = [_reanimate, _darkrit]
-            _p1.graveyard = []
-            _gs6._executing_mana = 5
-            test("is_combo_ready: target_tags requirement enforced (no target → False)",
-                 _ce3.is_combo_ready_this_turn(_p1, _gs6), False)
+        # Branch 3: storm + threat-opp + NO protection in hand → Defer.
+        _p1.hand = []
+        _plan3 = _cep.combo_plan(_p1, _p2, _gs2)
+        test("combo_plan: no protection vs counter-threat opp → Defer",
+             isinstance(_plan3, _cep.Defer), True,
+             detail=f"got {type(_plan3).__name__}")
+        test("combo_plan: Defer.reason contains keyword 'protect'",
+             'protect' in _plan3.reason.lower(), True)
 
-        # Branch 3: all required tags present + target + mana sufficient → True.
+        # Branch 4: low-threat opp (burn) + storm path satisfied → Execute or NoPlan.
+        # Storm declares one path requiring 'tendrils' tag. Without
+        # tendrils in hand the path is unsatisfiable → NoPlan.
+        _gs4 = _GS(p1=_p1, p2=_p2, p1_deck='storm', p2_deck='burn')
+        _gs4.turn = 3
+        _gs4._executing_mana = 5
+        _plan4 = _cep.combo_plan(_p1, _p2, _gs4)
+        test("combo_plan: low-threat opp + no path satisfiable → NoPlan",
+             isinstance(_plan4, _cep.NoPlan), True)
+
+        # Branch 5: reanimator + all pieces present → Execute.
         if _reanimate and _darkrit and _gris:
             _p1.hand = [_reanimate, _darkrit]
             _p1.graveyard = [_gris]
-            _gs6._executing_mana = 1  # path A mana_cost
-            test("is_combo_ready: pieces+target+mana satisfy darkrit_reanimate → True",
-                 _ce3.is_combo_ready_this_turn(_p1, _gs6), True)
+            _gs5 = _GS(p1=_p1, p2=_p2, p1_deck='reanimator', p2_deck='burn')
+            _gs5.turn = 2
+            _gs5._executing_mana = 1
+            _plan5 = _cep.combo_plan(_p1, _p2, _gs5)
+            test("combo_plan: reanimator pieces+target+mana → Execute",
+                 isinstance(_plan5, _cep.Execute), True,
+                 detail=f"got {type(_plan5).__name__}: {_plan5.reason}")
+            test("combo_plan: Execute.reason contains keyword 'combo'",
+                 'combo' in _plan5.reason.lower(), True)
 
-            # Branch 4: mana short by one → False.
-            _gs6._executing_mana = 0
-            test("is_combo_ready: mana short by one → False",
-                 _ce3.is_combo_ready_this_turn(_p1, _gs6), False)
+            # Branch 6: same scenario, mana=0 → no path satisfiable → NoPlan.
+            _gs5._executing_mana = 0
+            _plan6 = _cep.combo_plan(_p1, _p2, _gs5)
+            test("combo_plan: mana floor below path requirement → NoPlan",
+                 isinstance(_plan6, _cep.NoPlan), True)
 
-        # Branch 5: alternate path satisfied (unmask line, target in hand) → True.
-        if _reanimate and _unmask and _gris:
-            _p1.hand = [_reanimate, _unmask, _gris]
-            _p1.graveyard = []
-            _gs6._executing_mana = 1
-            test("is_combo_ready: alternate assembly path also satisfies → True",
-                 _ce3.is_combo_ready_this_turn(_p1, _gs6), True)
-
-        # Branch 6: graveyard tags count toward 'available' set (split zones).
-        if _reanimate and _darkrit and _gris:
+            # Branch 7: graveyard tags count as available (split-zone).
             _p1.hand = [_darkrit]
             _p1.graveyard = [_reanimate, _gris]
-            _gs6._executing_mana = 1
-            test("is_combo_ready: graveyard tags count as available pieces",
-                 _ce3.is_combo_ready_this_turn(_p1, _gs6), True)
+            _gs5._executing_mana = 1
+            _plan7 = _cep.combo_plan(_p1, _p2, _gs5)
+            test("combo_plan: graveyard tags count as available",
+                 isinstance(_plan7, _cep.Execute), True)
+
+        # Branch 8: combo_plan ranks satisfiable paths by
+        # (turns_to_kill, mana_cost). Use depths' metadata which has 9 paths.
+        # We assert that when an Execute is returned, its path has the
+        # minimum (turns_to_kill, mana_cost) among satisfiable paths.
+        from deck_registry import get_combo_meta as _gcm_depths
+        _depths_meta = _gcm_depths('depths')
+        if _depths_meta:
+            _all_paths = _depths_meta['assembly_paths']
+            # Build a maximally-satisfiable view (every required tag present).
+            _all_tags = set()
+            for _p in _all_paths:
+                _all_tags |= _p.required_tags
+                _all_tags |= _p.target_tags
+            def _stub_card(tag):
+                c = _Card(name=f'_{tag}', card_type=_CT.SORCERY, cmc=0,
+                          mana_cost={}, colors=set(), gy_type='sorcery')
+                c.tag = tag
+                return c
+            _p1.hand = [_stub_card(t) for t in _all_tags]
+            _p1.graveyard = []
+            _gs8 = _GS(p1=_p1, p2=_p2, p1_deck='depths', p2_deck='burn')
+            _gs8.turn = 3
+            _gs8._executing_mana = 99
+            _plan8 = _cep.combo_plan(_p1, _p2, _gs8)
+            test("combo_plan: depths with full piece set → Execute",
+                 isinstance(_plan8, _cep.Execute), True,
+                 detail=f"got {type(_plan8).__name__}: {_plan8.reason}")
+            if isinstance(_plan8, _cep.Execute):
+                _picked = _plan8.path
+                _min_key = min((p.turns_to_kill, p.mana_cost) for p in _all_paths)
+                test("combo_plan: Execute path minimises (turns_to_kill, mana_cost)",
+                     (_picked.turns_to_kill, _picked.mana_cost), _min_key)
+
+        # Branch 9: combo_plan is pure — fixture state is not mutated.
+        _hand_snapshot = list(_p1.hand)
+        _gy_snapshot   = list(_p1.graveyard)
+        _em_snapshot   = _gs8._executing_mana
+        _cep.combo_plan(_p1, _p2, _gs8)
+        test("combo_plan: does not mutate player.hand",
+             _p1.hand, _hand_snapshot)
+        test("combo_plan: does not mutate player.graveyard",
+             _p1.graveyard, _gy_snapshot)
+        test("combo_plan: does not mutate gs._executing_mana",
+             _gs8._executing_mana, _em_snapshot)
 
     except Exception as _e:
-        test(f"is_combo_ready_this_turn rule tests (error: {_e})", False, True)
-
-    # ── Phase 5: fastest_assemble_plan rule-level tests ─────────────────
-    # Pure-function tests — no game loop. Mechanical tests phrased as
-    # rules (no card-name dependencies): the chooser must rank by
-    # (turns_to_kill, mana_cost), respect satisfiability constraints,
-    # and not mutate inputs.
-    try:
-        import combo_engine as _ce4
-        from game import GameState as _GS4, PlayerState as _PS4
-        from rules import Card as _Card4, CardType as _CT4
-
-        def _mk_card(tag):
-            c = _Card4(name=f'_t_{tag}', card_type=_CT4.SORCERY, cmc=0,
-                       mana_cost={}, colors=set(), gy_type='sorcery')
-            c.tag = tag
-            return c
-
-        # Rule 1: lowest turns_to_kill wins among satisfiable paths.
-        _p_fast  = _ce4.AssemblyPath(tag='fast', required_tags=frozenset({'a'}),
-                                     mana_cost=5, turns_to_kill=1)
-        _p_slow  = _ce4.AssemblyPath(tag='slow', required_tags=frozenset({'a'}),
-                                     mana_cost=1, turns_to_kill=4)
-        _pl1 = _PS4(name='p1', hand=[_mk_card('a')], library=[])
-        _gsA = _GS4(p1=_pl1, p2=_PS4(name='p2', hand=[], library=[]),
-                    p1_deck='depths', p2_deck='dimir')
-        _gsA._executing_mana = 5
-        _r1 = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_slow, _p_fast])
-        test("fastest_assemble_plan: lowest turns_to_kill wins regardless of mana_cost",
-             _r1.tag if _r1 else None, 'fast')
-
-        # Rule 2: ties on turns_to_kill broken by mana_cost (cheapest first).
-        _p_cheap = _ce4.AssemblyPath(tag='cheap',  required_tags=frozenset({'a'}),
-                                     mana_cost=1, turns_to_kill=2)
-        _p_pricy = _ce4.AssemblyPath(tag='pricy',  required_tags=frozenset({'a'}),
-                                     mana_cost=4, turns_to_kill=2)
-        _gsA._executing_mana = 4
-        _r2 = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_pricy, _p_cheap])
-        test("fastest_assemble_plan: ties on turns broken by mana_cost (cheapest first)",
-             _r2.tag if _r2 else None, 'cheap')
-
-        # Rule 3: returns None when nothing is satisfiable.
-        _p_need = _ce4.AssemblyPath(tag='need_b', required_tags=frozenset({'b'}),
-                                    mana_cost=1, turns_to_kill=1)
-        _gsA._executing_mana = 5
-        _r3 = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_need])
-        test("fastest_assemble_plan: returns None when no required_tags satisfiable",
-             _r3, None)
-
-        # Rule 3b: mana shortfall yields None.
-        _p_costly = _ce4.AssemblyPath(tag='costly', required_tags=frozenset({'a'}),
-                                      mana_cost=10, turns_to_kill=1)
-        _gsA._executing_mana = 2
-        _r3b = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_costly])
-        test("fastest_assemble_plan: returns None when mana_cost exceeds available mana",
-             _r3b, None)
-
-        # Rule 3c: target_tags non-empty but not satisfied → None.
-        _p_targ = _ce4.AssemblyPath(tag='need_target',
-                                    required_tags=frozenset({'a'}),
-                                    mana_cost=0, turns_to_kill=1,
-                                    target_tags=frozenset({'wincon'}))
-        _gsA._executing_mana = 5
-        _r3c = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_targ])
-        test("fastest_assemble_plan: returns None when target_tags non-empty and not present",
-             _r3c, None)
-
-        # Rule 4: pure function — does not mutate hand, graveyard, paths, or gs.
-        _hand_before = list(_pl1.hand)
-        _gy_before = list(_pl1.graveyard)
-        _paths_in = [_p_fast, _p_slow, _p_cheap]
-        _paths_snapshot = list(_paths_in)
-        _em_before = _gsA._executing_mana
-        _ce4.fastest_assemble_plan(_pl1, _gsA, _paths_in)
-        test("fastest_assemble_plan: does not mutate player.hand",
-             _pl1.hand, _hand_before)
-        test("fastest_assemble_plan: does not mutate player.graveyard",
-             _pl1.graveyard, _gy_before)
-        test("fastest_assemble_plan: does not reorder caller's paths argument",
-             _paths_in, _paths_snapshot)
-        test("fastest_assemble_plan: does not mutate gs._executing_mana",
-             _gsA._executing_mana, _em_before)
-
-        # Rule 5: accepts paths as list, tuple, or generator (any iterable).
-        _r5_list  = _ce4.fastest_assemble_plan(_pl1, _gsA, [_p_fast, _p_cheap])
-        _r5_tuple = _ce4.fastest_assemble_plan(_pl1, _gsA, (_p_fast, _p_cheap))
-        _r5_gen   = _ce4.fastest_assemble_plan(_pl1, _gsA, (p for p in [_p_fast, _p_cheap]))
-        test("fastest_assemble_plan: accepts list",
-             _r5_list.tag if _r5_list else None, 'fast')
-        test("fastest_assemble_plan: accepts tuple",
-             _r5_tuple.tag if _r5_tuple else None, 'fast')
-        test("fastest_assemble_plan: accepts generator",
-             _r5_gen.tag if _r5_gen else None, 'fast')
-
-        # Rule 6: graveyard tags count toward 'available' (split-zone parity
-        # with is_combo_ready_this_turn).
-        _pl_gy = _PS4(name='p1', hand=[], library=[], graveyard=[_mk_card('a')])
-        _gsB = _GS4(p1=_pl_gy, p2=_PS4(name='p2', hand=[], library=[]),
-                    p1_deck='depths', p2_deck='dimir')
-        _gsB._executing_mana = 5
-        _r6 = _ce4.fastest_assemble_plan(_pl_gy, _gsB, [_p_fast])
-        test("fastest_assemble_plan: graveyard tags count as available pieces",
-             _r6.tag if _r6 else None, 'fast')
-
-        # Rule 7: empty paths → None.
-        test("fastest_assemble_plan: empty paths returns None",
-             _ce4.fastest_assemble_plan(_pl1, _gsA, []), None)
-
-    except Exception as _e:
-        test(f"fastest_assemble_plan rule tests (error: {_e})", False, True)
+        test(f"combo_plan rule tests (error: {_e})", False, True)
 
     # ── Phase 5: depths deck declares combo metadata + path coverage ────
     try:
