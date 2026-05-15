@@ -2741,14 +2741,18 @@ def run_rules_tests():
         from llm_judge import collect as _llm_collect  # noqa: F401  (import-side check)
 
         # 1. Decision-line format round-trips through llm_judge.collect()'s
-        #    parser. Build a fake log line via log_combo_decision and run
-        #    the same regex/split logic collect() uses.
-        _captured = []
-        _ce.log_combo_decision(_captured.append, turn=4, deck='storm',
-                               phase='combo', chosen='kill_C',
-                               reason='ritual chain → tendrils for lethal',
-                               candidates=['kill_C', 'pass'])
-        _line = _captured[0]
+        #    parser. Phase A retired log_combo_decision; the canonical
+        #    emitter is now StrategicLogger.log_decision (+ dump()). Round-
+        #    trip a synthetic decision through dump() and verify the parser
+        #    shape llm_judge.collect() uses extracts the four fields.
+        from strategic_logger import StrategicLogger as _SL
+        _sl = _SL(enabled=True)
+        _sl.log_decision(turn=4, deck='storm',
+                         candidates=['kill_C', 'pass'],
+                         chosen='kill_C',
+                         reason='ritual chain → tendrils for lethal',
+                         phase='combo')
+        _line = _sl.dump()[0]
         # Reproduce the parser shape collect() uses:
         _hdr, _rest = _line.split(' chose ', 1)
         _action, _why = _rest.split(' — ', 1)
@@ -2756,16 +2760,20 @@ def run_rules_tests():
         _phase_field = _hdr.split('[phase:', 1)[1].split(']')[0]
         _deck_field = _hdr.split('[', 1)[1].split(']')[0]
         _turn_field = int(_hdr.split()[0].lstrip('T'))
-        test("log_combo_decision: parsed deck matches input",
+        test("strat_log.dump round-trip: parsed deck matches input",
              _deck_field, 'storm')
-        test("log_combo_decision: parsed phase matches input",
+        test("strat_log.dump round-trip: parsed phase matches input",
              _phase_field, 'combo')
-        test("log_combo_decision: parsed turn matches input",
+        test("strat_log.dump round-trip: parsed turn matches input",
              _turn_field, 4)
-        test("log_combo_decision: parsed chosen matches input",
+        test("strat_log.dump round-trip: parsed chosen matches input",
              _chosen_field, 'kill_C')
-        test("log_combo_decision: parsed reason contains the keyword 'tendrils'",
+        test("strat_log.dump round-trip: parsed reason contains keyword 'tendrils'",
              'tendrils' in _why, True)
+        # Phase A invariant: log_combo_decision is no longer importable
+        # from combo_engine. The grep below catches re-introduction.
+        test("Phase A invariant: combo_engine.log_combo_decision removed",
+             hasattr(_ce, 'log_combo_decision'), False)
 
         # 2. combo_engine.py owns zero card-name string literals — checked
         #    via grep on the source. Any new card-name `==` would violate
@@ -3157,15 +3165,16 @@ def run_rules_tests():
 
         # 5. The standardised log line surfaces the combat keyword 'attack'
         #    that the heuristic grader keys on (scripts/grade_traces.py:133).
-        #    Round-trip log_combo_decision through the parser shape.
-        import combo_engine as _ce4
-        _captured = []
-        _ce4.log_combo_decision(_captured.append, turn=2, deck='goblins',
-                                phase='combat',
-                                chosen='attack with 2 goblins',
-                                reason='lackey trigger cheats muxus',
-                                candidates=['_low(cmc=1)', '_high(cmc=6)'])
-        _line = _captured[0]
+        #    Phase A: the emitter is now StrategicLogger.log_decision with
+        #    a `phase=` override.
+        from strategic_logger import StrategicLogger as _SLg
+        _sl_g = _SLg(enabled=True)
+        _sl_g.log_decision(turn=2, deck='goblins',
+                           candidates=['_low(cmc=1)', '_high(cmc=6)'],
+                           chosen='attack with 2 goblins',
+                           reason='lackey trigger cheats muxus',
+                           phase='combat')
+        _line = _sl_g.dump()[0]
         _hdr, _rest = _line.split(' chose ', 1)
         _action, _why = _rest.split(' — ', 1)
         _chosen_field = _action.split(' from ', 1)[0].strip()
