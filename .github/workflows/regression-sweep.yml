@@ -1,0 +1,31 @@
+name: Regression sweep
+
+# Phase C of the post-Phase-6 re-architecture. Runs a fixed-matchup,
+# fixed-seed sweep on every PR. Fails if any matchup's win rate drops
+# more than 5 percentage points vs the frozen baseline at
+# config/sweep_baseline.json.
+#
+# To intentionally change a matchup's WR (e.g. a deck tuning):
+#   1. Land the behaviour-changing PR.
+#   2. Run `python3 tools/regression_sweep.py --update-baseline` locally.
+#   3. Commit the updated baseline file in a follow-up PR.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run regression sweep
+        run: |
+          python3 tools/regression_sweep.py

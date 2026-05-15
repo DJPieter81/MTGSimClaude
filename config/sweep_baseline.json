@@ -1,0 +1,101 @@
+{
+  "_meta": {
+    "n_games": 200,
+    "threshold_pp": 5.0,
+    "generated_at": "2026-05-15T22:44:30+00:00",
+    "main_sha": "dbe7b07",
+    "comment": "Phase C regression-sweep baseline. The CI gate tools/regression_sweep.py fails when any matchup win rate drops > threshold_pp vs the values here. Update only after an intentional WR change (rebuild the file with `python3 tools/regression_sweep.py --update-baseline`)."
+  },
+  "matchups": [
+    {
+      "p1": "bug",
+      "p2": "storm",
+      "p1_wr": 0.43,
+      "p1_wins": 86,
+      "p2_wins": 114,
+      "avg_kill": 5.92,
+      "avg_length": 5.92
+    },
+    {
+      "p1": "depths",
+      "p2": "burn",
+      "p1_wr": 0.575,
+      "p1_wins": 115,
+      "p2_wins": 85,
+      "avg_kill": 3.83,
+      "avg_length": 3.94
+    },
+    {
+      "p1": "depths",
+      "p2": "dimir",
+      "p1_wr": 0.745,
+      "p1_wins": 149,
+      "p2_wins": 51,
+      "avg_kill": 5.43,
+      "avg_length": 6.17
+    },
+    {
+      "p1": "goblins",
+      "p2": "dimir",
+      "p1_wr": 0.35,
+      "p1_wins": 70,
+      "p2_wins": 130,
+      "avg_kill": 10.93,
+      "avg_length": 10.6
+    },
+    {
+      "p1": "goblins",
+      "p2": "uwx",
+      "p1_wr": 0.61,
+      "p1_wins": 122,
+      "p2_wins": 78,
+      "avg_kill": 11.88,
+      "avg_length": 11.78
+    },
+    {
+      "p1": "reanimator",
+      "p2": "burn",
+      "p1_wr": 0.245,
+      "p1_wins": 49,
+      "p2_wins": 151,
+      "avg_kill": 4.55,
+      "avg_length": 4.0
+    },
+    {
+      "p1": "reanimator",
+      "p2": "dimir",
+      "p1_wr": 0.585,
+      "p1_wins": 117,
+      "p2_wins": 83,
+      "avg_kill": 6.08,
+      "avg_length": 6.46
+    },
+    {
+      "p1": "storm",
+      "p2": "burn",
+      "p1_wr": 0.43,
+      "p1_wins": 86,
+      "p2_wins": 114,
+      "avg_kill": 2.77,
+      "avg_length": 3.64
+    },
+    {
+      "p1": "storm",
+      "p2": "dimir",
+      "p1_wr": 0.695,
+      "p1_wins": 139,
+      "p2_wins": 61,
+      "avg_kill": 5.43,
+      "avg_length": 6.0
+    },
+    {
+      "p1": "ur_delver",
+      "p2": "dimir",
+      "p1_wr": 0.7,
+      "p1_wins": 140,
+      "p2_wins": 60,
+      "avg_kill": 7.95,
+      "avg_length": 8.09
+    }
+  ]
+}

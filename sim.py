@@ -3015,6 +3015,75 @@ def run_rules_tests():
     except Exception as _e:
         test(f"combo_plan rule tests (error: {_e})", False, True)
 
+    # ── Phase C: regression-sweep harness rule-level tests ────────────
+    # Pure-function tests on diff_against_baseline. No live sweep runs —
+    # the actual sweep is exercised by CI (.github/workflows/
+    # regression-sweep.yml) and `tools/regression_sweep.py`.
+    try:
+        import sys as _sysC
+        from pathlib import Path as _PathC
+        _sysC.path.insert(0, str(_PathC(__file__).resolve().parent / 'tools'))
+        from regression_sweep import (
+            diff_against_baseline as _diff,
+            DEFAULT_THRESHOLD_PP as _THR,
+            DEFAULT_MATCHUPS as _DMU,
+        )
+
+        # Rule 1: matched baseline + identical current WR → no regression.
+        _cur = {'a_vs_b': {'p1': 'a', 'p2': 'b', 'p1_wr': 0.50}}
+        _bas = {'matchups': [{'p1': 'a', 'p2': 'b', 'p1_wr': 0.50}]}
+        _all, _reg = _diff(_cur, _bas, threshold_pp=5.0)
+        test("regression_sweep: identical WR yields zero regressions",
+             len(_reg), 0)
+        test("regression_sweep: identical WR yields delta_pp == 0",
+             _all[0]['delta_pp'], 0.0)
+
+        # Rule 2: WR drop above threshold → regression flagged.
+        _cur2 = {'a_vs_b': {'p1': 'a', 'p2': 'b', 'p1_wr': 0.40}}
+        _bas2 = {'matchups': [{'p1': 'a', 'p2': 'b', 'p1_wr': 0.50}]}
+        _, _reg2 = _diff(_cur2, _bas2, threshold_pp=5.0)
+        test("regression_sweep: 10pp drop flagged as regression",
+             len(_reg2), 1)
+
+        # Rule 3: WR drop at exactly the threshold is NOT flagged
+        # (strict > comparison). 5pp drop with threshold 5pp → OK.
+        _cur3 = {'a_vs_b': {'p1': 'a', 'p2': 'b', 'p1_wr': 0.45}}
+        _bas3 = {'matchups': [{'p1': 'a', 'p2': 'b', 'p1_wr': 0.50}]}
+        _, _reg3 = _diff(_cur3, _bas3, threshold_pp=5.0)
+        test("regression_sweep: drop at exactly threshold not flagged",
+             len(_reg3), 0)
+
+        # Rule 4: WR improvement is never flagged (no upper bound).
+        _cur4 = {'a_vs_b': {'p1': 'a', 'p2': 'b', 'p1_wr': 0.80}}
+        _bas4 = {'matchups': [{'p1': 'a', 'p2': 'b', 'p1_wr': 0.50}]}
+        _, _reg4 = _diff(_cur4, _bas4, threshold_pp=5.0)
+        test("regression_sweep: WR improvement never flagged",
+             len(_reg4), 0)
+
+        # Rule 5: matchup absent from baseline → no fail, marked 'new matchup'.
+        _cur5 = {'new_vs_other': {'p1': 'new', 'p2': 'other', 'p1_wr': 0.30}}
+        _bas5 = {'matchups': [{'p1': 'a', 'p2': 'b', 'p1_wr': 0.50}]}
+        _all5, _reg5 = _diff(_cur5, _bas5, threshold_pp=5.0)
+        test("regression_sweep: new matchup vs missing baseline never flagged",
+             len(_reg5), 0)
+        test("regression_sweep: new matchup row has delta_pp None",
+             _all5[0]['delta_pp'], None)
+
+        # Rule 6: harness default matchup set is non-empty and covers
+        # the four bottleneck decks declared in the re-architecture doc.
+        _bottleneck = {'storm', 'reanimator', 'depths', 'goblins'}
+        _matchup_p1 = {m[0] for m in _DMU}
+        test("regression_sweep: bottleneck decks covered in default matchups",
+             _bottleneck.issubset(_matchup_p1), True,
+             detail=f"missing: {_bottleneck - _matchup_p1}")
+
+        # Rule 7: harness default threshold is a positive percentage.
+        test("regression_sweep: default threshold_pp is a positive percentage",
+             0 < _THR <= 100, True)
+
+    except Exception as _e:
+        test(f"regression_sweep rule tests (error: {_e})", False, True)
+
     # ── Phase 5: depths deck declares combo metadata + path coverage ────
     try:
         from deck_registry import get_combo_meta as _gcm5
