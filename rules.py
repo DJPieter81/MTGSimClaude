@@ -194,6 +194,14 @@ class Permanent:
     counters: Dict[str, int] = field(default_factory=dict)
     power_mod: int = 0
     toughness_mod: int = 0
+    # Triggered ability flag (CR 603) — when this permanent deals combat damage
+    # to a player, controller may put a matching-tribe creature from hand onto
+    # the battlefield. Generalises Goblin Lackey, Mothdust Changeling-style,
+    # and similar "cheat into play on combat damage" mechanics. Class > 10 (any
+    # creature with a "when ~ deals combat damage to a player, you may put a
+    # [tribe] from your hand onto the battlefield" line). Tribe filter lives
+    # on the engine call site via subtype/tag membership, not here.
+    cheat_on_combat_damage: bool = False
 
     @property
     def name(self): return self.card.name
