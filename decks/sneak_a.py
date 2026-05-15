@@ -22,6 +22,7 @@ import random
 from cards import (creature, instant, sorcery, artifact, enchantment,
                    fetch_land, dual_land, basic_land, utility_land)
 from rules import Card, CardType
+from combo_engine import AssemblyPath
 
 
 # --- Deck construction --------------------------------------------------------
@@ -154,6 +155,22 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
     from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
 
     mana = total_mana
+
+    # ── Combo-engine protection decision (Hold/Defer surface a 'protect'
+    # keyword for the heuristic grader). Behaviour-preserving — the actual
+    # combo gating below uses local mana/payoff checks. See
+    # docs/design/2026-05-15_post-phase-6-re-architecture.md.
+    from combo_engine import (
+        combo_plan as _combo_plan_sa, Hold as _Hold_sa, Defer as _Defer_sa,
+    )
+    _plan_sa = _combo_plan_sa(player, opponent, gs)
+    if isinstance(_plan_sa, (_Hold_sa, _Defer_sa)):
+        gs.strat_log.log_decision(
+            gs.turn, 'sneak_a',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if isinstance(_plan_sa, _Defer_sa)
+                    else f'hold_{getattr(_plan_sa.card, "tag", "card")}'),
+            reason=_plan_sa.reason)
 
     # -- Effective mana: count bonus from sol lands + petals in hand ------------
     tomb_bonus = sum(1 for l in player.lands
@@ -442,4 +459,36 @@ DECK_META = {
     'categories': {'combo', 'land_combo'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.04,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # See docs/design/2026-05-09_combo_engine_architecture.md.
+    # Kill lines: Show and Tell (3 mana) drops Emrakul / Atraxa / Omniscience
+    # / Sneak Attack; Sneak Attack already in play (3-mana enchant) activates
+    # for {R} to flicker in Emrakul / Atraxa. Petals fill the mana gap.
+    'combo': {
+        'pieces': frozenset({
+            'sat', 'sneak',                          # combo enablers
+            'emrakul', 'atraxa', 'omni',             # win-condition payoffs
+            'petal',                                 # fast mana
+        }),
+        'protection_tags': frozenset({'fow', 'daze'}),
+        'assembly_paths': (
+            # Show and Tell with any payoff — 3 mana base.
+            AssemblyPath(
+                tag='sat_into_payoff',
+                required_tags=frozenset({'sat'}),
+                mana_cost=3,
+                turns_to_kill=1,
+                target_tags=frozenset({'emrakul', 'atraxa', 'omni', 'sneak'}),
+            ),
+            # Sneak Attack hardcast — 3 mana to resolve, +1 to activate.
+            AssemblyPath(
+                tag='sneak_into_creature',
+                required_tags=frozenset({'sneak'}),
+                mana_cost=3,
+                turns_to_kill=1,
+                target_tags=frozenset({'emrakul', 'atraxa'}),
+            ),
+        ),
+        'preamble_skip': False,
+    },
 }

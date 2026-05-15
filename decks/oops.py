@@ -6,6 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import make_oops_deck
+from combo_engine import AssemblyPath
 
 
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
@@ -38,4 +39,45 @@ DECK_META = {
     'categories': {'combo', 'gy_combo', 'fast_combo'},
     'interaction': {'speed': 1, 'resilience': 1, 'uses_graveyard': True, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.06,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # See docs/design/2026-05-09_combo_engine_architecture.md.
+    # Kill line: cast Spy/Informer (3-4 mana) → mill entire library →
+    # Narcomoebas enter → flashback Dread Return → reanimate Oracle → win.
+    # Protection comes from Pact of Negation (free counter) and Grief (free
+    # evoke-discard); both are alternate-cost cards present in the list.
+    'combo': {
+        'pieces': frozenset({
+            'spy', 'informer',                          # mill triggers
+            'oracle', 'dread', 'narco',                 # win-condition payoffs
+            'spact',                                    # Summoner's Pact tutor
+            'petal', 'cmox', 'esg', 'ssg', 'cantor',    # 0-mana ramp
+            'darkrit', 'cabalrit',                      # rituals
+            'agadeem', 'turntimber',                    # MDFC lands
+        }),
+        'protection_tags': frozenset({'pact', 'grief'}),
+        'assembly_paths': (
+            # Balustrade Spy in hand — 4-mana hard cast.
+            AssemblyPath(
+                tag='spy_chain',
+                required_tags=frozenset({'spy'}),
+                mana_cost=4,
+                turns_to_kill=1,
+            ),
+            # Undercity Informer — 3-mana cast + 1 activation.
+            AssemblyPath(
+                tag='informer_chain',
+                required_tags=frozenset({'informer'}),
+                mana_cost=4,
+                turns_to_kill=1,
+            ),
+            # Summoner's Pact (free) tutors Spy from library.
+            AssemblyPath(
+                tag='spact_tutor_spy',
+                required_tags=frozenset({'spact'}),
+                mana_cost=4,
+                turns_to_kill=1,
+            ),
+        ),
+        'preamble_skip': False,
+    },
 }

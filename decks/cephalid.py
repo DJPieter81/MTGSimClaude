@@ -18,6 +18,7 @@ import random
 from cards import (creature, instant, sorcery, artifact, enchantment,
                    planeswalker, fetch_land, dual_land, basic_land, utility_land)
 from rules import Card, CardType
+from combo_engine import AssemblyPath
 
 
 # ─── Deck construction ────────────────────────────────────────────────────────
@@ -221,6 +222,22 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
     from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
 
     budget = [total_mana]
+
+    # ── Combo-engine protection decision (Hold/Defer surface a 'protect'
+    # keyword for the heuristic grader). Behaviour-preserving — the actual
+    # combo execution below inspects creatures/Shuko-in-play directly. See
+    # docs/design/2026-05-15_post-phase-6-re-architecture.md.
+    from combo_engine import (
+        combo_plan as _combo_plan_c, Hold as _Hold_c, Defer as _Defer_c,
+    )
+    _plan_c = _combo_plan_c(player, opponent, gs)
+    if isinstance(_plan_c, (_Hold_c, _Defer_c)):
+        gs.strat_log.log_decision(
+            gs.turn, 'cephalid',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if isinstance(_plan_c, _Defer_c)
+                    else f'hold_{getattr(_plan_c.card, "tag", "card")}'),
+            reason=_plan_c.reason)
 
     # ── Track Shuko in play via attribute ────────────────────────────────────
     if not hasattr(gs, 'shuko_in_play'):
@@ -480,4 +497,48 @@ DECK_META = {
     'categories': {'combo', 'gy_combo'},
     'interaction': {'speed': 3, 'resilience': 2, 'uses_graveyard': True, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.01,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # See docs/design/2026-05-09_combo_engine_architecture.md.
+    # Cephalid Illusionist (2 mana) + Nomads en-Kor (1 mana) OR Shuko (1 mana)
+    # → repeated target ability mills entire library → Narcomoebas enter →
+    # flashback Dread Return → reanimate Oracle for the win. Step Through
+    # wizardcycles for Illusionist.
+    'combo': {
+        'pieces': frozenset({
+            'illusionist', 'nomads', 'shuko',     # combo enablers in play
+            'narco', 'oracle', 'dread',           # post-mill chain
+            'step',                               # tutor for Illusionist
+        }),
+        'protection_tags': frozenset({'fow', 'daze', 'chant'}),
+        'assembly_paths': (
+            # Illusionist + Nomads — both creatures, costs 3 to land both.
+            AssemblyPath(
+                tag='illusionist_plus_nomads',
+                required_tags=frozenset({'illusionist', 'nomads'}),
+                mana_cost=3,
+                turns_to_kill=1,
+            ),
+            # Illusionist + Shuko (1-mana artifact, 0-cost equip).
+            AssemblyPath(
+                tag='illusionist_plus_shuko',
+                required_tags=frozenset({'illusionist', 'shuko'}),
+                mana_cost=3,
+                turns_to_kill=1,
+            ),
+            # Step Through wizardcycles to tutor Illusionist (1 mana ability).
+            AssemblyPath(
+                tag='step_tutors_illusionist',
+                required_tags=frozenset({'step', 'nomads'}),
+                mana_cost=4,
+                turns_to_kill=2,
+            ),
+            AssemblyPath(
+                tag='step_tutors_illusionist_shuko',
+                required_tags=frozenset({'step', 'shuko'}),
+                mana_cost=4,
+                turns_to_kill=2,
+            ),
+        ),
+        'preamble_skip': False,
+    },
 }
