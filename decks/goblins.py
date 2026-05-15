@@ -13,6 +13,16 @@ sys.path.insert(0, '.')
 
 from cards import creature, instant, sorcery, artifact
 from rules import Card, CardType
+from combo_engine import AssemblyPath, log_combo_decision
+
+
+# Tag set used as the "Goblin tribe" filter for the Lackey-style cheat trigger.
+# Lives in the deck plugin (not engine), per the ABSTRACTION CONTRACT —
+# tribe membership is deck-private knowledge expressed as tag strings.
+GOBLIN_TRIBE_TAGS = frozenset({
+    'lackey', 'matron', 'ringleader', 'warchief', 'expert', 'sling',
+    'cratermaker', 'pashalik', 'prospector', 'fury', 'muxus',
+})
 
 
 # ─── Deck construction ────────────────────────────────────────────────────────
@@ -228,7 +238,11 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     if lackey and not lackey_in_play and rem >= 1:
         _b = [rem]
         def _resolve_lackey(c):
-            player.put_creature_in_play(c)
+            perm = player.put_creature_in_play(c)
+            # Mark the Lackey-class trigger so the engine can find it generically.
+            # (See rules.Permanent.cheat_on_combat_damage docstring.)
+            if perm is not None:
+                perm.cheat_on_combat_damage = True
             log_fn("Goblin Lackey (attacks next turn)")
         if cast_spell(player, opponent, gs, lackey, _b, log_fn, log_entries,
                       on_resolve=_resolve_lackey, cost_override=1):
@@ -374,43 +388,54 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Combat ──────────────────────────────────────────────────────────────
     if not gs.game_over:
         attackers = [c for c in player.creatures if not c.summoning_sick]
-        # Lackey combat damage trigger: put a Goblin from hand into play
-        lackey_atk = next((c for c in attackers if c.card.tag == 'lackey'), None)
-        if lackey_atk:
-            # Check if lackey would be blocked — Lackey triggers on combat damage
-            # to a player (i.e. when unblocked). It connects if the opponent
-            # doesn't have enough blockers to cover all attackers.
-            blockers = [c for c in opponent.creatures if not c.summoning_sick]
-            lackey_connects = len(blockers) == 0 or len(attackers) > len(blockers)
-            if lackey_connects:
-                # Lackey gets through — put best Goblin from hand
-                best = next((c for c in player.hand if c.tag == 'muxus'), None)
-                if not best:
-                    best = next((c for c in player.hand if c.tag == 'ringleader'), None)
-                if not best:
-                    best = next((c for c in player.hand if c.is_creature()), None)
-                if best:
-                    player.remove_from_hand(best)
-                    perm = player.put_creature_in_play(best)
-                    perm.summoning_sick = False
-                    goblin_count += 1
-                    log_fn(f"★ Lackey trigger → free {best.name}!", True)
-                    # Muxus ETB from Lackey
-                    if best.tag == 'muxus':
-                        hits = 0
-                        revealed = player.library[:6]
-                        for card in revealed:
-                            if card.is_creature() and card.tag in (
-                                'lackey', 'matron', 'ringleader', 'warchief',
-                                'expert', 'sling', 'cratermaker', 'pashalik',
-                                'prospector', 'fury'):
-                                player.library.remove(card)
-                                p2 = player.put_creature_in_play(card)
-                                p2.summoning_sick = False
-                                goblin_count += 1
-                                hits += 1
-                        if hits:
-                            log_fn(f"★ Muxus from Lackey → {hits} more Goblins!", True)
+        # ── Cheat-on-combat-damage triggers (CR 603) ────────────────────────
+        # Generic across any Permanent.cheat_on_combat_damage attacker. For
+        # each such attacker that connects, pick the highest-CMC matching-
+        # tribe creature from hand using Card.cmc (property comparison, not
+        # name matching). The "tribe" is deck-private — Goblins uses
+        # GOBLIN_TRIBE_TAGS at the top of this module.
+        blockers = [c for c in opponent.creatures if not c.summoning_sick]
+        unblocked_slots = max(0, len(attackers) - len(blockers))
+        cheat_attackers = [c for c in attackers if getattr(c, 'cheat_on_combat_damage', False)]
+        # Each cheat attacker that lands in an unblocked slot triggers once.
+        cheat_triggers = min(len(cheat_attackers), unblocked_slots)
+        for _ in range(cheat_triggers):
+            tribe_in_hand = [c for c in player.hand
+                             if c.is_creature() and c.tag in GOBLIN_TRIBE_TAGS]
+            if not tribe_in_hand:
+                break
+            # Pick the highest-Card.cmc piece (property comparison — rule-level,
+            # no card-name == anywhere). Ties broken by name for determinism.
+            best = max(tribe_in_hand, key=lambda c: (c.cmc, c.name))
+            candidates = [f"{c.name}(cmc={c.cmc})" for c in tribe_in_hand]
+            n_attackers = len(attackers)
+            log_combo_decision(
+                log_fn,
+                turn=gs.turn,
+                deck='goblins',
+                phase='combat',
+                chosen=f'attack with {n_attackers} goblins',
+                reason=f'lackey trigger cheats {best.tag}',
+                candidates=candidates,
+            )
+            player.remove_from_hand(best)
+            perm = player.put_creature_in_play(best)
+            perm.summoning_sick = False
+            goblin_count += 1
+            log_fn(f"★ Cheat-on-combat-damage → free {best.name}!", True)
+            # Cascade: if the cheated piece was Muxus, fire its ETB now.
+            if best.tag == 'muxus':
+                hits = 0
+                revealed = player.library[:6]
+                for card in revealed:
+                    if card.is_creature() and card.tag in GOBLIN_TRIBE_TAGS - {'muxus'}:
+                        player.library.remove(card)
+                        p2 = player.put_creature_in_play(card)
+                        p2.summoning_sick = False
+                        goblin_count += 1
+                        hits += 1
+                if hits:
+                    log_fn(f"★ Muxus from cheat trigger → {hits} more Goblins!", True)
 
         combat_declare(player, opponent, gs, log_entries, attackers)
 
@@ -477,4 +502,37 @@ DECK_META = {
     'categories': {'aggro', 'tribal', 'vial_decks'},
     'interaction': {'speed': 2, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': True, 'opp_threats': 12},
     'meta_share': 0.01,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # Goblins is aggro-with-combo-finish: Lackey/Vial cheat → Muxus ETB →
+    # board-flood. Declaring combo metadata lets the heuristic grader key on
+    # the 'attack' / 'lackey' decision lines emitted in combat. See
+    # docs/design/2026-05-09_combo_engine_architecture.md.
+    'combo': {
+        'pieces': frozenset({
+            'lackey', 'vial',                                  # cheat enablers
+            'muxus', 'matron', 'ringleader', 'warchief',       # payoffs / engine
+            'expert', 'sling', 'cratermaker', 'pashalik',
+            'prospector', 'fury',
+        }),
+        'protection_tags': frozenset({'cavern'}),  # uncounterable creatures
+        'assembly_paths': (
+            # Lackey-cheat line: Lackey ({R}) + any tribe piece in hand →
+            # combat damage triggers free play. Mana_cost=1 = Lackey itself.
+            AssemblyPath(
+                tag='lackey_cheat_muxus',
+                required_tags=frozenset({'lackey'}),
+                mana_cost=1,
+                turns_to_kill=2,    # T1 Lackey → T2 attack triggers
+                target_tags=frozenset({'muxus', 'ringleader', 'matron'}),
+            ),
+            # Hard-cast Muxus line: 6 mana for direct cast.
+            AssemblyPath(
+                tag='hardcast_muxus',
+                required_tags=frozenset({'muxus'}),
+                mana_cost=6,
+                turns_to_kill=1,
+            ),
+        ),
+        'preamble_skip': False,    # Goblins has no shared discard preamble
+    },
 }

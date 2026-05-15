@@ -13,20 +13,20 @@
     "mana": "B",
     "combat": "B",
     "combo": "B",
-    "interaction": "B+",
+    "interaction": "A",
     "meta": "B",
-    "overall": "B"
+    "overall": "B+"
   },
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
     "mana": "Resource deployment supported a T9 win",
     "combat": "Won through non-combat means",
     "combo": "Non-combo deck \u2014 domain not primary axis",
-    "interaction": "Interaction-backed win with measured disruption",
+    "interaction": "Heavy disruption (10 decisions) enabled win",
     "meta": "Eventually closed the matchup",
     "overall": "Average across 6 domains \u2014 won in 9 turns"
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T9 win\ncombat: B \u2014 Won through non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 Interaction-backed win with measured disruption\nmeta: B \u2014 Eventually closed the matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 9 turns",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T9 win\ncombat: B \u2014 Won through non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: A \u2014 Heavy disruption (10 decisions) enabled win\nmeta: B \u2014 Eventually closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 9 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-04T09:29:42.060203Z"
+  "graded_at": "2026-05-15T18:38:58.389659Z"
 }
