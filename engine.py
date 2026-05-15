@@ -5282,20 +5282,20 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
     safe_to_combo = (veil_protecting or storm_desperate or
                      (has_mana_base and not opp_has_free_counter))
 
-    # Emit a 'protect'-keyword strategic decision via the combo_engine
-    # protection check. Behaviour-preserving — `safe_to_combo` above is
-    # the actual gate; this call only surfaces the keyword to the
-    # heuristic grader (interaction-domain rule keys on 'protect' in
-    # reason / 'force' in chosen).
-    from combo_engine import combo_protection_check as _cpc
-    _pd = _cpc(player, opponent, gs)
-    if _pd.defer or _pd.hold is not None:
+    # Emit a 'protect'-keyword strategic decision via combo_engine.
+    # Behaviour-preserving — `safe_to_combo` above is the actual gate;
+    # this call only surfaces the keyword to the heuristic grader
+    # (interaction-domain rule keys on 'protect' in reason / 'force' in
+    # chosen). See docs/design/2026-05-15_post-phase-6-re-architecture.md.
+    from combo_engine import combo_plan as _combo_plan, Hold as _Hold, Defer as _Defer
+    _plan = _combo_plan(player, opponent, gs)
+    if isinstance(_plan, (_Hold, _Defer)):
         gs.strat_log.log_decision(
             gs.turn, 'storm',
             candidates=['proceed', 'hold', 'defer'],
-            chosen=('defer' if _pd.defer
-                    else f'hold_{getattr(_pd.hold, "tag", "card")}'),
-            reason=_pd.reason)
+            chosen=('defer' if isinstance(_plan, _Defer)
+                    else f'hold_{getattr(_plan.card, "tag", "card")}'),
+            reason=_plan.reason)
 
     itutor   = player.find_tag('itutor')
     led      = player.find_tag('led')
@@ -5446,16 +5446,18 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
     # the strategy's existing FoW casts happen via _try_counter_any
     # downstream; this call only surfaces a 'protect'-keyword decision
     # to the heuristic grader when opponent's BHI suggests a free
-    # counter is likely. See docs/design/2026-05-09_combo_engine_architecture.md.
-    from combo_engine import combo_protection_check as _cpc_rean
-    _pd_r = _cpc_rean(player, opponent, gs)
-    if _pd_r.defer or _pd_r.hold is not None:
+    # counter is likely. See docs/design/2026-05-15_post-phase-6-re-architecture.md.
+    from combo_engine import (
+        combo_plan as _combo_plan_r, Hold as _Hold_r, Defer as _Defer_r,
+    )
+    _plan_r = _combo_plan_r(player, opponent, gs)
+    if isinstance(_plan_r, (_Hold_r, _Defer_r)):
         gs.strat_log.log_decision(
             gs.turn, 'reanimator',
             candidates=['proceed', 'hold', 'defer'],
-            chosen=('defer' if _pd_r.defer
-                    else f'hold_{getattr(_pd_r.hold, "tag", "card")}'),
-            reason=_pd_r.reason)
+            chosen=('defer' if isinstance(_plan_r, _Defer_r)
+                    else f'hold_{getattr(_plan_r.card, "tag", "card")}'),
+            reason=_plan_r.reason)
 
     # ── Step 1: Lotus Petal — only crack if combo path exists ──────────────
     # Check: do we have Entomb+Reanimate, or target in GY + Reanimate?
