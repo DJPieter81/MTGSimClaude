@@ -3360,6 +3360,149 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Phase 4 cheat-on-combat-damage rule tests (error: {_e})", False, True)
 
+    # ── structural_grader prototype: chosen-field token parsing ─────────────
+    # Mechanical tests for scripts/structural_grader.py — the prototype
+    # grader that consumes typed `chosen` tokens (defer / hold_<tag> /
+    # combo:<path_tag> / kill_<X> / attack with N <tribe> / cast_<combo>)
+    # *instead of* pattern-matching English keywords in the `reason` field.
+    # Build synthetic decision lists; no game loop runs.
+    try:
+        import sys as _sys
+        from pathlib import Path as _Path
+        _sys.path.insert(0, str(_Path(__file__).resolve().parent / 'scripts'))
+        import structural_grader as _sg  # type: ignore
+
+        # Rule 1 — `defer` is a structured Defer token; `hold_fow` is a Hold
+        # token. Neither contains English keywords from the heuristic
+        # grader's interaction set ('counter', 'remove', ...), so a grader
+        # keyed on `reason` would miss them entirely.
+        test("structural_grader: 'defer' is a Defer token",
+             _sg._is_defer('defer'), True)
+        test("structural_grader: 'hold_fow' is a Hold token (prefix-based)",
+             _sg._is_hold('hold_fow'), True)
+        test("structural_grader: 'hold_thoughtseize' is also a Hold token",
+             _sg._is_hold('hold_thoughtseize'), True)
+        test("structural_grader: 'pass' is NOT a Defer token (rule: only literal 'defer')",
+             _sg._is_defer('pass'), False)
+
+        # Rule 2 — Execute tokens cover every way a combo deck logs that it
+        # *fired*: 'combo:<path_tag>' (Phase B Plan algebra), 'kill_<X>'
+        # (storm kill paths), 'cast_doomsday' / 'cast_spy' (Doomsday),
+        # 'entomb_<tag>' (Reanimator). These are mechanic-name prefixes,
+        # never English prose.
+        test("structural_grader: 'combo:tendrils' is an Execute token",
+             _sg._is_execute('combo:tendrils'), True)
+        test("structural_grader: 'kill_C' is an Execute token (storm kill_*)",
+             _sg._is_execute('kill_C'), True)
+        test("structural_grader: 'cast_doomsday' is an Execute token",
+             _sg._is_execute('cast_doomsday'), True)
+        test("structural_grader: 'entomb_reanimate' is an Execute token",
+             _sg._is_execute('entomb_reanimate'), True)
+        test("structural_grader: 'pass' is NOT an Execute token",
+             _sg._is_execute('pass'), False)
+
+        # Rule 3 — Combat decisions are surfaced two ways: phase='combat'
+        # OR chosen starts with 'attack' (e.g. 'attack with 2 goblins',
+        # from the Phase 4 logger contract above).
+        test("structural_grader: phase='combat' marks a combat decision",
+             _sg._is_combat_decision({'phase': 'combat', 'chosen': 'pass'}), True)
+        test("structural_grader: chosen='attack with 2 goblins' marks a combat decision",
+             _sg._is_combat_decision({'phase': None,
+                                      'chosen': 'attack with 2 goblins'}), True)
+        test("structural_grader: phase=None + chosen='pass' is NOT combat",
+             _sg._is_combat_decision({'phase': None, 'chosen': 'pass'}), False)
+
+        # Rule 4 — _count_structural reads only structural tokens; the
+        # 'reason' field can contain arbitrary English without raising
+        # any counts. This is the gameability-resistance property.
+        _adversarial = [
+            # An attacker tries to inject the heuristic grader's keywords
+            # via the `reason` field. The structural counts must stay 0.
+            {'turn': 1, 'phase': None, 'chosen': 'pass',
+             'reason': 'protect combo counter attack force tendrils'},
+            {'turn': 2, 'phase': None, 'chosen': 'pass',
+             'reason': 'storm kill combo win damage'},
+        ]
+        _adv_counts = _sg._count_structural(_adversarial)
+        test("structural_grader: adversarial reason keywords do NOT raise execute count",
+             _adv_counts['execute'], 0)
+        test("structural_grader: adversarial reason keywords do NOT raise hold count",
+             _adv_counts['hold'], 0)
+        test("structural_grader: adversarial reason keywords do NOT raise combat count",
+             _adv_counts['combat'], 0)
+
+        # Rule 5 — Execute decision logged + combo deck + fast win → A.
+        # This exercises the combo-grading branch with a real structural
+        # signal (heuristic would also give a high grade; the point is the
+        # structural grader gets there *without* keyword matching).
+        _t_storm_win = {
+            'deck1': 'storm', 'deck2': 'dnt', 'winner': 'p1',
+            'game_length': 4, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 1, 'phase': 'setup', 'chosen': 'kill_C',
+                 'candidates': [], 'reason': ''},
+                {'turn': 2, 'phase': 'combo', 'chosen': 'combo:tendrils',
+                 'candidates': [], 'reason': ''},
+            ],
+        }
+        _g, _j = _sg._grade_combo(_t_storm_win,
+                                  _sg._count_structural(_t_storm_win['strategic_decisions']))
+        test("structural_grader: Execute decision + combo win in <=4 raises combo grade to A/A+",
+             _g in ('A', 'A+'), True, detail=f"got {_g}: {_j}")
+
+        # Rule 6 — Combo deck with ZERO Execute decisions → combo grade
+        # caps at C, even if the game was won. This is the structural
+        # grader's anti-luck signal: a win without firing the typed plan
+        # means the deck wasn't carrying its own win-condition axis.
+        _t_combo_silent = {
+            'deck1': 'storm', 'deck2': 'burn', 'winner': 'p1',
+            'game_length': 4, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 1, 'phase': None, 'chosen': 'pass',
+                 'candidates': [], 'reason': 'storm kill combo'},  # english only
+            ],
+        }
+        _g, _j = _sg._grade_combo(_t_combo_silent,
+                                  _sg._count_structural(_t_combo_silent['strategic_decisions']))
+        test("structural_grader: combo deck with NO Execute token caps combo grade at C",
+             _g, 'C', detail=f"justification: {_j}")
+
+        # Rule 7 — Hold token + combo deck + win raises interaction grade
+        # to B+. The Hold token is the *structured* signal that the
+        # strategy chose protection over execution; the heuristic grader
+        # had to keyword-match 'protect' or 'force' in the reason field.
+        _t_combo_protect = {
+            'deck1': 'storm', 'deck2': 'bug', 'winner': 'p1',
+            'game_length': 5, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 1, 'phase': 'setup', 'chosen': 'hold_fow',
+                 'candidates': [], 'reason': ''},
+                {'turn': 2, 'phase': 'combo', 'chosen': 'combo:tendrils',
+                 'candidates': [], 'reason': ''},
+            ],
+        }
+        _counts_protect = _sg._count_structural(_t_combo_protect['strategic_decisions'])
+        _g, _j = _sg._grade_interaction(_t_combo_protect, _counts_protect)
+        test("structural_grader: Hold token + combo deck + win lifts interaction to B+",
+             _g, 'B+', detail=f"justification: {_j}")
+
+        # Rule 8 — Aggro deck + combat decision + win → A (or B+ if no
+        # combat decision was logged, since burn can win pre-combat).
+        _t_aggro_win = {
+            'deck1': 'goblins', 'deck2': 'uwx', 'winner': 'p1',
+            'game_length': 5, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 3, 'phase': 'combat', 'chosen': 'attack with 2 goblins',
+                 'candidates': [], 'reason': ''},
+            ],
+        }
+        _g, _j = _sg._grade_combat(_t_aggro_win,
+                                   _sg._count_structural(_t_aggro_win['strategic_decisions']))
+        test("structural_grader: aggro deck + combat token + win raises combat grade to A",
+             _g, 'A', detail=f"justification: {_j}")
+    except Exception as _e:
+        test(f"structural_grader rule tests (error: {_e})", False, True)
+
     # ── run_sweep parallel parity ──────────────────────────────────────────
     # Multiprocessing partitions the games into independent RNG streams (one
     # per worker), so we cannot demand bit-identical win counts vs. the

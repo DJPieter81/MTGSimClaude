@@ -1,0 +1,41 @@
+{
+  "trace_file": "bug_vs_storm_s42.json",
+  "matchup": "bug_vs_storm",
+  "seed": 42,
+  "winner": "p2",
+  "win_reason": "ANT combo (Tendrils chain)",
+  "kill_turn": 6,
+  "game_length": 6,
+  "deck1": "bug",
+  "deck2": "storm",
+  "grades": {
+    "mulligan": "C+",
+    "mana": "C+",
+    "combat": "C",
+    "combo": "B",
+    "interaction": "C+",
+    "meta": "C+",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Mulled to 6; card disadvantage contributed to loss",
+    "mana": "Suboptimal mana utilization over 6 turns",
+    "combat": "0 combat decision(s); combat axis inactive",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "2 hold + 0 defer decisions; logged but insufficient",
+    "meta": "Lost \u2014 played actively but could not overcome matchup",
+    "overall": "Average across 6 domains \u2014 lost in 6 turns; structural counts: exec=4 hold=2 defer=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 4,
+    "hold": 2,
+    "defer": 0,
+    "combat": 0,
+    "combo_phase": 6,
+    "protect_phase": 0,
+    "total": 19
+  },
+  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C+ \u2014 Suboptimal mana utilization over 6 turns\ncombat: C \u2014 0 combat decision(s); combat axis inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 2 hold + 0 defer decisions; logged but insufficient\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 6 turns; structural counts: exec=4 hold=2 defer=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T05:15:23.392707Z"
+}
