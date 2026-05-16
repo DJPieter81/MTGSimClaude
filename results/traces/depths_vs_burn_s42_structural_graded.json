@@ -19,7 +19,7 @@
   },
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
-    "mana": "Won but took 5 turns \u2014 mana was adequate",
+    "mana": "Won but took 5 turns \u2014 mana was adequate (0 ramp tokens)",
     "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
     "combo": "1 Execute decision(s); combo resolved on T5",
     "interaction": "0 hold + 0 defer; combo resolved without holding protection",
@@ -34,12 +34,13 @@
     "discard": 1,
     "removal": 0,
     "tried_combo": 3,
+    "ramp": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
     "total": 10
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 5 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 1 Execute decision(s); combo resolved on T5\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: B+ \u2014 Efficiently closed a favored matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 5 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 5 turns \u2014 mana was adequate (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 1 Execute decision(s); combo resolved on T5\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: B+ \u2014 Efficiently closed a favored matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 5 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T11:35:02.779927Z"
+  "graded_at": "2026-05-16T11:59:21.192587Z"
 }

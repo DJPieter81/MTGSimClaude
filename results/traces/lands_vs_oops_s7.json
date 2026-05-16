@@ -90,6 +90,28 @@
       "turn": 2,
       "deck": "oops",
       "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cabalrit \u2192 +2 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -417,6 +439,8 @@
     "T1 [oops] [phase:t1_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.00",
     "T1 [oops] [phase:t1_kill] chose tried_combo:agadeem from [execute,tried_combo,pass] \u2014 played agadeem but combo did not fire this turn",
     "T2 [lands] [phase:ramp] chose entry from [exploration,loam,crop_rotation,depths,stage,marit_lage,pass] \u2014 mana=2, lands=2, depths_out=True",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_2 from [ritual,pass] \u2014 cabalrit \u2192 +2 mana",
     "T2 [oops] [phase:t2_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=3, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.00",
     "T2 [oops] [phase:t2_kill] chose tried_combo:cabalrit from [execute,tried_combo,pass] \u2014 played cabalrit but combo did not fire this turn",
     "T2 [oops] [phase:t2_kill] chose tried_combo:ssg from [execute,tried_combo,pass] \u2014 played ssg but combo did not fire this turn",

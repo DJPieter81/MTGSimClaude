@@ -24,6 +24,7 @@ sys.path.insert(0, '/home/claude/mtg_sim')
 import random
 from cards import instant, sorcery, creature, artifact
 from combo_engine import AssemblyPath
+from decision import ManaDecision
 
 # ─── Deck construction ────────────────────────────────────────────────────────
 
@@ -399,10 +400,17 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
     def crack_all_fast_mana():
         """Crack all fast mana in hand for maximum storm + mana."""
         nonlocal storm, mana
+        _deck_key = gs.p1_deck if player is gs.p1 else gs.p2_deck
         # Lotus Petals first (free +1 each)
         for p in [c for c in list(player.hand) if c.tag == 'petal']:
             player.remove_from_hand(p); player.exile.append(p)
             mana += 1; storm += 1; player.spells_cast_this_turn += 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn, deck=_deck_key,
+                reason='petal_crack → +1 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp', mana_value=1,
+            ))
             log_fn(f"Petal (mana={mana}, storm={storm})")
         # Chrome Mox (exile card for +1)
         for mox in [c for c in list(player.hand) if c.tag == 'chrome_mox']:
@@ -415,6 +423,12 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.remove_from_hand(mox); player.hand.append(mox)  # stays in play conceptually
                 player.remove_from_hand(pitch); player.exile.append(pitch)
                 mana += 1; storm += 1; player.spells_cast_this_turn += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn, deck=_deck_key,
+                    reason='chrome_mox → +1 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp', mana_value=1,
+                ))
                 log_fn(f"Chrome Mox (exile {pitch.name}) → mana={mana} storm={storm}")
                 break  # one mox per combo
         # Dark Rituals (cost B, add BBB = net +2)
@@ -422,6 +436,12 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             if mana >= 1:
                 player.remove_from_hand(rit); player.add_to_grave(rit)
                 mana += 2; storm += 1; player.spells_cast_this_turn += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn, deck=_deck_key,
+                    reason='dark_ritual → +2 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp', mana_value=2,
+                ))
                 log_fn(f"Dark Ritual +2 (mana={mana}, storm={storm})")
 
     # ── Step 1: Gitaxian Probe (free storm + draw) ──────────────────────────
@@ -483,12 +503,26 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             if emergency and emergency.tag == 'petal':
                 player.remove_from_hand(emergency); player.exile.append(emergency)
                 mana += 1; storm += 1; player.spells_cast_this_turn += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='petal_crack → +1 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp', mana_value=1,
+                ))
             elif emergency and emergency.tag == 'led':
                 player.remove_from_hand(emergency); player.exile.append(emergency)
                 discarded = [c for c in player.hand if c is not vos]
                 for c in discarded:
                     player.remove_from_hand(c); player.graveyard.append(c)
                 mana += 3; storm += 1; player.spells_cast_this_turn += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='led_crack → +3 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp', mana_value=3,
+                ))
         if mana >= 1:
             player.remove_from_hand(vos); player.add_to_grave(vos)
             gs.veil_active = True
@@ -559,6 +593,13 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
         for c in discarded:
             player.remove_from_hand(c); player.graveyard.append(c)
         mana += 3; storm += 1; player.spells_cast_this_turn += 1
+        gs.strat_log.log(ManaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            reason='led_crack → +3 mana',
+            candidates=('ritual', 'pass'),
+            kind='ramp', mana_value=3,
+        ))
         log_fn(f"★ LED cracked for Echo — mana={mana}, storm={storm}, hand discarded", True)
         # Flashback Echo of Eons from GY (costs 3 generic)
         echo_in_gy = next((c for c in player.graveyard if c.tag == 'echo'), None)
@@ -603,6 +644,13 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             for c in discarded:
                 player.remove_from_hand(c); player.graveyard.append(c)
             mana += 3; storm += 1; player.spells_cast_this_turn += 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                reason='led_crack → +3 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp', mana_value=3,
+            ))
             log_fn(f"★ LED cracked — +3 mana={mana}, storm={storm}", True)
 
         player.remove_from_hand(wish); player.add_to_grave(wish)
@@ -662,6 +710,13 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             for c in discarded:
                 player.remove_from_hand(c); player.graveyard.append(c)
             mana += 3; storm += 1; player.spells_cast_this_turn += 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                reason='led_crack → +3 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp', mana_value=3,
+            ))
             log_fn(f"★ LED cracked for Infernal — mana={mana}, storm={storm}", True)
 
         hellbent = len(player.hand) <= 1
@@ -717,6 +772,13 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             for c in discarded:
                 player.remove_from_hand(c); player.graveyard.append(c)
             mana += 3; storm += 1; player.spells_cast_this_turn += 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                reason='led_crack → +3 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp', mana_value=3,
+            ))
             log_fn(f"★ LED cracked — mana={mana}, storm={storm}", True)
 
         # Use the higher of running storm or projected combo_storm

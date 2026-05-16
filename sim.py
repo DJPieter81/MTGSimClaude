@@ -4161,6 +4161,93 @@ def run_rules_tests():
              "does NOT raise removal/discard",
              (_prose_counts['removal'], _prose_counts['discard']), (0, 0))
 
+        # ── ManaDecision ramp-axis wiring (PR mana-axis) ─────────────────
+        # Mechanic: rituals / petals / LED / Spirit Guides emit a
+        # `ManaDecision(kind='ramp', mana_value=N)` whenever they yield net
+        # mana. The grader buckets these into counts['ramp']; combo-deck
+        # wins with n_ramp ≥ K_RAMP_A grade A on the mana axis.
+
+        # Rule M1 — to_token() byte-equality with the legacy prefix string.
+        test("Mana algebra: ManaDecision(ramp, 2).to_token() == 'mana_ramp_2'",
+             _MaD(turn=1, deck='storm', kind='ramp', mana_value=2).to_token(),
+             'mana_ramp_2')
+        test("Mana algebra: ManaDecision(ramp, 3).to_token() == 'mana_ramp_3'",
+             _MaD(turn=1, deck='storm', kind='ramp', mana_value=3).to_token(),
+             'mana_ramp_3')
+
+        # Rule M2 — typed-path bucketing: ManaDecision(ramp) increments
+        # counts['ramp'] on the isinstance fast-path. Mirrors the typed
+        # disruption fast-path that the prior PRs wired.
+        _typed_mana = [
+            _MaD(turn=1, deck='storm', kind='ramp', mana_value=1),
+            _MaD(turn=2, deck='storm', kind='ramp', mana_value=2),
+        ]
+        _tm_counts = _sg2._count_structural(_typed_mana, deck1='storm')
+        test("Mana algebra: two typed ManaDecision(ramp) raise counts['ramp'] to 2",
+             _tm_counts['ramp'], 2)
+
+        # Rule M3 — legacy dict path: a `chosen='mana_ramp_<N>'` token in a
+        # pre-typed trace JSON still buckets into counts['ramp'] via the
+        # _is_ramp prefix predicate. Preserves back-compat for traces
+        # written before this PR.
+        _legacy_ramp = [
+            {'turn': 1, 'deck': 'storm', 'chosen': 'mana_ramp_2'},
+            {'turn': 2, 'deck': 'storm', 'chosen': 'mana_ramp_3'},
+        ]
+        _lm_counts = _sg2._count_structural(_legacy_ramp, deck1='storm')
+        test("Mana algebra: legacy 'mana_ramp_*' dict token buckets to counts['ramp']",
+             _lm_counts['ramp'], 2)
+
+        # Rule M4 — combo-deck win with ≥ K_RAMP_A ramp tokens grades A on
+        # the mana axis. Models a full ritual chain (4+ net-mana events)
+        # backing the kill turn.
+        _t_ramp_win = {
+            'deck1': 'storm', 'deck2': 'dnt', 'winner': 'p1',
+            'game_length': 2, 'p1_mulls': 0,
+            'strategic_decisions': [
+                _MaD(turn=1, deck='storm', kind='ramp', mana_value=1),
+                _MaD(turn=2, deck='storm', kind='ramp', mana_value=2),
+                _MaD(turn=2, deck='storm', kind='ramp', mana_value=2),
+                _MaD(turn=2, deck='storm', kind='ramp', mana_value=3),
+            ],
+        }
+        _rcounts = _sg2._count_structural(_t_ramp_win['strategic_decisions'],
+                                          deck1='storm')
+        _g, _j = _sg2._grade_mana(_t_ramp_win, _rcounts)
+        test("Mana algebra: combo win + 4 ramp tokens grades mana = A",
+             _g, 'A', detail=f"justification: {_j}")
+
+        # Rule M5 — combat / non-combo deck win with 0 ramp tokens still
+        # grades mana ≥ B. The ramp signal only modifies the combo branch;
+        # non-combo decks fall back to the game-length rule unchanged.
+        _t_combat_no_ramp = {
+            'deck1': 'goblins', 'deck2': 'uwx', 'winner': 'p1',
+            'game_length': 6, 'p1_mulls': 0,
+            'strategic_decisions': [],
+        }
+        _cnr_counts = _sg2._count_structural([], deck1='goblins')
+        _g, _j = _sg2._grade_mana(_t_combat_no_ramp, _cnr_counts)
+        _GS = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F']
+        _g2n_m = {g: i for i, g in enumerate(_GS)}
+        _idx = _g2n_m.get(_g, 99)
+        test("Mana algebra: combat-deck win with 0 ramp tokens still grades mana ≥ B",
+             _idx <= _g2n_m['B'], True, detail=f"grade={_g}: {_j}")
+
+        # Rule M6 — gameability resistance: an English prose `reason`
+        # containing the word 'ritual', 'cabal', 'dark', 'mana' with
+        # `chosen='pass'` must NOT raise counts['ramp']. The bucket is
+        # sole source-of-truth — keyword-stuffing in `reason` does nothing.
+        _adv_ramp = [
+            {'turn': 1, 'deck': 'storm', 'chosen': 'pass',
+             'candidates': [], 'reason': 'ritual cabal dark mana led petal'},
+            {'turn': 2, 'deck': 'storm', 'chosen': 'pass',
+             'candidates': [], 'reason': 'dark ritual cabal ritual led led mana ramp'},
+        ]
+        _adv_rc = _sg2._count_structural(_adv_ramp, deck1='storm')
+        test("Mana algebra: prose 'ritual cabal dark mana' with chosen='pass' "
+             "does NOT raise counts['ramp']",
+             _adv_rc['ramp'], 0)
+
     except Exception as _e:
         test(f"typed Decision algebra rule tests (error: {_e})", False, True)
 

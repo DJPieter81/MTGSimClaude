@@ -167,6 +167,94 @@
         "pass"
       ],
       "reason": "storm=9/9, rituals=7, safe=True, thalia=False, life=19"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "led \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cabalrit \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_3",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "led_crack \u2192 +3 mana"
     }
   ],
   "full_log": [
@@ -408,6 +496,14 @@
     "T2 [storm] [phase:setup] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=8/9, rituals=6, safe=True, thalia=False, life=19",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=5, threats_in_play=1",
     "T3 [storm] [phase:combo] chose p=0.39 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=True",
-    "T3 [storm] [phase:combo] chose kill_A from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=9/9, rituals=7, safe=True, thalia=False, life=19"
+    "T3 [storm] [phase:combo] chose kill_A from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=9/9, rituals=7, safe=True, thalia=False, life=19",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 led \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 petal \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 cabalrit \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 petal \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_3 from [ritual,pass] \u2014 led_crack \u2192 +3 mana"
   ]
 }

@@ -182,6 +182,39 @@
       "turn": 5,
       "deck": "oops",
       "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 5,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cantor_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 5,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 5,
+      "deck": "oops",
+      "phase": "disruption",
       "chosen": "cast_spy",
       "candidates": [
         "cast_spy",
@@ -1039,6 +1072,9 @@
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=5, threats_in_play=1",
     "T4 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.38",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=4, threats_in_play=2",
+    "T5 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
+    "T5 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 cantor_crack \u2192 +1 mana",
+    "T5 [oops] [phase:disruption] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
     "T5 [oops] [phase:disruption] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=5, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.37",
     "T5 [dimir] chose counter_spy_with_daze from [counter,let_resolve] \u2014 daze counters spy (major threat)",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=4, threats_in_play=2",

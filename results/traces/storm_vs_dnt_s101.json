@@ -80,6 +80,39 @@
         "pass"
       ],
       "reason": "storm=4/9, rituals=3, safe=True, thalia=False, life=18"
+    },
+    {
+      "turn": 2,
+      "deck": "storm",
+      "phase": "setup",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cabalrit \u2192 +2 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "storm",
+      "phase": "setup",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal \u2192 +2 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "storm",
+      "phase": "setup",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal \u2192 +2 mana"
     }
   ],
   "full_log": [
@@ -249,6 +282,9 @@
     "T1 [storm] [phase:setup] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T1 [storm] [phase:setup] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=4/9, rituals=3, safe=True, thalia=False, life=19",
     "T2 [storm] [phase:setup] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
-    "T2 [storm] [phase:setup] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=4/9, rituals=3, safe=True, thalia=False, life=18"
+    "T2 [storm] [phase:setup] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=4/9, rituals=3, safe=True, thalia=False, life=18",
+    "T2 [storm] [phase:setup] chose mana_ramp_2 from [ritual,pass] \u2014 cabalrit \u2192 +2 mana",
+    "T2 [storm] [phase:setup] chose mana_ramp_2 from [ritual,pass] \u2014 petal \u2192 +2 mana",
+    "T2 [storm] [phase:setup] chose mana_ramp_2 from [ritual,pass] \u2014 petal \u2192 +2 mana"
   ]
 }

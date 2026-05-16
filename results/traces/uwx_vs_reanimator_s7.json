@@ -96,6 +96,17 @@
       "turn": 3,
       "deck": "reanimator",
       "phase": "t2_plan_b",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "dark_ritual \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "reanimator",
+      "phase": "t2_plan_b",
       "chosen": "combo:animatedead_gris",
       "candidates": [
         "reanimate",
@@ -138,6 +149,17 @@
         "pass"
       ],
       "reason": "mana=4, entomb=True, reanimate=False, target=True"
+    },
+    {
+      "turn": 4,
+      "deck": "reanimator",
+      "phase": "grind",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "dark_ritual \u2192 +2 mana"
     },
     {
       "turn": 4,
@@ -186,6 +208,17 @@
         "pass"
       ],
       "reason": "mana=5, entomb=True, reanimate=False, target=True"
+    },
+    {
+      "turn": 5,
+      "deck": "reanimator",
+      "phase": "grind",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "dark_ritual \u2192 +2 mana"
     },
     {
       "turn": 5,
@@ -779,14 +812,17 @@
     "T2 [reanimator] [phase:t2_plan_b] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=2, entomb=True, reanimate=True, target=False",
     "T2 [reanimator] [phase:t2_plan_b] chose combo:exhume_gris from [reanimate,exhume,animatedead] \u2014 exhume resolves, gris enters play from GY",
     "T3 [reanimator] [phase:t2_plan_b] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=3, entomb=True, reanimate=False, target=False",
+    "T3 [reanimator] [phase:t2_plan_b] chose mana_ramp_2 from [ritual,pass] \u2014 dark_ritual \u2192 +2 mana",
     "T3 [reanimator] [phase:t2_plan_b] chose combo:animatedead_gris from [reanimate,exhume,animatedead] \u2014 animatedead resolves, gris enters play from GY",
     "T3 [uwx] chose remove_gris_with_stp from [remove,pass] \u2014 stp exiles gris",
     "T4 [reanimator] [phase:grind] chose counter_narset_with_fow from [counter,let_resolve] \u2014 fow counters narset (major threat)",
     "T4 [reanimator] [phase:grind] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=4, entomb=True, reanimate=False, target=True",
+    "T4 [reanimator] [phase:grind] chose mana_ramp_2 from [ritual,pass] \u2014 dark_ritual \u2192 +2 mana",
     "T4 [uwx] chose counter_entomb_with_fow from [counter,let_resolve] \u2014 fow counters entomb (major threat)",
     "T4 [reanimator] [phase:grind] chose tried_combo:darkrit from [execute,tried_combo,pass] \u2014 played darkrit but combo did not fire this turn",
     "T4 [reanimator] [phase:grind] chose tried_combo:entomb from [execute,tried_combo,pass] \u2014 played entomb but combo did not fire this turn",
     "T5 [reanimator] [phase:grind] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=5, entomb=True, reanimate=False, target=True",
+    "T5 [reanimator] [phase:grind] chose mana_ramp_2 from [ritual,pass] \u2014 dark_ritual \u2192 +2 mana",
     "T5 [reanimator] [phase:grind] chose combo:animatedead_gris from [reanimate,exhume,animatedead] \u2014 animatedead resolves, gris enters play from GY",
     "T6 [uwx] chose remove_gris_with_stp from [remove,pass] \u2014 stp exiles gris",
     "T6 [reanimator] [phase:grind] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=6, entomb=True, reanimate=True, target=True",

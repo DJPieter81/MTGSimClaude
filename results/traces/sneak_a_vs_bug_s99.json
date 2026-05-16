@@ -115,6 +115,17 @@
       "turn": 5,
       "deck": "sneak_a",
       "phase": null,
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 5,
+      "deck": "sneak_a",
+      "phase": null,
       "chosen": "combo:show_and_tell_emrakul",
       "candidates": [
         "show_and_tell",
@@ -461,6 +472,7 @@
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=4, threats_in_play=0",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=4, threats_in_play=0",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=3, threats_in_play=1",
+    "T5 [sneak_a] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
     "T5 [sneak_a] chose combo:show_and_tell_emrakul from [show_and_tell,sneak_attack,pass] \u2014 SaT resolved with emrakul from hand"
   ]
 }

@@ -61,10 +61,20 @@ TRACE_DIR = Path(__file__).resolve().parent.parent / 'results' / 'traces'
 #                      grades A (vs B+) — i.e. "fast enough kill is A".
 # K_MANA_GAME_LEN_B  — game_length cap below which a winning non-combo deck
 #                      grades B+ (vs B) on mana.
+# K_RAMP_A           — combo-deck mana grade promotes to A when a winning
+#                      trace logs ≥ K_RAMP_A ramp tokens. Models a full
+#                      ritual chain (Dark Ritual + Cabal Ritual + LED +
+#                      petals → 4+ net mana events) backing the kill turn.
+# K_RAMP_B_PLUS      — combo-deck mana grade promotes to B+ when a winning
+#                      trace logs ≥ K_RAMP_B_PLUS ramp tokens. One ritual
+#                      sub-chain is enough evidence the deck routed mana
+#                      structurally rather than top-decking the win-con.
 K_INTER_A          = _load_calibrated('STRUCT_K_INTER_A', 3)
 K_INTER_C_PLUS     = _load_calibrated('STRUCT_K_INTER_C_PLUS', 2)
 K_COMBO_GAME_LEN_A = _load_calibrated('STRUCT_K_COMBO_GAME_LEN_A', 4)
 K_MANA_GAME_LEN_B  = _load_calibrated('STRUCT_K_MANA_GAME_LEN_B', 8)
+K_RAMP_A           = _load_calibrated('STRUCT_K_RAMP_A', 4)
+K_RAMP_B_PLUS      = _load_calibrated('STRUCT_K_RAMP_B_PLUS', 2)
 
 GRADE_TO_NUM = {g: i for i, g in enumerate(GRADE_SCALE)}
 NUM_TO_GRADE = {i: g for g, i in GRADE_TO_NUM.items()}
@@ -145,6 +155,12 @@ DISCARD_PREFIXES = ('discard_', 'extract_')
 REMOVAL_PREFIXES = ('remove_', 'land_destroy_')
 TRIED_COMBO_PREFIXES = ('tried_combo:',)  # combo decks log when a piece was
                                           # played but the full kill did not fire
+# Ramp tokens: combo decks emit `mana_ramp_<N>` whenever a ritual / petal /
+# LED / Spirit-Guide produces net mana. The prefix-matched legacy path
+# buckets identically with the typed `ManaDecision(kind='ramp')` fast-path
+# so trace JSON written before this wiring still credits the deck's mana
+# subscore. Driven by `ManaDecision.to_token()` in decision.py.
+RAMP_PREFIXES = ('mana_ramp_',)
 ATTACK_PREFIX = 'attack'  # 'attack with N goblins'
 COMBAT_PHASE = 'combat'
 
@@ -208,6 +224,19 @@ def _is_tried_combo(chosen: str) -> bool:
     return any(chosen.startswith(p) for p in TRIED_COMBO_PREFIXES)
 
 
+def _is_ramp(chosen: str) -> bool:
+    """Decision indicates the strategy *generated net mana* from a ritual /
+    petal / LED / Spirit Guide / Mox / Tinder. Mechanic: any non-land mana
+    source that yields positive net mana after paying its cost. Combo decks
+    chain these (Dark Ritual → Cabal Ritual → LED, etc.) to reach the kill
+    cost on the turn the win-condition resolves. Prefix `mana_ramp_<N>` is
+    `ManaDecision(kind='ramp', mana_value=N).to_token()`.
+    """
+    if not chosen:
+        return False
+    return any(chosen.startswith(p) for p in RAMP_PREFIXES)
+
+
 def _is_combat_decision(decision: dict) -> bool:
     """Combat-axis decision: either tagged with combat phase or attack action."""
     if decision.get('phase') == COMBAT_PHASE:
@@ -262,7 +291,7 @@ def _count_structural(decisions, deck1: str | None = None) -> dict:
                      if (d.deck if isinstance(d, Decision) else d.get('deck')) == deck1]
     counts = {
         'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'discard': 0,
-        'removal': 0, 'tried_combo': 0,
+        'removal': 0, 'tried_combo': 0, 'ramp': 0,
         'combat': 0, 'combo_phase': 0, 'protect_phase': 0,
         'total': len(decisions),
     }
@@ -280,8 +309,16 @@ def _count_structural(decisions, deck1: str | None = None) -> dict:
                     counts[bucket] += 1
             elif isinstance(d, CombatDecision):
                 counts['combat'] += 1
-            # ManaDecision / MulliganDecision / MetaDecision: no axis bucket
-            # yet — only the `total` and phase counters track them.
+            elif isinstance(d, ManaDecision):
+                # Only `ramp` rolls into a grader bucket today. `fix`, `burn`,
+                # and `keep_open` are scaffold kinds — see decision.py — that
+                # the grader doesn't credit until a per-domain rule asks for
+                # them. Strict isinstance + kind check keeps the bucket sole
+                # source-of-truth: prose `reason='ramp'` cannot fake it.
+                if d.kind == 'ramp':
+                    counts['ramp'] += 1
+            # MulliganDecision / MetaDecision: no axis bucket yet — only the
+            # `total` and phase counters track them.
             if phase == 'combo':
                 counts['combo_phase'] += 1
             if phase == 'protect' or phase == 'disruption':
@@ -305,6 +342,8 @@ def _count_structural(decisions, deck1: str | None = None) -> dict:
             counts['removal'] += 1
         if _is_tried_combo(chosen):
             counts['tried_combo'] += 1
+        if _is_ramp(chosen):
+            counts['ramp'] += 1
         if _is_combat_decision(d):
             counts['combat'] += 1
         if phase == 'combo':
@@ -331,17 +370,43 @@ def _grade_mulligan(trace: dict) -> tuple[str, str]:
     return g, j
 
 
-def _grade_mana(trace: dict) -> tuple[str, str]:
+def _grade_mana(trace: dict, counts: dict | None = None) -> tuple[str, str]:
+    """Grade the mana axis. Combo decks now consume the ramp-token count
+    (`counts['ramp']`); a winning combo trace with ≥ K_RAMP_A ramp tokens
+    grades A (full ritual chain). Non-combo branches are unchanged from the
+    pre-wiring contract.
+
+    `counts` is optional for backward compatibility — callers (tests / older
+    graders) that pass only the trace dict fall back to the prior game-length
+    branch on combo wins.
+    """
     deck1 = trace.get('deck1', '')
     p1_won = trace.get('winner') == 'p1'
     game_length = trace.get('game_length', 10)
+    n_ramp = (counts or {}).get('ramp', 0)
     if deck1 in COMBO_DECKS:
-        if p1_won and game_length <= 4:
-            return 'A', f"Fast kill (T{game_length}) implies efficient mana sequencing"
         if p1_won:
-            return 'B+', f"Won but took {game_length} turns — mana was adequate"
+            # Combo wins: ramp-token count is the load-bearing signal. A full
+            # ritual chain (≥ K_RAMP_A) → A; a sub-chain (≥ K_RAMP_B_PLUS) or
+            # a fast kill (game_length ≤ 4 — the prior threshold from
+            # K_COMBO_GAME_LEN_A) → A only via game_length, else B+. Composed
+            # as max(ramp-based, length-based) so a wired callsite never
+            # regresses a trace below its pre-wire grade.
+            if n_ramp >= K_RAMP_A or game_length <= 4:
+                return ('A',
+                        f"{n_ramp} ramp tokens, T{game_length} kill — "
+                        f"{'full ritual chain' if n_ramp >= K_RAMP_A else 'fast kill'}"
+                        f" backed the win")
+            if n_ramp >= K_RAMP_B_PLUS:
+                return ('B+',
+                        f"{n_ramp} ramp tokens — partial ritual chain on a "
+                        f"T{game_length} win")
+            return ('B+',
+                    f"Won but took {game_length} turns — mana was adequate "
+                    f"({n_ramp} ramp tokens)")
         return ('C+' if game_length <= 6 else 'C',
-                f"Lost in {game_length} turns — possible mana sequencing issues")
+                f"Lost in {game_length} turns — possible mana sequencing "
+                f"issues ({n_ramp} ramp tokens)")
     if p1_won:
         return ('B+' if game_length <= K_MANA_GAME_LEN_B else 'B',
                 f"Resource deployment supported a T{game_length} win")
@@ -510,7 +575,7 @@ def grade_one_structural(trace_path: Path) -> Path | None:
     grades = {}
     justs = {}
     grades['mulligan'], justs['mulligan'] = _grade_mulligan(trace)
-    grades['mana'], justs['mana'] = _grade_mana(trace)
+    grades['mana'], justs['mana'] = _grade_mana(trace, counts)
     grades['combat'], justs['combat'] = _grade_combat(trace, counts)
     grades['combo'], justs['combo'] = _grade_combo(trace, counts)
     grades['interaction'], justs['interaction'] = _grade_interaction(trace, counts)

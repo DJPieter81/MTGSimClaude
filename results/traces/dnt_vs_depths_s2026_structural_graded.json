@@ -34,6 +34,7 @@
     "discard": 0,
     "removal": 0,
     "tried_combo": 0,
+    "ramp": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
@@ -41,5 +42,5 @@
   },
   "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Suboptimal mana utilization over 3 turns\ncombat: C \u2014 0 combat decision(s); combat axis inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C \u2014 0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; not enough disruption surfaced\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 3 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T11:35:02.783007Z"
+  "graded_at": "2026-05-16T11:59:21.195147Z"
 }

@@ -47,6 +47,17 @@
       "turn": 1,
       "deck": "reanimator",
       "phase": "t1_free_mana",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "dark_ritual \u2192 +2 mana"
+    },
+    {
+      "turn": 1,
+      "deck": "reanimator",
+      "phase": "t1_free_mana",
       "chosen": "combo:exhume_gris",
       "candidates": [
         "reanimate",
@@ -422,6 +433,7 @@
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [reanimator] [phase:t1_free_mana] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=1, entomb=False, reanimate=True, target=False",
+    "T1 [reanimator] [phase:t1_free_mana] chose mana_ramp_2 from [ritual,pass] \u2014 dark_ritual \u2192 +2 mana",
     "T1 [reanimator] [phase:t1_free_mana] chose combo:exhume_gris from [reanimate,exhume,animatedead] \u2014 exhume resolves, gris enters play from GY",
     "T2 [reanimator] [phase:t2_plan_b] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=2, entomb=False, reanimate=True, target=True",
     "T3 [reanimator] [phase:t2_plan_b] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=3, entomb=True, reanimate=True, target=True",

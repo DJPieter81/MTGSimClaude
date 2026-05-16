@@ -19,7 +19,7 @@
   },
   "justifications": {
     "mulligan": "Mulled to 6; still won",
-    "mana": "Fast kill (T2) implies efficient mana sequencing",
+    "mana": "3 ramp tokens, T2 kill \u2014 fast kill backed the win",
     "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
     "combo": "2 Execute decision(s); combo resolved on T2",
     "interaction": "0 hold + 0 defer; combo resolved without holding protection",
@@ -34,12 +34,13 @@
     "discard": 0,
     "removal": 0,
     "tried_combo": 0,
+    "ramp": 3,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
-    "total": 4
+    "total": 7
   },
-  "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: A \u2014 Fast kill (T2) implies efficient mana sequencing\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 2 Execute decision(s); combo resolved on T2\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 2 turns; structural counts: exec=2 hold=0 defer=0 remove=0 combat=0",
+  "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: A \u2014 3 ramp tokens, T2 kill \u2014 fast kill backed the win\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 2 Execute decision(s); combo resolved on T2\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 2 turns; structural counts: exec=2 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T11:35:02.799952Z"
+  "graded_at": "2026-05-16T11:59:21.209914Z"
 }

@@ -50,6 +50,39 @@
       "turn": 1,
       "deck": "oops",
       "phase": "t1_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 1,
+      "deck": "oops",
+      "phase": "t1_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 1,
+      "deck": "oops",
+      "phase": "t1_kill",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 1,
+      "deck": "oops",
+      "phase": "t1_kill",
       "chosen": "cast_informer",
       "candidates": [
         "cast_spy",
@@ -229,6 +262,9 @@
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [lands] [phase:ramp] chose entry from [exploration,loam,crop_rotation,depths,stage,marit_lage,pass] \u2014 mana=0, lands=1, depths_out=True",
+    "T1 [oops] [phase:t1_kill] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
+    "T1 [oops] [phase:t1_kill] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
+    "T1 [oops] [phase:t1_kill] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
     "T1 [oops] [phase:t1_kill] chose cast_informer from [cast_spy,cast_informer,pass] \u2014 mana=5, spy=False, informer=True, leyline=False, bhi_p_free_counter=0.00",
     "T1 [oops] [phase:t1_kill] chose tried_combo:darkrit from [execute,tried_combo,pass] \u2014 played darkrit but combo did not fire this turn",
     "T1 [oops] [phase:t1_kill] chose tried_combo:informer from [execute,tried_combo,pass] \u2014 played informer but combo did not fire this turn",

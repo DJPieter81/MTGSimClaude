@@ -281,6 +281,39 @@
         "pass"
       ],
       "reason": "storm=6/8, rituals=3, safe=True, thalia=True, life=6"
+    },
+    {
+      "turn": 6,
+      "deck": "storm",
+      "phase": "desperate",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cabalrit \u2192 +2 mana"
+    },
+    {
+      "turn": 6,
+      "deck": "storm",
+      "phase": "desperate",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 6,
+      "deck": "storm",
+      "phase": "desperate",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
     }
   ],
   "full_log": [
@@ -674,6 +707,9 @@
     "T5 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['phelia', 'stp', 'thalia']",
     "T5 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=2, hand=['phelia', 'stp']",
     "T6 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
-    "T6 [storm] [phase:desperate] chose kill_D from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/8, rituals=3, safe=True, thalia=True, life=6"
+    "T6 [storm] [phase:desperate] chose kill_D from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/8, rituals=3, safe=True, thalia=True, life=6",
+    "T6 [storm] [phase:desperate] chose mana_ramp_2 from [ritual,pass] \u2014 cabalrit \u2192 +2 mana",
+    "T6 [storm] [phase:desperate] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
+    "T6 [storm] [phase:desperate] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana"
   ]
 }

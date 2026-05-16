@@ -246,6 +246,17 @@
       "turn": 10,
       "deck": "reanimator",
       "phase": "grind",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "dark_ritual \u2192 +2 mana"
+    },
+    {
+      "turn": 10,
+      "deck": "reanimator",
+      "phase": "grind",
       "chosen": "combo:reanimate_gris",
       "candidates": [
         "reanimate",
@@ -956,6 +967,7 @@
     "T9 [reanimator] [phase:grind] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.69",
     "T10 [reanimator] [phase:grind] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=1, entomb=True, reanimate=True, target=False",
     "T10 [reanimator] [phase:grind] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.68",
+    "T10 [reanimator] [phase:grind] chose mana_ramp_2 from [ritual,pass] \u2014 dark_ritual \u2192 +2 mana",
     "T10 [reanimator] [phase:grind] chose combo:reanimate_gris from [reanimate,exhume,animatedead] \u2014 reanimate resolves, gris enters play from GY"
   ]
 }

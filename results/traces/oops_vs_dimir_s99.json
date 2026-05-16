@@ -207,6 +207,39 @@
       "turn": 6,
       "deck": "oops",
       "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
       "chosen": "cast_spy",
       "candidates": [
         "cast_spy",
@@ -658,6 +691,9 @@
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=2, threats_in_play=2",
     "T5 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.20",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=3, threats_in_play=2",
+    "T6 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
+    "T6 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
+    "T6 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
     "T6 [oops] [phase:disruption] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=4, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.19"
   ]
 }

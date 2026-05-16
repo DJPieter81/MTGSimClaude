@@ -72,6 +72,39 @@
       "turn": 2,
       "deck": "oops",
       "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "esg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
       "chosen": "cast_spy",
       "candidates": [
         "cast_spy",
@@ -289,6 +322,39 @@
         "pass"
       ],
       "reason": "mana=4, hand=3, threats_in_play=3"
+    },
+    {
+      "turn": 9,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 9,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cmox_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 9,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
     },
     {
       "turn": 9,
@@ -1063,6 +1129,9 @@
     "T1 [oops] [phase:t1_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.47",
     "T1 [oops] [phase:t1_kill] chose tried_combo:agadeem from [execute,tried_combo,pass] \u2014 played agadeem but combo did not fire this turn",
     "T1 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=6, threats_in_play=0",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 esg_exile \u2192 +1 mana",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
     "T2 [oops] [phase:t2_kill] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=5, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.46",
     "T2 [bug] chose counter_spy_with_fow from [counter,let_resolve] \u2014 fow counters spy (major threat)",
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=5, threats_in_play=0",
@@ -1080,6 +1149,9 @@
     "T8 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=2, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.29",
     "T8 [bug] chose discard_grief_with_ts from [thoughtseize,pass] \u2014 TS strips grief from opponent",
     "T8 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=3, threats_in_play=3",
+    "T9 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
+    "T9 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 cmox_crack \u2192 +1 mana",
+    "T9 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
     "T9 [oops] [phase:disruption] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=4, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.21",
     "T9 [bug] chose remove_narco_with_push from [remove,pass] \u2014 push kills narco",
     "T9 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=6, hand=2, threats_in_play=3",
