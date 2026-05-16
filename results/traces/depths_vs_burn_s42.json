@@ -115,6 +115,17 @@
       "reason": "no assembly path satisfiable"
     },
     {
+      "turn": 4,
+      "deck": "depths",
+      "phase": null,
+      "chosen": "combo:stage_copies_depths",
+      "candidates": [
+        "stage_copies_depths",
+        "pass"
+      ],
+      "reason": "depths + stage in play, 2 mana available \u2014 Marit Lage created"
+    },
+    {
       "turn": 5,
       "deck": "depths",
       "phase": null,
@@ -503,6 +514,7 @@
     "T2 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T3 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T4 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
+    "T4 [depths] chose combo:stage_copies_depths from [stage_copies_depths,pass] \u2014 depths + stage in play, 2 mana available \u2014 Marit Lage created",
     "T5 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable"
   ]
 }
