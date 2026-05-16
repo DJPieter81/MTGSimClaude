@@ -274,7 +274,11 @@ class InteractionParams:
     # Hardcoded fallback (0.40) applies when the calibration JSON is
     # missing or unreadable.
     BHI_FREE_COUNTER_THRESHOLD = _load_calibrated('BHI_FREE_COUNTER_THRESHOLD', 0.40)
-    BHI_COUNTER_THRESHOLD      = 0.55  # p_counter: any counter in hand
+    # `BHI_COUNTER_THRESHOLD` calibrated via tools/calibrate_bhi_counter_threshold.py
+    # — see config/calibration.json `values` dict. Hardcoded fallback (0.55)
+    # applies when the JSON file is missing or unreadable. Governs the
+    # "any counter in hand" probability cutoff (`belief.p_counter`).
+    BHI_COUNTER_THRESHOLD      = _load_calibrated('BHI_COUNTER_THRESHOLD', 0.55)
 
 
 # ═══════════════════════════════════════════════════════════════════

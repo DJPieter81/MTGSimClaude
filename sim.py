@@ -3237,6 +3237,16 @@ def run_rules_tests():
         test("InteractionParams.BHI_FREE_COUNTER_THRESHOLD sources from calibration.json",
              _IPD.BHI_FREE_COUNTER_THRESHOLD, _val if _val is not None else 0.40)
 
+        # Rule 4b: same loader contract applies to BHI_COUNTER_THRESHOLD
+        # (the "any counter in hand" cutoff). When present in the JSON
+        # `values` dict, IP must reflect it; otherwise IP falls back to 0.55.
+        _val_c = _cfgD._load_calibrated('BHI_COUNTER_THRESHOLD', None)
+        test("config._load_calibrated: BHI_COUNTER_THRESHOLD ∈ [0, 1] when present",
+             (_val_c is None) or (0.0 <= float(_val_c) <= 1.0), True,
+             detail=f"got {_val_c!r}")
+        test("InteractionParams.BHI_COUNTER_THRESHOLD sources from calibration.json",
+             _IPD.BHI_COUNTER_THRESHOLD, _val_c if _val_c is not None else 0.55)
+
         # Rule 5: calibration.json has the four required top-level keys
         # so future readers can rely on the schema.
         _calib_path = _PD(_real_dir) / 'config' / 'calibration.json'
