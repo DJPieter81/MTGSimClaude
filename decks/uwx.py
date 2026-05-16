@@ -88,6 +88,21 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
             cast_spell(player, opponent, gs, term, mana_ref, log_fn, log_entries,
                        on_resolve=_resolve_term, cost_override=1)
 
+    # ── Sanctifier en-Vec — deploy vs aggro/burn for pro-red blanket ──
+    # 2/2 pro-black/red for 1W.  Burn cannot deal damage to controller or
+    # any permanent while at least one Sanctifier is on the battlefield
+    # (pro_red blanket — see decks/burn.py deal_face_damage).  Prioritise
+    # deployment over Mentor vs burn since Mentor doesn't stabilise life.
+    sanc = player.find_tag('sanctifier')
+    sanc_on_board = any(c.card.tag == 'sanctifier' for c in player.creatures)
+    if sanc and not sanc_on_board and can_cast(sanc):
+        def _resolve_sanc(c):
+            player.put_creature_in_play(c)
+            log_fn("Sanctifier en-Vec (2/2, pro black/red)", True)
+            mentor_trigger()
+        cast_spell(player, opponent, gs, sanc, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_sanc)
+
     # ── Monastery Mentor — primary win condition ──
     mentor_on_board = any(c.card.tag == 'mentor' for c in player.creatures)
     mentor = player.find_tag('mentor')
@@ -196,7 +211,8 @@ def _keep_uwx(hand, matchup=''):
     cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
     counters = sum(1 for c in nonlands if c.tag in ('fow', 'fon', 'daze', 'fluster', 'counter'))
     removal = sum(1 for c in nonlands if c.tag in ('stp', 'terminus'))
-    lock_pieces = sum(1 for c in nonlands if c.tag in ('b2b', 'narset'))
+    # Sanctifier en-Vec counts as a lock piece (pro-red blanket vs Burn)
+    lock_pieces = sum(1 for c in nonlands if c.tag in ('b2b', 'narset', 'sanctifier'))
     action = threats + cantrips + counters + removal + lock_pieces
     if lc < 2 or lc > 4:
         return False

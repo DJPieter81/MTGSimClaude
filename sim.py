@@ -2630,15 +2630,15 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Card-data CMC check (error: {_e})", False, True)
 
-    # ── Wan Shi Tong: 3 Sanctifier en-Vec for the Burn matchup ──────────────
-    # 2 copies → ~22% chance to have one in opener vs Burn, leaving the deck
-    # exposed to Bolt/Lava Spike face damage.  Real Bo1 lists run 2-3 main
-    # for that reason; bumped to 3 (sweep delta vs Burn: 30 → 40%).
+    # ── Wan Shi Tong: 4 Sanctifier en-Vec for the Burn matchup ──────────────
+    # 2 copies → ~22% chance to have one in opener vs Burn, 3 → ~32%, 4 → ~40%.
+    # Real Bo1 lists run 3-4 main; 4 is the canonical hate density for
+    # Burn-heavy metas.  Trimmed 1 Counterspell to fit the 4th copy.
     try:
         from cards import DECKS as _DECKS_X
         _wst_sanct = sum(1 for c in _DECKS_X['wan_shi_tong']() if c.tag == 'sanctifier')
-        test("Wan Shi Tong: Sanctifier en-Vec count == 3",
-             _wst_sanct, 3)
+        test("Wan Shi Tong: Sanctifier en-Vec count == 4",
+             _wst_sanct, 4)
     except Exception as _e:
         test(f"WST Sanctifier check (error: {_e})", False, True)
 
