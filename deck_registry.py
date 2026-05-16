@@ -22,7 +22,6 @@ combo_engine.py and docs/design/2026-05-09_combo_engine_architecture.md):
         'pieces':          set[str],         # tag strings naming combo pieces
         'protection_tags': set[str],         # tags that can protect (fow, fon, …)
         'assembly_paths':  list[AssemblyPath],  # combo_engine.AssemblyPath
-        'preamble_skip':   bool,             # skip shared discard preamble when ready
     }
 
 Valid categories:
@@ -142,7 +141,7 @@ def get_combo_meta(key):
     cm = meta.get('combo')
     if cm is None:
         return None
-    required = ('pieces', 'protection_tags', 'assembly_paths', 'preamble_skip')
+    required = ('pieces', 'protection_tags', 'assembly_paths')
     missing = [k for k in required if k not in cm]
     if missing:
         raise KeyError(

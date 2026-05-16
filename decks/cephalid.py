@@ -559,6 +559,5 @@ DECK_META = {
                 turns_to_kill=2,
             ),
         ),
-        'preamble_skip': False,
     },
 }

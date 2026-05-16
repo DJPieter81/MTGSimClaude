@@ -72,6 +72,5 @@ DECK_META = {
                 target_tags=frozenset({'emrakul', 'gris', 'atraxa', 'archon'}),
             ),
         ),
-        'preamble_skip': False,
     },
 }

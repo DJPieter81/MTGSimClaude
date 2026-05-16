@@ -5362,6 +5362,27 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
 
     budget = [total_mana]
 
+    # ── Thoughtseize — proactive disruption (T1-T2 / T3 vs combo) ──
+    # Dimir Flash runs 3 TS in its decklist (cards.py make_dimir_flash_deck).
+    # Migrated from the shared preamble so the deck owns its TS timing.
+    ts = player.find_tag('ts')
+    ts_turn_cap = IP.TS_TURN_CAP_COMBO if MC.is_combo(gs) else IP.TS_TURN_CAP_FAIR
+    if ts and budget[0] >= 1 and gs.turn <= ts_turn_cap and not gs.spell_blocked_by_chalice(ts.cmc):
+        target = best_proactive_target(gs, opponent)
+        if target and player.life > 4:
+            def _resolve_ts(c, _t=target):
+                player.add_to_grave(c)
+                if c.life_cost > 0:
+                    player.life -= c.life_cost
+                opponent.remove_from_hand(_t); opponent.add_to_grave(_t)
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'discard',
+                    _t.tag or 'card', 'ts',
+                    reason=f'TS strips {_t.tag} from opponent')
+                log_fn(f"Thoughtseize → takes {_t.name} (−{c.life_cost} life, {player.life})", True)
+            cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ts)
+
     # ── Cantrips ──
     # Cantrips: find any CMC1 noncreature spell opp can cast
     can = next((c for c in player.hand
@@ -5863,6 +5884,30 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
 
     budget = [total_mana]
 
+    # ── Thoughtseize — strip opp's best card before combo turn ──
+    # Storm has 2 TS in its decklist. The shared preamble used to cast
+    # this on every turn; the migration moves it into the deck-owned
+    # strategy so Storm controls timing. Behaviour-preserving — the
+    # previous preamble fired TS unconditionally when affordable
+    # (preamble_skip=False for storm).
+    ts = player.find_tag('ts')
+    if ts and budget[0] >= 1 and gs.turn <= IP.TS_TURN_CAP_COMBO and not gs.spell_blocked_by_chalice(ts.cmc):
+        target = best_proactive_target(gs, opponent)
+        if target and player.life > 4:
+            def _resolve_ts(c, _t=target):
+                player.add_to_grave(c)
+                if c.life_cost > 0:
+                    player.life -= c.life_cost
+                opponent.remove_from_hand(_t); opponent.add_to_grave(_t)
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'discard',
+                    _t.tag or 'card', 'ts',
+                    reason=f'TS strips {_t.tag} from opponent')
+                log_fn(f"Thoughtseize → takes {_t.name} (−{c.life_cost} life, {player.life})", True)
+            cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
+                       on_resolve=_resolve_ts)
+    total_mana = budget[0]
+
     # Cantrips: cast ALL affordable cantrips to dig for pieces.
     while not gs.game_over:
         can = next((c for c in player.hand
@@ -5948,7 +5993,6 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
                       'turn': gs.turn, 'belief': belief}
     else:
         belief = _bhi_cache['belief']
-    from config import InteractionParams as IP
     opp_has_free_counter = belief.p_free_counter > IP.BHI_FREE_COUNTER_THRESHOLD
     # For debugging: log BHI probability alongside the old scan-based comparison.
     _scan_fow = any(c.tag in ('fow', 'fon') for c in opponent.hand)
@@ -6226,6 +6270,36 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Lotus Petal — mana {mana}")
 
     budget = [mana]
+
+    # ── Thoughtseize — fallback disruption when no Unmask in hand ──
+    # Reanimator's primary disruption is Unmask (free, pitches a target);
+    # TS is a backup that only fires when Unmask isn't available AND we
+    # aren't about to fire the combo this turn (preserve mana). Mirrors
+    # the prior preamble_skip=True gate now that the shared preamble is
+    # gone.
+    ts = player.find_tag('ts')
+    if (ts and budget[0] >= 1 and gs.turn <= IP.TS_TURN_CAP_COMBO
+            and not gs.spell_blocked_by_chalice(ts.cmc)
+            and not isinstance(_plan_r, _Hold_r)):
+        # Defer if Execute would fire this turn (consume the only mana).
+        from combo_engine import Execute as _Ex_r
+        gs._executing_mana = budget[0]
+        _ts_skip = isinstance(_combo_plan_r(player, opponent, gs), _Ex_r)
+        if not _ts_skip:
+            target = best_proactive_target(gs, opponent)
+            if target and player.life > 4:
+                def _resolve_ts(c, _t=target):
+                    player.add_to_grave(c)
+                    if c.life_cost > 0:
+                        player.life -= c.life_cost
+                    opponent.remove_from_hand(_t); opponent.add_to_grave(_t)
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'discard',
+                        _t.tag or 'card', 'ts',
+                        reason=f'TS strips {_t.tag} from opponent')
+                    log_fn(f"Thoughtseize → takes {_t.name} (−{c.life_cost} life, {player.life})", True)
+                cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
+                           on_resolve=_resolve_ts)
 
     # ── Step 2: Unmask (free) — strip FoW BEFORE committing mana ────────────
     unmask = player.find_tag('unmask')

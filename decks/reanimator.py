@@ -78,6 +78,5 @@ DECK_META = {
             for enabler in ('darkrit', 'unmask')
             for rean    in ('reanimate', 'exhume', 'animatedead')
         ),
-        'preamble_skip': True,    # skip shared TS preamble when ready
     },
 }

@@ -362,6 +362,32 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
         marit_lage_created = True
         marit_in_play = [perm]
 
+    # ── Step 1b: Thoughtseize — strip free counters before assembling combo ─
+    # Depths runs 2 TS (decks/depths.py:97). Skip when Marit Lage already
+    # in play (combo fired) — saves 2 life. Migrated from the shared
+    # preamble so the deck owns its TS timing.
+    if not marit_lage_created:
+        from interaction import best_proactive_target
+        from config import InteractionParams as _IP_d
+        ts_d = player.find_tag('ts')
+        if ts_d and mana >= 1 and gs.turn <= _IP_d.TS_TURN_CAP_COMBO and not gs.spell_blocked_by_chalice(ts_d.cmc):
+            target_d = best_proactive_target(gs, opponent)
+            if target_d and player.life > 4:
+                _b_ts = [mana]
+                def _resolve_ts(c, _t=target_d):
+                    player.add_to_grave(c)
+                    if c.life_cost > 0:
+                        player.life -= c.life_cost
+                    opponent.remove_from_hand(_t); opponent.add_to_grave(_t)
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'discard',
+                        _t.tag or 'card', 'ts',
+                        reason=f'TS strips {_t.tag} from opponent')
+                    log_fn(f"Thoughtseize → takes {_t.name} (−{c.life_cost} life, {player.life})", True)
+                cast_spell(player, opponent, gs, ts_d, _b_ts, log_fn, log_entries,
+                           on_resolve=_resolve_ts)
+                mana = _b_ts[0]
+
     # ── Step 2: Mox Diamond (discard a land for fast mana) ───────────────────
     # Mox Diamond is an artifact spell (cmc 0) but requires discarding a land as additional cost.
     mox = player.find_tag('mox_diamond')
@@ -766,8 +792,5 @@ DECK_META = {
                           required_lands=frozenset({'stage'}),
                           enabler_tag='gsz'),
         ),
-        # Depths plays out as a normal land deck — discard preamble is
-        # safe (it never burns the only mana source for a combo turn).
-        'preamble_skip': False,
     },
 }

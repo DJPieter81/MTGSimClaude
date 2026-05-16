@@ -684,63 +684,15 @@ def _execute_turn(gs, turn, b, o, who, matchup):
             b.revolt_this_turn = True
             log(f"Wasteland [ACTIVATED-uncounterable] → {target.card.name}")
 
-    # ── Thoughtseize: strip opponent's best card (if we have mana) ──
-    # Mardu-vs-Burn: skip — 4-of burn spells are fungible and -2 life accelerates
-    # our loss in a race we're already behind in. Mardu's own strategy handles TS
-    # for other matchups via _strategy_mardu. Other decks (BUG, Dimir, Storm) still
-    # benefit from TS vs Burn (Eidolon/Fireblast are high-value strips for them).
-    # Symmetric: fires whether Mardu is P1 or P2.
-    _ts_mardu_vs_burn = (active_deck == 'mardu' and opp_deck == 'burn')
-    # Defer-to-combo: when the active deck has a same-turn combo line that
-    # consumes the only available mana, the shared TS step would burn the
-    # ritual-source and fizzle the combo. Reanimator's T2 line is the
-    # canonical case (Land → Dark Ritual → Unmask → Reanimate); without this
-    # skip the strategy never fires, and the matchup vs Burn was 20%.
-    # Mechanic: shared preamble disruption defers when the strategy has an
-    # Execute plan ready this turn. Generalised — any deck declaring
-    # `combo.preamble_skip=True` and a satisfiable assembly path opts in.
-    # See docs/design/2026-05-15_post-phase-6-re-architecture.md (Phase B).
-    from combo_engine import combo_plan as _combo_plan, Execute as _Execute
-    from deck_registry import get_combo_meta as _gcm
-    _cm = _gcm(active_deck)
-    if _cm is not None and _cm.get('preamble_skip', False):
-        # Surface the current mana floor to the planner so it can
-        # evaluate paths against actual resources.
-        gs._executing_mana = total_mana
-        _ts_skip_combo_turn = isinstance(_combo_plan(b, o, gs), _Execute)
-    else:
-        _ts_skip_combo_turn = False
-    ts = b.find_tag('ts') or b.find_tag('thoughtseize')
-    if (ts and total_mana >= 1 and not gs.spell_blocked_by_chalice(ts.cmc)
-            and not _ts_mardu_vs_burn and not _ts_skip_combo_turn):
-        opp_nonland = [c for c in o.hand if not c.is_land()]
-        if opp_nonland and b.life > 4:
-            b.remove_from_hand(ts)
-            countered = _try_counter_any(b, o, gs, ts, log_entries)
-            if not countered:
-                b.add_to_grave(ts)
-                b.life -= 2
-                total_mana -= 1
-                def _ts_priority(c):
-                    score = 0
-                    if c.win_condition: score += MTSP.WIN_CONDITION
-                    if c.is_combo_piece: score += MTSP.COMBO_PIECE
-                    if c.tag in ('fow', 'fon', 'daze', 'fluster'): score += MTSP.COUNTER
-                    if c.is_creature(): score += MTSP.CREATURE_BASE + c.base_power
-                    score += c.cmc
-                    return score
-                best = max(opp_nonland, key=_ts_priority)
-                o.remove_from_hand(best)
-                o.add_to_grave(best)
-                # Typed Execute log so the structural grader credits
-                # the discarding deck for the hand-disruption decision.
-                gs.strat_log.log_disruption(
-                    gs.turn, gs, b, 'discard',
-                    best.tag or 'card', 'ts',
-                    reason=f'TS strips {best.tag} from opponent')
-                log(f"Thoughtseize → takes {best.name} (−2 life, {b.life})")
-            else:
-                b.add_to_grave(ts)
+    # ── Thoughtseize: now deck-owned ──
+    # The shared "Thoughtseize preamble" block previously cast TS for ANY deck
+    # with tag='ts' before the per-deck strategy ran. This violated separation
+    # of concerns (sim.py made tactical card-cast decisions) and accumulated
+    # deck-specific patches (mardu-vs-burn skip, preamble_skip combo defer,
+    # mardu+Grief pitch fuel collision). Each deck strategy now owns its TS
+    # branch — see _strategy_bug, _strategy_dimir, _strategy_dimir_flash,
+    # _strategy_mono_black, _strategy_mardu, _strategy_ocelot, _strategy_storm,
+    # _strategy_reanimator, decks/goblins.py and decks/depths.py.
 
     # ── Removal: kill opponent's biggest threat ──
     _mom_protected = getattr(gs, '_mom_protected_tag', None)
@@ -815,7 +767,8 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     # Capture the multiset of combo-piece tags currently in hand, plus the
     # current strat_log entry-count, so we can attribute newly-cast pieces
     # and detect whether an Execute token was logged this turn.
-    # `_cm` is set earlier (see "Defer-to-combo" block) — reused here.
+    from deck_registry import get_combo_meta as _gcm
+    _cm = _gcm(active_deck)
     if _cm is not None:
         _combo_piece_tags = frozenset(_cm.get('pieces', ()))
         _hand_tags_before = [c.tag for c in b.hand if c.tag in _combo_piece_tags]
@@ -2699,12 +2652,15 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Depths vs Burn smoke (error: {_e})", False, True)
 
-    # ── Shared preamble disruption defers to combo when combo can fire ──────
+    # ── Deck-owned TS branches must defer when combo can fire ──────────────
     # When the active player's deck has a same-turn combo line that consumes
     # the only available mana (e.g. Reanimator T2: Land → Dark Ritual → Unmask
-    # → Reanimate), the shared _execute_turn must NOT cast Thoughtseize first.
-    # Mechanic: shared preamble disruption is a luxury, combo mana is not.
-    # Regression test for reanimator vs burn 20% WR (lost 0/4 grade-D traces).
+    # → Reanimate), the deck's own Thoughtseize branch must NOT fire first
+    # (it would consume the ritual-source). Mechanic: pitch fuel + mana for
+    # the kill take priority over hand disruption. Regression test for
+    # reanimator vs burn 20% WR (was lost 0/4 grade-D traces under the
+    # shared preamble; the deck-owned branch checks `combo_plan == Execute`
+    # before firing — see _strategy_reanimator).
     try:
         import random as _rnd
         _wins = 0
@@ -2720,6 +2676,49 @@ def run_rules_tests():
              detail=f"got {_wins}/10 wins")
     except Exception as _e:
         test(f"Reanimator vs Burn smoke (error: {_e})", False, True)
+
+    # ── Discard-pitch fuel must not be consumed by hand disruption ────────
+    # Mardu's T1 line is Grief (evoke — exile a black card from hand as cost,
+    # ETB strips opponent's best card) + Ephemerate (blink for a second ETB
+    # strip). Grief's pitch cost requires a NON-grief black card in hand.
+    # Before the structural fix, the shared TS preamble cast Thoughtseize as
+    # the *first* black spell, consuming the only viable pitch fuel; the
+    # `if blacks:` gate in _strategy_mardu's Grief branch then no-op'd
+    # silently and the engine never fired. The fix is structural: TS is
+    # now deck-owned, and _strategy_mardu casts Grief+Ephemerate FIRST,
+    # then TS, so the pitch fuel survives.
+    # Rule-phrased: a turn where the deck owns Grief + Ephemerate + a
+    # non-grief black card must produce at least one Grief disruption
+    # event (strip or evoke) — never zero.
+    try:
+        import random as _rnd
+        _grief_events_total = 0
+        _games_with_grief_opener = 0
+        for _seed in (1, 3, 5, 7, 11, 13, 17, 19, 23, 42):
+            _rnd.seed(_seed)
+            _r = run_game('mardu', 'dimir_b')
+            # Filter to games where Mardu (p1) actually had the engine pieces in opener.
+            opener = _r.p1_opening_hand
+            has_grief = any('Grief' in n for n in opener)
+            has_ephem = any('Ephemerate' in n for n in opener)
+            has_black_pitch = sum(1 for n in opener
+                                  if n in ('Thoughtseize', 'Fatal Push', 'Bowmasters',
+                                           'Orcish Bowmasters')) >= 1
+            if has_grief and has_ephem and has_black_pitch:
+                _games_with_grief_opener += 1
+                _grief_events = sum(1 for line in _r.log_lines
+                                    if 'Grief' in line and
+                                    ('strips' in line or 'evoke' in line.lower()))
+                _grief_events_total += _grief_events
+        # Require at least one Grief engine fire across all qualifying openers.
+        # Pre-fix the count was 0 (TS preamble consumed pitch fuel every game).
+        test(f"Mardu Grief+Ephemerate engine fires when opener has pitch fuel "
+             f"({_games_with_grief_opener} qualifying openers)",
+             _grief_events_total >= max(1, _games_with_grief_opener), True,
+             detail=f"got {_grief_events_total} Grief events across "
+                    f"{_games_with_grief_opener} openers")
+    except Exception as _e:
+        test(f"Mardu Grief+Ephemerate engine (error: {_e})", False, True)
 
     # ── Half-life cost spells must not self-kill (CR 119.5 + 704.5a) ───────
     # A spell that pays "half your life rounded up" cannot be cast when the
