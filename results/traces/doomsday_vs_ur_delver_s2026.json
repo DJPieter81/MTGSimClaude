@@ -67,6 +67,17 @@
       "reason": "mana=3, dd_resolved=False, life=19, bhi_p_free_counter=0.54"
     },
     {
+      "turn": 3,
+      "deck": "ur_delver",
+      "phase": null,
+      "chosen": "counter_dd_with_daze",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "daze counters dd (major threat)"
+    },
+    {
       "turn": 4,
       "deck": "doomsday",
       "phase": "cast_dd",
@@ -369,6 +380,7 @@
     "T1 [doomsday] [phase:dig] chose pass from [cast_doomsday,cycle_and_oracle,pass] \u2014 mana=1, dd_resolved=False, life=20, bhi_p_free_counter=0.64",
     "T2 [doomsday] [phase:dig] chose pass from [cast_doomsday,cycle_and_oracle,pass] \u2014 mana=2, dd_resolved=False, life=20, bhi_p_free_counter=0.56",
     "T3 [doomsday] [phase:cast_dd] chose cast_doomsday from [cast_doomsday,cycle_and_oracle,pass] \u2014 mana=3, dd_resolved=False, life=19, bhi_p_free_counter=0.54",
+    "T3 [ur_delver] chose counter_dd_with_daze from [counter,let_resolve] \u2014 daze counters dd (major threat)",
     "T4 [doomsday] [phase:cast_dd] chose cast_doomsday from [cast_doomsday,cycle_and_oracle,pass] \u2014 mana=4, dd_resolved=False, life=17, bhi_p_free_counter=0.46"
   ]
 }

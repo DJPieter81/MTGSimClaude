@@ -28,5 +28,5 @@
   },
   "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C+ \u2014 Suboptimal mana utilization over 3 turns\ncombat: C \u2014 Limited combat engagement\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 Disruption was not enough to prevent opponent plan\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 3 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-16T07:46:05.961096Z"
+  "graded_at": "2026-05-16T07:57:38.369816Z"
 }

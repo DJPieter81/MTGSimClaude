@@ -732,6 +732,13 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                 best = max(opp_nonland, key=_ts_priority)
                 o.remove_from_hand(best)
                 o.add_to_grave(best)
+                # Typed Execute log so the structural grader credits
+                # the discarding deck for the hand-disruption decision.
+                gs.strat_log.log_decision(
+                    gs.turn, active_deck,
+                    candidates=['thoughtseize', 'pass'],
+                    chosen=f'discard_{best.tag or "card"}_with_ts',
+                    reason=f'TS strips {best.tag} from opponent')
                 log(f"Thoughtseize → takes {best.name} (−2 life, {b.life})")
             else:
                 b.add_to_grave(ts)

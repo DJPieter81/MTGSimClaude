@@ -68,6 +68,17 @@
       "reason": "mana=3, entomb=False, reanimate=True, target=False"
     },
     {
+      "turn": 3,
+      "deck": "reanimator",
+      "phase": "t2_plan_b",
+      "chosen": "counter_spike_with_fow",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "fow counters spike (major threat)"
+    },
+    {
       "turn": 4,
       "deck": "reanimator",
       "phase": "grind",
@@ -384,6 +395,7 @@
     "T1 [reanimator] [phase:t1_free_mana] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=1, entomb=False, reanimate=True, target=False",
     "T2 [reanimator] [phase:t2_plan_b] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=2, entomb=False, reanimate=True, target=False",
     "T3 [reanimator] [phase:t2_plan_b] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=3, entomb=False, reanimate=True, target=False",
+    "T3 [reanimator] [phase:t2_plan_b] chose counter_spike_with_fow from [counter,let_resolve] \u2014 fow counters spike (major threat)",
     "T4 [reanimator] [phase:grind] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=4, entomb=False, reanimate=True, target=False"
   ]
 }

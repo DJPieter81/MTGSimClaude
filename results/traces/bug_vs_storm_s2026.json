@@ -34,6 +34,17 @@
       "turn": 1,
       "deck": "bug",
       "phase": null,
+      "chosen": "discard_adnauseam_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips adnauseam from opponent"
+    },
+    {
+      "turn": 1,
+      "deck": "bug",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "cantrip",
@@ -1048,6 +1059,7 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [bug] chose discard_adnauseam_with_ts from [thoughtseize,pass] \u2014 TS strips adnauseam from opponent",
     "T1 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=0, hand=5, threats_in_play=0",
     "T1 [storm] [phase:setup] chose p=0.40 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T1 [storm] [phase:setup] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=5/8, rituals=4, safe=True, thalia=False, life=20",

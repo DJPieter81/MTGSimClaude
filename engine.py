@@ -1324,12 +1324,20 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             # Casting TS into an all-land hand wastes a card and 2 life for nothing.
             target = best_proactive_target(gs, opponent)
             if target:
-                def _resolve_ts(c):
+                def _resolve_ts(c, _t=target):
                     player.add_to_grave(c)
                     if c.life_cost > 0:
                         player.life -= c.life_cost
-                    opponent.remove_from_hand(target)
-                    log_fn(f"Thoughtseize -> strips {target.name}", key=True)
+                    opponent.remove_from_hand(_t)
+                    # Typed Execute log for the structural grader's
+                    # interaction-deck signal (mirrors counter_*).
+                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
+                    gs.strat_log.log_decision(
+                        gs.turn, _attacker_deck,
+                        candidates=['thoughtseize', 'pass'],
+                        chosen=f'discard_{_t.tag or "card"}_with_ts',
+                        reason=f'TS strips {_t.tag} from opponent')
+                    log_fn(f"Thoughtseize -> strips {_t.name}", key=True)
                 cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
                            on_resolve=_resolve_ts, cost_override=effective_cmc(ts))
 
@@ -4636,6 +4644,13 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.hand.remove(_t)
                 opponent.add_to_grave(_t)
                 player.life -= 2
+                # Typed discard log for structural-grader interaction signal.
+                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
+                gs.strat_log.log_decision(
+                    gs.turn, _attacker_deck,
+                    candidates=['thoughtseize', 'pass'],
+                    chosen=f'discard_{_t.tag or "card"}_with_ts',
+                    reason=f'TS strips {_t.tag} from opponent')
                 log_fn(f"Thoughtseize → takes {_t.name} (−2 life, {player.life})", True)
             cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
                        on_resolve=_resolve_ts)
