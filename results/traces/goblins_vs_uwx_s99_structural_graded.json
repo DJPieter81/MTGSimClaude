@@ -1,0 +1,41 @@
+{
+  "trace_file": "goblins_vs_uwx_s99.json",
+  "matchup": "goblins_vs_uwx",
+  "seed": 99,
+  "winner": "p2",
+  "win_reason": "Board/life advantage after T15",
+  "kill_turn": 15,
+  "game_length": 15,
+  "deck1": "goblins",
+  "deck2": "uwx",
+  "grades": {
+    "mulligan": "B",
+    "mana": "B",
+    "combat": "C",
+    "combo": "B",
+    "interaction": "C+",
+    "meta": "C",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
+    "mana": "Adequate mana utilization over 15 turns",
+    "combat": "Aggro deck without combat decisions \u2014 combat axis was inactive",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "0 hold + 0 defer; interaction tokens fell short",
+    "meta": "Lost \u2014 limited decision points suggest structural disadvantage",
+    "overall": "Average across 6 domains \u2014 lost in 15 turns; structural counts: exec=0 hold=0 defer=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 0,
+    "defer": 0,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 0
+  },
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: B \u2014 Adequate mana utilization over 15 turns\ncombat: C \u2014 Aggro deck without combat decisions \u2014 combat axis was inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 0 hold + 0 defer; interaction tokens fell short\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 15 turns; structural counts: exec=0 hold=0 defer=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T05:15:23.401488Z"
+}

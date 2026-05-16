@@ -1,0 +1,41 @@
+{
+  "trace_file": "reanimator_vs_burn_s42.json",
+  "matchup": "reanimator_vs_burn",
+  "seed": 42,
+  "winner": "p1",
+  "win_reason": "Opp life reaches -11 on turn 4",
+  "kill_turn": 4,
+  "game_length": 4,
+  "deck1": "reanimator",
+  "deck2": "burn",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "A",
+    "combat": "B",
+    "combo": "A+",
+    "interaction": "B",
+    "meta": "B+",
+    "overall": "B+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Fast kill (T4) implies efficient mana sequencing",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "1 Execute decision(s); combo resolved on T4",
+    "interaction": "0 hold + 0 defer; combo resolved without holding protection",
+    "meta": "Efficiently closed a favored matchup",
+    "overall": "Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 1,
+    "hold": 0,
+    "defer": 0,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 4
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: A \u2014 Fast kill (T4) implies efficient mana sequencing\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 1 Execute decision(s); combo resolved on T4\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: B+ \u2014 Efficiently closed a favored matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T05:15:23.405631Z"
+}

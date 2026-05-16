@@ -1,0 +1,41 @@
+{
+  "trace_file": "depths_vs_burn_s99.json",
+  "matchup": "depths_vs_burn",
+  "seed": 99,
+  "winner": "p2",
+  "win_reason": "BUG life reaches -1 on turn 3",
+  "kill_turn": null,
+  "game_length": 3,
+  "deck1": "depths",
+  "deck2": "burn",
+  "grades": {
+    "mulligan": "D",
+    "mana": "C+",
+    "combat": "B",
+    "combo": "C",
+    "interaction": "C",
+    "meta": "C",
+    "overall": "C"
+  },
+  "justifications": {
+    "mulligan": "Mulled to 4; aggressive mulligan strategy backfired",
+    "mana": "Lost in 3 turns \u2014 possible mana sequencing issues",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "No combo Execute decision logged \u2014 deck did not fire its plan",
+    "interaction": "0 hold + 0 defer; no protection token surfaced",
+    "meta": "Lost a matchup that should be favored (depths vs burn) \u2014 possible role confusion",
+    "overall": "Average across 6 domains \u2014 lost in 3 turns; structural counts: exec=0 hold=0 defer=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 0,
+    "defer": 0,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 0
+  },
+  "raw_response": "mulligan: D \u2014 Mulled to 4; aggressive mulligan strategy backfired\nmana: C+ \u2014 Lost in 3 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C \u2014 Lost a matchup that should be favored (depths vs burn) \u2014 possible role confusion\noverall: C \u2014 Average across 6 domains \u2014 lost in 3 turns; structural counts: exec=0 hold=0 defer=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T05:15:23.395432Z"
+}

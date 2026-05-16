@@ -1,0 +1,41 @@
+{
+  "trace_file": "elves_vs_dnt_s99.json",
+  "matchup": "elves_vs_dnt",
+  "seed": 99,
+  "winner": "p1",
+  "win_reason": "Opp life reaches 0 on turn 4",
+  "kill_turn": 4,
+  "game_length": 4,
+  "deck1": "elves",
+  "deck2": "dnt",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "A",
+    "combat": "B",
+    "combo": "C",
+    "interaction": "B",
+    "meta": "A",
+    "overall": "B+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Fast kill (T4) implies efficient mana sequencing",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "No combo Execute decision logged \u2014 deck did not fire its plan",
+    "interaction": "0 hold + 0 defer; combo resolved without holding protection",
+    "meta": "Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness",
+    "overall": "Average across 6 domains \u2014 won in 4 turns; structural counts: exec=0 hold=0 defer=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 0,
+    "defer": 0,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 4
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: A \u2014 Fast kill (T4) implies efficient mana sequencing\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=0 hold=0 defer=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T05:15:23.399397Z"
+}
