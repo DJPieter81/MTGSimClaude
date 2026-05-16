@@ -28,5 +28,5 @@
   },
   "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T9 win\ncombat: B \u2014 Won through non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 Interaction-backed win with measured disruption\nmeta: B \u2014 Eventually closed the matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 9 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-15T18:38:58.404514Z"
+  "graded_at": "2026-05-16T05:11:11.638983Z"
 }

@@ -28,5 +28,5 @@
   },
   "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Lost in 6 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: C \u2014 Failed to assemble combo \u2014 could not find pieces\ninteraction: C \u2014 No protection deployed against disruption\nmeta: C \u2014 Lost a matchup that should be favored (depths vs burn) \u2014 possible role confusion\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 6 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-15T18:38:58.390841Z"
+  "graded_at": "2026-05-16T05:11:11.618109Z"
 }

@@ -1,4 +1,4 @@
-# MTGSimClaude LLM Audit — 2026-05-15
+# MTGSimClaude LLM Audit — 2026-05-16
 
 **N=41 traces graded** | Model(s): heuristic-v1
 
@@ -182,7 +182,7 @@
 - **mana**: C — Lost in 10 turns — possible mana sequencing issues
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
-- **interaction**: C — No protection deployed against disruption
+- **interaction**: C+ — Protection was insufficient
 - **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 10 turns
 
@@ -191,7 +191,7 @@
 - **mana**: C — Lost in 14 turns — possible mana sequencing issues
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
-- **interaction**: C — No protection deployed against disruption
+- **interaction**: C+ — Protection was insufficient
 - **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 14 turns
 
@@ -200,7 +200,7 @@
 - **mana**: B+ — Won but took 6 turns — mana was adequate
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: B+ — Combo executed on T6 — efficient
-- **interaction**: B — Combo resolved without needing protection
+- **interaction**: B+ — Protected combo with countermagic
 - **meta**: A — Won an unfavored matchup (oops vs dimir) — strong matchup awareness
 - **overall**: B+ — Average across 6 domains — won in 6 turns
 
@@ -272,8 +272,8 @@
 - **mana**: C+ — Lost in 5 turns — possible mana sequencing issues
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: D — Failed to assemble combo — disrupted early
-- **interaction**: C — No protection deployed against disruption
-- **meta**: C — Lost — limited decision points suggest structural disadvantage
+- **interaction**: C+ — Protection was insufficient
+- **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 5 turns
 
 ### sneak_a_vs_bug_s42 — p1 won on turn 9
@@ -281,7 +281,7 @@
 - **mana**: B+ — Won but took 9 turns — mana was adequate
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: B — Combo executed on T9 — delayed but successful
-- **interaction**: B — Combo resolved without needing protection
+- **interaction**: B+ — Protected combo with countermagic
 - **meta**: A — Won an unfavored matchup (sneak_a vs bug) — strong matchup awareness
 - **overall**: B+ — Average across 6 domains — won in 9 turns
 
@@ -290,7 +290,7 @@
 - **mana**: C — Lost in 7 turns — possible mana sequencing issues
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: C — Failed to assemble combo — could not find pieces
-- **interaction**: C — No protection deployed against disruption
+- **interaction**: C+ — Protection was insufficient
 - **meta**: C+ — Lost — played actively but could not overcome matchup
 - **overall**: C+ — Average across 6 domains — lost in 7 turns
 
@@ -299,7 +299,7 @@
 - **mana**: B+ — Won but took 5 turns — mana was adequate
 - **combat**: B — Combo deck — combat decisions minimal
 - **combo**: B+ — Combo executed on T5 — efficient
-- **interaction**: B — Combo resolved without needing protection
+- **interaction**: B+ — Protected combo with countermagic
 - **meta**: A — Won an unfavored matchup (sneak_a vs bug) — strong matchup awareness
 - **overall**: B+ — Average across 6 domains — won in 5 turns
 
@@ -402,7 +402,7 @@
 - **goblins.interaction** (3/41 traces C or below): goblins_vs_uwx_s42 (C+), goblins_vs_uwx_s7 (C+), goblins_vs_uwx_s99 (C+)
 - **goblins.meta** (3/41 traces C or below): goblins_vs_uwx_s42 (C), goblins_vs_uwx_s7 (C), goblins_vs_uwx_s99 (C)
 - **oops.combo** (2/41 traces C or below): oops_vs_dimir_s42 (C), oops_vs_dimir_s7 (C)
-- **oops.interaction** (2/41 traces C or below): oops_vs_dimir_s42 (C), oops_vs_dimir_s7 (C)
+- **oops.interaction** (2/41 traces C or below): oops_vs_dimir_s42 (C+), oops_vs_dimir_s7 (C+)
 - **oops.mana** (2/41 traces C or below): oops_vs_dimir_s42 (C), oops_vs_dimir_s7 (C)
 - **oops.meta** (2/41 traces C or below): oops_vs_dimir_s42 (C+), oops_vs_dimir_s7 (C+)
 - **oops.mulligan** (2/41 traces C or below): oops_vs_dimir_s42 (C+), oops_vs_dimir_s7 (C+)
@@ -415,9 +415,9 @@
 - **reanimator.mana** (2/41 traces C or below): reanimator_vs_burn_s2026 (C+), reanimator_vs_burn_s99 (C+)
 - **reanimator.meta** (2/41 traces C or below): reanimator_vs_burn_s2026 (C), reanimator_vs_burn_s99 (C)
 - **sneak_a.combo** (2/41 traces C or below): sneak_a_vs_bug_s2026 (D), sneak_a_vs_bug_s7 (C)
-- **sneak_a.interaction** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C), sneak_a_vs_bug_s7 (C)
+- **sneak_a.interaction** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C+), sneak_a_vs_bug_s7 (C+)
 - **sneak_a.mana** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C+), sneak_a_vs_bug_s7 (C)
-- **sneak_a.meta** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C), sneak_a_vs_bug_s7 (C+)
+- **sneak_a.meta** (2/41 traces C or below): sneak_a_vs_bug_s2026 (C+), sneak_a_vs_bug_s7 (C+)
 - **storm.combo** (2/41 traces C or below): storm_vs_dnt_s42 (C), storm_vs_dnt_s99 (C)
 - **storm.interaction** (2/41 traces C or below): storm_vs_dnt_s42 (C), storm_vs_dnt_s99 (C)
 - **storm.mana** (2/41 traces C or below): storm_vs_dnt_s42 (C), storm_vs_dnt_s99 (C)

@@ -49,6 +49,18 @@
       "turn": 1,
       "deck": "oops",
       "phase": "t1_kill",
+      "chosen": "hold_pact",
+      "candidates": [
+        "proceed",
+        "hold",
+        "defer"
+      ],
+      "reason": "protect combo: hold pact vs opp p_free_counter=0.49"
+    },
+    {
+      "turn": 1,
+      "deck": "oops",
+      "phase": "t1_kill",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -268,6 +280,18 @@
         "pass"
       ],
       "reason": "mana=3, hand=5, threats_in_play=2"
+    },
+    {
+      "turn": 9,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "hold_pact",
+      "candidates": [
+        "proceed",
+        "hold",
+        "defer"
+      ],
+      "reason": "protect combo: hold pact vs opp p_free_counter=0.41"
     },
     {
       "turn": 9,
@@ -853,6 +877,7 @@
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=5, threats_in_play=0",
+    "T1 [oops] [phase:t1_kill] chose hold_pact from [proceed,hold,defer] \u2014 protect combo: hold pact vs opp p_free_counter=0.49",
     "T1 [oops] [phase:t1_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.49",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=5, threats_in_play=0",
     "T2 [oops] [phase:t2_kill] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=4, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.40",
@@ -869,6 +894,7 @@
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=5, threats_in_play=1",
     "T8 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.34",
     "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=5, threats_in_play=2",
+    "T9 [oops] [phase:disruption] chose hold_pact from [proceed,hold,defer] \u2014 protect combo: hold pact vs opp p_free_counter=0.41",
     "T9 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.41",
     "T10 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=5, threats_in_play=2"
   ]

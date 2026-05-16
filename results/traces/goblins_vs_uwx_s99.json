@@ -26,7 +26,28 @@
       "Brainstorm"
     ]
   },
-  "strategic_decisions": [],
+  "strategic_decisions": [
+    {
+      "turn": 11,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "attack with 2 goblins",
+      "candidates": [
+        "Munitions Expert(cmc=2)"
+      ],
+      "reason": "lackey trigger cheats expert"
+    },
+    {
+      "turn": 13,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "attack with 3 goblins",
+      "candidates": [
+        "Goblin Lackey(cmc=1)"
+      ],
+      "reason": "lackey trigger cheats lackey"
+    }
+  ],
   "full_log": [
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "  GOBLINS vs UWX",
@@ -681,7 +702,7 @@
     "  Draw: Munitions Expert",
     "  \u2500\u2500 Main \u2500\u2500 Mana: 1",
     "    Hand (2): Aether Vial, Munitions Expert",
-    "  \u2605 Lackey trigger \u2192 free Munitions Expert!",
+    "  \u2605 Cheat-on-combat-damage \u2192 free Munitions Expert!",
     "  Attack: Muxus, Goblin Grandee \u2014 4 unblocked \u2192 o at 11",
     "  \u2500\u2500 Combat \u2500\u2500 (3 eligible attackers)",
     "  \u2500\u2500 End \u2500\u2500",
@@ -809,7 +830,7 @@
     "  Draw: Goblin Lackey",
     "  \u2500\u2500 Main \u2500\u2500 Mana: 2",
     "    Hand (2): Aether Vial, Goblin Lackey",
-    "  \u2605 Lackey trigger \u2192 free Goblin Lackey!",
+    "  \u2605 Cheat-on-combat-damage \u2192 free Goblin Lackey!",
     "  Attack: Muxus, Goblin Grandee \u2014 Monk Token blocks Muxus, Goblin Grandee. Muxus, Goblin Grandee deals 4, Monk Token deals 1 back. 0 unblocked damage to player (o at 10)",
     "      Monk Token dies.",
     "  \u2500\u2500 Combat \u2500\u2500 (4 eligible attackers)",
@@ -1020,6 +1041,10 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "  WINNER: UWX \u2014 Board/life advantage after T15",
     "  Final life: goblins 9 | uwx 8",
-    "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+    "",
+    "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T11 [goblins] [phase:combat] chose attack with 2 goblins from [Munitions Expert(cmc=2)] \u2014 lackey trigger cheats expert",
+    "T13 [goblins] [phase:combat] chose attack with 3 goblins from [Goblin Lackey(cmc=1)] \u2014 lackey trigger cheats lackey"
   ]
 }

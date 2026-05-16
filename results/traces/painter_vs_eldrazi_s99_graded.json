@@ -28,5 +28,5 @@
   },
   "raw_response": "mulligan: D \u2014 Mulled to 4; aggressive mulligan strategy backfired\nmana: C+ \u2014 Suboptimal mana utilization over 4 turns\ncombat: C \u2014 Limited combat engagement\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 Interaction fell short of needs\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 4 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-15T18:38:58.398713Z"
+  "graded_at": "2026-05-16T05:11:11.630564Z"
 }

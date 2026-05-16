@@ -8,7 +8,7 @@
     "last_key_calibrated": "BHI_COUNTER_THRESHOLD"
   },
   "values": {
-    "BHI_FREE_COUNTER_THRESHOLD": 0.4,
+    "BHI_FREE_COUNTER_THRESHOLD": 0.5,
     "BHI_COUNTER_THRESHOLD": 0.55
   },
   "summary": {
