@@ -251,6 +251,14 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
     if illusionist_in_play and (nomads_in_play or shuko_in_play):
         # Combo goes off — mill entire library, Narcomoeba enters,
         # Dread Return Oracle
+        # Typed Execute log so the structural grader credits Cephalid
+        # for actually firing the combo (mirrors PR #147 depths fix).
+        _enabler = 'nomads' if nomads_in_play else 'shuko'
+        gs.strat_log.log_decision(
+            gs.turn, 'cephalid',
+            candidates=['illusionist_combo', 'pass'],
+            chosen=f'combo:illusionist_{_enabler}_oracle',
+            reason=f'illusionist + {_enabler} in play — mill library → oracle wins')
         log_fn("★ Cephalid Illusionist combo activates!", True)
         _resolve_cephalid_combo(player, opponent, gs, log_fn, log_entries)
         if gs.game_over:

@@ -266,6 +266,13 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
             payoff_priority = {'emrakul': 0, 'omni': 1, 'sneak': 2, 'atraxa': 3}
             best = min(payoffs, key=lambda c: payoff_priority.get(c.tag, 99))
             player.remove_from_hand(best)
+            # Typed Execute log so the structural grader credits Sneak & Show A
+            # for actually firing the combo (mirrors PR #147 depths fix).
+            gs.strat_log.log_decision(
+                gs.turn, 'sneak_a',
+                candidates=['show_and_tell', 'sneak_attack', 'pass'],
+                chosen=f'combo:show_and_tell_{best.tag}',
+                reason=f'SaT resolved with {best.tag} from hand')
 
             if best.tag == 'emrakul':
                 perm = player.put_creature_in_play(best)
@@ -346,6 +353,12 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
                     break
             player.remove_from_hand(creature_in_hand)
             mana -= 1
+            # Typed Execute log: Sneak Attack activation
+            gs.strat_log.log_decision(
+                gs.turn, 'sneak_a',
+                candidates=['sneak_emrakul', 'sneak_atraxa', 'pass'],
+                chosen=f'combo:sneak_attack_{creature_in_hand.tag}',
+                reason=f'Sneak Attack activation puts {creature_in_hand.tag} in play')
             if creature_in_hand.tag == 'emrakul':
                 perm = player.put_creature_in_play(creature_in_hand)
                 perm.summoning_sick = False
