@@ -112,6 +112,39 @@
       "turn": 2,
       "deck": "oops",
       "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cmox_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "esg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
       "chosen": "cast_spy",
       "candidates": [
         "cast_spy",
@@ -928,6 +961,9 @@
     "T1 [oops] [phase:t1_kill] chose tried_combo:agadeem from [execute,tried_combo,pass] \u2014 played agadeem but combo did not fire this turn",
     "T1 [oops] [phase:t1_kill] chose tried_combo:spact from [execute,tried_combo,pass] \u2014 played spact but combo did not fire this turn",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=5, threats_in_play=0",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 cmox_crack \u2192 +1 mana",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 esg_exile \u2192 +1 mana",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
     "T2 [oops] [phase:t2_kill] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=4, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.40",
     "T2 [dimir] chose counter_spy_with_fow from [counter,let_resolve] \u2014 fow counters spy (major threat)",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=2, threats_in_play=1",

@@ -139,6 +139,50 @@
       "turn": 3,
       "deck": "oops",
       "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cantor_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cabalrit \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "oops",
+      "phase": "disruption",
       "chosen": "cast_spy",
       "candidates": [
         "cast_spy",
@@ -598,6 +642,10 @@
     "T2 [oops] [phase:t2_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.32",
     "T2 [oops] [phase:t2_kill] chose tried_combo:turntimber from [execute,tried_combo,pass] \u2014 played turntimber but combo did not fire this turn",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=5, threats_in_play=0",
+    "T3 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
+    "T3 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 cantor_crack \u2192 +1 mana",
+    "T3 [oops] [phase:disruption] chose mana_ramp_2 from [ritual,pass] \u2014 cabalrit \u2192 +2 mana",
+    "T3 [oops] [phase:disruption] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
     "T3 [oops] [phase:disruption] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=6, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.31",
     "T3 [bug] chose counter_spy_with_fow from [counter,let_resolve] \u2014 fow counters spy (major threat)",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=2, threats_in_play=1",

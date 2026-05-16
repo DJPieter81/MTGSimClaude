@@ -102,6 +102,28 @@
       "turn": 2,
       "deck": "oops",
       "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cantor_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cabalrit \u2192 +2 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -177,6 +199,28 @@
         "pass"
       ],
       "reason": "mana=5, lands=4, depths_out=False"
+    },
+    {
+      "turn": 4,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 4,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
     },
     {
       "turn": 4,
@@ -460,12 +504,16 @@
     "T1 [oops] [phase:t1_kill] chose tried_combo:spact from [execute,tried_combo,pass] \u2014 played spact but combo did not fire this turn",
     "T1 [oops] [phase:t1_kill] chose tried_combo:turntimber from [execute,tried_combo,pass] \u2014 played turntimber but combo did not fire this turn",
     "T2 [lands] [phase:ramp] chose entry from [exploration,loam,crop_rotation,depths,stage,marit_lage,pass] \u2014 mana=3, lands=2, depths_out=False",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 cantor_crack \u2192 +1 mana",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_2 from [ritual,pass] \u2014 cabalrit \u2192 +2 mana",
     "T2 [oops] [phase:t2_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=3, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.00",
     "T2 [oops] [phase:t2_kill] chose tried_combo:cabalrit from [execute,tried_combo,pass] \u2014 played cabalrit but combo did not fire this turn",
     "T2 [oops] [phase:t2_kill] chose tried_combo:cantor from [execute,tried_combo,pass] \u2014 played cantor but combo did not fire this turn",
     "T3 [lands] [phase:lock_and_loam] chose entry from [exploration,loam,crop_rotation,depths,stage,marit_lage,pass] \u2014 mana=4, lands=3, depths_out=False",
     "T3 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.00",
     "T4 [lands] [phase:lock_and_loam] chose entry from [exploration,loam,crop_rotation,depths,stage,marit_lage,pass] \u2014 mana=5, lands=4, depths_out=False",
+    "T4 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
+    "T4 [oops] [phase:disruption] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
     "T4 [oops] [phase:disruption] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=5, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.00"
   ]
 }

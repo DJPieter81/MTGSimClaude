@@ -231,6 +231,39 @@
       "turn": 6,
       "deck": "oops",
       "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cantor_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "cabalrit \u2192 +2 mana"
+    },
+    {
+      "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -430,6 +463,39 @@
         "pass"
       ],
       "reason": "mana=6, hand=6, threats_in_play=3"
+    },
+    {
+      "turn": 12,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 12,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "esg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 12,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "esg_exile \u2192 +1 mana"
     },
     {
       "turn": 12,
@@ -1442,6 +1508,9 @@
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=2",
     "T5 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.37",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=4, threats_in_play=2",
+    "T6 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
+    "T6 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 cantor_crack \u2192 +1 mana",
+    "T6 [oops] [phase:disruption] chose mana_ramp_2 from [ritual,pass] \u2014 cabalrit \u2192 +2 mana",
     "T6 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=3, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.36",
     "T6 [oops] [phase:disruption] chose tried_combo:cabalrit from [execute,tried_combo,pass] \u2014 played cabalrit but combo did not fire this turn",
     "T6 [oops] [phase:disruption] chose tried_combo:cantor from [execute,tried_combo,pass] \u2014 played cantor but combo did not fire this turn",
@@ -1457,6 +1526,9 @@
     "T10 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=6, threats_in_play=3",
     "T11 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.46",
     "T11 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=6, threats_in_play=3",
+    "T12 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
+    "T12 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 esg_exile \u2192 +1 mana",
+    "T12 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 esg_exile \u2192 +1 mana",
     "T12 [oops] [phase:disruption] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=4, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.45",
     "T12 [dimir] chose remove_narco_with_push from [remove,pass] \u2014 push kills narco",
     "T12 [dimir] chose remove_narco_with_push from [remove,pass] \u2014 push kills narco",

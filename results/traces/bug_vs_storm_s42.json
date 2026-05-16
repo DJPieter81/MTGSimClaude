@@ -147,6 +147,50 @@
         "pass"
       ],
       "reason": "storm=5/9, rituals=3, safe=True, thalia=False, life=17"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "led \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal \u2192 +2 mana"
+    },
+    {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "mana_ramp_3",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "led_crack \u2192 +3 mana"
     }
   ],
   "full_log": [
@@ -375,6 +419,10 @@
     "T2 [storm] [phase:setup] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=4/9, rituals=3, safe=True, thalia=False, life=17",
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=6, threats_in_play=0",
     "T3 [storm] [phase:combo] chose p=0.45 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
-    "T3 [storm] [phase:combo] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=5/9, rituals=3, safe=True, thalia=False, life=17"
+    "T3 [storm] [phase:combo] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=5/9, rituals=3, safe=True, thalia=False, life=17",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 led \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_2 from [ritual,pass] \u2014 petal \u2192 +2 mana",
+    "T3 [storm] [phase:combo] chose mana_ramp_3 from [ritual,pass] \u2014 led_crack \u2192 +3 mana"
   ]
 }

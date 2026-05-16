@@ -21,6 +21,7 @@ sys.path.insert(0, '/home/claude/mtg_sim')
 import random
 from cards import creature, instant, sorcery, artifact, dual_land
 from rules import Card, CardType
+from decision import ManaDecision
 
 
 # ─── Deck construction ────────────────────────────────────────────────────────
@@ -192,6 +193,15 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
         player.remove_from_hand(card)
         player.exile.append(card)
         budget[0] += gained
+        # Spirit Guide / Lotus Petal-style 0-cost fast mana: +gained net ramp.
+        gs.strat_log.log(ManaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            reason=f'{card.tag}_exile → +{gained} mana',
+            candidates=('ritual', 'pass'),
+            kind='ramp',
+            mana_value=gained,
+        ))
         log_fn(f"{label} (mana={budget[0]})")
 
     # ── Step 1: Free mana — Spirit Guides (activated ability, uncounterable) ─
@@ -210,6 +220,14 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
         budget[0] += 1
         storm[0] += 1
         player.spells_cast_this_turn += 1
+        gs.strat_log.log(ManaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            reason='petal_crack → +1 mana',
+            candidates=('ritual', 'pass'),
+            kind='ramp',
+            mana_value=1,
+        ))
         log_fn(f"Lotus Petal (mana={budget[0]}, storm={storm[0]})")
 
     # ── Step 3: Chrome Mox (cast-and-tap simplified; see Petals note) ───────
@@ -226,6 +244,14 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
             budget[0] += 1
             storm[0] += 1
             player.spells_cast_this_turn += 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                reason='chrome_mox → +1 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp',
+                mana_value=1,
+            ))
             log_fn(f"Chrome Mox (exile {pitch.name}) → mana={budget[0]} storm={storm[0]}")
             break  # typically only imprint one
 
@@ -261,6 +287,14 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(c)
                 budget[0] += 2   # sac for RR — cost_override=1 already deducted
                 storm[0] += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='tinder_wall → +1 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=1,
+                ))
                 log_fn(f"Tinder Wall (cast + sac → +RR, net +1) mana={budget[0]} storm={storm[0]}")
             cast_spell(player, opponent, gs, tw, budget, log_fn, log_entries,
                        on_resolve=_resolve_tinder, cost_override=1)
@@ -289,6 +323,14 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(c)
                 budget[0] += 3  # Dark Ritual adds BBB; cost_override=1 already deducted
                 storm[0] += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='dark_ritual → +2 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=2,
+                ))
                 log_fn(f"Dark Ritual → +BBB (mana={budget[0]}, storm={storm[0]})")
             cast_spell(player, opponent, gs, rit, budget, log_fn, log_entries,
                        on_resolve=_resolve_darkrit, cost_override=1)
@@ -302,6 +344,16 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(c)
                 budget[0] += _p
                 storm[0] += 1
+                # Net mana: produced - 1 (cost_override). +1 baseline, +2 with prior rite in GY.
+                _net = _p - 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason=f'rite_of_flame → +{_net} mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=_net,
+                ))
                 log_fn(f"Rite of Flame → +{'RRR' if _p == 3 else 'RR'} "
                        f"(mana={budget[0]}, storm={storm[0]})")
             cast_spell(player, opponent, gs, rite, budget, log_fn, log_entries,
@@ -314,6 +366,14 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(c)
                 budget[0] += 3
                 storm[0] += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='desperate_ritual → +1 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=1,
+                ))
                 log_fn(f"Desperate Ritual → +RRR (mana={budget[0]}, storm={storm[0]})")
             cast_spell(player, opponent, gs, des, budget, log_fn, log_entries,
                        on_resolve=_resolve_desperate, cost_override=2)
@@ -325,6 +385,14 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.add_to_grave(c)
                 budget[0] += 5
                 storm[0] += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='seething_song → +2 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=2,
+                ))
                 log_fn(f"Seething Song → +RRRRR (mana={budget[0]}, storm={storm[0]})")
             cast_spell(player, opponent, gs, song, budget, log_fn, log_entries,
                        on_resolve=_resolve_seething, cost_override=3)
@@ -385,6 +453,14 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
             budget[0] += 3
             storm[0] += 1
             player.spells_cast_this_turn += 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                reason='led_crack → +3 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp',
+                mana_value=3,
+            ))
             log_fn(f"★ LED cracked — +3 mana={budget[0]}, storm={storm[0]}", True)
 
         def _resolve_wish(c):

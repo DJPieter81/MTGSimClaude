@@ -20,6 +20,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import random
+from decision import ManaDecision
 from cards import (creature, instant, sorcery, artifact, enchantment,
                    fetch_land, dual_land, basic_land, utility_land)
 from rules import Card, CardType
@@ -212,11 +213,18 @@ def _strategy_sneak_b(player, opponent, gs, total_mana, log_fn, log_entries):
     can_sneak = (has_sneak_in_play and creature_payoffs and effective_mana >= 1)
 
     if can_combo or can_sneak:
+        _deck_key = gs.p1_deck if player is gs.p1 else gs.p2_deck
         # Exile Simian Spirit Guides first
         for ssg in list(ssg_in_hand):
             player.remove_from_hand(ssg)
             player.exile.append(ssg)
             mana += 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn, deck=_deck_key,
+                reason='ssg_exile → +1 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp', mana_value=1,
+            ))
             log_fn(f"Simian Spirit Guide (exile → +R, mana={mana})")
         ssg_in_hand = []
 
@@ -225,6 +233,12 @@ def _strategy_sneak_b(player, opponent, gs, total_mana, log_fn, log_entries):
             player.exile.append(petal)
             mana += 1
             player.spells_cast_this_turn = getattr(player, 'spells_cast_this_turn', 0) + 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn, deck=_deck_key,
+                reason='petal_crack → +1 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp', mana_value=1,
+            ))
             log_fn(f"Lotus Petal (+1 mana={mana})")
         petals_in_hand = []
 

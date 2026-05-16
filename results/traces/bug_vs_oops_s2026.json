@@ -99,6 +99,39 @@
       "turn": 2,
       "deck": "oops",
       "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "petal_crack \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
+      "chosen": "mana_ramp_1",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "ssg_exile \u2192 +1 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
+      "chosen": "mana_ramp_2",
+      "candidates": [
+        "ritual",
+        "pass"
+      ],
+      "reason": "darkrit \u2192 +2 mana"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
+      "phase": "t2_kill",
       "chosen": "cast_spy",
       "candidates": [
         "cast_spy",
@@ -282,6 +315,9 @@
     "T1 [oops] [phase:t1_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.40",
     "T1 [oops] [phase:t1_kill] chose tried_combo:turntimber from [execute,tried_combo,pass] \u2014 played turntimber but combo did not fire this turn",
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=5, threats_in_play=0",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
+    "T2 [oops] [phase:t2_kill] chose mana_ramp_2 from [ritual,pass] \u2014 darkrit \u2192 +2 mana",
     "T2 [oops] [phase:t2_kill] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=6, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.17"
   ]
 }

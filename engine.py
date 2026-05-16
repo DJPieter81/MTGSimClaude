@@ -25,7 +25,7 @@ from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as
                     GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
                     RaceThresholds as RT, WastelandPriority as WP,
                     BurnLethal as BL, Elves as EL)
-from decision import DisruptionDecision
+from decision import DisruptionDecision, ManaDecision
 
 
 # ─────────────────────────────────────────────
@@ -4214,18 +4214,44 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             if petal:
                 player.remove_from_hand(petal); player.add_to_grave(petal)
                 total_mana += 1
+                # Lotus Petal / Chrome Mox: 0-cost, sac for +1 ramp.
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason=f'{petal.tag}_crack → +1 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=1,
+                ))
                 log_fn(f"{petal.name} → +1 mana")
                 continue
             esg = player.find_tag('esg') or player.find_tag('ssg')
             if esg:
                 player.remove_from_hand(esg); player.exile.append(esg)
                 total_mana += 1
+                # Elvish/Simian Spirit Guide: exile from hand for +1 fast mana.
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason=f'{esg.tag}_exile → +1 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=1,
+                ))
                 log_fn(f"Exile {esg.name} → +1 mana")
                 continue
             cantor = player.find_tag('cantor')
             if cantor:
                 player.remove_from_hand(cantor); player.add_to_grave(cantor)
                 total_mana += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='cantor_crack → +1 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=1,
+                ))
                 log_fn(f"{cantor.name} → +1 mana")
                 continue
             break
@@ -4240,9 +4266,21 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             # Route through cast_spell: fires Eidolon, opens counter window,
             # deducts cmc (respects Thalia) and adds +3 net on resolve.
             budget = [total_mana]
-            def _resolve_rit(c):
+            _rit_tag = rit.tag
+            def _resolve_rit(c, _t=_rit_tag):
                 player.add_to_grave(c)
                 budget[0] += 3  # Dark/Cabal Ritual produce BBB / BBBBB
+                # Dark/Cabal Ritual: net +2 mana after cast_spell deducts the
+                # cmc. Emits only on resolution — countered rituals don't
+                # reach this callback so the ramp credit reflects real mana.
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason=f'{_t} → +2 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=2,
+                ))
                 log_fn(f"{c.name} → mana now {budget[0]}")
             cast_spell(player, opponent, gs, rit, budget, log_fn, log_entries,
                        on_resolve=_resolve_rit)
@@ -4471,6 +4509,17 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
         player.exile.append(led)
         player._gy_via_non_cast = getattr(player, '_gy_via_non_cast', 0) + 1
         budget[0] += 3
+        # LED is a 0-mana sac for 3 mana of any color → net +3 ramp.
+        # Activated ability (uncounterable), so we emit a ManaDecision on the
+        # crack rather than gating through cast_spell.
+        gs.strat_log.log(ManaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            reason='led_crack → +3 mana',
+            candidates=('ritual', 'pass'),
+            kind='ramp',
+            mana_value=3,
+        ))
         log_fn(f"  ★ LED cracked (sac, discard) → +3 mana (={budget[0]})", True)
         # Cast Brainstorm through cast_spell to fire Eidolon / counter window.
         # On resolve: pick best 1 from top 3, put 2 worst back.
@@ -4590,6 +4639,16 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             player.remove_from_hand(petal)
             player.add_to_grave(petal)
             budget[0] += 1
+            # Lotus Petal: 0 cost, sac → +1 any color (net +1 ramp). Activated
+            # ability (uncounterable); emit ManaDecision on the crack.
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                reason='petal_crack → +1 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp',
+                mana_value=1,
+            ))
             log_fn("Lotus Petal → +1 mana")
 
         rits = [c for c in list(player.hand)
@@ -4599,6 +4658,17 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             def _resolve_ritual(c):
                 player.add_to_grave(c)
                 budget[0] += 3  # Dark Ritual produces BBB
+                # Dark Ritual: {B} → BBB (net +2 after cast_spell deducts 1).
+                # Emit ManaDecision on resolution, AFTER the counter window
+                # cleared (countered rituals never reach this callback).
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='dark_ritual → +2 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=2,
+                ))
             if cast_spell(player, opponent, gs, r, budget, log_fn, log_entries,
                           on_resolve=_resolve_ritual):
                 cast_count += 1
@@ -4695,6 +4765,14 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                 player.remove_from_hand(petal)
                 player.add_to_grave(petal)
                 budget[0] += 1
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='petal_crack → +1 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=1,
+                ))
                 log_fn(f"Lotus Petal → +1 mana (post-cantrip dig found DD)")
         # Also check for new rituals drawn by cantrips
         new_rits = [c for c in list(player.hand)
@@ -4703,6 +4781,14 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
             def _resolve_ritual(c):
                 player.add_to_grave(c)
                 budget[0] += 3  # Dark Ritual produces BBB
+                gs.strat_log.log(ManaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    reason='dark_ritual → +2 mana',
+                    candidates=('ritual', 'pass'),
+                    kind='ramp',
+                    mana_value=2,
+                ))
             cast_spell(player, opponent, gs, r, budget, log_fn, log_entries,
                        on_resolve=_resolve_ritual)
         dd_ready = dd and budget[0] >= 3  # DD costs BBB = 3 mana
@@ -5758,7 +5844,34 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
             budget[0] = _kill_budget[0]
 
             if kill_effectively_resolved[0]:
-                for r in list(rituals): player.remove_from_hand(r); player.add_to_grave(r)
+                # Storm's rituals are batched at kill-fire time (the chain is
+                # abstracted; we don't cast each ritual through cast_spell).
+                # Emit one ManaDecision per ritual that "fired" with its known
+                # net mana — Dark Ritual = +2, Cabal Ritual = +2 (no threshold
+                # in our model). LED, when castable, contributes +3 net (cast
+                # for cmc, sac for 3). Each emission is a ramp-axis decision
+                # the structural grader credits toward the combo deck's mana
+                # subscore.
+                _deck_key = gs.p1_deck if player is gs.p1 else gs.p2_deck
+                for r in list(rituals):
+                    player.remove_from_hand(r); player.add_to_grave(r)
+                    gs.strat_log.log(ManaDecision(
+                        turn=gs.turn,
+                        deck=_deck_key,
+                        reason=f'{r.tag} → +2 mana',
+                        candidates=('ritual', 'pass'),
+                        kind='ramp',
+                        mana_value=2,
+                    ))
+                if led_castable and led is not None:
+                    gs.strat_log.log(ManaDecision(
+                        turn=gs.turn,
+                        deck=_deck_key,
+                        reason='led_crack → +3 mana',
+                        candidates=('ritual', 'pass'),
+                        kind='ramp',
+                        mana_value=3,
+                    ))
                 kill_type = ('Ad Nauseam' if kill_C else
                              'Past in Flames' if kill_D else 'Tendrils chain')
                 log_fn(f"★ Storm {kill_type} — wins "
@@ -5826,6 +5939,14 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
             player.remove_from_hand(p)
             player.exile.append(p)
             mana += 1
+            gs.strat_log.log(ManaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                reason='petal_crack → +1 mana',
+                candidates=('ritual', 'pass'),
+                kind='ramp',
+                mana_value=1,
+            ))
             log_fn(f"Lotus Petal — mana {mana}")
 
     budget = [mana]
@@ -5861,6 +5982,14 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
                 def _resolve_drit(c):
                     player.add_to_grave(c)
                     budget[0] += 3  # cast_spell deducts 1 (cmc), on_resolve adds 3 = net +2
+                    gs.strat_log.log(ManaDecision(
+                        turn=gs.turn,
+                        deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                        reason='dark_ritual → +2 mana',
+                        candidates=('ritual', 'pass'),
+                        kind='ramp',
+                        mana_value=2,
+                    ))
                     log_fn(f"Dark Ritual (→{budget[0]}B)")
                 cast_spell(player, opponent, gs, r, budget, log_fn, log_entries,
                            on_resolve=_resolve_drit)
