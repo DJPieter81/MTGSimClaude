@@ -64,6 +64,17 @@
       "turn": 3,
       "deck": "bug",
       "phase": null,
+      "chosen": "discard_sneak_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips sneak from opponent"
+    },
+    {
+      "turn": 3,
+      "deck": "bug",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "cantrip",
@@ -116,6 +127,41 @@
         "pass"
       ],
       "reason": "mana=2, hand=7, threats_in_play=1"
+    },
+    {
+      "turn": 5,
+      "deck": "bug",
+      "phase": null,
+      "chosen": "counter_sat_with_fow",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "fow counters sat (major threat)"
+    },
+    {
+      "turn": 5,
+      "deck": "sneak_a",
+      "phase": null,
+      "chosen": "tried_combo:petal",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played petal but combo did not fire this turn"
+    },
+    {
+      "turn": 5,
+      "deck": "sneak_a",
+      "phase": null,
+      "chosen": "tried_combo:sat",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played sat but combo did not fire this turn"
     },
     {
       "turn": 6,
@@ -759,10 +805,14 @@
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=6, threats_in_play=0",
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=6, threats_in_play=1",
+    "T3 [bug] chose discard_sneak_with_ts from [thoughtseize,pass] \u2014 TS strips sneak from opponent",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=0, hand=6, threats_in_play=1",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=7, threats_in_play=1",
     "T4 [sneak_a] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.51",
     "T5 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=7, threats_in_play=1",
+    "T5 [bug] chose counter_sat_with_fow from [counter,let_resolve] \u2014 fow counters sat (major threat)",
+    "T5 [sneak_a] chose tried_combo:petal from [execute,tried_combo,pass] \u2014 played petal but combo did not fire this turn",
+    "T5 [sneak_a] chose tried_combo:sat from [execute,tried_combo,pass] \u2014 played sat but combo did not fire this turn",
     "T6 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=6, threats_in_play=1",
     "T6 [sneak_a] chose combo:show_and_tell_atraxa from [show_and_tell,sneak_attack,pass] \u2014 SaT resolved with atraxa from hand",
     "T7 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=6, threats_in_play=3",

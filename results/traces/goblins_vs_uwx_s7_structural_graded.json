@@ -14,7 +14,7 @@
     "combat": "C",
     "combo": "B",
     "interaction": "C+",
-    "meta": "C",
+    "meta": "C+",
     "overall": "C+"
   },
   "justifications": {
@@ -23,7 +23,7 @@
     "combat": "Aggro deck without combat decisions \u2014 combat axis was inactive",
     "combo": "Non-combo deck \u2014 domain not primary axis",
     "interaction": "0 hold + 0 defer; interaction tokens fell short",
-    "meta": "Lost \u2014 limited decision points suggest structural disadvantage",
+    "meta": "Lost \u2014 played actively but could not overcome matchup",
     "overall": "Average across 6 domains \u2014 lost in 15 turns; structural counts: exec=0 hold=0 defer=0 combat=0"
   },
   "structural_counts": {
@@ -32,12 +32,13 @@
     "defer": 0,
     "counter": 0,
     "discard": 0,
+    "tried_combo": 5,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
-    "total": 0
+    "total": 5
   },
-  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: B \u2014 Adequate mana utilization over 15 turns\ncombat: C \u2014 Aggro deck without combat decisions \u2014 combat axis was inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 0 hold + 0 defer; interaction tokens fell short\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 15 turns; structural counts: exec=0 hold=0 defer=0 combat=0",
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: B \u2014 Adequate mana utilization over 15 turns\ncombat: C \u2014 Aggro deck without combat decisions \u2014 combat axis was inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 0 hold + 0 defer; interaction tokens fell short\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 15 turns; structural counts: exec=0 hold=0 defer=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T08:09:37.752960Z"
+  "graded_at": "2026-05-16T08:36:19.233489Z"
 }

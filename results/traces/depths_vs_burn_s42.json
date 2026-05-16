@@ -34,6 +34,17 @@
       "turn": 1,
       "deck": "depths",
       "phase": null,
+      "chosen": "discard_blaze_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips blaze from opponent"
+    },
+    {
+      "turn": 1,
+      "deck": "depths",
+      "phase": null,
       "chosen": "none",
       "candidates": [
         "stage_copy",
@@ -73,6 +84,18 @@
       "reason": "no assembly path satisfiable"
     },
     {
+      "turn": 2,
+      "deck": "depths",
+      "phase": null,
+      "chosen": "tried_combo:crop",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played crop but combo did not fire this turn"
+    },
+    {
       "turn": 3,
       "deck": "depths",
       "phase": null,
@@ -92,6 +115,18 @@
         "none"
       ],
       "reason": "no assembly path satisfiable"
+    },
+    {
+      "turn": 3,
+      "deck": "depths",
+      "phase": null,
+      "chosen": "tried_combo:scrying",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played scrying but combo did not fire this turn"
     },
     {
       "turn": 4,
@@ -145,6 +180,18 @@
         "none"
       ],
       "reason": "no assembly path satisfiable"
+    },
+    {
+      "turn": 5,
+      "deck": "depths",
+      "phase": null,
+      "chosen": "tried_combo:crop",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played crop but combo did not fire this turn"
     }
   ],
   "full_log": [
@@ -510,11 +557,15 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [depths] chose discard_blaze_with_ts from [thoughtseize,pass] \u2014 TS strips blaze from opponent",
     "T1 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T2 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
+    "T2 [depths] chose tried_combo:crop from [execute,tried_combo,pass] \u2014 played crop but combo did not fire this turn",
     "T3 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
+    "T3 [depths] chose tried_combo:scrying from [execute,tried_combo,pass] \u2014 played scrying but combo did not fire this turn",
     "T4 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T4 [depths] chose combo:stage_copies_depths from [stage_copies_depths,pass] \u2014 depths + stage in play, 2 mana available \u2014 Marit Lage created",
-    "T5 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable"
+    "T5 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
+    "T5 [depths] chose tried_combo:crop from [execute,tried_combo,pass] \u2014 played crop but combo did not fire this turn"
   ]
 }

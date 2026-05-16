@@ -28,7 +28,68 @@
       "Back to Basics"
     ]
   },
-  "strategic_decisions": [],
+  "strategic_decisions": [
+    {
+      "turn": 3,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:fury",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played fury but combo did not fire this turn"
+    },
+    {
+      "turn": 3,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:lackey",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played lackey but combo did not fire this turn"
+    },
+    {
+      "turn": 3,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:ringleader",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played ringleader but combo did not fire this turn"
+    },
+    {
+      "turn": 4,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:warchief",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played warchief but combo did not fire this turn"
+    },
+    {
+      "turn": 8,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:prospector",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played prospector but combo did not fire this turn"
+    }
+  ],
   "full_log": [
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "  GOBLINS vs UWX",
@@ -1027,6 +1088,13 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "  WINNER: UWX \u2014 Board/life advantage after T15",
     "  Final life: goblins 5 | uwx 12",
-    "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+    "",
+    "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T3 [goblins] chose tried_combo:fury from [execute,tried_combo,pass] \u2014 played fury but combo did not fire this turn",
+    "T3 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
+    "T3 [goblins] chose tried_combo:ringleader from [execute,tried_combo,pass] \u2014 played ringleader but combo did not fire this turn",
+    "T4 [goblins] chose tried_combo:warchief from [execute,tried_combo,pass] \u2014 played warchief but combo did not fire this turn",
+    "T8 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn"
   ]
 }

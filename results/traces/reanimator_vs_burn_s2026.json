@@ -68,6 +68,18 @@
       "reason": "mana=2, entomb=True, reanimate=False, target=False"
     },
     {
+      "turn": 2,
+      "deck": "reanimator",
+      "phase": "t2_plan_b",
+      "chosen": "tried_combo:entomb",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played entomb but combo did not fire this turn"
+    },
+    {
       "turn": 3,
       "deck": "reanimator",
       "phase": "t2_plan_b",
@@ -369,6 +381,7 @@
     "T1 [reanimator] [phase:t1_free_mana] chose discard_pop_with_ts from [thoughtseize,pass] \u2014 TS strips pop from opponent",
     "T1 [reanimator] [phase:t1_free_mana] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=0, entomb=True, reanimate=False, target=False",
     "T2 [reanimator] [phase:t2_plan_b] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=2, entomb=True, reanimate=False, target=False",
+    "T2 [reanimator] [phase:t2_plan_b] chose tried_combo:entomb from [execute,tried_combo,pass] \u2014 played entomb but combo did not fire this turn",
     "T3 [reanimator] [phase:t2_plan_b] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=3, entomb=True, reanimate=False, target=False",
     "T4 [reanimator] [phase:grind] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=4, entomb=True, reanimate=True, target=False",
     "T4 [reanimator] [phase:grind] chose combo:reanimate_gris from [reanimate,exhume,animatedead] \u2014 reanimate resolves, gris enters play from GY"

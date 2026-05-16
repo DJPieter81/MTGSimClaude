@@ -28,6 +28,137 @@
   },
   "strategic_decisions": [
     {
+      "turn": 1,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:cratermaker",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played cratermaker but combo did not fire this turn"
+    },
+    {
+      "turn": 1,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:matron",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played matron but combo did not fire this turn"
+    },
+    {
+      "turn": 2,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:vial",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played vial but combo did not fire this turn"
+    },
+    {
+      "turn": 3,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:matron",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played matron but combo did not fire this turn"
+    },
+    {
+      "turn": 5,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:expert",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played expert but combo did not fire this turn"
+    },
+    {
+      "turn": 5,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:matron",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played matron but combo did not fire this turn"
+    },
+    {
+      "turn": 6,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:sling",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played sling but combo did not fire this turn"
+    },
+    {
+      "turn": 8,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "counter_lackey_with_fon",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "fon counters lackey (major threat)"
+    },
+    {
+      "turn": 8,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:lackey",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played lackey but combo did not fire this turn"
+    },
+    {
+      "turn": 8,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:muxus",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played muxus but combo did not fire this turn"
+    },
+    {
+      "turn": 10,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:lackey",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played lackey but combo did not fire this turn"
+    },
+    {
       "turn": 11,
       "deck": "goblins",
       "phase": "combat",
@@ -38,6 +169,18 @@
       "reason": "lackey trigger cheats expert"
     },
     {
+      "turn": 11,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:expert",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played expert but combo did not fire this turn"
+    },
+    {
       "turn": 13,
       "deck": "goblins",
       "phase": "combat",
@@ -46,6 +189,30 @@
         "Goblin Lackey(cmc=1)"
       ],
       "reason": "lackey trigger cheats lackey"
+    },
+    {
+      "turn": 13,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:lackey",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played lackey but combo did not fire this turn"
+    },
+    {
+      "turn": 15,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:prospector",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played prospector but combo did not fire this turn"
     }
   ],
   "full_log": [
@@ -1044,7 +1211,21 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [goblins] chose tried_combo:cratermaker from [execute,tried_combo,pass] \u2014 played cratermaker but combo did not fire this turn",
+    "T1 [goblins] chose tried_combo:matron from [execute,tried_combo,pass] \u2014 played matron but combo did not fire this turn",
+    "T2 [goblins] chose tried_combo:vial from [execute,tried_combo,pass] \u2014 played vial but combo did not fire this turn",
+    "T3 [goblins] chose tried_combo:matron from [execute,tried_combo,pass] \u2014 played matron but combo did not fire this turn",
+    "T5 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
+    "T5 [goblins] chose tried_combo:matron from [execute,tried_combo,pass] \u2014 played matron but combo did not fire this turn",
+    "T6 [goblins] chose tried_combo:sling from [execute,tried_combo,pass] \u2014 played sling but combo did not fire this turn",
+    "T8 [uwx] chose counter_lackey_with_fon from [counter,let_resolve] \u2014 fon counters lackey (major threat)",
+    "T8 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
+    "T8 [goblins] chose tried_combo:muxus from [execute,tried_combo,pass] \u2014 played muxus but combo did not fire this turn",
+    "T10 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
     "T11 [goblins] [phase:combat] chose attack with 2 goblins from [Munitions Expert(cmc=2)] \u2014 lackey trigger cheats expert",
-    "T13 [goblins] [phase:combat] chose attack with 3 goblins from [Goblin Lackey(cmc=1)] \u2014 lackey trigger cheats lackey"
+    "T11 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
+    "T13 [goblins] [phase:combat] chose attack with 3 goblins from [Goblin Lackey(cmc=1)] \u2014 lackey trigger cheats lackey",
+    "T13 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
+    "T15 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn"
   ]
 }

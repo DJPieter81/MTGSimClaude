@@ -33,6 +33,17 @@
       "turn": 1,
       "deck": "dimir",
       "phase": null,
+      "chosen": "discard_spy_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips spy from opponent"
+    },
+    {
+      "turn": 1,
+      "deck": "dimir",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "thoughtseize",
@@ -49,18 +60,6 @@
       "turn": 1,
       "deck": "oops",
       "phase": "t1_kill",
-      "chosen": "hold_pact",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo: hold pact vs opp p_free_counter=0.49"
-    },
-    {
-      "turn": 1,
-      "deck": "oops",
-      "phase": "t1_kill",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -68,6 +67,30 @@
         "pass"
       ],
       "reason": "mana=0, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.49"
+    },
+    {
+      "turn": 1,
+      "deck": "oops",
+      "phase": "t1_kill",
+      "chosen": "tried_combo:agadeem",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played agadeem but combo did not fire this turn"
+    },
+    {
+      "turn": 1,
+      "deck": "oops",
+      "phase": "t1_kill",
+      "chosen": "tried_combo:spact",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played spact but combo did not fire this turn"
     },
     {
       "turn": 2,
@@ -96,6 +119,17 @@
         "pass"
       ],
       "reason": "mana=4, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.40"
+    },
+    {
+      "turn": 2,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "counter_spy_with_fow",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "fow counters spy (major threat)"
     },
     {
       "turn": 3,
@@ -152,6 +186,18 @@
         "pass"
       ],
       "reason": "mana=0, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.20"
+    },
+    {
+      "turn": 4,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "tried_combo:agadeem",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played agadeem but combo did not fire this turn"
     },
     {
       "turn": 5,
@@ -238,6 +284,18 @@
       "reason": "mana=0, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.35"
     },
     {
+      "turn": 7,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "tried_combo:agadeem",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played agadeem but combo did not fire this turn"
+    },
+    {
       "turn": 8,
       "deck": "dimir",
       "phase": null,
@@ -280,18 +338,6 @@
         "pass"
       ],
       "reason": "mana=3, hand=5, threats_in_play=2"
-    },
-    {
-      "turn": 9,
-      "deck": "oops",
-      "phase": "disruption",
-      "chosen": "hold_pact",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo: hold pact vs opp p_free_counter=0.41"
     },
     {
       "turn": 9,
@@ -876,25 +922,29 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [dimir] chose discard_spy_with_ts from [thoughtseize,pass] \u2014 TS strips spy from opponent",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=5, threats_in_play=0",
-    "T1 [oops] [phase:t1_kill] chose hold_pact from [proceed,hold,defer] \u2014 protect combo: hold pact vs opp p_free_counter=0.49",
     "T1 [oops] [phase:t1_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.49",
+    "T1 [oops] [phase:t1_kill] chose tried_combo:agadeem from [execute,tried_combo,pass] \u2014 played agadeem but combo did not fire this turn",
+    "T1 [oops] [phase:t1_kill] chose tried_combo:spact from [execute,tried_combo,pass] \u2014 played spact but combo did not fire this turn",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=5, threats_in_play=0",
     "T2 [oops] [phase:t2_kill] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=4, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.40",
+    "T2 [dimir] chose counter_spy_with_fow from [counter,let_resolve] \u2014 fow counters spy (major threat)",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=2, threats_in_play=1",
     "T3 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.20",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=2, threats_in_play=1",
     "T4 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.20",
+    "T4 [oops] [phase:disruption] chose tried_combo:agadeem from [execute,tried_combo,pass] \u2014 played agadeem but combo did not fire this turn",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=3, threats_in_play=1",
     "T5 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.28",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=1",
     "T6 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.36",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=5, threats_in_play=1",
     "T7 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.35",
+    "T7 [oops] [phase:disruption] chose tried_combo:agadeem from [execute,tried_combo,pass] \u2014 played agadeem but combo did not fire this turn",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=5, threats_in_play=1",
     "T8 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.34",
     "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=5, threats_in_play=2",
-    "T9 [oops] [phase:disruption] chose hold_pact from [proceed,hold,defer] \u2014 protect combo: hold pact vs opp p_free_counter=0.41",
     "T9 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=False, informer=False, leyline=False, bhi_p_free_counter=0.41",
     "T10 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=5, threats_in_play=2"
   ]
