@@ -112,6 +112,17 @@
       "reason": "mana=4, hand=3, threats_in_play=1"
     },
     {
+      "turn": 4,
+      "deck": "bug",
+      "phase": "meta",
+      "chosen": "meta_play_around_fow",
+      "candidates": [
+        "deploy",
+        "play_around"
+      ],
+      "reason": "hold 2nd threat \u2014 opp has 3 open + FoW likely (flood_risk on parity)"
+    },
+    {
       "turn": 5,
       "deck": "sneak_a",
       "phase": null,
@@ -472,6 +483,7 @@
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=4, threats_in_play=0",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=4, threats_in_play=0",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=3, threats_in_play=1",
+    "T4 [bug] [phase:meta] chose meta_play_around_fow from [deploy,play_around] \u2014 hold 2nd threat \u2014 opp has 3 open + FoW likely (flood_risk on parity)",
     "T5 [sneak_a] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
     "T5 [sneak_a] chose combo:show_and_tell_emrakul from [show_and_tell,sneak_attack,pass] \u2014 SaT resolved with emrakul from hand"
   ]

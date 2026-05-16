@@ -24,7 +24,7 @@ sys.path.insert(0, '/home/claude/mtg_sim')
 import random
 from cards import instant, sorcery, creature, artifact
 from combo_engine import AssemblyPath
-from decision import ManaDecision
+from decision import ManaDecision, MetaDecision
 
 # ─── Deck construction ────────────────────────────────────────────────────────
 
@@ -257,6 +257,17 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
             chosen=('defer' if isinstance(_plan_t, _Defer_t)
                     else f'hold_{getattr(_plan_t.card, "tag", "card")}'),
             reason=_plan_t.reason)
+        # Meta-axis play-around — combo_plan returned Hold/Defer because of
+        # opp BHI free-counter belief.
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold tes combo — {_plan_t.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
 
     # ── Assess hand ──────────────────────────────────────────────────────────
     hand_tags = {c.tag for c in player.hand}
@@ -795,6 +806,24 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
                      player.life <= 10 or
                      (life_lost >= 5 and not opp_has_counters))
 
+        # Meta-axis play-around — opp has counters but we are not lethal,
+        # not at "good storm", not Veil-protected, and not desperate → hold
+        # Tendrils rather than fizzle it into a free FoW pitch. Emitted only
+        # when we have the card + mana + opp threat is real, so the signal
+        # is "we chose to hold because of FoW".
+        if (mana >= 4 and opp_has_counters
+                and not (lethal or good_storm or protected_ok or desperate)):
+            gs.strat_log.log(MetaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase='meta',
+                reason=(f'hold Tendrils — opp has counter spell '
+                        f'(storm={effective_storm}, life={player.life}, '
+                        f'veil={veil_up})'),
+                candidates=('fire_tendrils', 'play_around'),
+                kind='play_around',
+                threat_tag='free_counter',
+            ))
         if mana >= 4 and (lethal or good_storm or protected_ok or desperate):
             if not _try_counter_any(player, opponent, gs, tendrils, log_entries):
                 # Typed Execute log so the structural grader credits TES

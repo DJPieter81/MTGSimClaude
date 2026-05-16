@@ -312,6 +312,21 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
         chosen=_chosen_label,
         reason=_plan_d.reason)
 
+    # Meta-axis play-around — combo_plan returned Hold/Defer, meaning
+    # opp BHI free-counter threshold was crossed. See combo_engine
+    # ._check_protection for the gating rule.
+    if isinstance(_plan_d, (_Hold, _Defer)):
+        from decision import MetaDecision as _MetaDecision
+        gs.strat_log.log(_MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold depths combo — {_plan_d.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
+
     # ── Step 1: Activate combo — Stage copies Depths ─────────────────────────
     depths_in_play, stage_in_play = _has_combo_in_play(player)
     if depths_in_play and stage_in_play and mana >= 2 and not marit_in_play:

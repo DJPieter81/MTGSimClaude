@@ -11,20 +11,20 @@
   "grades": {
     "mulligan": "B+",
     "mana": "B",
-    "combat": "A",
+    "combat": "B",
     "combo": "B",
     "interaction": "B+",
     "meta": "B",
-    "overall": "B+"
+    "overall": "B"
   },
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
     "mana": "Resource deployment supported a T8 win",
-    "combat": "7 combat decision(s) (attacks/blocks/holds) \u2014 defensive crouch + counter-clock converted to win",
+    "combat": "0 combat decision(s); won via non-combat means",
     "combo": "Non-combo deck \u2014 domain not primary axis",
     "interaction": "0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; measured disruption backed the win",
     "meta": "Eventually closed the matchup",
-    "overall": "Average across 6 domains \u2014 won in 8 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=7"
+    "overall": "Average across 6 domains \u2014 won in 8 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
   },
   "structural_counts": {
     "execute": 0,
@@ -35,12 +35,13 @@
     "removal": 0,
     "tried_combo": 0,
     "ramp": 0,
-    "combat": 7,
+    "meta": 0,
+    "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
-    "total": 15
+    "total": 8
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T8 win\ncombat: A \u2014 7 combat decision(s) (attacks/blocks/holds) \u2014 defensive crouch + counter-clock converted to win\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; measured disruption backed the win\nmeta: B \u2014 Eventually closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 8 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=7",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T8 win\ncombat: B \u2014 0 combat decision(s); won via non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; measured disruption backed the win\nmeta: B \u2014 Eventually closed the matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 8 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:32:48.130289Z"
+  "graded_at": "2026-05-16T12:33:33.549199Z"
 }

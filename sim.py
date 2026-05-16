@@ -4424,6 +4424,75 @@ def run_rules_tests():
     except Exception as _e:
         test(f"run_meta_matrix parallel parity (error: {_e})", False, True)
 
+    # ── MetaDecision / meta-axis structural grader (PR #160) ───────────────
+    # Verifies the typed MetaDecision algebra entry + structural-grader's
+    # meta bucket. Placed at the END of the test block to minimize merge
+    # conflicts with parallel decision-algebra agents (per PR #160 spec).
+    try:
+        from decision import MetaDecision as _MetaDecision
+        from scripts.structural_grader import (
+            _count_structural as _cs_meta,
+            _grade_meta as _gm_meta,
+            _is_meta as _is_meta_pred,
+        )
+
+        # 1. MetaDecision.to_token() byte-format
+        _md_fow = _MetaDecision(turn=1, deck='storm', phase='meta',
+                                kind='play_around', threat_tag='fow')
+        test("MetaDecision play_around fow → token",
+             _md_fow.to_token(), 'meta_play_around_fow')
+
+        # 2. _count_structural increments meta bucket for typed MetaDecision
+        _counts_typed = _cs_meta([_md_fow], deck1='storm')
+        test("_count_structural credits MetaDecision typed-path → meta=1",
+             _counts_typed['meta'], 1)
+
+        # 3. Dict-path: chosen='meta_play_around_*' also increments meta
+        _dict_entry = {'turn': 1, 'deck': 'storm', 'phase': 'meta',
+                       'chosen': 'meta_play_around_daze',
+                       'candidates': ['execute', 'play_around'],
+                       'reason': 'opp has daze up'}
+        _counts_dict = _cs_meta([_dict_entry], deck1='storm')
+        test("_count_structural credits dict 'meta_*' prefix → meta=1",
+             _counts_dict['meta'], 1)
+
+        # 4. Storm win + 2 play_around tokens grades meta=A
+        _md_a = _MetaDecision(turn=2, deck='storm', kind='play_around',
+                              threat_tag='fow')
+        _md_b = _MetaDecision(turn=3, deck='storm', kind='play_around',
+                              threat_tag='daze')
+        _trace_win = {'deck1': 'storm', 'deck2': 'burn', 'winner': 'p1',
+                      'game_length': 6}
+        _counts_win = _cs_meta([_md_a, _md_b], deck1='storm')
+        _g_win, _ = _gm_meta(_trace_win, _counts_win)
+        test("Storm win with n_meta>=2 → meta=A", _g_win, 'A')
+
+        # 5. Storm loss + 1 play_around → meta>=C+
+        _trace_loss = {'deck1': 'storm', 'deck2': 'dimir', 'winner': 'p2',
+                       'game_length': 5}
+        _counts_loss = _cs_meta([_md_a], deck1='storm')
+        _g_loss, _ = _gm_meta(_trace_loss, _counts_loss)
+        # The exact promotion is C+ for a loss with at least one play_around.
+        # Numeric-rank-or-better check would be cleaner; this is a strict eq.
+        test("Storm loss with n_meta>=1 → meta=C+", _g_loss, 'C+')
+
+        # 6. Gameability resistance: prose 'play around fow daze' in `reason`
+        # with chosen='pass' MUST NOT increment meta.
+        _gameable = {'turn': 1, 'deck': 'storm', 'phase': 'meta',
+                     'chosen': 'pass', 'candidates': ['fire', 'pass'],
+                     'reason': 'play around fow daze surgical bowmasters'}
+        _counts_gameable = _cs_meta([_gameable], deck1='storm')
+        test("Gameability: prose 'play around ...' with chosen='pass' "
+             "→ meta=0",
+             _counts_gameable['meta'], 0)
+
+        # Belt-and-braces: the _is_meta predicate itself rejects the same.
+        test("_is_meta('pass') → False", _is_meta_pred('pass'), False)
+        test("_is_meta('meta_play_around_fow') → True",
+             _is_meta_pred('meta_play_around_fow'), True)
+    except Exception as _e:
+        test(f"MetaDecision tests (error: {_e})", False, True)
+
     print(f"\n{'='*60}")
     print(f"Tests: {passed} passed, {failed} failed")
     if failed == 0:

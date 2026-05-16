@@ -177,6 +177,13 @@ TRIED_COMBO_PREFIXES = ('tried_combo:',)  # combo decks log when a piece was
 # so trace JSON written before this wiring still credits the deck's mana
 # subscore. Driven by `ManaDecision.to_token()` in decision.py.
 RAMP_PREFIXES = ('mana_ramp_',)
+# Meta tokens: deck made a *play-around* decision — explicitly held / deferred
+# its own plan because of a specific named opponent threat (fow, daze,
+# surgical, bowmasters, …). The token is `meta_<kind>_<threat_tag>` —
+# `MetaDecision(kind='play_around', threat_tag=…).to_token()`. Single prefix
+# (vs prefix tuple) keeps the contract narrow: the only meta-axis structural
+# signal today is play-around / sideboard.
+META_PREFIX = 'meta_'
 ATTACK_PREFIX = 'attack'  # 'attack with N goblins'
 # BLOCK_PREFIXES — combat-axis "defender assigns blocker" tokens emitted by
 # CombatDecision(kind='block').to_token() == 'block_<attacker_tag>'.
@@ -276,6 +283,21 @@ def _is_combat_decision(decision: dict) -> bool:
             or any(chosen.startswith(p) for p in BLOCK_PREFIXES))
 
 
+def _is_meta(chosen: str) -> bool:
+    """Decision indicates the strategy *played around* a named opponent threat
+    (FoW / Daze / Surgical / Bowmasters / …) or made a sideboard decision.
+    The token format is `meta_<kind>_<threat>` — `MetaDecision.to_token()`.
+
+    The predicate is a *strict prefix* match: prose `reason='play around fow'`
+    with `chosen='pass'` does NOT increment the meta count. The grader's
+    gameability defense lives in this prefix being the only path to the
+    bucket, parallel to `_is_ramp` (`mana_`) and `_is_counter` (`counter_`).
+    """
+    if not chosen:
+        return False
+    return chosen.startswith(META_PREFIX)
+
+
 # ─── typed Decision → bucket-name maps ────────────────────────────────────
 #
 # The grader's bucket names (`counter`, `discard`, `removal`, `execute`,
@@ -322,7 +344,7 @@ def _count_structural(decisions, deck1: str | None = None) -> dict:
                      if (d.deck if isinstance(d, Decision) else d.get('deck')) == deck1]
     counts = {
         'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'discard': 0,
-        'removal': 0, 'tried_combo': 0, 'ramp': 0,
+        'removal': 0, 'tried_combo': 0, 'ramp': 0, 'meta': 0,
         'combat': 0, 'combo_phase': 0, 'protect_phase': 0,
         'total': len(decisions),
     }
@@ -348,8 +370,15 @@ def _count_structural(decisions, deck1: str | None = None) -> dict:
                 # source-of-truth: prose `reason='ramp'` cannot fake it.
                 if d.kind == 'ramp':
                     counts['ramp'] += 1
-            # MulliganDecision / MetaDecision: no axis bucket yet — only the
-            # `total` and phase counters track them.
+            elif isinstance(d, MetaDecision):
+                # MetaDecision is the meta-axis structural signal — the deck
+                # explicitly held / deferred its plan because of a named
+                # opponent threat. Both `play_around` and `sideboard` kinds
+                # roll into the meta bucket today; finer per-kind splits can
+                # come if the grader later wants to weight them differently.
+                counts['meta'] += 1
+            # MulliganDecision: no axis bucket yet — only the
+            # `total` and phase counters track it.
             if phase == 'combo':
                 counts['combo_phase'] += 1
             if phase == 'protect' or phase == 'disruption':
@@ -380,6 +409,8 @@ def _count_structural(decisions, deck1: str | None = None) -> dict:
             counts['tried_combo'] += 1
         if _is_ramp(chosen):
             counts['ramp'] += 1
+        if _is_meta(chosen):
+            counts['meta'] += 1
         if _is_combat_decision(d):
             counts['combat'] += 1
         if phase == 'combo':
@@ -605,21 +636,55 @@ def _grade_interaction(trace: dict, counts: dict) -> tuple[str, str]:
 
 
 def _grade_meta(trace: dict, counts: dict) -> tuple[str, str]:
+    """Meta-axis grade: rewards explicit play-around decisions.
+
+    Before PR #160 the grader keyed on `counts['total']` as a proxy for
+    "strategic depth" — a deck with many decision points was assumed to be
+    playing the matchup actively. That heuristic was a placeholder; the
+    `meta_play_around_<threat>` tokens emitted by PR #160 give the grader a
+    direct signal: the strategy *chose* to not execute its plan because of
+    a named opponent threat (FoW, Daze, Surgical, Bowmasters).
+
+    Promotion rules:
+      - Win with n_meta >= 2: A — demonstrably played around opp threats
+      - Win with n_meta >= 1: B+ — at least one play-around contributed
+      - Loss with n_meta >= 1: C+ — tried to play around but lost anyway
+      - All other branches: unchanged from the prior matchup-class heuristic.
+
+    The matchup-class branches (favored / unfavored) remain because they
+    capture a separate dimension — *role awareness* (combo wins vs
+    interaction → A) — that the per-decision count cannot replace.
+    """
     deck1 = trace.get('deck1', '')
     deck2 = trace.get('deck2', '')
     p1_won = trace.get('winner') == 'p1'
     game_length = trace.get('game_length', 10)
+    n_meta = counts.get('meta', 0)
 
     is_favored = deck1 in COMBO_DECKS and deck2 in AGGRO_DECKS
     is_unfavored = deck1 in COMBO_DECKS and deck2 in INTERACTION_DECKS
 
+    # ─── Win branch ──────────────────────────────────────────────────────
     if p1_won and is_unfavored:
         return 'A', f"Won an unfavored matchup ({deck1} vs {deck2}) — strong matchup awareness"
+    if p1_won and n_meta >= 2:
+        return ('A',
+                f"{n_meta} play_around tokens — demonstrably navigated opp threats "
+                f"({'favored' if is_favored else 'parity'} matchup, T{game_length} win)")
+    if p1_won and n_meta >= 1:
+        return ('B+',
+                f"{n_meta} play_around token — at least one explicit play-around "
+                f"contributed to a T{game_length} win")
     if p1_won:
         return ('B+' if game_length <= 6 else 'B',
                 f"{'Efficiently closed' if game_length <= 6 else 'Eventually closed'} {'a favored' if is_favored else 'the'} matchup")
+    # ─── Loss branch ─────────────────────────────────────────────────────
     if not p1_won and is_favored:
         return 'C', f"Lost a matchup that should be favored ({deck1} vs {deck2}) — possible role confusion"
+    if not p1_won and n_meta >= 1:
+        return ('C+',
+                f"{n_meta} play_around token but lost in {game_length} turns — "
+                f"tried to navigate opp threats, outcome insufficient")
     return ('C+' if counts['total'] >= 5 else 'C',
             f"Lost — {'played actively but could not overcome matchup' if counts['total'] >= 5 else 'limited decision points suggest structural disadvantage'}")
 

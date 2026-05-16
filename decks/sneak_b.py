@@ -20,7 +20,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import random
-from decision import ManaDecision
+from decision import ManaDecision, MetaDecision
 from cards import (creature, instant, sorcery, artifact, enchantment,
                    fetch_land, dual_land, basic_land, utility_land)
 from rules import Card, CardType
@@ -187,6 +187,17 @@ def _strategy_sneak_b(player, opponent, gs, total_mana, log_fn, log_entries):
             chosen=('defer' if isinstance(_plan_sb, _Defer_sb)
                     else f'hold_{getattr(_plan_sb.card, "tag", "card")}'),
             reason=_plan_sb.reason)
+        # Meta-axis play-around — same rationale as sneak_a. See
+        # combo_engine._check_protection for the BHI threshold.
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold sneak_b combo — {_plan_sb.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
 
     # -- Effective mana: count bonus from sol lands + petals + SSG in hand -----
     tomb_bonus = sum(1 for l in player.lands
