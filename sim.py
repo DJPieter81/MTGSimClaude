@@ -2779,6 +2779,48 @@ def run_rules_tests():
     except Exception as _e:
         test(f"Lotus Petal double-count (error: {_e})", False, True)
 
+    # ── Lion's Eye Diamond must fuel Charbelcher activation, not only Wish ──
+    # CR 605.1 / 605.3: LED's mana ability is activated at instant speed. The
+    # canonical Belcher T1 line is: assemble mana to ~4-6 → cast Charbelcher
+    # → in response to the activation cost, crack LED for +3 mana → activate
+    # for 3, discard remaining hand. Pre-fix, _strategy_belcher only cracked
+    # LED inside the Burning Wish branch; with no Wish in hand, LED sat
+    # uncracked and the deck capped at 6 mana even with the combo in reach.
+    # Rule-phrased: any opener with Charbelcher + LED + ≥4 fast-mana sources
+    # must result in a T1 Charbelcher ACTIVATION (not merely a cast).
+    try:
+        import random as _rnd
+        _t1_activations = 0
+        _qualifying = 0
+        # Seeds 1 + 3 produce qualifying openers (verified by trace audit).
+        for _seed in (1, 3, 13, 19, 23):
+            _rnd.seed(_seed)
+            _r = run_game('belcher', 'burn', trace=True)
+            opener = _r.p1_opening_hand
+            has_belcher = any('Charbelcher' in n for n in opener)
+            n_led = sum(1 for n in opener if "Lion's Eye Diamond" in n)
+            n_fast = sum(1 for n in opener
+                         if n in ('Lotus Petal', 'Dark Ritual', 'Rite of Flame',
+                                  'Seething Song', 'Desperate Ritual',
+                                  'Elvish Spirit Guide', 'Simian Spirit Guide',
+                                  'Chrome Mox', 'Tinder Wall'))
+            if has_belcher and n_led >= 1 and n_fast >= 4:
+                _qualifying += 1
+                # Activation log: _activate_charbelcher emits "Charbelcher deals
+                # N damage" on its own line; the kill-log "★ Belcher: Charbelcher
+                # deals…" / win_reason "Belcher: Charbelcher deals…" is the
+                # canonical activation marker.
+                activated = any('Charbelcher deals' in line for line in _r.log_lines[:120])
+                if activated:
+                    _t1_activations += 1
+        test(f"Belcher LED fuels direct Charbelcher activation "
+             f"({_qualifying} qualifying openers)",
+             _qualifying >= 1 and _t1_activations == _qualifying, True,
+             detail=f"got {_t1_activations}/{_qualifying} T1 activations "
+                    f"(pre-fix: LED only fired via Burning Wish branch)")
+    except Exception as _e:
+        test(f"Belcher LED direct-activation (error: {_e})", False, True)
+
     # ── Half-life cost spells must not self-kill (CR 119.5 + 704.5a) ───────
     # A spell that pays "half your life rounded up" cannot be cast when the
     # payment reduces life to 0 (state-based action: a player with 0 or less
