@@ -299,19 +299,7 @@
       "candidates": [
         "bhi_free_counter"
       ],
-      "reason": "bhi_thinks_opp_has_free_counter=True scan_said=True"
-    },
-    {
-      "turn": 7,
-      "deck": "storm",
-      "phase": "desperate",
-      "chosen": "defer",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo by deferring: opp p_free_counter=0.42, no protection in hand"
+      "reason": "bhi_thinks_opp_has_free_counter=False scan_said=True"
     },
     {
       "turn": 7,
@@ -352,19 +340,7 @@
       "candidates": [
         "bhi_free_counter"
       ],
-      "reason": "bhi_thinks_opp_has_free_counter=True scan_said=True"
-    },
-    {
-      "turn": 8,
-      "deck": "storm",
-      "phase": "desperate",
-      "chosen": "defer",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo by deferring: opp p_free_counter=0.47, no protection in hand"
+      "reason": "bhi_thinks_opp_has_free_counter=False scan_said=True"
     },
     {
       "turn": 8,
@@ -954,12 +930,10 @@
     "T6 [storm] [phase:desperate] chose p=0.36 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=True",
     "T6 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=9/8, rituals=7, safe=True, thalia=False, life=9",
     "T7 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=6, threats_in_play=3",
-    "T7 [storm] [phase:desperate] chose p=0.42 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=True scan_said=True",
-    "T7 [storm] [phase:desperate] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.42, no protection in hand",
+    "T7 [storm] [phase:desperate] chose p=0.42 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=True",
     "T7 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=9/8, rituals=7, safe=True, thalia=False, life=5",
     "T8 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=7, threats_in_play=3",
-    "T8 [storm] [phase:desperate] chose p=0.47 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=True scan_said=True",
-    "T8 [storm] [phase:desperate] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.47, no protection in hand",
+    "T8 [storm] [phase:desperate] chose p=0.47 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=True",
     "T8 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=10/8, rituals=7, safe=True, thalia=False, life=1",
     "T9 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=5, hand=7, threats_in_play=3"
   ]

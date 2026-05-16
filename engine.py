@@ -1140,6 +1140,17 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         for m in ctr:
             log_list.append(f"  ★ {d_label} {m}")
         log_list.append(f"  {spell_card.name} COUNTERED — goes to graveyard")
+        # Typed Execute log so the structural grader credits interaction
+        # decks for actually using their counter spells. The counter-tag
+        # used is the LAST one stored on gs (set by the matching branch).
+        _counter_tag = getattr(gs, '_last_counter_used', 'counter') or 'counter'
+        _defender_deck = (gs.p1_deck if defender is gs.p1 else gs.p2_deck)
+        gs.strat_log.log_decision(
+            gs.turn, _defender_deck,
+            candidates=['counter', 'let_resolve'],
+            chosen=f'counter_{spell_card.tag or "spell"}_with_{_counter_tag}',
+            reason=f'{_counter_tag} counters {spell_card.tag}'
+                   f' ({"major" if is_major_threat else "minor"} threat)')
         return True
     if gs.trace:
         log_list.append(f"    → {d_label} has counters but cannot use them (conditions not met)")
