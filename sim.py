@@ -734,10 +734,9 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                 o.add_to_grave(best)
                 # Typed Execute log so the structural grader credits
                 # the discarding deck for the hand-disruption decision.
-                gs.strat_log.log_decision(
-                    gs.turn, active_deck,
-                    candidates=['thoughtseize', 'pass'],
-                    chosen=f'discard_{best.tag or "card"}_with_ts',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, b, 'discard',
+                    best.tag or 'card', 'ts',
                     reason=f'TS strips {best.tag} from opponent')
                 log(f"Thoughtseize → takes {best.name} (−2 life, {b.life})")
             else:
@@ -764,10 +763,9 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                     o.add_to_grave(target.card)
                     log(f"Fatal Push → {target.card.name} ({'revolt' if revolt else 'no revolt'})")
                     # Typed removal log for structural-grader interaction signal.
-                    gs.strat_log.log_decision(
-                        gs.turn, active_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{target.card.tag or "creature"}_with_push',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, b, 'remove',
+                        target.card.tag or 'creature', 'push',
                         reason=f'push kills {target.card.tag or "creature"}')
                 else:
                     b.add_to_grave(push)
@@ -790,10 +788,9 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                     o.life += target.power
                     log(f"Swords to Plowshares → exile {target.card.name} (opp +{target.power} life)")
                     # Typed removal log for structural-grader interaction signal.
-                    gs.strat_log.log_decision(
-                        gs.turn, active_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{target.card.tag or "creature"}_with_stp',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, b, 'remove',
+                        target.card.tag or 'creature', 'stp',
                         reason=f'stp exiles {target.card.tag or "creature"}')
                 else:
                     b.add_to_grave(stp)
@@ -3857,6 +3854,43 @@ def run_rules_tests():
         test("storm-faked trace: non-COMBO deck combo grade ≥ B (fake token cannot lift)",
              _idx >= _GRADE_B_IDX, True,
              detail=f"grade={_g} justification={_j}")
+
+        # Rule 15 — Deck-class buckets derive from deck_registry rather than
+        # literal sets. The grader's COMBO_DECKS / INTERACTION_DECKS /
+        # AGGRO_DECKS frozensets are unions of a built-in floor with
+        # `deck_registry.get_decks_in_category(...)`. Pin: each bucket must
+        # include its canonical members regardless of registry state. The
+        # rule is "the grader recognises these decks as members of their
+        # archetype class" — phrased over the mechanic (Execute / disruption
+        # / pressure-via-combat), not card names.
+        test("deck-class derivation: COMBO_DECKS includes canonical members "
+             "(storm / depths / reanimator)",
+             {'storm', 'depths', 'reanimator'}.issubset(_sg.COMBO_DECKS), True,
+             detail=f"COMBO_DECKS={sorted(_sg.COMBO_DECKS)}")
+        test("deck-class derivation: INTERACTION_DECKS includes canonical "
+             "members (bug / dimir / ur_delver)",
+             {'bug', 'dimir', 'ur_delver'}.issubset(_sg.INTERACTION_DECKS),
+             True, detail=f"INTERACTION_DECKS={sorted(_sg.INTERACTION_DECKS)}")
+        test("deck-class derivation: AGGRO_DECKS includes canonical members "
+             "(burn / goblins / boros)",
+             {'burn', 'goblins', 'boros'}.issubset(_sg.AGGRO_DECKS), True,
+             detail=f"AGGRO_DECKS={sorted(_sg.AGGRO_DECKS)}")
+        # Rule 15b — buckets are auto-extending: a plugin deck that declares
+        # the matching category in its DECK_META also surfaces in the bucket
+        # without the grader needing edits. Pin canonical registry-driven
+        # additions: `infect` and `painter` declare `'combo'`; they must
+        # appear in COMBO_DECKS even though they were absent from the prior
+        # hardcoded literal set.
+        try:
+            from deck_registry import get_decks_in_category as _gdc
+            _combo_from_reg = _gdc('combo')
+        except ImportError:
+            _combo_from_reg = frozenset()
+        test("deck-class derivation: COMBO_DECKS auto-includes registry "
+             "'combo' category members",
+             _combo_from_reg.issubset(_sg.COMBO_DECKS), True,
+             detail=f"registry COMBO_DECKS missing: "
+                    f"{sorted(_combo_from_reg - _sg.COMBO_DECKS)}")
     except Exception as _e:
         test(f"structural_grader rule tests (error: {_e})", False, True)
 

@@ -65,19 +65,62 @@ K_MANA_GAME_LEN_B  = _load_calibrated('STRUCT_K_MANA_GAME_LEN_B', 8)
 GRADE_TO_NUM = {g: i for i, g in enumerate(GRADE_SCALE)}
 NUM_TO_GRADE = {i: g for g, i in GRADE_TO_NUM.items()}
 
-# Deck-class buckets (kept parallel to grade_traces.py so the comparison
-# stays apples-to-apples).
-COMBO_DECKS = {
+# ── Deck-class buckets ────────────────────────────────────────────────────
+# Derived from `deck_registry.get_decks_in_category()` rather than literal
+# sets — the prior hardcoded sets duplicated knowledge already declared in
+# each plugin's `DECK_META['categories']` (see decks/*.py). Same pattern as
+# `config.py:MatchupCategory` which merges _BUILTIN_* floors with
+# `_registry_decks(category)`. The floors preserve membership for decks that
+# don't (yet) declare the matching category — keeps the grader's existing
+# canonical buckets stable when a deck file omits a category.
+
+def _registry_decks(category):
+    """Pull deck keys for `category` from the registry. Quiet fallback when
+    deck_registry can't be imported (e.g. running grader from outside the
+    repo root via sys.path tweaks)."""
+    try:
+        from deck_registry import get_decks_in_category
+        return frozenset(get_decks_in_category(category))
+    except ImportError:
+        return frozenset()
+
+# Built-in floors: decks the grader must classify as combo/interaction/aggro
+# regardless of whether the plugin file declares the matching category.
+# Justification (rule, not card-name): combo decks emit Execute tokens;
+# interaction decks emit counter/discard/remove tokens; aggro decks close
+# via combat tokens + spot removal. Built-in floors are the canonical
+# members the grader's per-domain rules were originally calibrated against
+# (see Phase 6 audit traces).
+_BUILTIN_COMBO       = frozenset({
     'storm', 'doomsday', 'oops', 'belcher', 'cephalid', 'reanimator',
-    'sneak_a', 'sneak_b', 'show', 'show_fix', 'tes', 'depths', 'elves',
-}
-INTERACTION_DECKS = {
+    'sneak_a', 'sneak_b', 'show', 'tes', 'depths',
+})
+_BUILTIN_INTERACTION = frozenset({
     'bug', 'dimir', 'dimir_b', 'dimir_c', 'dimir_d', 'dimir_flash',
     'ur_delver', 'ur_tempo', 'uwx', 'dnt', 'mardu',
-}
-AGGRO_DECKS = {
+})
+_BUILTIN_AGGRO       = frozenset({
     'burn', 'goblins', 'eldrazi', 'affinity', 'ur_aggro', 'boros',
-}
+})
+
+# Merged sets: floor ∪ category lookup. The category-lookup union with the
+# floor means: any new deck plugin that declares `'combo'` / `'aggro'` /
+# (`'tempo' | 'tempo_mirror' | 'control' | 'mirror'`) auto-registers into
+# the right bucket without editing this file.
+COMBO_DECKS       = _BUILTIN_COMBO       | _registry_decks('combo')
+AGGRO_DECKS       = _BUILTIN_AGGRO       | _registry_decks('aggro')
+# Interaction = any deck whose primary axis is reactive disruption.
+# Today the registry expresses this through `tempo` (bug),
+# `tempo_mirror` (ur_delver, ur_tempo, dimir_c/d), `control` (uwx,
+# wan_shi_tong), and `mirror` (dimir family). Add new categories here as
+# they appear in DECK_META rather than re-listing decks.
+INTERACTION_DECKS = (
+    _BUILTIN_INTERACTION
+    | _registry_decks('tempo')
+    | _registry_decks('tempo_mirror')
+    | _registry_decks('control')
+    | _registry_decks('mirror')
+)
 
 # Structured-token prefixes / values the strategies emit. Each token is a
 # *de-facto API contract* between the strategy layer and any grader: it has
