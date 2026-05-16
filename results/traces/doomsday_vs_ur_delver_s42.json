@@ -79,6 +79,17 @@
       "reason": "mana=5, dd_resolved=False, life=10, bhi_p_free_counter=0.53"
     },
     {
+      "turn": 4,
+      "deck": "ur_delver",
+      "phase": null,
+      "chosen": "remove_lurrus_with_bolt",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "bolt kills lurrus"
+    },
+    {
       "turn": 5,
       "deck": "doomsday",
       "phase": "oracle_win",
@@ -477,6 +488,7 @@
     "T2 [doomsday] [phase:dig] chose cast_doomsday from [cast_doomsday,cycle_and_oracle,pass] \u2014 mana=3, dd_resolved=False, life=19, bhi_p_free_counter=0.56",
     "T3 [doomsday] [phase:cast_dd] chose cast_doomsday from [cast_doomsday,cycle_and_oracle,pass] \u2014 mana=4, dd_resolved=False, life=13, bhi_p_free_counter=0.61",
     "T4 [doomsday] [phase:cast_dd] chose cast_doomsday from [cast_doomsday,cycle_and_oracle,pass] \u2014 mana=5, dd_resolved=False, life=10, bhi_p_free_counter=0.53",
+    "T4 [ur_delver] chose remove_lurrus_with_bolt from [remove,pass] \u2014 bolt kills lurrus",
     "T5 [doomsday] [phase:oracle_win] chose cast_doomsday from [cast_doomsday,cycle_and_oracle,pass] \u2014 mana=6, dd_resolved=False, life=4, bhi_p_free_counter=0.52"
   ]
 }

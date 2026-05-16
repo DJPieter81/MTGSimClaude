@@ -45,6 +45,17 @@
       "reason": "mana=1, creatures=0, hand=6"
     },
     {
+      "turn": 1,
+      "deck": "dnt",
+      "phase": null,
+      "chosen": "remove_llanowar_with_stp",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "stp exiles llanowar"
+    },
+    {
       "turn": 2,
       "deck": "elves",
       "phase": null,
@@ -198,6 +209,17 @@
         "recruiter"
       ],
       "reason": "mana=3, hand=['recruiter', 'skyclave', 'flickerwisp']"
+    },
+    {
+      "turn": 6,
+      "deck": "dnt",
+      "phase": null,
+      "chosen": "remove_symbiote_with_skyclave",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "skyclave exiles symbiote"
     },
     {
       "turn": 7,
@@ -691,6 +713,7 @@
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=0, hand=6",
+    "T1 [dnt] chose remove_llanowar_with_stp from [remove,pass] \u2014 stp exiles llanowar",
     "T2 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=2, creatures=0, hand=5",
     "T3 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=1, hand=4",
     "T3 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'phelia', 'sfm', 'wl', 'thalia']",
@@ -701,6 +724,7 @@
     "T5 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['recruiter', 'skyclave', 'kaldra', 'thalia']",
     "T6 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=4, creatures=1, hand=3",
     "T6 [dnt] chose skyclave from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'skyclave', 'flickerwisp']",
+    "T6 [dnt] chose remove_symbiote_with_skyclave from [remove,pass] \u2014 skyclave exiles symbiote",
     "T7 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=4, creatures=0, hand=3",
     "T7 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'flickerwisp', 'sfm']"
   ]

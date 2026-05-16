@@ -44,6 +44,17 @@
       "reason": "mana=1, creatures=0, hand=6"
     },
     {
+      "turn": 1,
+      "deck": "dnt",
+      "phase": null,
+      "chosen": "remove_mystic_with_solitude",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "solitude exiles mystic"
+    },
+    {
       "turn": 2,
       "deck": "elves",
       "phase": null,
@@ -343,6 +354,7 @@
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=0, hand=6",
+    "T1 [dnt] chose remove_mystic_with_solitude from [remove,pass] \u2014 solitude exiles mystic",
     "T2 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=2, creatures=0, hand=5",
     "T3 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=5, creatures=2, hand=3",
     "T4 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=6, creatures=3, hand=3",

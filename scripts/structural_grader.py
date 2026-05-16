@@ -39,8 +39,28 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from llm_judge import RUBRIC_DOMAINS, GRADE_SCALE  # noqa: E402
+from config import _load_calibrated  # noqa: E402
 
 TRACE_DIR = Path(__file__).resolve().parent.parent / 'results' / 'traces'
+
+# Promotion thresholds — calibrated via tools/calibrate_structural_thresholds.py.
+# Each gates the grade promotion in one binding-constraint domain. The literal
+# fallback values are the legacy hand-picked numbers; the calibrated values
+# live in config/calibration.json under the `values` dict. See
+# `_load_calibrated` in config.py for the resolution order.
+#
+# K_INTER_A          — promotes interaction grade B+ → A on wins for
+#                      interaction decks when n_inter ≥ K_INTER_A.
+# K_INTER_C_PLUS     — promotes interaction grade C → C+ on losses for
+#                      interaction decks when n_inter ≥ K_INTER_C_PLUS.
+# K_COMBO_GAME_LEN_A — game_length cap below which a winning combo deck
+#                      grades A (vs B+) — i.e. "fast enough kill is A".
+# K_MANA_GAME_LEN_B  — game_length cap below which a winning non-combo deck
+#                      grades B+ (vs B) on mana.
+K_INTER_A          = _load_calibrated('STRUCT_K_INTER_A', 3)
+K_INTER_C_PLUS     = _load_calibrated('STRUCT_K_INTER_C_PLUS', 2)
+K_COMBO_GAME_LEN_A = _load_calibrated('STRUCT_K_COMBO_GAME_LEN_A', 4)
+K_MANA_GAME_LEN_B  = _load_calibrated('STRUCT_K_MANA_GAME_LEN_B', 8)
 
 GRADE_TO_NUM = {g: i for i, g in enumerate(GRADE_SCALE)}
 NUM_TO_GRADE = {i: g for g, i in GRADE_TO_NUM.items()}
@@ -209,10 +229,10 @@ def _grade_mana(trace: dict) -> tuple[str, str]:
         return ('C+' if game_length <= 6 else 'C',
                 f"Lost in {game_length} turns — possible mana sequencing issues")
     if p1_won:
-        return ('B+' if game_length <= 8 else 'B',
+        return ('B+' if game_length <= K_MANA_GAME_LEN_B else 'B',
                 f"Resource deployment supported a T{game_length} win")
-    return ('B' if game_length >= 8 else 'C+',
-            f"{'Adequate' if game_length >= 8 else 'Suboptimal'} mana utilization over {game_length} turns")
+    return ('B' if game_length >= K_MANA_GAME_LEN_B else 'C+',
+            f"{'Adequate' if game_length >= K_MANA_GAME_LEN_B else 'Suboptimal'} mana utilization over {game_length} turns")
 
 
 def _grade_combat(trace: dict, counts: dict) -> tuple[str, str]:
@@ -280,7 +300,7 @@ def _grade_combo(trace: dict, counts: dict) -> tuple[str, str]:
                     f"pieces deployed, kill disrupted")
         return 'C', "No combo Execute decision logged — deck did not fire its plan"
     if p1_won and game_length <= 6:
-        return ('A+' if game_length <= 4 else 'A',
+        return ('A+' if game_length <= K_COMBO_GAME_LEN_A else 'A',
                 f"{n_exec} Execute decision(s); combo resolved on T{game_length}")
     if p1_won:
         return 'B+', f"{n_exec} Execute decision(s); combo resolved late on T{game_length}"
@@ -324,14 +344,14 @@ def _grade_interaction(trace: dict, counts: dict) -> tuple[str, str]:
 
     if deck1 in INTERACTION_DECKS:
         if p1_won:
-            return ('A' if n_inter >= 3 else 'B+',
+            return ('A' if n_inter >= K_INTER_A else 'B+',
                     f"{n_counter} counter + {n_discard} discard + {n_removal} remove + "
                     f"{n_hold} hold + {n_defer} defer decisions; "
-                    f"{'heavy structured disruption' if n_inter >= 3 else 'measured disruption'} backed the win")
-        return ('C+' if n_inter >= 2 else 'C',
+                    f"{'heavy structured disruption' if n_inter >= K_INTER_A else 'measured disruption'} backed the win")
+        return ('C+' if n_inter >= K_INTER_C_PLUS else 'C',
                 f"{n_counter} counter + {n_discard} discard + {n_removal} remove + "
                 f"{n_hold} hold + {n_defer} defer decisions; "
-                f"{'logged but insufficient' if n_inter >= 2 else 'not enough disruption surfaced'}")
+                f"{'logged but insufficient' if n_inter >= K_INTER_C_PLUS else 'not enough disruption surfaced'}")
 
     if deck1 in COMBO_DECKS:
         # For combo decks, Hold/Defer surfaces *protection*-grade play.

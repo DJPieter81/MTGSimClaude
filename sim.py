@@ -3763,6 +3763,100 @@ def run_rules_tests():
                                   _sg._count_structural(_t_combo_win_with_tried['strategic_decisions']))
         test("structural_grader: combo-deck WIN with tried_combo stays at A/A+",
              _g in ('A', 'A+'), True, detail=f"got {_g}: {_j}")
+
+        # ── calibration-tool wiring tests (Agent C) ───────────────────────────
+        # The four magic literals in scripts/structural_grader.py are now
+        # sourced from config/calibration.json via `config._load_calibrated`.
+        # Pin: (a) the grader's module-level constants match what
+        # `_load_calibrated(<key>, <fallback>)` returns; (b) the calibration
+        # JSON's `values` block carries the four chosen thresholds.
+        from config import _load_calibrated as _lc
+        test("structural_grader: K_INTER_A matches _load_calibrated default",
+             _sg.K_INTER_A, _lc('STRUCT_K_INTER_A', 3))
+        test("structural_grader: K_INTER_C_PLUS matches _load_calibrated default",
+             _sg.K_INTER_C_PLUS, _lc('STRUCT_K_INTER_C_PLUS', 2))
+        test("structural_grader: K_COMBO_GAME_LEN_A matches _load_calibrated default",
+             _sg.K_COMBO_GAME_LEN_A, _lc('STRUCT_K_COMBO_GAME_LEN_A', 4))
+        test("structural_grader: K_MANA_GAME_LEN_B matches _load_calibrated default",
+             _sg.K_MANA_GAME_LEN_B, _lc('STRUCT_K_MANA_GAME_LEN_B', 8))
+
+        # Verify the four STRUCT_K_* keys live in config/calibration.json
+        # `values` after --write. If the file is missing, fall back to the
+        # literal defaults — neither outcome should make this test fail.
+        import json as _json
+        from pathlib import Path as _Path2
+        _cal_path = _Path2(__file__).resolve().parent / 'config' / 'calibration.json'
+        if _cal_path.exists():
+            try:
+                with _cal_path.open() as _f:
+                    _cal_values = _json.load(_f).get('values', {})
+            except (OSError, _json.JSONDecodeError):
+                _cal_values = {}
+            for _k in ('STRUCT_K_INTER_A', 'STRUCT_K_INTER_C_PLUS',
+                       'STRUCT_K_COMBO_GAME_LEN_A', 'STRUCT_K_MANA_GAME_LEN_B'):
+                test(f"calibration.json values has {_k}",
+                     _k in _cal_values, True,
+                     detail=f"file={_cal_path}; values keys={list(_cal_values)}")
+
+        # ── invariant test: adversarial-keyword trace stays at C on the
+        # gameable interaction-loss path. Same property the calibration
+        # tool's invariant 1 enforces. If a future K_INTER_C_PLUS=0
+        # candidate sneaks through, this catches it.
+        _adv_decisions = [
+            {'turn': t, 'deck': 'bug', 'phase': None, 'chosen': 'pass',
+             'candidates': ['pass'],
+             'reason': 'protect combo counter attack force tendrils storm kill'}
+            for t in range(1, 6)
+        ]
+        _adv_trace = {
+            'deck1': 'bug', 'deck2': 'storm', 'winner': 'p2',
+            'game_length': 5, 'p1_mulls': 0,
+            'strategic_decisions': _adv_decisions,
+        }
+        _adv_counts = _sg._count_structural(_adv_decisions, deck1='bug')
+        _g, _j = _sg._grade_interaction(_adv_trace, _adv_counts)
+        # The grade index must be ≥ C (idx 5) — i.e. the candidate's
+        # thresholds must NOT promote a zero-token loss above C.
+        _GRADE_C_IDX = 5
+        from llm_judge import GRADE_SCALE as _GS
+        _g2n = {g: i for i, g in enumerate(_GS)}
+        _idx = _g2n.get(_g, 99)
+        test("adversarial-keyword trace: interaction grade ≥ C (anti-gameability)",
+             _idx >= _GRADE_C_IDX, True,
+             detail=f"grade={_g} idx={_idx} justification={_j}")
+
+        # ── invariant test: empty-decisions storm win T4 — combo grade ≥ B.
+        _empty = {
+            'deck1': 'storm', 'deck2': 'burn', 'winner': 'p1',
+            'game_length': 4, 'p1_mulls': 0,
+            'strategic_decisions': [],
+        }
+        _g, _j = _sg._grade_combo(_empty, _sg._count_structural([]))
+        _GRADE_B_IDX = 3
+        _idx = _g2n.get(_g, 99)
+        test("empty-decisions storm-win-T4: combo grade ≥ B (no Execute = no great combo)",
+             _idx >= _GRADE_B_IDX, True,
+             detail=f"grade={_g} justification={_j}")
+
+        # ── invariant test: storm-faked trace — non-COMBO deck (goblins)
+        # emits a fake `kill_C` token. The non-combo branch returns 'B'
+        # regardless; the invariant pins that the fake token does NOT
+        # lift the grade past this floor.
+        _faked = {
+            'deck1': 'goblins', 'deck2': 'uwx', 'winner': 'p1',
+            'game_length': 4, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 1, 'deck': 'goblins', 'phase': 'setup',
+                 'chosen': 'kill_C', 'candidates': [], 'reason': ''},
+            ],
+        }
+        _g, _j = _sg._grade_combo(_faked,
+                                  _sg._count_structural(_faked['strategic_decisions'],
+                                                        deck1='goblins'))
+        _idx = _g2n.get(_g, 99)
+        test("storm-faked trace: non-COMBO deck combo grade ≥ B (fake token cannot lift)",
+             _idx >= _GRADE_B_IDX, True,
+             detail=f"grade={_g} justification={_j}")
     except Exception as _e:
         test(f"structural_grader rule tests (error: {_e})", False, True)
 

@@ -447,6 +447,28 @@
       "turn": 12,
       "deck": "dimir",
       "phase": null,
+      "chosen": "remove_narco_with_push",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "push kills narco"
+    },
+    {
+      "turn": 12,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "remove_narco_with_push",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "push kills narco"
+    },
+    {
+      "turn": 12,
+      "deck": "dimir",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "thoughtseize",
@@ -1436,6 +1458,8 @@
     "T11 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.46",
     "T11 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=6, threats_in_play=3",
     "T12 [oops] [phase:disruption] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=4, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.45",
+    "T12 [dimir] chose remove_narco_with_push from [remove,pass] \u2014 push kills narco",
+    "T12 [dimir] chose remove_narco_with_push from [remove,pass] \u2014 push kills narco",
     "T12 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=4, threats_in_play=3",
     "T13 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=True, leyline=False, bhi_p_free_counter=0.31",
     "T13 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=7, hand=5, threats_in_play=3",

@@ -200,6 +200,17 @@
       "reason": "mana=3, hand=['recruiter', 'skyclave', 'flickerwisp', 'skyclave', 'kaldra']"
     },
     {
+      "turn": 6,
+      "deck": "dnt",
+      "phase": null,
+      "chosen": "remove_shepherd_with_skyclave",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "skyclave exiles shepherd"
+    },
+    {
       "turn": 7,
       "deck": "elves",
       "phase": null,
@@ -229,6 +240,17 @@
         "recruiter"
       ],
       "reason": "mana=6, hand=['recruiter', 'flickerwisp', 'skyclave', 'kaldra']"
+    },
+    {
+      "turn": 7,
+      "deck": "dnt",
+      "phase": null,
+      "chosen": "remove_dryad_arbor_with_skyclave",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "skyclave exiles dryad_arbor"
     },
     {
       "turn": 7,
@@ -934,8 +956,10 @@
     "T6 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=6, hand=3",
     "T6 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=5, hand=['recruiter', 'skyclave', 'sfm', 'flickerwisp', 'skyclave']",
     "T6 [dnt] chose skyclave from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'skyclave', 'flickerwisp', 'skyclave', 'kaldra']",
+    "T6 [dnt] chose remove_shepherd_with_skyclave from [remove,pass] \u2014 skyclave exiles shepherd",
     "T7 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=4, creatures=6, hand=3",
     "T7 [dnt] chose skyclave from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=6, hand=['recruiter', 'flickerwisp', 'skyclave', 'kaldra']",
+    "T7 [dnt] chose remove_dryad_arbor_with_skyclave from [remove,pass] \u2014 skyclave exiles dryad_arbor",
     "T7 [dnt] chose flickerwisp from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'flickerwisp', 'kaldra']",
     "T8 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=6, hand=4",
     "T8 [dnt] chose recruiter from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=7, hand=['recruiter', 'kaldra']",
