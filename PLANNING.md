@@ -106,6 +106,37 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 
 > **Detailed plan**: see [`docs/plans/2026-05-09_next_session.md`](docs/plans/2026-05-09_next_session.md) for the full breakdown including P0/P1/P2 priorities, time estimates, and a loop-break signal for Doomsday.
 
+### 2026-05-16 — Structural-grader closeout session (10 PRs landed: R/T/C/G/E/IX/MA/DIAG-fix/CO/META)
+
+**Final domain averages on the 69-trace audit set:**
+
+| domain | now | gap to B+ |
+|---|---:|---:|
+| mulligan | 2.91 | ✓ |
+| combo | 3.06 | (−0.06, essentially ✓) |
+| mana | 3.25 | −0.25 |
+| combat | 3.33 | −0.33 |
+| interaction | 3.49 | −0.49 |
+| meta | 3.55 | −0.55 |
+
+400 tests, regression sweep 0pp on all 10 baseline matchups, abstraction exit 0.
+
+**What's left** (binding constraints, ordered by ROI for next session):
+
+1. **Audit-set expansion (HIGH).** META's diagnosis: meta-axis signal is structurally sparse on the current 69-trace set because it lacks combo-vs-interaction matchups. Add 20+ traces from `sneak_a_vs_bug`, `oops_vs_bug`, `sneak_b_vs_dimir`, `tes_vs_uwx`, `cephalid_vs_dimir`. `sneak_a_vs_bug` already emits 7-8 `meta_play_around_*` tokens per game; pulling those into the audit lifts meta toward B+.
+
+2. **Recalibrate `K_*` thresholds against post-IX/MA/CO/META audit (MEDIUM).** Run `python3 tools/calibrate_structural_thresholds.py --write`. With the four new domains now emitting tokens, the optimal `K_INTER_A`, `K_RAMP_A`, `K_META_A`, `K_COMBAT_*` values likely differ from the legacy literals.
+
+3. **Phase 5 migration (LOW).** The 36 `log_decision(...)` / `log_disruption(...)` callsites in `engine.py` / `sim.py` can now be migrated to construct `Decision` objects directly. Pure refactor, no GPA gradient. Gated by `to_token()` byte-equality. Defer until a domain-extension needs the typed path.
+
+4. **Painter Execute tokens (LOW).** PR #160 demoted painter from `'combo'` to `'control'` until typed `combo:painter_grindstone` Execute emits at the Painter+Grindstone lock site. When that wire happens, flip `decks/painter.py` category back and update the Rule 15c pinning test.
+
+5. **Stale remote branches (HOUSEKEEPING).** 20+ merged `claude/*` branches still on origin (sandbox-blocked from local cleanup; user needs `gh api repos/DJPieter81/MTGSimClaude/git/refs/heads/<branch> -X DELETE` externally).
+
+**Don't chase**: residual mana/combat/meta gaps via more token wiring on the current audit set. The MA agent's honest finding (B+ wins already saturated, losses correctly excluded) generalizes — the gradient is in audit-set composition, not in wire-site coverage.
+
+### Legacy backlog (pre-2026-05-16)
+
 ### P0 — Burn rebalancing (Bo3-style maindeck reweighting)
 Burn at 70.5% avg WR (real Legacy ~50-55%). Add main-deck anti-burn cards: WST Sanctifier 3→4, UWX +2-3 Sanctifier, DnT Solitude 2→3. Verify burn vs field drops to 55-60%. Est. 1-2 hours.
 
