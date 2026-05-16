@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "generated_at": "2026-05-16T08:54:16+00:00",
-    "main_sha": "b39837b",
+    "generated_at": "2026-05-16T13:29:18+00:00",
+    "main_sha": "25d32f4",
     "n_games_per_matchup": 200,
     "comment": "Phase D calibration output. Reading order: `values` dict is the canonical source of truth for the listed config constants. `data` is the raw sweep result the most-recent BHI choice was derived from. `structural_summary` is the most-recent structural-grader threshold calibration. To recalibrate, re-run the appropriate tools/calibrate_*.py script with --write.",
     "hash_seed_note": "A prior calibration run was biased by a circular-import bug in decks/bug.py that silently unregistered the BUG deck (fixed in PR #140). The previous PYTHONHASHSEED sensitivity diagnosis was a misdiagnosis of that import race. Current calibration data is clean.",
@@ -11,7 +11,7 @@
     "BHI_FREE_COUNTER_THRESHOLD": 0.5,
     "BHI_COUNTER_THRESHOLD": 0.55,
     "STRUCT_K_INTER_A": 1,
-    "STRUCT_K_INTER_C_PLUS": 2,
+    "STRUCT_K_INTER_C_PLUS": 1,
     "STRUCT_K_COMBO_GAME_LEN_A": 6,
     "STRUCT_K_MANA_GAME_LEN_B": 7
   },
@@ -20,35 +20,35 @@
     "candidates_passing_invariants": 144,
     "chosen": {
       "STRUCT_K_INTER_A": 1,
-      "STRUCT_K_INTER_C_PLUS": 2,
+      "STRUCT_K_INTER_C_PLUS": 1,
       "STRUCT_K_COMBO_GAME_LEN_A": 6,
       "STRUCT_K_MANA_GAME_LEN_B": 7
     },
     "aggregate_after": {
-      "mulligan": 2.9268,
-      "mana": 3.1951,
-      "combat": 3.3171,
-      "combo": 3.0244,
-      "interaction": 3.6585,
-      "meta": 3.3415
+      "mulligan": 2.9326,
+      "mana": 3.3596,
+      "combat": 3.2022,
+      "combo": 3.2921,
+      "interaction": 3.6067,
+      "meta": 3.427
     },
     "aggregate_default": {
-      "mulligan": 2.9268,
-      "mana": 3.2195,
-      "combat": 3.3171,
-      "combo": 3.1707,
-      "interaction": 3.7805,
-      "meta": 3.3415
+      "mulligan": 2.9326,
+      "mana": 3.3708,
+      "combat": 3.2022,
+      "combo": 3.3596,
+      "interaction": 3.7079,
+      "meta": 3.427
     },
     "improvement_vs_default": {
       "mulligan": 0.0,
-      "mana": -0.0244,
+      "mana": -0.0112,
       "combat": 0.0,
-      "combo": -0.1463,
-      "interaction": -0.122,
+      "combo": -0.0674,
+      "interaction": -0.1011,
       "meta": 0.0
     },
-    "best_worst_domain_avg": 3.6585,
+    "best_worst_domain_avg": 3.6067,
     "tiebreak_rule": "min_worst_then_min_sum_then_L1_to_defaults",
     "defaults": {
       "STRUCT_K_INTER_A": 3,

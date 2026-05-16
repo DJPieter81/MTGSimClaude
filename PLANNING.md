@@ -106,6 +106,29 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 
 > **Detailed plan**: see [`docs/plans/2026-05-09_next_session.md`](docs/plans/2026-05-09_next_session.md) for the full breakdown including P0/P1/P2 priorities, time estimates, and a loop-break signal for Doomsday.
 
+### 2026-05-17 — Audit-set expansion + K_* recalibration + Painter Execute wiring
+
+Closed out the three actionable items the 2026-05-16 session deferred (the four-item list at line 124 below).
+
+**Audit-set expansion (HIGH).** Added 20 traces across 4 missing combo-vs-interaction matchups (`oops_vs_bug`, `sneak_b_vs_dimir`, `tes_vs_uwx`, `cephalid_vs_dimir`) at 5 seeds each (42 / 7 / 99 / 2026 / 2024). Audit set: 69 → 89 raw traces.
+
+**K_* recalibration (MEDIUM).** Re-ran `tools/calibrate_structural_thresholds.py --write` on the expanded set. 144/144 candidates passed invariants. Only `STRUCT_K_INTER_C_PLUS` flipped (2 → 1); other three thresholds unchanged.
+
+**Painter Execute wiring (LOW).** Wired typed `combo:painter_grindstone_mill` Execute tokens at all 5 lock-fire sites in `engine.py` (2 in `_strategy_prison`, 3 in `_strategy_painter`). Flipped `decks/painter.py` `categories` from `{'control'}` back to `{'combo'}`. Re-ran the 4 `painter_vs_eldrazi` audit traces to capture the new tokens. Inverted the 2 Rule 15c pinning tests in `sim.py:3905-3917`. Regression sweep clean (0pp Δ on all 10 baseline matchups); 400/400 rules tests pass.
+
+**Final domain averages on the 89-trace audit set:**
+
+| domain | 2026-05-16 (69 traces) | 2026-05-17 (89 traces) | Δ | gap to B+ |
+|---|---:|---:|---:|---:|
+| mulligan | 2.91 | 2.93 | +0.02 | ✓ |
+| combat | 3.33 | 3.20 | **−0.13** | −0.20 |
+| combo | 3.06 | 3.29 | +0.23 | −0.29 |
+| mana | 3.25 | 3.36 | +0.11 | −0.36 |
+| meta | 3.55 | 3.43 | **−0.12** | −0.43 |
+| interaction | 3.49 | 3.61 | +0.12 | −0.61 |
+
+Combat and meta both improved (META agent's prediction at 2026-05-16 closeout held). Combo and interaction averages went up because the 20 new traces include 16 protagonist-losses where the combo deck lost vs interaction — sampling artifact, not a regression in any wire-site. **Next session's binding constraint**: interaction-axis gap is structural (combo decks rarely cast counters/discard/removal), so it can only close by wiring `hold`/`defer` partial-credit on `Hold(card)` / `Defer()` from `combo_plan` outputs (currently `Hold`/`Defer` only emit a MetaDecision in `decks/depths.py:319-328`; extend to the other 10 COMBO_DECKS).
+
 ### 2026-05-16 — Structural-grader closeout session (10 PRs landed: R/T/C/G/E/IX/MA/DIAG-fix/CO/META)
 
 **Final domain averages on the 69-trace audit set:**

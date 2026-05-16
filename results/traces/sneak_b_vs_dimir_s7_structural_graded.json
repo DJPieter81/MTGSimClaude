@@ -1,0 +1,47 @@
+{
+  "trace_file": "sneak_b_vs_dimir_s7.json",
+  "matchup": "sneak_b_vs_dimir",
+  "seed": 7,
+  "winner": "p2",
+  "win_reason": "BUG life reaches -2 on turn 8",
+  "kill_turn": null,
+  "game_length": 8,
+  "deck1": "sneak_b",
+  "deck2": "dimir",
+  "grades": {
+    "mulligan": "B",
+    "mana": "C",
+    "combat": "B",
+    "combo": "C",
+    "interaction": "C+",
+    "meta": "C+",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
+    "mana": "Lost in 8 turns \u2014 possible mana sequencing issues (0 ramp tokens)",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "No combo Execute decision logged \u2014 deck did not fire its plan",
+    "interaction": "3 hold + 0 defer; protection deployed but insufficient",
+    "meta": "3 play_around token but lost in 8 turns \u2014 tried to navigate opp threats, outcome insufficient",
+    "overall": "Average across 6 domains \u2014 lost in 8 turns; structural counts: exec=0 hold=3 defer=0 remove=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 3,
+    "defer": 0,
+    "counter": 0,
+    "discard": 0,
+    "removal": 0,
+    "tried_combo": 0,
+    "ramp": 0,
+    "meta": 3,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 6
+  },
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C \u2014 Lost in 8 turns \u2014 possible mana sequencing issues (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: C+ \u2014 3 hold + 0 defer; protection deployed but insufficient\nmeta: C+ \u2014 3 play_around token but lost in 8 turns \u2014 tried to navigate opp threats, outcome insufficient\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 8 turns; structural counts: exec=0 hold=3 defer=0 remove=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T13:29:37.873144Z"
+}

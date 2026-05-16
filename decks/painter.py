@@ -34,7 +34,7 @@ DECK_META = {
     'make_deck':  make_painter_deck,
     'strategy':   _strategy_painter,
     'keep':       _keep_painter,
-    'categories': {'control'},
+    'categories': {'combo'},
     'interaction': {'speed': 3, 'resilience': 3, 'uses_graveyard': False, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.03,
 }

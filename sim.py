@@ -3897,21 +3897,22 @@ def run_rules_tests():
         # silently dropped 'elves' (Glimpse-of-Nature combo engine that
         # declared only 'aggro','tribal') and silently added 'painter'
         # (declared 'combo' but emits no Execute tokens). The fix:
-        # 'elves' adds 'combo' to its categories; 'painter' moves from
-        # 'combo' to 'control' until typed Execute tokens are wired at
-        # the Painter+Grindstone lock site. This test locks the
+        # 'elves' adds 'combo' to its categories; 'painter' emits typed
+        # `combo:painter_grindstone_mill` Execute tokens at the
+        # Painter+Grindstone lock site (engine.py — 5 fire sites across
+        # _strategy_prison and _strategy_painter). This test locks the
         # canonical membership so future refactors can't drop a deck
         # silently without re-declaring its category in DECK_META.
         test("deck-class membership: elves is a COMBO deck (Glimpse engine)",
              'elves' in _sg.COMBO_DECKS, True,
              detail=f"COMBO_DECKS = {sorted(_sg.COMBO_DECKS)}")
-        test("deck-class membership: painter is NOT a COMBO deck "
-             "(no typed Execute tokens emitted)",
-             'painter' not in _sg.COMBO_DECKS, True,
+        test("deck-class membership: painter IS a COMBO deck "
+             "(typed Execute tokens wired at Painter+Grindstone lock)",
+             'painter' in _sg.COMBO_DECKS, True,
              detail=f"COMBO_DECKS = {sorted(_sg.COMBO_DECKS)}")
-        test("deck-class membership: painter is an INTERACTION deck "
-             "(control archetype)",
-             'painter' in _sg.INTERACTION_DECKS, True,
+        test("deck-class membership: painter is NOT an INTERACTION deck "
+             "(combo archetype after Execute wiring)",
+             'painter' not in _sg.INTERACTION_DECKS, True,
              detail=f"INTERACTION_DECKS = {sorted(_sg.INTERACTION_DECKS)}")
     except Exception as _e:
         test(f"structural_grader rule tests (error: {_e})", False, True)

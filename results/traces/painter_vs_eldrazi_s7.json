@@ -152,6 +152,17 @@
         "pass"
       ],
       "reason": "mana=2, hand=5, artifacts=6"
+    },
+    {
+      "turn": 7,
+      "deck": "painter",
+      "phase": "combo",
+      "chosen": "combo:painter_grindstone_mill",
+      "candidates": [
+        "combo:painter_grindstone_mill",
+        "pass"
+      ],
+      "reason": "Painter naming color + Grindstone activation mills entire library"
     }
   ],
   "full_log": [
@@ -627,6 +638,7 @@
     "T5 [painter] chose entry from [fast_mana,painter,grindstone,karn,ring,tezzeret,pass] \u2014 mana=5, hand=7, artifacts=2",
     "T6 [painter] chose entry from [fast_mana,painter,grindstone,karn,ring,tezzeret,pass] \u2014 mana=4, hand=7, artifacts=3",
     "T6 [eldrazi] chose land_destroy_saga_with_wasteland from [wasteland,pass] \u2014 wasteland destroys saga",
-    "T7 [painter] chose entry from [fast_mana,painter,grindstone,karn,ring,tezzeret,pass] \u2014 mana=2, hand=5, artifacts=6"
+    "T7 [painter] chose entry from [fast_mana,painter,grindstone,karn,ring,tezzeret,pass] \u2014 mana=2, hand=5, artifacts=6",
+    "T7 [painter] [phase:combo] chose combo:painter_grindstone_mill from [combo:painter_grindstone_mill,pass] \u2014 Painter naming color + Grindstone activation mills entire library"
   ]
 }

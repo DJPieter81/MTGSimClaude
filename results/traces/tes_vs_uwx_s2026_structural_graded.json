@@ -1,0 +1,47 @@
+{
+  "trace_file": "tes_vs_uwx_s2026.json",
+  "matchup": "tes_vs_uwx",
+  "seed": 2026,
+  "winner": "p2",
+  "win_reason": "Board/life advantage after T15",
+  "kill_turn": 15,
+  "game_length": 15,
+  "deck1": "tes",
+  "deck2": "uwx",
+  "grades": {
+    "mulligan": "C+",
+    "mana": "C",
+    "combat": "B",
+    "combo": "C+",
+    "interaction": "C",
+    "meta": "C+",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Mulled to 6; card disadvantage contributed to loss",
+    "mana": "Lost in 15 turns \u2014 possible mana sequencing issues (8 ramp tokens)",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "No Execute token, but 14 tried_combo token(s) \u2014 pieces deployed, kill disrupted",
+    "interaction": "0 hold + 2 defer; no protection token surfaced",
+    "meta": "2 play_around token but lost in 15 turns \u2014 tried to navigate opp threats, outcome insufficient",
+    "overall": "Average across 6 domains \u2014 lost in 15 turns; structural counts: exec=0 hold=0 defer=2 remove=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 0,
+    "defer": 2,
+    "counter": 1,
+    "discard": 0,
+    "removal": 0,
+    "tried_combo": 14,
+    "ramp": 8,
+    "meta": 2,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 27
+  },
+  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 15 turns \u2014 possible mana sequencing issues (8 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C+ \u2014 No Execute token, but 14 tried_combo token(s) \u2014 pieces deployed, kill disrupted\ninteraction: C \u2014 0 hold + 2 defer; no protection token surfaced\nmeta: C+ \u2014 2 play_around token but lost in 15 turns \u2014 tried to navigate opp threats, outcome insufficient\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 15 turns; structural counts: exec=0 hold=0 defer=2 remove=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T13:29:37.874954Z"
+}
