@@ -3860,6 +3860,211 @@ def run_rules_tests():
     except Exception as _e:
         test(f"structural_grader rule tests (error: {_e})", False, True)
 
+    # ── typed Decision algebra rule tests ─────────────────────────────────
+    # Mechanical tests for the typed decision algebra introduced in
+    # decision.py. Each test pins a rule: (a) to_token() byte-equality with
+    # the prefix-string contract the grader already consumes; (b) the
+    # grader's isinstance(d, Decision) fast-path buckets typed decisions
+    # into the same counts dict the legacy dict path produces; (c) frozen
+    # immutability; (d) legacy trace-JSON dicts still grade identically.
+    try:
+        import sys as _sys2
+        from pathlib import Path as _Path3
+        _sys2.path.insert(0, str(_Path3(__file__).resolve().parent / 'scripts'))
+        import structural_grader as _sg2  # type: ignore
+        from decision import (Decision as _Dec, ComboDecision as _CoD,
+                              DisruptionDecision as _DiD, CombatDecision as _CbD,
+                              ManaDecision as _MaD, MulliganDecision as _MuD,
+                              MetaDecision as _MeD)
+        from dataclasses import FrozenInstanceError as _FIE
+        from strategic_logger import StrategicLogger as _SL2
+
+        # Rule A1 — DisruptionDecision.to_token() reproduces the
+        # 'counter_<target>_with_<instrument>' format the strategy layer
+        # currently writes. Byte-equality is the gate that lets the grader
+        # consume both typed and string forms without divergence.
+        _d_counter = _DiD(turn=2, deck='bug', kind='counter',
+                          target_tag='ts', instrument_tag='fow')
+        test("Decision algebra: DisruptionDecision(counter, ts, fow).to_token()",
+             _d_counter.to_token(), 'counter_ts_with_fow')
+
+        # Rule A2 — discard / remove kinds use the same template.
+        _d_discard = _DiD(turn=1, deck='bug', kind='discard',
+                          target_tag='fow', instrument_tag='ts')
+        test("Decision algebra: DisruptionDecision(discard, fow, ts).to_token()",
+             _d_discard.to_token(), 'discard_fow_with_ts')
+        _d_remove = _DiD(turn=3, deck='bug', kind='remove',
+                         target_tag='goyf', instrument_tag='push')
+        test("Decision algebra: DisruptionDecision(remove, goyf, push).to_token()",
+             _d_remove.to_token(), 'remove_goyf_with_push')
+
+        # Rule A3 — ComboDecision.execute with a path_tag yields
+        # 'combo:<path_tag>'; empty path_tag falls back to legacy 'kill_C'.
+        _c_exec = _CoD(turn=4, deck='storm', kind='execute', path_tag='storm')
+        test("Decision algebra: ComboDecision(execute, 'storm').to_token()",
+             _c_exec.to_token(), 'combo:storm')
+        _c_kill = _CoD(turn=4, deck='storm', kind='execute', path_tag='')
+        test("Decision algebra: ComboDecision(execute, '').to_token() = 'kill_C'",
+             _c_kill.to_token(), 'kill_C')
+
+        # Rule A4 — ComboDecision.tried emits 'tried_combo:<piece_tag>',
+        # the partial-credit token from PR #153.
+        _c_tried = _CoD(turn=2, deck='storm', kind='tried', piece_tag='darkrit')
+        test("Decision algebra: ComboDecision(tried, 'darkrit').to_token()",
+             _c_tried.to_token(), 'tried_combo:darkrit')
+
+        # Rule A5 — ComboDecision.hold and defer match the legacy tokens.
+        _c_hold = _CoD(turn=1, deck='storm', kind='hold', piece_tag='fow')
+        test("Decision algebra: ComboDecision(hold, 'fow').to_token() = 'hold_fow'",
+             _c_hold.to_token(), 'hold_fow')
+        _c_defer = _CoD(turn=1, deck='storm', kind='defer')
+        test("Decision algebra: ComboDecision(defer).to_token() = 'defer'",
+             _c_defer.to_token(), 'defer')
+
+        # Rule A6 — CombatDecision.attack with attacker_count + tag
+        # reproduces the 'attack with N <tribe>' phrase the grader's
+        # _is_combat_decision recognises via the 'attack' prefix.
+        _cb_attack = _CbD(turn=3, deck='goblins', phase='combat',
+                          kind='attack', attacker_count=2, attacker_tag='goblins')
+        test("Decision algebra: CombatDecision(attack, 2, 'goblins').to_token()",
+             _cb_attack.to_token(), 'attack with 2 goblins')
+
+        # Rule A7 — to_log_entry() emits the dict shape StrategicLogger.entries
+        # already uses (turn / deck / phase / candidates / chosen / reason).
+        _entry = _d_counter.to_log_entry()
+        test("Decision algebra: to_log_entry()['chosen'] matches to_token()",
+             _entry['chosen'], 'counter_ts_with_fow')
+        test("Decision algebra: to_log_entry() has all six keys",
+             sorted(_entry.keys()),
+             ['candidates', 'chosen', 'deck', 'phase', 'reason', 'turn'])
+
+        # Rule A8 — StrategicLogger.log(decision) appends a byte-identical
+        # entry to log_decision(...) with the same args. This is the shim
+        # invariant that lets the grader consume both APIs interchangeably.
+        _sl_a = _SL2(enabled=True)
+        _sl_b = _SL2(enabled=True)
+        _dec_for_log = _DiD(turn=2, deck='bug', phase='disruption',
+                            reason='answer the threat', candidates=('counter','pass'),
+                            kind='counter', target_tag='ts', instrument_tag='fow')
+        _sl_a.log(_dec_for_log)
+        _sl_b.log_decision(turn=2, deck='bug',
+                           candidates=('counter','pass'),
+                           chosen='counter_ts_with_fow',
+                           reason='answer the threat', phase='disruption')
+        test("Decision algebra: log(decision) and log_decision(...) produce identical entries",
+             _sl_a.entries, _sl_b.entries)
+
+        # Rule A9 — _count_structural fast-path: typed DisruptionDecisions
+        # bucket into counts['remove'] and counts['counter'] without any
+        # string parsing. Pin: a mixed list of typed and dict decisions
+        # produces identical counts as the all-dict equivalent.
+        _typed_list = [
+            _DiD(turn=2, deck='bug', kind='remove',
+                 target_tag='goyf', instrument_tag='push'),
+            _DiD(turn=3, deck='bug', kind='counter',
+                 target_tag='ts', instrument_tag='fow'),
+        ]
+        _typed_counts = _sg2._count_structural(_typed_list, deck1='bug')
+        test("Decision algebra: typed remove decision buckets to counts['removal']",
+             _typed_counts['removal'], 1)
+        test("Decision algebra: typed counter decision buckets to counts['counter']",
+             _typed_counts['counter'], 1)
+
+        # Rule A10 — typed ComboDecisions bucket to execute/hold/defer/tried_combo.
+        _typed_combo = [
+            _CoD(turn=1, deck='storm', kind='execute', path_tag='storm'),
+            _CoD(turn=2, deck='storm', kind='hold', piece_tag='fow'),
+            _CoD(turn=3, deck='storm', kind='defer'),
+            _CoD(turn=4, deck='storm', kind='tried', piece_tag='darkrit'),
+        ]
+        _typed_combo_counts = _sg2._count_structural(_typed_combo, deck1='storm')
+        test("Decision algebra: typed combo decisions bucket to execute/hold/defer/tried_combo",
+             (_typed_combo_counts['execute'], _typed_combo_counts['hold'],
+              _typed_combo_counts['defer'], _typed_combo_counts['tried_combo']),
+             (1, 1, 1, 1))
+
+        # Rule A11 — typed CombatDecision buckets to counts['combat'].
+        _typed_combat = [
+            _CbD(turn=3, deck='goblins', phase='combat',
+                 kind='attack', attacker_count=2, attacker_tag='goblins'),
+        ]
+        _typed_cb_counts = _sg2._count_structural(_typed_combat, deck1='goblins')
+        test("Decision algebra: typed CombatDecision buckets to counts['combat']",
+             _typed_cb_counts['combat'], 1)
+
+        # Rule A12 — frozen-dataclass immutability. The grader can't mutate
+        # a Decision after it's logged. FrozenInstanceError on assignment.
+        _froz = _DiD(turn=2, deck='bug', kind='counter',
+                     target_tag='ts', instrument_tag='fow')
+        try:
+            _froz.turn = 99  # type: ignore
+            _did_raise = False
+        except _FIE:
+            _did_raise = True
+        test("Decision algebra: Decision instances are frozen (turn assignment raises)",
+             _did_raise, True)
+
+        # Rule A13 — mixed typed + dict list: backward-compat path stays
+        # green. A pre-algebra trace dict and a typed Decision in the same
+        # list produce identical bucketing as if both were dicts.
+        _mixed = [
+            _DiD(turn=2, deck='bug', kind='remove',
+                 target_tag='goyf', instrument_tag='push'),
+            {'turn': 3, 'deck': 'bug', 'chosen': 'counter_ts_with_fow',
+             'candidates': [], 'reason': '', 'phase': None},
+        ]
+        _mixed_counts = _sg2._count_structural(_mixed, deck1='bug')
+        test("Decision algebra: mixed typed+dict list buckets to (removal=1, counter=1)",
+             (_mixed_counts['removal'], _mixed_counts['counter']),
+             (1, 1))
+
+        # Rule A14 — typed-path deck1 filter mirrors dict-path filter:
+        # opponent's typed decisions don't credit deck1's grade.
+        _xdeck_typed = [
+            _DiD(turn=1, deck='storm', kind='discard',
+                 target_tag='fow', instrument_tag='ts'),
+            _DiD(turn=2, deck='bug', kind='counter',
+                 target_tag='lightning_bolt', instrument_tag='fow'),
+        ]
+        _bug_typed = _sg2._count_structural(_xdeck_typed, deck1='bug')
+        test("Decision algebra: typed deck1=bug sees own counter, not storm's discard",
+             (_bug_typed['counter'], _bug_typed['discard']), (1, 0))
+
+        # Rule A15 — extract kind buckets into 'discard' (same axis), and
+        # land_destroy kind buckets into 'removal' (same axis). New
+        # disruption kinds slot into existing buckets via the
+        # _DISRUPTION_KIND_TO_BUCKET map without grader changes.
+        _new_kinds = [
+            _DiD(turn=1, deck='bug', kind='extract',
+                 target_tag='fow', instrument_tag='surgical'),
+            _DiD(turn=2, deck='bug', kind='land_destroy',
+                 target_tag='depths', instrument_tag='wasteland'),
+        ]
+        _nk_counts = _sg2._count_structural(_new_kinds, deck1='bug')
+        test("Decision algebra: extract kind buckets into counts['discard']",
+             _nk_counts['discard'], 1)
+        test("Decision algebra: land_destroy kind buckets into counts['removal']",
+             _nk_counts['removal'], 1)
+
+        # Rule A16 — backward-compat invariant on legacy trace JSON. The
+        # same dict-shaped decisions a pre-algebra trace contains must
+        # still bucket identically. Pin: feeding the exact dict shape from
+        # _xdeck (used in Rule 4b above) yields the same counts the
+        # legacy path produced.
+        _legacy_xdeck = [
+            {'turn': 1, 'deck': 'storm', 'chosen': 'discard_fow_with_ts'},
+            {'turn': 2, 'deck': 'bug', 'chosen': 'counter_lightning_bolt_with_fow'},
+        ]
+        _legacy_bug = _sg2._count_structural(_legacy_xdeck, deck1='bug')
+        _legacy_storm = _sg2._count_structural(_legacy_xdeck, deck1='storm')
+        test("Decision algebra: legacy trace JSON path (bug) bucket counter=1, discard=0",
+             (_legacy_bug['counter'], _legacy_bug['discard']), (1, 0))
+        test("Decision algebra: legacy trace JSON path (storm) bucket discard=1, counter=0",
+             (_legacy_storm['discard'], _legacy_storm['counter']), (1, 0))
+
+    except Exception as _e:
+        test(f"typed Decision algebra rule tests (error: {_e})", False, True)
+
     # ── run_sweep parallel parity ──────────────────────────────────────────
     # Multiprocessing partitions the games into independent RNG streams (one
     # per worker), so we cannot demand bit-identical win counts vs. the

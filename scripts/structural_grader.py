@@ -40,6 +40,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from llm_judge import RUBRIC_DOMAINS, GRADE_SCALE  # noqa: E402
 from config import _load_calibrated  # noqa: E402
+from decision import (  # noqa: E402
+    Decision, ComboDecision, DisruptionDecision, CombatDecision,
+    ManaDecision, MulliganDecision, MetaDecision,
+)
 
 TRACE_DIR = Path(__file__).resolve().parent.parent / 'results' / 'traces'
 
@@ -156,9 +160,40 @@ def _is_combat_decision(decision: dict) -> bool:
     return chosen.startswith(ATTACK_PREFIX)
 
 
-def _count_structural(decisions: list[dict], deck1: str | None = None) -> dict:
+# ─── typed Decision → bucket-name maps ────────────────────────────────────
+#
+# The grader's bucket names (`counter`, `discard`, `removal`, `execute`,
+# `hold`, `defer`, `tried_combo`, `combat`) predate the typed algebra; the
+# maps below pin Decision.kind to the existing bucket so `_count_structural`
+# stays a single dict the per-domain `_grade_*` rules can consume.
+_DISRUPTION_KIND_TO_BUCKET = {
+    'counter':      'counter',
+    'discard':      'discard',
+    'remove':       'removal',
+    # extract = exile-from-hand variant of discard; bucketed identically so
+    # interaction-deck n_inter aggregates both.
+    'extract':      'discard',
+    # land_destroy = removal of a *land* permanent; bucketed with removal so
+    # midrange/aggro decks credit it on the removal axis.
+    'land_destroy': 'removal',
+}
+_COMBO_KIND_TO_BUCKET = {
+    'execute': 'execute',
+    'hold':    'hold',
+    'defer':   'defer',
+    'tried':   'tried_combo',
+}
+
+
+def _count_structural(decisions, deck1: str | None = None) -> dict:
     """Bucket decisions by structural token. Returns counts only — no keyword
     pattern matching on `reason`.
+
+    Accepts a mixed list of typed `Decision` instances and legacy dict
+    entries. Typed instances go through the `isinstance(d, Decision)` fast
+    path (no string-prefix matching); dict entries fall through to the
+    legacy `_is_*` prefix predicates so JSON traces written before the
+    Decision algebra still grade identically.
 
     When `deck1` is provided, only decisions emitted by that deck count toward
     the structural buckets. Without this filter, an opponent's typed decision
@@ -167,7 +202,8 @@ def _count_structural(decisions: list[dict], deck1: str | None = None) -> dict:
     deck1's play, so its counts must only see deck1's decisions.
     """
     if deck1 is not None:
-        decisions = [d for d in decisions if d.get('deck') == deck1]
+        decisions = [d for d in decisions
+                     if (d.deck if isinstance(d, Decision) else d.get('deck')) == deck1]
     counts = {
         'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'discard': 0,
         'removal': 0, 'tried_combo': 0,
@@ -175,6 +211,28 @@ def _count_structural(decisions: list[dict], deck1: str | None = None) -> dict:
         'total': len(decisions),
     }
     for d in decisions:
+        # ─── typed Decision fast-path ─────────────────────────────────────
+        if isinstance(d, Decision):
+            phase = d.phase
+            if isinstance(d, DisruptionDecision):
+                bucket = _DISRUPTION_KIND_TO_BUCKET.get(d.kind)
+                if bucket is not None:
+                    counts[bucket] += 1
+            elif isinstance(d, ComboDecision):
+                bucket = _COMBO_KIND_TO_BUCKET.get(d.kind)
+                if bucket is not None:
+                    counts[bucket] += 1
+            elif isinstance(d, CombatDecision):
+                counts['combat'] += 1
+            # ManaDecision / MulliganDecision / MetaDecision: no axis bucket
+            # yet — only the `total` and phase counters track them.
+            if phase == 'combo':
+                counts['combo_phase'] += 1
+            if phase == 'protect' or phase == 'disruption':
+                counts['protect_phase'] += 1
+            continue
+
+        # ─── legacy dict path (pre-algebra trace JSON) ────────────────────
         chosen = d.get('chosen', '') or ''
         phase = d.get('phase')
         if _is_execute(chosen):
