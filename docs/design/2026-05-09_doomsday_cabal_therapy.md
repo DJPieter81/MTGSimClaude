@@ -1,9 +1,10 @@
 ---
 title: doomsday — Cabal Therapy + per-matchup pile architecture
-status: proposed
+status: superseded
 date: 2026-05-09
 phase: Phase 6 of B+ rubric lift
 supersedes: null
+superseded_by: 2026-05-16_doomsday_cabal_therapy_piles.md
 ---
 
 # doomsday — Cabal Therapy + per-matchup pile architecture

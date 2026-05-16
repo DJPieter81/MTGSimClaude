@@ -106,6 +106,48 @@ mono_black, mardu). Biggest swing: Burn vs Dimir_b 88% → 69% (-19pp).
 
 > **Detailed plan**: see [`docs/plans/2026-05-09_next_session.md`](docs/plans/2026-05-09_next_session.md) for the full breakdown including P0/P1/P2 priorities, time estimates, and a loop-break signal for Doomsday.
 
+### 2026-05-16 — Take-it-home: 4 structural PRs + full matrix refresh + Doomsday design doc
+
+Six PRs landed in a single session targeting tournament-prep accuracy.
+
+**Structural fixes (4 PRs):**
+- **PR #164** — Audit-set expansion (89 traces) + K_* recalibration + Painter Execute wiring. Meta-axis 3.55 → 3.43, combat 3.33 → 3.20.
+- **PR #165** — Burn maindeck rebalance (UWX +3 Sanctifier, WST 3→4 Sanctifier, DnT 2→3 Solitude) + structural removal of the shared TS preamble (`sim._execute_turn:687-743` deleted; 4 deck strategies migrated to own their TS branches). Mardu Grief engine now fires (was silent fail when shared preamble consumed evoke pitch fuel).
+- **PR #166** — Lotus Petal double-count fix. `sim._execute_turn:633` `total_mana += sum(petals)` deleted; storm now cracks petals itself. Painter T1 no longer deploys phantom CMC-2 spells with 0 lands. Storm corrected −10pp vs Dimir.
+- **PR #167** — Belcher LED-activation fix. `_strategy_belcher` now cracks LED in response to Charbelcher activation (CR 605.1). Belcher avg WR 26% → 40.4%, matching real-Legacy Bo1 band.
+
+**Outputs refreshed against fresh sim:**
+- Bo1 matrix `results/matrix_20260516_151017.json` (n=200, 36 decks × 1260 matchups, 3.5 min)
+- Bo3 matrix `results/matrix_bo3_20260516_151437.json` (n=100, 3 min)
+- 36 deck guides regenerated (`guides/*.html`, 500 games/deck via `refresh_all.py`)
+- Matrix HTML `results/meta_matrix_20260516_151017.html`
+- 403/403 rules tests pass
+
+**Notable meta-EV shifts since the Apr 14 matrix (n=500 → n=200, but same direction across all decks):**
+
+| deck | Apr 14 | May 16 | Δ |
+|---|---:|---:|---:|
+| affinity | 69.8% | 56.0% | **−13.8pp** |
+| lands | 40.5% | 52.1% | +11.7pp |
+| depths | 56.1% | 66.4% | +10.3pp |
+| wan_shi_tong | 38.3% | 47.6% | +9.4pp |
+| painter | 36.1% | 44.7% | +8.7pp |
+| sneak_a/b | 58.7/58.8% | 50.9/51.2% | −7.6 to −7.8pp |
+| storm | 42.6% | 49.9% | +7.4pp |
+| doomsday | 35.0% | 32.5% | −2.5pp (still bottom) |
+
+Affinity drop and sneak_a/b drop are likely Petal-fix consequences (no longer double-counting fast mana). Depths/Painter gains include typed Execute token credit from PR #164. Doomsday remains worst — see design doc below.
+
+**Doomsday architectural design doc (P1 loop-break unblock):**
+- `docs/design/2026-05-16_doomsday_cabal_therapy_piles.md` — typed `Pile` algebra (`TendrilsPile`, `LurrusPile`, `WraithPile`, `OraclePile`) + pure `select_pile(player, opponent, gs) → Pile` function mirroring `combo_engine.combo_plan`. 6-phase migration plan with named failing tests. Supersedes the older 2026-05-09 sketch.
+- `status: proposal` — implementation gated by future session per the loop-break rule.
+
+**Next session candidates** (ordered by leverage):
+1. **Implement Phase A of the Doomsday design doc** (add Lurrus + Cabal Therapy + Pile dataclasses). Doc names the failing test sequence.
+2. **Investigate affinity −13.8pp drop** — possibly a side-effect of TS preamble removal interacting with Memnite/Frogmite triggers. Trace-audit one game.
+3. **New `meta_rankings.html` page** — tooling gap noted in survey. Single sorted tier list across all 36 decks for at-a-glance "what to play".
+4. **Bo3 matrix in `refresh_all.py`** — PLANNING.md P2 #5, still pending integration.
+
 ### 2026-05-17 — Audit-set expansion + K_* recalibration + Painter Execute wiring
 
 Closed out the three actionable items the 2026-05-16 session deferred (the four-item list at line 124 below).
