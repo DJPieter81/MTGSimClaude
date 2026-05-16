@@ -119,6 +119,17 @@
       "reason": "protect combo: hold fow vs opp p_free_counter=0.50"
     },
     {
+      "turn": 6,
+      "deck": "reanimator",
+      "phase": "meta",
+      "chosen": "meta_play_around_free_counter",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold reanimator combo \u2014 protect combo: hold fow vs opp p_free_counter=0.50"
+    },
+    {
       "turn": 7,
       "deck": "reanimator",
       "phase": "grind",
@@ -622,6 +633,7 @@
     "T5 [reanimator] [phase:grind] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=5, entomb=False, reanimate=True, target=False",
     "T6 [reanimator] [phase:grind] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=6, entomb=False, reanimate=True, target=False",
     "T6 [reanimator] [phase:grind] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.50",
+    "T6 [reanimator] [phase:meta] chose meta_play_around_free_counter from [execute,play_around] \u2014 hold reanimator combo \u2014 protect combo: hold fow vs opp p_free_counter=0.50",
     "T7 [reanimator] [phase:grind] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=7, entomb=False, reanimate=True, target=False"
   ]
 }

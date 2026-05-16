@@ -193,6 +193,17 @@
       "reason": "protect combo: hold fow vs opp p_free_counter=0.62"
     },
     {
+      "turn": 8,
+      "deck": "reanimator",
+      "phase": "meta",
+      "chosen": "meta_play_around_free_counter",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold reanimator combo \u2014 protect combo: hold fow vs opp p_free_counter=0.62"
+    },
+    {
       "turn": 9,
       "deck": "reanimator",
       "phase": "grind",
@@ -218,6 +229,17 @@
       "reason": "protect combo: hold fow vs opp p_free_counter=0.69"
     },
     {
+      "turn": 9,
+      "deck": "reanimator",
+      "phase": "meta",
+      "chosen": "meta_play_around_free_counter",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold reanimator combo \u2014 protect combo: hold fow vs opp p_free_counter=0.69"
+    },
+    {
       "turn": 10,
       "deck": "reanimator",
       "phase": "grind",
@@ -241,6 +263,17 @@
         "defer"
       ],
       "reason": "protect combo: hold fow vs opp p_free_counter=0.68"
+    },
+    {
+      "turn": 10,
+      "deck": "reanimator",
+      "phase": "meta",
+      "chosen": "meta_play_around_free_counter",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold reanimator combo \u2014 protect combo: hold fow vs opp p_free_counter=0.68"
     },
     {
       "turn": 10,
@@ -963,10 +996,13 @@
     "T7 [reanimator] [phase:grind] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=0, entomb=True, reanimate=True, target=False",
     "T8 [reanimator] [phase:grind] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=0, entomb=True, reanimate=True, target=False",
     "T8 [reanimator] [phase:grind] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.62",
+    "T8 [reanimator] [phase:meta] chose meta_play_around_free_counter from [execute,play_around] \u2014 hold reanimator combo \u2014 protect combo: hold fow vs opp p_free_counter=0.62",
     "T9 [reanimator] [phase:grind] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=0, entomb=True, reanimate=True, target=False",
     "T9 [reanimator] [phase:grind] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.69",
+    "T9 [reanimator] [phase:meta] chose meta_play_around_free_counter from [execute,play_around] \u2014 hold reanimator combo \u2014 protect combo: hold fow vs opp p_free_counter=0.69",
     "T10 [reanimator] [phase:grind] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=1, entomb=True, reanimate=True, target=False",
     "T10 [reanimator] [phase:grind] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.68",
+    "T10 [reanimator] [phase:meta] chose meta_play_around_free_counter from [execute,play_around] \u2014 hold reanimator combo \u2014 protect combo: hold fow vs opp p_free_counter=0.68",
     "T10 [reanimator] [phase:grind] chose mana_ramp_2 from [ritual,pass] \u2014 dark_ritual \u2192 +2 mana",
     "T10 [reanimator] [phase:grind] chose combo:reanimate_gris from [reanimate,exhume,animatedead] \u2014 reanimate resolves, gris enters play from GY"
   ]

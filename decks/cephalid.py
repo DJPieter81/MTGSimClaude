@@ -19,6 +19,7 @@ from cards import (creature, instant, sorcery, artifact, enchantment,
                    planeswalker, fetch_land, dual_land, basic_land, utility_land)
 from rules import Card, CardType
 from combo_engine import AssemblyPath
+from decision import MetaDecision
 
 
 # ─── Deck construction ────────────────────────────────────────────────────────
@@ -238,6 +239,17 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
             chosen=('defer' if isinstance(_plan_c, _Defer_c)
                     else f'hold_{getattr(_plan_c.card, "tag", "card")}'),
             reason=_plan_c.reason)
+        # Meta-axis play-around — combo_plan returned Hold/Defer because of
+        # opp BHI free-counter belief; threat tag is the fow/fon/daze family.
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold cephalid combo — {_plan_c.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
 
     # ── Track Shuko in play via attribute ────────────────────────────────────
     if not hasattr(gs, 'shuko_in_play'):

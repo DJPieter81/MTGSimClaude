@@ -45,6 +45,17 @@
     {
       "turn": 1,
       "deck": "oops",
+      "phase": "meta",
+      "chosen": "meta_play_around_free_counter",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold oops combo \u2014 protect combo: hold grief vs opp p_free_counter=0.64"
+    },
+    {
+      "turn": 1,
+      "deck": "oops",
       "phase": "t1_kill",
       "chosen": "pass",
       "candidates": [
@@ -85,6 +96,17 @@
     {
       "turn": 2,
       "deck": "oops",
+      "phase": "meta",
+      "chosen": "meta_play_around_free_counter",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold oops combo \u2014 protect combo: hold grief vs opp p_free_counter=0.56"
+    },
+    {
+      "turn": 2,
+      "deck": "oops",
       "phase": "t2_kill",
       "chosen": "pass",
       "candidates": [
@@ -121,6 +143,17 @@
         "defer"
       ],
       "reason": "protect combo: hold grief vs opp p_free_counter=0.54"
+    },
+    {
+      "turn": 3,
+      "deck": "oops",
+      "phase": "meta",
+      "chosen": "meta_play_around_free_counter",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold oops combo \u2014 protect combo: hold grief vs opp p_free_counter=0.54"
     },
     {
       "turn": 3,
@@ -1150,12 +1183,15 @@
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [oops] [phase:t1_kill] chose hold_grief from [proceed,hold,defer] \u2014 protect combo: hold grief vs opp p_free_counter=0.64",
+    "T1 [oops] [phase:meta] chose meta_play_around_free_counter from [execute,play_around] \u2014 hold oops combo \u2014 protect combo: hold grief vs opp p_free_counter=0.64",
     "T1 [oops] [phase:t1_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.57",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=6, threats_in_play=0",
     "T2 [oops] [phase:t2_kill] chose hold_grief from [proceed,hold,defer] \u2014 protect combo: hold grief vs opp p_free_counter=0.56",
+    "T2 [oops] [phase:meta] chose meta_play_around_free_counter from [execute,play_around] \u2014 hold oops combo \u2014 protect combo: hold grief vs opp p_free_counter=0.56",
     "T2 [oops] [phase:t2_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.56",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=7, threats_in_play=0",
     "T3 [oops] [phase:disruption] chose hold_grief from [proceed,hold,defer] \u2014 protect combo: hold grief vs opp p_free_counter=0.54",
+    "T3 [oops] [phase:meta] chose meta_play_around_free_counter from [execute,play_around] \u2014 hold oops combo \u2014 protect combo: hold grief vs opp p_free_counter=0.54",
     "T3 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=False, leyline=False, bhi_p_free_counter=0.47",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=5, threats_in_play=1",
     "T3 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",

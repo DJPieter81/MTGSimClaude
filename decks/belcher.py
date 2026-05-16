@@ -21,7 +21,7 @@ sys.path.insert(0, '/home/claude/mtg_sim')
 import random
 from cards import creature, instant, sorcery, artifact, dual_land
 from rules import Card, CardType
-from decision import ManaDecision
+from decision import ManaDecision, MetaDecision
 
 
 # ─── Deck construction ────────────────────────────────────────────────────────
@@ -403,6 +403,22 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
                           for c in opponent.hand)
     opp_mana_up = sum(1 for l in opponent.lands if not l.tapped)
     if vos and budget[0] >= 1 and (opp_has_counters or opp_mana_up >= 1):
+        # Meta-axis play-around — Belcher casts Veil of Summer pre-emptively
+        # because opp has counters in hand or mana up. The threat tag is
+        # 'free_counter' when fow/fon/daze are seen, 'open_mana' otherwise
+        # (tap-out tempo counter like Counterspell / Daze trigger).
+        _threat_tag = 'free_counter' if opp_has_counters else 'open_mana'
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=(f'cast Veil of Summer pre-combo — '
+                    f'opp_has_counters={opp_has_counters}, '
+                    f'opp_mana_up={opp_mana_up}'),
+            candidates=('skip_vos', 'play_around'),
+            kind='play_around',
+            threat_tag=_threat_tag,
+        ))
         if not getattr(gs, 'veil_active', False):
             def _resolve_vos(c):
                 player.add_to_grave(c)

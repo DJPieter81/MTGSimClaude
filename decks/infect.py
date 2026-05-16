@@ -22,6 +22,7 @@ import random
 from cards import creature, instant, sorcery, artifact
 from cards import fetch_land, dual_land, basic_land, utility_land
 from rules import Card, CardType
+from decision import MetaDecision
 
 # ─── Deck construction ────────────────────────────────────────────────────────
 
@@ -315,6 +316,22 @@ def _strategy_infect(player, opponent, gs, total_mana, log_fn, log_entries):
     # only, no pump; kicked: {GG}, hexproof + pump). Or Blossoming Defense
     # ({G}, hexproof + pump). Priority: protect the creature first.
     if opp_removal_threat:
+        # Meta-axis play-around — Infect chose to cast hexproof protection
+        # FIRST (before the pump chain) because opp has mana up or a free
+        # removal spell. Without this play-around, a single Bolt / Push /
+        # Snuff Out / Solitude would kill the attacker mid-combat.
+        _threat_tag = 'free_removal' if opp_has_free_removal else 'open_mana'
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=(f'cast hexproof protection first — '
+                    f'opp_has_mana={opp_has_mana}, '
+                    f'opp_has_free_removal={opp_has_free_removal}'),
+            candidates=('skip_protection', 'play_around'),
+            kind='play_around',
+            threat_tag=_threat_tag,
+        ))
         # Try Vines of Vastwood first — kicked if we can afford it (2 mana)
         vines = player.find_tag('vines')
         if vines and mana >= 1 and opp_can_cast(vines, mana, gs, caster=player):

@@ -35,6 +35,7 @@
     "removal": 0,
     "tried_combo": 1,
     "ramp": 0,
+    "meta": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
@@ -42,5 +43,5 @@
   },
   "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Lost in 4 turns \u2014 possible mana sequencing issues (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C+ \u2014 2 Execute + 1 tried_combo; lost on T4 \u2014 disrupted early but pieces deployed\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C \u2014 Lost a matchup that should be favored (reanimator vs burn) \u2014 possible role confusion\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 4 turns; structural counts: exec=2 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:32:48.142239Z"
+  "graded_at": "2026-05-16T12:33:33.560474Z"
 }

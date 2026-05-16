@@ -35,6 +35,7 @@
     "removal": 0,
     "tried_combo": 4,
     "ramp": 3,
+    "meta": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 9,
@@ -42,5 +43,5 @@
   },
   "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 10 turns \u2014 possible mana sequencing issues (3 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 1 Execute + 4 tried_combo; lost on T10 \u2014 combo could not close but pieces deployed\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 10 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:32:48.139693Z"
+  "graded_at": "2026-05-16T12:33:33.557842Z"
 }

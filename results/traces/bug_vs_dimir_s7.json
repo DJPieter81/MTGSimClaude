@@ -86,6 +86,17 @@
     },
     {
       "turn": 2,
+      "deck": "bug",
+      "phase": "meta",
+      "chosen": "meta_play_around_cantrip",
+      "candidates": [
+        "deploy_main",
+        "play_around"
+      ],
+      "reason": "hold Bowmasters for EOT flash \u2014 opp cantrips queued, tempo mirror"
+    },
+    {
+      "turn": 2,
       "deck": "dimir",
       "phase": null,
       "chosen": "entry",
@@ -813,6 +824,7 @@
     "T1 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=0, hand=5, threats_in_play=0",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=4, threats_in_play=0",
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=5, threats_in_play=0",
+    "T2 [bug] [phase:meta] chose meta_play_around_cantrip from [deploy_main,play_around] \u2014 hold Bowmasters for EOT flash \u2014 opp cantrips queued, tempo mirror",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=5, threats_in_play=0",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=4, threats_in_play=1",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=6, threats_in_play=0",

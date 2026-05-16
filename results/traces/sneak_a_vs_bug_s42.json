@@ -103,6 +103,17 @@
     },
     {
       "turn": 4,
+      "deck": "bug",
+      "phase": "meta",
+      "chosen": "meta_play_around_fow",
+      "candidates": [
+        "deploy",
+        "play_around"
+      ],
+      "reason": "hold 2nd threat \u2014 opp has 3 open + FoW likely (flood_risk on parity)"
+    },
+    {
+      "turn": 4,
       "deck": "sneak_a",
       "phase": null,
       "chosen": "hold_fow",
@@ -112,6 +123,17 @@
         "defer"
       ],
       "reason": "protect combo: hold fow vs opp p_free_counter=0.51"
+    },
+    {
+      "turn": 4,
+      "deck": "sneak_a",
+      "phase": "meta",
+      "chosen": "meta_play_around_free_counter",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold sneak_a combo \u2014 protect combo: hold fow vs opp p_free_counter=0.51"
     },
     {
       "turn": 5,
@@ -127,6 +149,17 @@
         "pass"
       ],
       "reason": "mana=2, hand=7, threats_in_play=1"
+    },
+    {
+      "turn": 5,
+      "deck": "bug",
+      "phase": "meta",
+      "chosen": "meta_play_around_fow",
+      "candidates": [
+        "deploy",
+        "play_around"
+      ],
+      "reason": "hold 2nd threat \u2014 opp has 4 open + FoW likely (flood_risk on parity)"
     },
     {
       "turn": 5,
@@ -213,6 +246,17 @@
     },
     {
       "turn": 6,
+      "deck": "bug",
+      "phase": "meta",
+      "chosen": "meta_play_around_fow",
+      "candidates": [
+        "deploy",
+        "play_around"
+      ],
+      "reason": "hold 2nd threat \u2014 opp has 5 open + FoW likely (flood_risk on parity)"
+    },
+    {
+      "turn": 6,
       "deck": "sneak_a",
       "phase": null,
       "chosen": "combo:show_and_tell_atraxa",
@@ -239,6 +283,17 @@
       "reason": "mana=2, hand=6, threats_in_play=3"
     },
     {
+      "turn": 7,
+      "deck": "bug",
+      "phase": "meta",
+      "chosen": "meta_play_around_fow",
+      "candidates": [
+        "deploy",
+        "play_around"
+      ],
+      "reason": "hold 2nd threat \u2014 opp has 6 open + FoW likely (flood_risk on parity)"
+    },
+    {
       "turn": 8,
       "deck": "bug",
       "phase": null,
@@ -254,6 +309,17 @@
       "reason": "mana=3, hand=6, threats_in_play=3"
     },
     {
+      "turn": 8,
+      "deck": "bug",
+      "phase": "meta",
+      "chosen": "meta_play_around_fow",
+      "candidates": [
+        "deploy",
+        "play_around"
+      ],
+      "reason": "hold 2nd threat \u2014 opp has 7 open + FoW likely (flood_risk on parity)"
+    },
+    {
       "turn": 9,
       "deck": "bug",
       "phase": null,
@@ -267,6 +333,17 @@
         "pass"
       ],
       "reason": "mana=4, hand=6, threats_in_play=4"
+    },
+    {
+      "turn": 9,
+      "deck": "bug",
+      "phase": "meta",
+      "chosen": "meta_play_around_fow",
+      "candidates": [
+        "deploy",
+        "play_around"
+      ],
+      "reason": "hold 2nd threat \u2014 opp has 8 open + FoW likely (flood_risk on parity)"
     }
   ],
   "full_log": [
@@ -841,8 +918,11 @@
     "T3 [bug] chose discard_sneak_with_ts from [thoughtseize,pass] \u2014 TS strips sneak from opponent",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=0, hand=6, threats_in_play=1",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=7, threats_in_play=1",
+    "T4 [bug] [phase:meta] chose meta_play_around_fow from [deploy,play_around] \u2014 hold 2nd threat \u2014 opp has 3 open + FoW likely (flood_risk on parity)",
     "T4 [sneak_a] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.51",
+    "T4 [sneak_a] [phase:meta] chose meta_play_around_free_counter from [execute,play_around] \u2014 hold sneak_a combo \u2014 protect combo: hold fow vs opp p_free_counter=0.51",
     "T5 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=7, threats_in_play=1",
+    "T5 [bug] [phase:meta] chose meta_play_around_fow from [deploy,play_around] \u2014 hold 2nd threat \u2014 opp has 4 open + FoW likely (flood_risk on parity)",
     "T5 [sneak_a] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
     "T5 [sneak_a] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
     "T5 [sneak_a] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
@@ -850,9 +930,13 @@
     "T5 [sneak_a] chose tried_combo:petal from [execute,tried_combo,pass] \u2014 played petal but combo did not fire this turn",
     "T5 [sneak_a] chose tried_combo:sat from [execute,tried_combo,pass] \u2014 played sat but combo did not fire this turn",
     "T6 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=6, threats_in_play=1",
+    "T6 [bug] [phase:meta] chose meta_play_around_fow from [deploy,play_around] \u2014 hold 2nd threat \u2014 opp has 5 open + FoW likely (flood_risk on parity)",
     "T6 [sneak_a] chose combo:show_and_tell_atraxa from [show_and_tell,sneak_attack,pass] \u2014 SaT resolved with atraxa from hand",
     "T7 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=6, threats_in_play=3",
+    "T7 [bug] [phase:meta] chose meta_play_around_fow from [deploy,play_around] \u2014 hold 2nd threat \u2014 opp has 6 open + FoW likely (flood_risk on parity)",
     "T8 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=6, threats_in_play=3",
-    "T9 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=6, threats_in_play=4"
+    "T8 [bug] [phase:meta] chose meta_play_around_fow from [deploy,play_around] \u2014 hold 2nd threat \u2014 opp has 7 open + FoW likely (flood_risk on parity)",
+    "T9 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=6, threats_in_play=4",
+    "T9 [bug] [phase:meta] chose meta_play_around_fow from [deploy,play_around] \u2014 hold 2nd threat \u2014 opp has 8 open + FoW likely (flood_risk on parity)"
   ]
 }

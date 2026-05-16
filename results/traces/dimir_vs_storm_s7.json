@@ -71,6 +71,17 @@
     {
       "turn": 1,
       "deck": "storm",
+      "phase": "meta",
+      "chosen": "meta_play_around_fow",
+      "candidates": [
+        "execute",
+        "play_around"
+      ],
+      "reason": "hold combo plan \u2014 opp p_free_counter=0.57 > 0.5 (fow/fon up)"
+    },
+    {
+      "turn": 1,
+      "deck": "storm",
       "phase": "setup",
       "chosen": "pass",
       "candidates": [
@@ -490,6 +501,7 @@
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=6, threats_in_play=0",
     "T1 [storm] [phase:setup] chose p=0.57 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=True scan_said=False",
     "T1 [storm] [phase:setup] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.57, no protection in hand",
+    "T1 [storm] [phase:meta] chose meta_play_around_fow from [execute,play_around] \u2014 hold combo plan \u2014 opp p_free_counter=0.57 > 0.5 (fow/fon up)",
     "T1 [storm] [phase:setup] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=7/9, rituals=5, safe=False, thalia=False, life=19",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=6, threats_in_play=0",
     "T2 [storm] [phase:setup] chose p=0.48 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",

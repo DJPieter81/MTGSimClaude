@@ -25,7 +25,7 @@ from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as
                     GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
                     RaceThresholds as RT, WastelandPriority as WP,
                     BurnLethal as BL, Elves as EL)
-from decision import DisruptionDecision, ManaDecision, CombatDecision
+from decision import DisruptionDecision, ManaDecision, CombatDecision, MetaDecision
 
 
 # ─────────────────────────────────────────────
@@ -1412,6 +1412,21 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             hold_for_mirror_eot = is_tempo_mirror and opp_likely_has_cantrip and game_state != 'behind'
             hold_for_interaction = (game_state == 'behind' and bug_has_threats and
                                     any(c.is_removal for c in player.hand))
+            # Meta-axis play-around — BUG declined to deploy Bowmasters main-
+            # phase in the mirror so it can flash in response to opp's
+            # cantrip, maximizing draw-triggered pings (Kirdie's rule of
+            # thumb: "Bowmasters are often better later in mirrors").
+            if hold_for_mirror_eot:
+                gs.strat_log.log(MetaDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    phase='meta',
+                    reason=('hold Bowmasters for EOT flash — opp cantrips '
+                            'queued, tempo mirror'),
+                    candidates=('deploy_main', 'play_around'),
+                    kind='play_around',
+                    threat_tag='cantrip',
+                ))
 
             if not hold_for_mirror_eot and not hold_for_interaction:
                 def _resolve_bowm(c):
@@ -1922,6 +1937,46 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
     # If holding mana: don't deploy the SECOND sorcery-speed threat
     # (we still deploy the first — empty board is always worse than threat + held mana)
     hold_mana = hold_for_push or hold_for_bowm
+
+    # ── Meta-axis play-around emissions (BUG) ──────────────────────────────
+    # Each of the three hold-* / flood_risk flags above is a play-around
+    # decision: BUG chose to NOT deploy a threat (or hold mana open) because
+    # of a specific named opponent threat. The structural grader credits one
+    # meta-axis token per fired flag — these are the cleanest signal of
+    # "this strategy is matchup-aware", per the PR #160 contract.
+    if flood_risk:
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=(f'hold 2nd threat — opp has {opp_open_mana} open + '
+                    f'FoW likely (flood_risk on parity)'),
+            candidates=('deploy', 'play_around'),
+            kind='play_around',
+            threat_tag='fow',
+        ))
+    if hold_for_push:
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=(f'hold mana for Push — opp has killable creature on '
+                    f'board ({game_state})'),
+            candidates=('tap_out', 'play_around'),
+            kind='play_around',
+            threat_tag='push_target',
+        ))
+    if hold_for_bowm:
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=(f'hold mana for Bowmasters — opp has cantrips '
+                    f'({game_state})'),
+            candidates=('tap_out', 'play_around'),
+            kind='play_around',
+            threat_tag='bowmasters',
+        ))
 
     # ── Tamiyo — C1: needs 1U ──
     tam = player.find_tag('tamiyo')
@@ -3825,6 +3880,17 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
             chosen=('defer' if isinstance(_plan_sh, _Defer_sh)
                     else f'hold_{getattr(_plan_sh.card, "tag", "card")}'),
             reason=_plan_sh.reason)
+        # Meta-axis play-around — combo_plan returned Hold/Defer due to opp
+        # BHI free-counter belief. See combo_engine._check_protection.
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold show combo — {_plan_sh.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
 
     # ── Mana: Ancient Tomb gives {CC} generic; City of Traitors gives {CC} ──
     # Lotus Petal sacs for any mana
@@ -4256,6 +4322,18 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
             chosen=('defer' if isinstance(_plan_o, _Defer_o)
                     else f'hold_{getattr(_plan_o.card, "tag", "card")}'),
             reason=_plan_o.reason)
+        # Meta-axis play-around — combo_plan returned Hold/Defer because
+        # opp BHI free-counter belief crossed the threshold. See
+        # combo_engine._check_protection.
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold oops combo — {_plan_o.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
 
     # ── 0. Play MDFC as land if no lands in play ──
     if not player.lands:
@@ -5872,6 +5950,23 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
             chosen=('defer' if isinstance(_plan, _Defer)
                     else f'hold_{getattr(_plan.card, "tag", "card")}'),
             reason=_plan.reason)
+        # Meta-axis play-around emission. The Hold/Defer is a *combo-axis*
+        # decision (it's logged above as `hold_*` / `defer`); the *meta-axis*
+        # complement is that the deck chose this because of a named opponent
+        # threat (free counter inferred via BHI). `opp_has_free_counter` is
+        # the gating threat tag — see BHI / IP.BHI_FREE_COUNTER_THRESHOLD.
+        if opp_has_free_counter and not safe_to_combo:
+            gs.strat_log.log(MetaDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase='meta',
+                reason=(f'hold combo plan — opp p_free_counter='
+                        f'{belief.p_free_counter:.2f} > '
+                        f'{IP.BHI_FREE_COUNTER_THRESHOLD} (fow/fon up)'),
+                candidates=('execute', 'play_around'),
+                kind='play_around',
+                threat_tag='fow',
+            ))
 
     itutor   = player.find_tag('itutor')
     led      = player.find_tag('led')
@@ -6061,6 +6156,19 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
             chosen=('defer' if isinstance(_plan_r, _Defer_r)
                     else f'hold_{getattr(_plan_r.card, "tag", "card")}'),
             reason=_plan_r.reason)
+        # Meta-axis play-around — combo_plan() returned Hold/Defer because
+        # opp BHI exceeded the free-counter threshold. The threat tag is
+        # 'free_counter' (fow/fon/daze family) because that's the BHI
+        # axis _check_protection consults; see combo_engine._check_protection.
+        gs.strat_log.log(MetaDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold reanimator combo — {_plan_r.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
 
     # ── Step 1: Lotus Petal — only crack if combo path exists ──────────────
     # Check: do we have Entomb+Reanimate, or target in GY + Reanimate?
