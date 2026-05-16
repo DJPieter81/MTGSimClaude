@@ -34,6 +34,17 @@
       "turn": 1,
       "deck": "reanimator",
       "phase": "t1_free_mana",
+      "chosen": "discard_fireblast_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips fireblast from opponent"
+    },
+    {
+      "turn": 1,
+      "deck": "reanimator",
+      "phase": "t1_free_mana",
       "chosen": "pass",
       "candidates": [
         "entomb_reanimate",
@@ -532,6 +543,7 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [reanimator] [phase:t1_free_mana] chose discard_fireblast_with_ts from [thoughtseize,pass] \u2014 TS strips fireblast from opponent",
     "T1 [reanimator] [phase:t1_free_mana] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=0, entomb=False, reanimate=True, target=False",
     "T2 [reanimator] [phase:t2_plan_b] chose pass from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=2, entomb=False, reanimate=True, target=False",
     "T3 [reanimator] [phase:t2_plan_b] chose entomb_reanimate from [entomb_reanimate,petal_ritual,unmask,pass] \u2014 mana=3, entomb=True, reanimate=True, target=False",

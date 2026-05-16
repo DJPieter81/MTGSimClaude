@@ -67,6 +67,7 @@ EXECUTE_PREFIXES = ('combo:', 'kill_', 'cast_doomsday', 'cast_spy',
 HOLD_PREFIXES = ('hold_',)
 DEFER_TOKENS = {'defer'}
 COUNTER_PREFIXES = ('counter_',)   # interaction decks log counter_<spell>_with_<ctr>
+DISCARD_PREFIXES = ('discard_',)   # interaction decks log discard_<spell>_with_<ts>
 ATTACK_PREFIX = 'attack'  # 'attack with N goblins'
 COMBAT_PHASE = 'combat'
 
@@ -99,6 +100,13 @@ def _is_counter(chosen: str) -> bool:
     return any(chosen.startswith(p) for p in COUNTER_PREFIXES)
 
 
+def _is_discard(chosen: str) -> bool:
+    """Decision indicates the strategy *forced opp to discard* a card."""
+    if not chosen:
+        return False
+    return any(chosen.startswith(p) for p in DISCARD_PREFIXES)
+
+
 def _is_combat_decision(decision: dict) -> bool:
     """Combat-axis decision: either tagged with combat phase or attack action."""
     if decision.get('phase') == COMBAT_PHASE:
@@ -110,8 +118,8 @@ def _is_combat_decision(decision: dict) -> bool:
 def _count_structural(decisions: list[dict]) -> dict:
     """Bucket decisions by structural token. Returns counts only — no keyword pattern matching on `reason`."""
     counts = {
-        'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'combat': 0,
-        'combo_phase': 0, 'protect_phase': 0,
+        'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'discard': 0,
+        'combat': 0, 'combo_phase': 0, 'protect_phase': 0,
         'total': len(decisions),
     }
     for d in decisions:
@@ -125,6 +133,8 @@ def _count_structural(decisions: list[dict]) -> dict:
             counts['defer'] += 1
         if _is_counter(chosen):
             counts['counter'] += 1
+        if _is_discard(chosen):
+            counts['discard'] += 1
         if _is_combat_decision(d):
             counts['combat'] += 1
         if phase == 'combo':
@@ -233,16 +243,19 @@ def _grade_interaction(trace: dict, counts: dict) -> tuple[str, str]:
     n_hold = counts['hold']
     n_defer = counts['defer']
     n_counter = counts.get('counter', 0)
-    # Interaction decks earn primary credit from `counter_*` tokens.
-    n_inter = n_hold + n_defer + n_counter
+    n_discard = counts.get('discard', 0)
+    # Interaction decks earn primary credit from counter_* and discard_*.
+    n_inter = n_hold + n_defer + n_counter + n_discard
 
     if deck1 in INTERACTION_DECKS:
         if p1_won:
             return ('A' if n_inter >= 3 else 'B+',
-                    f"{n_counter} counter + {n_hold} hold + {n_defer} defer decisions; "
+                    f"{n_counter} counter + {n_discard} discard + {n_hold} hold + "
+                    f"{n_defer} defer decisions; "
                     f"{'heavy structured disruption' if n_inter >= 3 else 'measured disruption'} backed the win")
         return ('C+' if n_inter >= 2 else 'C',
-                f"{n_counter} counter + {n_hold} hold + {n_defer} defer decisions; "
+                f"{n_counter} counter + {n_discard} discard + {n_hold} hold + "
+                f"{n_defer} defer decisions; "
                 f"{'logged but insufficient' if n_inter >= 2 else 'not enough disruption surfaced'}")
 
     if deck1 in COMBO_DECKS:
