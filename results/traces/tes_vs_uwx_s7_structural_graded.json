@@ -1,0 +1,47 @@
+{
+  "trace_file": "tes_vs_uwx_s7.json",
+  "matchup": "tes_vs_uwx",
+  "seed": 7,
+  "winner": "p2",
+  "win_reason": "BUG life reaches -7 on turn 7",
+  "kill_turn": null,
+  "game_length": 7,
+  "deck1": "tes",
+  "deck2": "uwx",
+  "grades": {
+    "mulligan": "D",
+    "mana": "C",
+    "combat": "B",
+    "combo": "C+",
+    "interaction": "C",
+    "meta": "C+",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Mulled to 5; aggressive mulligan strategy backfired",
+    "mana": "Lost in 7 turns \u2014 possible mana sequencing issues (2 ramp tokens)",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "No Execute token, but 6 tried_combo token(s) \u2014 pieces deployed, kill disrupted",
+    "interaction": "0 hold + 1 defer; no protection token surfaced",
+    "meta": "1 play_around token but lost in 7 turns \u2014 tried to navigate opp threats, outcome insufficient",
+    "overall": "Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=1 remove=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 0,
+    "defer": 1,
+    "counter": 0,
+    "discard": 0,
+    "removal": 0,
+    "tried_combo": 6,
+    "ramp": 2,
+    "meta": 1,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 10
+  },
+  "raw_response": "mulligan: D \u2014 Mulled to 5; aggressive mulligan strategy backfired\nmana: C \u2014 Lost in 7 turns \u2014 possible mana sequencing issues (2 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C+ \u2014 No Execute token, but 6 tried_combo token(s) \u2014 pieces deployed, kill disrupted\ninteraction: C \u2014 0 hold + 1 defer; no protection token surfaced\nmeta: C+ \u2014 1 play_around token but lost in 7 turns \u2014 tried to navigate opp threats, outcome insufficient\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=1 remove=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T13:29:37.876200Z"
+}

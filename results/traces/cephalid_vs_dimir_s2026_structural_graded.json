@@ -1,0 +1,47 @@
+{
+  "trace_file": "cephalid_vs_dimir_s2026.json",
+  "matchup": "cephalid_vs_dimir",
+  "seed": 2026,
+  "winner": "p1",
+  "win_reason": "Cephalid Breakfast: Illusionist + Oracle",
+  "kill_turn": 11,
+  "game_length": 11,
+  "deck1": "cephalid",
+  "deck2": "dimir",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "B+",
+    "combat": "B",
+    "combo": "C+",
+    "interaction": "B+",
+    "meta": "A",
+    "overall": "B+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Won but took 11 turns \u2014 mana was adequate (0 ramp tokens)",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "No Execute token, but 3 tried_combo token(s) \u2014 pieces deployed, kill disrupted",
+    "interaction": "6 hold + 0 defer; protected combo via typed hold",
+    "meta": "Won an unfavored matchup (cephalid vs dimir) \u2014 strong matchup awareness",
+    "overall": "Average across 6 domains \u2014 won in 11 turns; structural counts: exec=0 hold=6 defer=0 remove=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 6,
+    "defer": 0,
+    "counter": 1,
+    "discard": 0,
+    "removal": 0,
+    "tried_combo": 3,
+    "ramp": 0,
+    "meta": 6,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 16
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 11 turns \u2014 mana was adequate (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C+ \u2014 No Execute token, but 3 tried_combo token(s) \u2014 pieces deployed, kill disrupted\ninteraction: B+ \u2014 6 hold + 0 defer; protected combo via typed hold\nmeta: A \u2014 Won an unfavored matchup (cephalid vs dimir) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 11 turns; structural counts: exec=0 hold=6 defer=0 remove=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T13:29:37.866217Z"
+}

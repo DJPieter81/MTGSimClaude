@@ -3608,6 +3608,12 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         # Grindstone activation: tap + 3 mana to mill. With Painter naming a color,
         # the two cards always share a color → repeat until library is empty.
         if total_mana >= 3:
+            gs.strat_log.log_decision(
+                gs.turn, 'painter',
+                candidates=['combo:painter_grindstone_mill', 'pass'],
+                chosen='combo:painter_grindstone_mill',
+                reason='Painter naming color + Grindstone activation mills entire library',
+                phase='combo')
             log_fn("★ Painter + Grindstone — mills entire library!", True)
             gs.game_over = True
             gs.kill_turn = gs.turn
@@ -3639,6 +3645,12 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
     painter_in_play = any(p.card.tag == 'painter' for p in player.artifacts + player.creatures)
     grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
     if painter_in_play and grind_in_play and total_mana >= 3:
+        gs.strat_log.log_decision(
+            gs.turn, 'painter',
+            candidates=['combo:painter_grindstone_mill', 'pass'],
+            chosen='combo:painter_grindstone_mill',
+            reason='Painter naming color + Grindstone activation mills entire library',
+            phase='combo')
         log_fn("★ Painter + Grindstone — mills entire library!", True)
         gs.game_over = True
         gs.kill_turn = gs.turn
@@ -5709,6 +5721,12 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
     grind_in_play = any(p.card.tag == 'grind' for p in player.artifacts)
 
     if painter_in_play and grind_in_play and total_mana >= 3:
+        gs.strat_log.log_decision(
+            gs.turn, 'painter',
+            candidates=['combo:painter_grindstone_mill', 'pass'],
+            chosen='combo:painter_grindstone_mill',
+            reason='Painter naming color + Grindstone activation mills entire library',
+            phase='combo')
         log_fn("★ Painter + Grindstone — mills entire library!", True)
         gs.game_over = True
         gs.kill_turn = gs.turn
@@ -5742,6 +5760,12 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Check combo again after deploying
     if painter_in_play and grind_in_play and total_mana >= 3:
+        gs.strat_log.log_decision(
+            gs.turn, 'painter',
+            candidates=['combo:painter_grindstone_mill', 'pass'],
+            chosen='combo:painter_grindstone_mill',
+            reason='Painter naming color + Grindstone activation mills entire library',
+            phase='combo')
         log_fn("★ Painter + Grindstone — mills entire library!", True)
         gs.game_over = True
         gs.kill_turn = gs.turn
@@ -5797,6 +5821,12 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Check combo once more after Karn wish
     if painter_in_play and grind_in_play and total_mana >= 3:
+        gs.strat_log.log_decision(
+            gs.turn, 'painter',
+            candidates=['combo:painter_grindstone_mill', 'pass'],
+            chosen='combo:painter_grindstone_mill',
+            reason='Painter naming color + Grindstone activation mills entire library',
+            phase='combo')
         log_fn("★ Painter + Grindstone — mills entire library!", True)
         gs.game_over = True
         gs.kill_turn = gs.turn

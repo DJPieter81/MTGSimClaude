@@ -1,0 +1,47 @@
+{
+  "trace_file": "cephalid_vs_dimir_s42.json",
+  "matchup": "cephalid_vs_dimir",
+  "seed": 42,
+  "winner": "p1",
+  "win_reason": "Opp life reaches 0 on turn 13",
+  "kill_turn": 13,
+  "game_length": 13,
+  "deck1": "cephalid",
+  "deck2": "dimir",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "B+",
+    "combat": "B",
+    "combo": "B+",
+    "interaction": "B",
+    "meta": "A",
+    "overall": "B+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Won but took 13 turns \u2014 mana was adequate (0 ramp tokens)",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "2 Execute decision(s); combo resolved late on T13",
+    "interaction": "0 hold + 0 defer; combo resolved without holding protection",
+    "meta": "Won an unfavored matchup (cephalid vs dimir) \u2014 strong matchup awareness",
+    "overall": "Average across 6 domains \u2014 won in 13 turns; structural counts: exec=2 hold=0 defer=0 remove=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 2,
+    "hold": 0,
+    "defer": 0,
+    "counter": 0,
+    "discard": 0,
+    "removal": 0,
+    "tried_combo": 4,
+    "ramp": 0,
+    "meta": 0,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 6
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 13 turns \u2014 mana was adequate (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: B+ \u2014 2 Execute decision(s); combo resolved late on T13\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (cephalid vs dimir) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 13 turns; structural counts: exec=2 hold=0 defer=0 remove=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T13:29:37.867036Z"
+}
