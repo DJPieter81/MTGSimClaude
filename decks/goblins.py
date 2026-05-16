@@ -200,6 +200,32 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Vial ticks to {gs.vial_counters}")
     gs._vial_entered_last_turn = False
 
+    # ── Thoughtseize T1-T2 (if no Lackey/Vial) ─────────────────────────────
+    # Cast BEFORE Chrome Mox so TS isn't pitched as Mox fuel. Goblins
+    # prefers Lackey on T1 (faster clock); TS fires when no Lackey and
+    # mana is available. Pre-restructure the shared preamble cast TS
+    # before strategy dispatch; this branch preserves that ordering.
+    ts = player.find_tag('ts')
+    if ts and rem >= 1 and gs.turn <= 2 and not player.find_tag('lackey'):
+        _b = [rem]
+        def _resolve_ts(c):
+            player.add_to_grave(c)
+            player.life -= 2
+            target = (opponent.find_any(lambda cc: cc.free_cast_if_blue) or
+                      opponent.find_any(lambda cc: cc.is_creature()) or
+                      next((cc for cc in opponent.hand if not cc.is_land()), None))
+            if target:
+                opponent.hand.remove(target)
+                opponent.add_to_grave(target)
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'discard',
+                    target.tag or 'card', 'ts',
+                    reason=f'TS strips {target.tag} from opponent')
+                log_fn(f"Thoughtseize strips {target.name}", True)
+        cast_spell(player, opponent, gs, ts, _b, log_fn, log_entries,
+                   on_resolve=_resolve_ts, cost_override=1)
+        rem = _b[0]
+
     # ── Chrome Mox for fast mana ────────────────────────────────────────────
     mox = player.find_tag('chrome_mox')
     if mox and not any(p.card.tag == 'chrome_mox' for p in player.artifacts):
@@ -214,23 +240,6 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
             player.exile.append(pitch)
             rem += 1
             log_fn(f"Chrome Mox (exile {pitch.name}) → +1 mana")
-
-    # ── Thoughtseize T1-T2 (if no Lackey/Vial) ─────────────────────────────
-    ts = player.find_tag('ts')
-    if ts and rem >= 1 and gs.turn <= 2 and not player.find_tag('lackey'):
-        _b = [rem]
-        def _resolve_ts(c):
-            player.add_to_grave(c)
-            player.life -= 2
-            target = (opponent.find_any(lambda cc: cc.free_cast_if_blue) or
-                      opponent.find_any(lambda cc: cc.is_creature()) or
-                      next((cc for cc in opponent.hand if not cc.is_land()), None))
-            if target:
-                opponent.hand.remove(target)
-                log_fn(f"Thoughtseize strips {target.name}", True)
-        cast_spell(player, opponent, gs, ts, _b, log_fn, log_entries,
-                   on_resolve=_resolve_ts, cost_override=1)
-        rem = _b[0]
 
     # ── Goblin Lackey T1 ───────────────────────────────────────────────────
     lackey = player.find_tag('lackey')
@@ -540,6 +549,5 @@ DECK_META = {
                 cheat_enabler_tag='',
             ),
         ),
-        'preamble_skip': False,    # Goblins has no shared discard preamble
     },
 }

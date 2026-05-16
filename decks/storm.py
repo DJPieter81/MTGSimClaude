@@ -68,6 +68,5 @@ DECK_META = {
                 needed_storm_count=10,  # ANT lethal storm count at 20 life
             ),
         ),
-        'preamble_skip': False,         # Storm has no shared discard preamble
     },
 }

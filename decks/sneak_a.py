@@ -522,6 +522,5 @@ DECK_META = {
                 target_tags=frozenset({'emrakul', 'atraxa'}),
             ),
         ),
-        'preamble_skip': False,
     },
 }

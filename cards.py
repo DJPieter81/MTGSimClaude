@@ -442,18 +442,31 @@ def make_uwx_deck() -> List[Card]:
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow', free_cast_if_blue=True)] * 4
     d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'}, tag='fon', free_cast_if_blue=True)] * 2
-    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 3
+    # Counters: trimmed 1 Counterspell (3→2) to make room for Sanctifier en-Vec.
+    # Counterspell at UU is the lowest-leverage counter vs Burn (instant-speed
+    # spells resolved before main phase); FoW/FoN/Fluster remain at full count.
+    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 2
     d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'}, tag='stp',     is_removal=True)] * 4
     d += [sorcery('Terminus', 6, {'W':1,'generic':5}, {'W'}, tag='terminus',is_removal=True, is_mass_removal=True)] * 3
     d += [planeswalker('Narset, Parter of Veils', 3, {'U':1,'generic':2}, {'U','W'}, tag='narset',  engine=True, lock_piece=True, draw_trigger=True)] * 2
     d += [creature('Monastery Mentor', 3, {'W':1,'generic':2}, {'W'}, 2, 2, tag='mentor')] * 3
     d += [creature('Snapcaster Mage', 2, {'U':1,'generic':1}, {'U'}, 2, 1, tag='snap', flash=True)] * 2
+    # Sanctifier en-Vec (3) — anti-Burn hate maindeck.  Pro-red prevents all
+    # red damage to controller + permanents (CR 702.16).  Real Legacy UWx
+    # lists with Burn-heavy metas run 2-3 main; 3 hits opener ~32% of games.
+    # Wired via pro_red=True; burn's deal_face_damage checks for opponent-side
+    # pro_red creatures.
+    d += [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'}, 2, 2,
+                   tag='sanctifier', pro_red=True)] * 3
     d += [enchantment('Back to Basics', 3, {'U':1,'generic':2}, {'U'}, tag='b2b',     lock_piece=True)] * 2
-    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 2
+    # Flusterstorm trimmed 2→1 to make room for Sanctifier.  Flusterstorm is
+    # narrow vs Burn (most burn spells resolve before stack pressure builds).
+    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 1
     # Spell Pierce: {U} instant, counters noncreature spells unless opponent pays {2}
     d += [instant('Spell Pierce', 1, {'U':1}, {'U'}, tag='fluster')] * 1
-    # Preordain: 1 mana cantrip — additional card selection
-    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 2
+    # Preordain: 1 mana cantrip — trimmed 2→1 to make room for Sanctifier.
+    # Preordain is the weakest cantrip; Brainstorm/Ponder remain at 4 each.
+    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 1
     # 22 lands (reduced from 25 — Legacy control runs 20-22 lands)
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
     d += [fetch_land('Scalding Tarn', ['Island','Mountain'])] * 2
@@ -633,9 +646,16 @@ def make_dnt_deck() -> List[Card]:
     d += [creature('Stoneforge Mystic', 2, {'W':1,'generic':1}, {'W'}, 1, 2, tag='sfm',     engine=True)] * 4
     d += [creature('Recruiter of the Guard', 3, {'W':1,'generic':2}, {'W'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
     d += [creature('Skyclave Apparition', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='skyclave', is_removal=True)] * 3
-    d += [creature('Solitude', 5, {'W':2,'generic':3}, {'W'}, 3, 2, tag='solitude', is_removal=True, flash=True, flying=True, lifelink=True)] * 2
+    # Solitude bumped 2→3 — third copy is the canonical anti-aggro/anti-burn
+    # density (Modern + Legacy DnT lists with Burn-heavy metas run 3 main).
+    # Free evoke (exile a white card) is the cleanest answer to a T1/T2
+    # Swiftspear/Goblin Guide and gains 3 life via lifelink.
+    d += [creature('Solitude', 5, {'W':2,'generic':3}, {'W'}, 3, 2, tag='solitude', is_removal=True, flash=True, flying=True, lifelink=True)] * 3
     d += [creature('Phelia, Exuberant Shepherd', 2, {'W':1,'generic':1}, {'W'}, 2, 2, tag='phelia')] * 3
-    d += [creature('Flickerwisp', 3, {'W':1,'generic':2}, {'W'}, 3, 1, tag='flickerwisp', flying=True)] * 2
+    # Flickerwisp trimmed 2→1 to fit the 3rd Solitude.  Wisp is a Vial-mode
+    # flex slot, lowest-leverage creature in the list vs aggro/burn (the
+    # matchups Solitude directly attacks).
+    d += [creature('Flickerwisp', 3, {'W':1,'generic':2}, {'W'}, 3, 1, tag='flickerwisp', flying=True)] * 1
     # Spells (8)
     d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'}, tag='stp',     is_removal=True)] * 4
     d += [artifact('Aether Vial', 1, {'generic':1}, tag='vial',    engine=True)] * 4

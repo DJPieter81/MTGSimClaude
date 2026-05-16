@@ -78,6 +78,5 @@ DECK_META = {
                 turns_to_kill=1,
             ),
         ),
-        'preamble_skip': False,
     },
 }
