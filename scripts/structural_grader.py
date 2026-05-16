@@ -115,8 +115,18 @@ def _is_combat_decision(decision: dict) -> bool:
     return chosen.startswith(ATTACK_PREFIX)
 
 
-def _count_structural(decisions: list[dict]) -> dict:
-    """Bucket decisions by structural token. Returns counts only — no keyword pattern matching on `reason`."""
+def _count_structural(decisions: list[dict], deck1: str | None = None) -> dict:
+    """Bucket decisions by structural token. Returns counts only — no keyword
+    pattern matching on `reason`.
+
+    When `deck1` is provided, only decisions emitted by that deck count toward
+    the structural buckets. Without this filter, an opponent's typed decision
+    (e.g. storm casting TS that hits bug's FoW) would be credited to deck1's
+    score — the wrong attribution. The grader's per-domain rules judge
+    deck1's play, so its counts must only see deck1's decisions.
+    """
+    if deck1 is not None:
+        decisions = [d for d in decisions if d.get('deck') == deck1]
     counts = {
         'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'discard': 0,
         'combat': 0, 'combo_phase': 0, 'protect_phase': 0,
@@ -296,7 +306,7 @@ def grade_one_structural(trace_path: Path) -> Path | None:
         trace = json.load(f)
 
     decisions = trace.get('strategic_decisions', []) or []
-    counts = _count_structural(decisions)
+    counts = _count_structural(decisions, deck1=trace.get('deck1'))
 
     grades = {}
     justs = {}

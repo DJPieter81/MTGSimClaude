@@ -30,6 +30,8 @@
     "execute": 1,
     "hold": 0,
     "defer": 0,
+    "counter": 0,
+    "discard": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
@@ -37,5 +39,5 @@
   },
   "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 5 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A \u2014 1 Execute decision(s); combo resolved on T5\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: B+ \u2014 Efficiently closed a favored matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 5 turns; structural counts: exec=1 hold=0 defer=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T06:18:53.761596Z"
+  "graded_at": "2026-05-16T08:09:37.748186Z"
 }

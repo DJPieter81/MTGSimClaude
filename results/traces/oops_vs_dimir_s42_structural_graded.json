@@ -13,7 +13,7 @@
     "mana": "C",
     "combat": "B",
     "combo": "C+",
-    "interaction": "C",
+    "interaction": "C+",
     "meta": "C+",
     "overall": "C+"
   },
@@ -22,20 +22,22 @@
     "mana": "Lost in 10 turns \u2014 possible mana sequencing issues",
     "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
     "combo": "1 Execute decision(s) but lost on T10 \u2014 combo could not close",
-    "interaction": "0 hold + 0 defer; no protection token surfaced",
+    "interaction": "2 hold + 0 defer; protection deployed but insufficient",
     "meta": "Lost \u2014 played actively but could not overcome matchup",
-    "overall": "Average across 6 domains \u2014 lost in 10 turns; structural counts: exec=1 hold=0 defer=0 combat=0"
+    "overall": "Average across 6 domains \u2014 lost in 10 turns; structural counts: exec=1 hold=2 defer=0 combat=0"
   },
   "structural_counts": {
     "execute": 1,
-    "hold": 0,
+    "hold": 2,
     "defer": 0,
+    "counter": 0,
+    "discard": 0,
     "combat": 0,
     "combo_phase": 0,
-    "protect_phase": 7,
-    "total": 19
+    "protect_phase": 8,
+    "total": 11
   },
-  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 10 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C+ \u2014 1 Execute decision(s) but lost on T10 \u2014 combo could not close\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 10 turns; structural counts: exec=1 hold=0 defer=0 combat=0",
+  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 10 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C+ \u2014 1 Execute decision(s) but lost on T10 \u2014 combo could not close\ninteraction: C+ \u2014 2 hold + 0 defer; protection deployed but insufficient\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 10 turns; structural counts: exec=1 hold=2 defer=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T05:15:23.402149Z"
+  "graded_at": "2026-05-16T08:09:37.753922Z"
 }

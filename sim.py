@@ -3438,6 +3438,28 @@ def run_rules_tests():
         test("structural_grader: adversarial reason keywords do NOT raise combat count",
              _adv_counts['combat'], 0)
 
+        # Rule 4b — _count_structural with deck1 filter ignores opponent's
+        # decisions. Pin: storm's TS-hits-bug-FoW discard token must NOT
+        # count toward bug's interaction score when graded as deck1=bug.
+        _xdeck = [
+            {'turn': 1, 'deck': 'storm', 'chosen': 'discard_fow_with_ts'},
+            {'turn': 2, 'deck': 'bug', 'chosen': 'counter_lightning_bolt_with_fow'},
+        ]
+        _bug_counts = _sg._count_structural(_xdeck, deck1='bug')
+        _storm_counts = _sg._count_structural(_xdeck, deck1='storm')
+        test("deck1 filter: bug-as-deck1 sees its own counter token",
+             _bug_counts['counter'], 1)
+        test("deck1 filter: bug-as-deck1 does NOT see storm's discard token",
+             _bug_counts['discard'], 0)
+        test("deck1 filter: storm-as-deck1 sees its own discard token",
+             _storm_counts['discard'], 1)
+        test("deck1 filter: storm-as-deck1 does NOT see bug's counter token",
+             _storm_counts['counter'], 0)
+        # No deck1 filter → counts everything (backward-compat).
+        _all_counts = _sg._count_structural(_xdeck)
+        test("deck1 filter: no filter counts every token",
+             _all_counts['counter'] + _all_counts['discard'], 2)
+
         # Rule 5 — Execute decision logged + combo deck + fast win → A.
         # This exercises the combo-grading branch with a real structural
         # signal (heuristic would also give a high grade; the point is the
