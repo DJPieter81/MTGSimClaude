@@ -51,18 +51,29 @@ def _discover_decks():
 
         try:
             mod = importlib.import_module(f'decks.{modname}')
-            meta = getattr(mod, 'DECK_META', None)
-            if meta and isinstance(meta, dict) and 'key' in meta:
-                key = meta['key']
-                # Validate required fields
-                for field in ('key', 'name', 'make_deck', 'strategy'):
-                    if field not in meta:
-                        print(f"  [WARN] decks/{modname}.py DECK_META missing '{field}'")
-                        continue
-                results[key] = meta
+        except ImportError as e:
+            # Import-time failures are a real bug — surface them. A previous
+            # bare `except Exception: pass` swallowed a circular-import
+            # cycle in decks/bug.py for months, leaving the deck silently
+            # unregistered whenever config was imported before sim. See
+            # docs/design/2026-05-15_post-phase-6-re-architecture.md
+            # (PYTHONHASHSEED-hunt section).
+            print(f"  [WARN] decks/{modname}.py import failed: {e}")
+            continue
         except Exception as e:
-            # Module doesn't have DECK_META or failed to import — skip silently
-            pass
+            # Non-import errors (syntax errors, etc.) are also worth
+            # surfacing — keep them visible.
+            print(f"  [WARN] decks/{modname}.py raised {type(e).__name__}: {e}")
+            continue
+        meta = getattr(mod, 'DECK_META', None)
+        if meta and isinstance(meta, dict) and 'key' in meta:
+            key = meta['key']
+            # Validate required fields
+            for field in ('key', 'name', 'make_deck', 'strategy'):
+                if field not in meta:
+                    print(f"  [WARN] decks/{modname}.py DECK_META missing '{field}'")
+                    continue
+            results[key] = meta
 
     return results
 
