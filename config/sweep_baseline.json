@@ -2,19 +2,19 @@
   "_meta": {
     "n_games": 200,
     "threshold_pp": 5.0,
-    "generated_at": "2026-05-15T22:44:30+00:00",
-    "main_sha": "dbe7b07",
+    "generated_at": "2026-05-16T05:03:27+00:00",
+    "main_sha": "a1804cd",
     "comment": "Phase C regression-sweep baseline. The CI gate tools/regression_sweep.py fails when any matchup win rate drops > threshold_pp vs the values here. Update only after an intentional WR change (rebuild the file with `python3 tools/regression_sweep.py --update-baseline`)."
   },
   "matchups": [
     {
       "p1": "bug",
       "p2": "storm",
-      "p1_wr": 0.43,
-      "p1_wins": 86,
-      "p2_wins": 114,
-      "avg_kill": 5.92,
-      "avg_length": 5.92
+      "p1_wr": 0.475,
+      "p1_wins": 95,
+      "p2_wins": 105,
+      "avg_kill": 5.84,
+      "avg_length": 5.84
     },
     {
       "p1": "depths",
@@ -67,8 +67,8 @@
       "p1_wr": 0.585,
       "p1_wins": 117,
       "p2_wins": 83,
-      "avg_kill": 6.08,
-      "avg_length": 6.46
+      "avg_kill": 6.07,
+      "avg_length": 6.61
     },
     {
       "p1": "storm",
@@ -82,11 +82,11 @@
     {
       "p1": "storm",
       "p2": "dimir",
-      "p1_wr": 0.695,
-      "p1_wins": 139,
-      "p2_wins": 61,
-      "avg_kill": 5.43,
-      "avg_length": 6.0
+      "p1_wr": 0.7,
+      "p1_wins": 140,
+      "p2_wins": 60,
+      "avg_kill": 5.01,
+      "avg_length": 5.67
     },
     {
       "p1": "ur_delver",
