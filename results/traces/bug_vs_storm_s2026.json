@@ -165,6 +165,18 @@
       "reason": "storm=7/7, rituals=5, safe=True, thalia=False, life=20"
     },
     {
+      "turn": 3,
+      "deck": "storm",
+      "phase": "combo",
+      "chosen": "tried_combo:led",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played led but combo did not fire this turn"
+    },
+    {
       "turn": 4,
       "deck": "bug",
       "phase": null,
@@ -1069,6 +1081,7 @@
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=3, threats_in_play=1",
     "T3 [storm] [phase:combo] chose p=0.24 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T3 [storm] [phase:combo] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=7/7, rituals=5, safe=True, thalia=False, life=20",
+    "T3 [storm] [phase:combo] chose tried_combo:led from [execute,tried_combo,pass] \u2014 played led but combo did not fire this turn",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=3, threats_in_play=1",
     "T4 [storm] [phase:combo] chose p=0.16 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T4 [storm] [phase:combo] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=8/7, rituals=6, safe=True, thalia=False, life=20",

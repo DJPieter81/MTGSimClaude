@@ -814,6 +814,19 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     _hand_before = len(b.hand)
     _gy_nonland_before = sum(1 for c in b.graveyard if not c.is_land())
 
+    # ── Snapshot for tried_combo post-pass ──
+    # Capture the multiset of combo-piece tags currently in hand, plus the
+    # current strat_log entry-count, so we can attribute newly-cast pieces
+    # and detect whether an Execute token was logged this turn.
+    # `_cm` is set earlier (see "Defer-to-combo" block) — reused here.
+    if _cm is not None:
+        _combo_piece_tags = frozenset(_cm.get('pieces', ()))
+        _hand_tags_before = [c.tag for c in b.hand if c.tag in _combo_piece_tags]
+    else:
+        _combo_piece_tags = frozenset()
+        _hand_tags_before = []
+    _strat_log_len_before = len(gs.strat_log.entries)
+
     # ── Strategy dispatch ──
     from deck_registry import get_strategy
     strategy_fn = get_strategy(matchup)
@@ -827,6 +840,38 @@ def _execute_turn(gs, turn, b, o, who, matchup):
 
     # ── Post-strategy: restore lock adjustments ──
     restore_lock_effects(b, _adjustments)
+
+    # ── tried_combo:<piece_tag> post-pass ──
+    # Mechanic: combo decks that played at least one combo piece this turn
+    # but did NOT log an Execute token (combo didn't fire) get partial
+    # credit via a `tried_combo:<tag>` log_decision. Lets the structural
+    # grader distinguish "disrupted combo" from "did nothing".
+    # Detection: any combo-piece tag that was in hand at start-of-turn and
+    # is no longer in hand at end-of-turn is treated as "played this turn".
+    # If an Execute token (combo:* / kill_* / cast_doomsday / cast_spy /
+    # entomb_* / oracle_win / t1_kill / t2_kill) was logged by THIS deck
+    # since dispatch began, suppress the emit — combo fired.
+    if _combo_piece_tags and gs.strat_log.enabled:
+        _new_entries = gs.strat_log.entries[_strat_log_len_before:]
+        _exec_prefixes = ('combo:', 'kill_', 'cast_doomsday', 'cast_spy',
+                          'entomb_', 'oracle_win', 't1_kill', 't2_kill')
+        _exec_logged = any(
+            e.get('deck') == active_deck and any(
+                (e.get('chosen') or '').startswith(p) for p in _exec_prefixes
+            )
+            for e in _new_entries
+        )
+        if not _exec_logged:
+            _hand_tags_after = [c.tag for c in b.hand if c.tag in _combo_piece_tags]
+            # Multiset difference: pieces that left hand this turn.
+            from collections import Counter as _Counter
+            _played = _Counter(_hand_tags_before) - _Counter(_hand_tags_after)
+            for _tag in sorted(_played):  # deterministic order
+                gs.strat_log.log_decision(
+                    gs.turn, active_deck,
+                    candidates=['execute', 'tried_combo', 'pass'],
+                    chosen=f'tried_combo:{_tag}',
+                    reason=f'played {_tag} but combo did not fire this turn')
 
     # ── Eidolon post-strategy: apply damage for spells cast this turn ──
     # Strategies that bypass cast_spell() don't fire _eidolon_trigger.
@@ -3624,6 +3669,100 @@ def run_rules_tests():
         _adv_rcounts = _sg._count_structural(_adv_remove, deck1='bug')
         test("structural_grader: adversarial 'remove' in reason does NOT raise removal count",
              _adv_rcounts['removal'], 0)
+
+        # Rule 10 — tried_combo:<tag> is a tried_combo token, NOT Execute /
+        # Hold / Defer. Mechanic: a combo deck plays a piece this turn but
+        # the kill doesn't fire — the end-of-turn post-pass in
+        # sim._execute_turn emits one `tried_combo:<piece_tag>` for each
+        # piece that left hand without an Execute token logged.
+        test("structural_grader: 'tried_combo:storm' is a tried_combo token",
+             _sg._is_tried_combo('tried_combo:storm'), True)
+        test("structural_grader: 'tried_combo:reanimate' is a tried_combo token",
+             _sg._is_tried_combo('tried_combo:reanimate'), True)
+        test("structural_grader: 'tried_combo:*' is NOT an Execute token",
+             _sg._is_execute('tried_combo:storm'), False)
+        test("structural_grader: 'tried_combo:*' is NOT a Hold token",
+             _sg._is_hold('tried_combo:storm'), False)
+        test("structural_grader: 'tried_combo:*' is NOT a Defer token",
+             _sg._is_defer('tried_combo:storm'), False)
+        # The bare prefix without a tag is NOT a tried_combo emission
+        # (the emit site always appends a tag).
+        test("structural_grader: 'pass' is NOT a tried_combo token",
+             _sg._is_tried_combo('pass'), False)
+
+        # Rule 11 — _count_structural buckets tried_combo:<tag> into
+        # counts['tried_combo']. Pin: a single tried_combo token surfaces
+        # in the count without raising any other axis.
+        _tc_decisions = [
+            {'turn': 1, 'phase': 'combo', 'chosen': 'tried_combo:storm',
+             'candidates': [], 'reason': ''},
+            {'turn': 2, 'phase': 'combo', 'chosen': 'tried_combo:darkrit',
+             'candidates': [], 'reason': ''},
+        ]
+        _tc_counts = _sg._count_structural(_tc_decisions)
+        test("structural_grader: two tried_combo tokens raise tried_combo count to 2",
+             _tc_counts['tried_combo'], 2)
+        test("structural_grader: tried_combo tokens do NOT raise execute count",
+             _tc_counts['execute'], 0)
+        test("structural_grader: tried_combo tokens do NOT raise hold count",
+             _tc_counts['hold'], 0)
+
+        # Rule 12 — _grade_combo promotes a length≤5 combo-deck loss from D
+        # to C+ when n_tried≥1. Encodes "played pieces but disrupted".
+        _t_combo_tried_short = {
+            'deck1': 'storm', 'deck2': 'dimir', 'winner': 'p2',
+            'game_length': 5, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 1, 'phase': 'combo', 'chosen': 'kill_C',
+                 'candidates': [], 'reason': ''},
+                {'turn': 2, 'phase': 'combo', 'chosen': 'tried_combo:darkrit',
+                 'candidates': [], 'reason': ''},
+            ],
+        }
+        _g, _j = _sg._grade_combo(_t_combo_tried_short,
+                                  _sg._count_structural(_t_combo_tried_short['strategic_decisions']))
+        test("structural_grader: combo-deck loss n_tried>=1 length<=5 → C+ (was D)",
+             _g, 'C+', detail=f"justification: {_j}")
+
+        # Rule 13 — _grade_combo returns C (not D) for combo-deck loss
+        # with n_tried≥1 and length>5. The partial-credit signal still
+        # pulls the grade off the floor.
+        _t_combo_tried_long = {
+            'deck1': 'storm', 'deck2': 'dimir', 'winner': 'p2',
+            'game_length': 8, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 1, 'phase': 'combo', 'chosen': 'kill_C',
+                 'candidates': [], 'reason': ''},
+                {'turn': 2, 'phase': 'combo', 'chosen': 'tried_combo:darkrit',
+                 'candidates': [], 'reason': ''},
+                {'turn': 3, 'phase': 'combo', 'chosen': 'tried_combo:tendrils',
+                 'candidates': [], 'reason': ''},
+            ],
+        }
+        _g, _j = _sg._grade_combo(_t_combo_tried_long,
+                                  _sg._count_structural(_t_combo_tried_long['strategic_decisions']))
+        test("structural_grader: combo-deck loss n_tried>=1 length>5 → C (not D)",
+             _g, 'C', detail=f"justification: {_j}")
+
+        # Rule 14 — Combo-deck WIN is unchanged regardless of tried_combo
+        # count. Wins already grade at A/A+/B+; tried_combo is a partial
+        # -credit signal only for losses.
+        _t_combo_win_with_tried = {
+            'deck1': 'storm', 'deck2': 'dnt', 'winner': 'p1',
+            'game_length': 4, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 1, 'phase': 'combo', 'chosen': 'tried_combo:darkrit',
+                 'candidates': [], 'reason': ''},
+                {'turn': 2, 'phase': 'combo', 'chosen': 'combo:tendrils',
+                 'candidates': [], 'reason': ''},
+                {'turn': 2, 'phase': 'combo', 'chosen': 'kill_C',
+                 'candidates': [], 'reason': ''},
+            ],
+        }
+        _g, _j = _sg._grade_combo(_t_combo_win_with_tried,
+                                  _sg._count_structural(_t_combo_win_with_tried['strategic_decisions']))
+        test("structural_grader: combo-deck WIN with tried_combo stays at A/A+",
+             _g in ('A', 'A+'), True, detail=f"got {_g}: {_j}")
     except Exception as _e:
         test(f"structural_grader rule tests (error: {_e})", False, True)
 

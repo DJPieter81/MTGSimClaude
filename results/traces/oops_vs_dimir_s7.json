@@ -57,6 +57,17 @@
       "turn": 1,
       "deck": "dimir",
       "phase": null,
+      "chosen": "discard_spy_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips spy from opponent"
+    },
+    {
+      "turn": 1,
+      "deck": "dimir",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "thoughtseize",
@@ -113,18 +124,6 @@
       "turn": 3,
       "deck": "oops",
       "phase": "disruption",
-      "chosen": "defer",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo by deferring: opp p_free_counter=0.47, no protection in hand"
-    },
-    {
-      "turn": 3,
-      "deck": "oops",
-      "phase": "disruption",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -132,6 +131,29 @@
         "pass"
       ],
       "reason": "mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.47"
+    },
+    {
+      "turn": 3,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "tried_combo:spact",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played spact but combo did not fire this turn"
+    },
+    {
+      "turn": 3,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "discard_spy_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips spy from opponent"
     },
     {
       "turn": 3,
@@ -219,6 +241,42 @@
     },
     {
       "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "tried_combo:cabalrit",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played cabalrit but combo did not fire this turn"
+    },
+    {
+      "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "tried_combo:cantor",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played cantor but combo did not fire this turn"
+    },
+    {
+      "turn": 6,
+      "deck": "oops",
+      "phase": "disruption",
+      "chosen": "tried_combo:ssg",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played ssg but combo did not fire this turn"
+    },
+    {
+      "turn": 6,
       "deck": "dimir",
       "phase": null,
       "chosen": "entry",
@@ -232,18 +290,6 @@
         "pass"
       ],
       "reason": "mana=4, hand=5, threats_in_play=2"
-    },
-    {
-      "turn": 7,
-      "deck": "oops",
-      "phase": "disruption",
-      "chosen": "defer",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo by deferring: opp p_free_counter=0.43, no protection in hand"
     },
     {
       "turn": 7,
@@ -277,18 +323,6 @@
       "turn": 8,
       "deck": "oops",
       "phase": "disruption",
-      "chosen": "defer",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo by deferring: opp p_free_counter=0.42, no protection in hand"
-    },
-    {
-      "turn": 8,
-      "deck": "oops",
-      "phase": "disruption",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -312,18 +346,6 @@
         "pass"
       ],
       "reason": "mana=5, hand=6, threats_in_play=2"
-    },
-    {
-      "turn": 9,
-      "deck": "oops",
-      "phase": "disruption",
-      "chosen": "defer",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo by deferring: opp p_free_counter=0.48, no protection in hand"
     },
     {
       "turn": 9,
@@ -357,18 +379,6 @@
       "turn": 10,
       "deck": "oops",
       "phase": "disruption",
-      "chosen": "hold_grief",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo: hold grief vs opp p_free_counter=0.47"
-    },
-    {
-      "turn": 10,
-      "deck": "oops",
-      "phase": "disruption",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -397,18 +407,6 @@
       "turn": 11,
       "deck": "oops",
       "phase": "disruption",
-      "chosen": "defer",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo by deferring: opp p_free_counter=0.46, no protection in hand"
-    },
-    {
-      "turn": 11,
-      "deck": "oops",
-      "phase": "disruption",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -432,18 +430,6 @@
         "pass"
       ],
       "reason": "mana=6, hand=6, threats_in_play=3"
-    },
-    {
-      "turn": 12,
-      "deck": "oops",
-      "phase": "disruption",
-      "chosen": "defer",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo by deferring: opp p_free_counter=0.45, no protection in hand"
     },
     {
       "turn": 12,
@@ -512,6 +498,17 @@
         "pass"
       ],
       "reason": "mana=0, spy=False, informer=True, leyline=False, bhi_p_free_counter=0.30"
+    },
+    {
+      "turn": 14,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "discard_oracle_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips oracle from opponent"
     },
     {
       "turn": 14,
@@ -1410,40 +1407,40 @@
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [oops] [phase:t1_kill] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.64, no protection in hand",
     "T1 [oops] [phase:t1_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.64",
+    "T1 [dimir] chose discard_spy_with_ts from [thoughtseize,pass] \u2014 TS strips spy from opponent",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=6, threats_in_play=0",
     "T2 [oops] [phase:t2_kill] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.56, no protection in hand",
     "T2 [oops] [phase:t2_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=True, leyline=False, bhi_p_free_counter=0.56",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=6, threats_in_play=0",
-    "T3 [oops] [phase:disruption] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.47, no protection in hand",
     "T3 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.47",
+    "T3 [oops] [phase:disruption] chose tried_combo:spact from [execute,tried_combo,pass] \u2014 played spact but combo did not fire this turn",
+    "T3 [dimir] chose discard_spy_with_ts from [thoughtseize,pass] \u2014 TS strips spy from opponent",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=4, threats_in_play=2",
     "T4 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.38",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=2",
     "T5 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.37",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=4, threats_in_play=2",
     "T6 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=3, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.36",
+    "T6 [oops] [phase:disruption] chose tried_combo:cabalrit from [execute,tried_combo,pass] \u2014 played cabalrit but combo did not fire this turn",
+    "T6 [oops] [phase:disruption] chose tried_combo:cantor from [execute,tried_combo,pass] \u2014 played cantor but combo did not fire this turn",
+    "T6 [oops] [phase:disruption] chose tried_combo:ssg from [execute,tried_combo,pass] \u2014 played ssg but combo did not fire this turn",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=5, threats_in_play=2",
-    "T7 [oops] [phase:disruption] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.43, no protection in hand",
     "T7 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.43",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=5, threats_in_play=2",
-    "T8 [oops] [phase:disruption] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.42, no protection in hand",
     "T8 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.42",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=6, threats_in_play=2",
-    "T9 [oops] [phase:disruption] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.48, no protection in hand",
     "T9 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.48",
     "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=7, threats_in_play=2",
-    "T10 [oops] [phase:disruption] chose hold_grief from [proceed,hold,defer] \u2014 protect combo: hold grief vs opp p_free_counter=0.47",
     "T10 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.40",
     "T10 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=6, threats_in_play=3",
-    "T11 [oops] [phase:disruption] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.46, no protection in hand",
     "T11 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.46",
     "T11 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=6, threats_in_play=3",
-    "T12 [oops] [phase:disruption] chose defer from [proceed,hold,defer] \u2014 protect combo by deferring: opp p_free_counter=0.45, no protection in hand",
     "T12 [oops] [phase:disruption] chose cast_spy from [cast_spy,cast_informer,pass] \u2014 mana=4, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.45",
     "T12 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=4, threats_in_play=3",
     "T13 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=True, leyline=False, bhi_p_free_counter=0.31",
     "T13 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=7, hand=5, threats_in_play=3",
     "T14 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=True, leyline=False, bhi_p_free_counter=0.30",
+    "T14 [dimir] chose discard_oracle_with_ts from [thoughtseize,pass] \u2014 TS strips oracle from opponent",
     "T14 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=4, threats_in_play=3"
   ]
 }

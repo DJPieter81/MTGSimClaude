@@ -69,6 +69,8 @@ DEFER_TOKENS = {'defer'}
 COUNTER_PREFIXES = ('counter_',)   # interaction decks log counter_<spell>_with_<ctr>
 DISCARD_PREFIXES = ('discard_',)   # interaction decks log discard_<spell>_with_<ts>
 REMOVAL_PREFIXES = ('remove_',)    # removal spells log remove_<target>_with_<spell>
+TRIED_COMBO_PREFIXES = ('tried_combo:',)  # combo decks log when a piece was
+                                          # played but the full kill did not fire
 ATTACK_PREFIX = 'attack'  # 'attack with N goblins'
 COMBAT_PHASE = 'combat'
 
@@ -118,6 +120,14 @@ def _is_removal(chosen: str) -> bool:
     return any(chosen.startswith(p) for p in REMOVAL_PREFIXES)
 
 
+def _is_tried_combo(chosen: str) -> bool:
+    """Decision indicates a combo piece was played but the kill did not fire.
+    Partial-credit signal for combo decks whose plan was disrupted."""
+    if not chosen:
+        return False
+    return any(chosen.startswith(p) for p in TRIED_COMBO_PREFIXES)
+
+
 def _is_combat_decision(decision: dict) -> bool:
     """Combat-axis decision: either tagged with combat phase or attack action."""
     if decision.get('phase') == COMBAT_PHASE:
@@ -140,7 +150,8 @@ def _count_structural(decisions: list[dict], deck1: str | None = None) -> dict:
         decisions = [d for d in decisions if d.get('deck') == deck1]
     counts = {
         'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'discard': 0,
-        'removal': 0, 'combat': 0, 'combo_phase': 0, 'protect_phase': 0,
+        'removal': 0, 'tried_combo': 0,
+        'combat': 0, 'combo_phase': 0, 'protect_phase': 0,
         'total': len(decisions),
     }
     for d in decisions:
@@ -158,6 +169,8 @@ def _count_structural(decisions: list[dict], deck1: str | None = None) -> dict:
             counts['discard'] += 1
         if _is_removal(chosen):
             counts['removal'] += 1
+        if _is_tried_combo(chosen):
+            counts['tried_combo'] += 1
         if _is_combat_decision(d):
             counts['combat'] += 1
         if phase == 'combo':
@@ -241,17 +254,30 @@ def _grade_combat(trace: dict, counts: dict) -> tuple[str, str]:
 
 
 def _grade_combo(trace: dict, counts: dict) -> tuple[str, str]:
-    """Combo grading from Execute-token counts, no English keywords."""
+    """Combo grading from Execute-token counts, no English keywords.
+
+    Combo-deck losses are promoted one grade (D→C+, C→C+ kept at C+, C+→
+    well the rule below preserves the existing C+ for length>5 and only
+    lifts the length≤5 D→C+ case) when at least one `tried_combo:<tag>`
+    partial-credit token was logged. Encodes "played pieces but kill was
+    disrupted" as distinct from "did nothing".
+    """
     deck1 = trace.get('deck1', '')
     p1_won = trace.get('winner') == 'p1'
     game_length = trace.get('game_length', 10)
     n_exec = counts['execute']
+    n_tried = counts.get('tried_combo', 0)
 
     if deck1 not in COMBO_DECKS:
         return 'B', "Non-combo deck — domain not primary axis"
 
     if n_exec == 0:
-        # The deck's typed combo plan never fired.
+        # The deck's typed combo plan never fired. If at least one combo
+        # piece was played (tried_combo token), promote from baseline C to C+.
+        if n_tried >= 1:
+            return ('C+',
+                    f"No Execute token, but {n_tried} tried_combo token(s) — "
+                    f"pieces deployed, kill disrupted")
         return 'C', "No combo Execute decision logged — deck did not fire its plan"
     if p1_won and game_length <= 6:
         return ('A+' if game_length <= 4 else 'A',
@@ -259,7 +285,17 @@ def _grade_combo(trace: dict, counts: dict) -> tuple[str, str]:
     if p1_won:
         return 'B+', f"{n_exec} Execute decision(s); combo resolved late on T{game_length}"
     if game_length <= 5:
+        # One-grade promotion: D → C+ when at least one tried_combo was emitted.
+        if n_tried >= 1:
+            return ('C+',
+                    f"{n_exec} Execute + {n_tried} tried_combo; "
+                    f"lost on T{game_length} — disrupted early but pieces deployed")
         return 'D', f"{n_exec} Execute decision(s) but lost on T{game_length} — disrupted early"
+    # game_length > 5
+    if n_tried >= 1:
+        return ('C',
+                f"{n_exec} Execute + {n_tried} tried_combo; "
+                f"lost on T{game_length} — combo could not close but pieces deployed")
     return 'C+', f"{n_exec} Execute decision(s) but lost on T{game_length} — combo could not close"
 
 

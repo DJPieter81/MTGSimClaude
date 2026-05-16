@@ -34,6 +34,17 @@
       "turn": 1,
       "deck": "storm",
       "phase": "setup",
+      "chosen": "discard_recruiter_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips recruiter from opponent"
+    },
+    {
+      "turn": 1,
+      "deck": "storm",
+      "phase": "setup",
       "chosen": "p=0.00",
       "candidates": [
         "bhi_free_counter"
@@ -646,6 +657,7 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [storm] [phase:setup] chose discard_recruiter_with_ts from [thoughtseize,pass] \u2014 TS strips recruiter from opponent",
     "T1 [storm] [phase:setup] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T1 [storm] [phase:setup] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=1/9, rituals=0, safe=False, thalia=False, life=18",
     "T2 [storm] [phase:setup] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",

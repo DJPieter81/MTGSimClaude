@@ -33,6 +33,17 @@
       "turn": 1,
       "deck": "bug",
       "phase": null,
+      "chosen": "discard_sneak_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips sneak from opponent"
+    },
+    {
+      "turn": 1,
+      "deck": "bug",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "cantrip",
@@ -43,6 +54,17 @@
         "pass"
       ],
       "reason": "mana=0, hand=5, threats_in_play=0"
+    },
+    {
+      "turn": 2,
+      "deck": "bug",
+      "phase": null,
+      "chosen": "discard_sneak_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips sneak from opponent"
     },
     {
       "turn": 2,
@@ -433,7 +455,9 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [bug] chose discard_sneak_with_ts from [thoughtseize,pass] \u2014 TS strips sneak from opponent",
     "T1 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=0, hand=5, threats_in_play=0",
+    "T2 [bug] chose discard_sneak_with_ts from [thoughtseize,pass] \u2014 TS strips sneak from opponent",
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=4, threats_in_play=0",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=4, threats_in_play=0",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=3, threats_in_play=1",

@@ -28,7 +28,173 @@
       "Counterspell"
     ]
   },
-  "strategic_decisions": [],
+  "strategic_decisions": [
+    {
+      "turn": 1,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "counter_vial_with_fow",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "fow counters vial (major threat)"
+    },
+    {
+      "turn": 1,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:vial",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played vial but combo did not fire this turn"
+    },
+    {
+      "turn": 3,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:expert",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played expert but combo did not fire this turn"
+    },
+    {
+      "turn": 3,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:fury",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played fury but combo did not fire this turn"
+    },
+    {
+      "turn": 3,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:warchief",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played warchief but combo did not fire this turn"
+    },
+    {
+      "turn": 4,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:expert",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played expert but combo did not fire this turn"
+    },
+    {
+      "turn": 6,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:cratermaker",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played cratermaker but combo did not fire this turn"
+    },
+    {
+      "turn": 8,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "discard_fon_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips fon from opponent"
+    },
+    {
+      "turn": 9,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:sling",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played sling but combo did not fire this turn"
+    },
+    {
+      "turn": 10,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:ringleader",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played ringleader but combo did not fire this turn"
+    },
+    {
+      "turn": 11,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "counter_lackey_with_counter",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "counter counters lackey (major threat)"
+    },
+    {
+      "turn": 11,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:lackey",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played lackey but combo did not fire this turn"
+    },
+    {
+      "turn": 11,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:prospector",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played prospector but combo did not fire this turn"
+    },
+    {
+      "turn": 15,
+      "deck": "goblins",
+      "phase": null,
+      "chosen": "tried_combo:cratermaker",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played cratermaker but combo did not fire this turn"
+    }
+  ],
   "full_log": [
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "  GOBLINS vs UWX",
@@ -931,6 +1097,22 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "  WINNER: UWX \u2014 Board/life advantage after T15",
     "  Final life: goblins 1 | uwx 17",
-    "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+    "",
+    "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [uwx] chose counter_vial_with_fow from [counter,let_resolve] \u2014 fow counters vial (major threat)",
+    "T1 [goblins] chose tried_combo:vial from [execute,tried_combo,pass] \u2014 played vial but combo did not fire this turn",
+    "T3 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
+    "T3 [goblins] chose tried_combo:fury from [execute,tried_combo,pass] \u2014 played fury but combo did not fire this turn",
+    "T3 [goblins] chose tried_combo:warchief from [execute,tried_combo,pass] \u2014 played warchief but combo did not fire this turn",
+    "T4 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
+    "T6 [goblins] chose tried_combo:cratermaker from [execute,tried_combo,pass] \u2014 played cratermaker but combo did not fire this turn",
+    "T8 [goblins] chose discard_fon_with_ts from [thoughtseize,pass] \u2014 TS strips fon from opponent",
+    "T9 [goblins] chose tried_combo:sling from [execute,tried_combo,pass] \u2014 played sling but combo did not fire this turn",
+    "T10 [goblins] chose tried_combo:ringleader from [execute,tried_combo,pass] \u2014 played ringleader but combo did not fire this turn",
+    "T11 [uwx] chose counter_lackey_with_counter from [counter,let_resolve] \u2014 counter counters lackey (major threat)",
+    "T11 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
+    "T11 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn",
+    "T15 [goblins] chose tried_combo:cratermaker from [execute,tried_combo,pass] \u2014 played cratermaker but combo did not fire this turn"
   ]
 }

@@ -178,6 +178,18 @@
     },
     {
       "turn": 5,
+      "deck": "storm",
+      "phase": "desperate",
+      "chosen": "tried_combo:cabalrit",
+      "candidates": [
+        "execute",
+        "tried_combo",
+        "pass"
+      ],
+      "reason": "played cabalrit but combo did not fire this turn"
+    },
+    {
+      "turn": 5,
       "deck": "dnt",
       "phase": null,
       "chosen": "recruiter",
@@ -278,6 +290,17 @@
         "recruiter"
       ],
       "reason": "mana=7, hand=['prelate', 'solitude', 'equipment', 'phelia']"
+    },
+    {
+      "turn": 8,
+      "deck": "storm",
+      "phase": "desperate",
+      "chosen": "discard_solitude_with_ts",
+      "candidates": [
+        "thoughtseize",
+        "pass"
+      ],
+      "reason": "TS strips solitude from opponent"
     },
     {
       "turn": 8,
@@ -869,6 +892,7 @@
     "T4 [storm] [phase:combo] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=1/9, rituals=0, safe=True, thalia=False, life=18",
     "T5 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T5 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=5/9, rituals=3, safe=True, thalia=False, life=16",
+    "T5 [storm] [phase:desperate] chose tried_combo:cabalrit from [execute,tried_combo,pass] \u2014 played cabalrit but combo did not fire this turn",
     "T5 [dnt] chose recruiter from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=5, hand=['prelate', 'solitude', 'equipment', 'wl', 'recruiter']",
     "T6 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T6 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/9, rituals=4, safe=True, thalia=False, life=14",
@@ -876,6 +900,7 @@
     "T7 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T7 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/7, rituals=4, safe=True, thalia=True, life=11",
     "T7 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=7, hand=['prelate', 'solitude', 'equipment', 'phelia']",
+    "T8 [storm] [phase:desperate] chose discard_solitude_with_ts from [thoughtseize,pass] \u2014 TS strips solitude from opponent",
     "T8 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T8 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=1/7, rituals=0, safe=True, thalia=True, life=4"
   ]
