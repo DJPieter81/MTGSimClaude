@@ -626,12 +626,17 @@ def _execute_turn(gs, turn, b, o, who, matchup):
             log(f"Land: {land.name} ({len(b.lands)} lands){extra_marker}")
 
     # ── Mana calculation ──
+    # Lands only — fast-mana sources (Lotus Petal, Mox Opal, Chrome Mox, LED,
+    # Dark Ritual, Grim Monolith) are owned by each deck's strategy. Pre-fix,
+    # this block added `+1 per Petal in hand` here, and every strategy that
+    # cracked petals ALSO incremented total_mana — double-counting every
+    # Petal in the opener and giving painter T1 deploys (Petal+Monolith+
+    # Painter's Servant+Grindstone with 0 lands). The Karn-lockout log
+    # remains: it informs the strategy that artifact mana abilities can't
+    # be activated, which is consumed by the per-deck fast-mana branches.
     total_mana = b.available_mana_count()
-    # Karn lockout: if opponent controls Karn, active player can't activate artifacts
     opp_has_karn = (gs.p1_karn_active if o is gs.p1 else gs.p2_karn_active)
-    if not opp_has_karn:
-        total_mana += sum(1 for c in b.hand if c.tag == 'petal')
-    else:
+    if opp_has_karn:
         log(f"Karn lockout — can't activate artifact mana sources")
     treasure = getattr(gs, treasure_attr, 0)
     if treasure > 0:
@@ -2719,6 +2724,60 @@ def run_rules_tests():
                     f"{_games_with_grief_opener} openers")
     except Exception as _e:
         test(f"Mardu Grief+Ephemerate engine (error: {_e})", False, True)
+
+    # ── Fast-mana sources must not be double-counted ──────────────────────
+    # CR 106 / 605: a mana ability that produces N mana is counted ONCE per
+    # activation. Before the structural fix, the shared preamble in
+    # sim._execute_turn added `+1 mana per Lotus Petal in hand` to total_mana
+    # BEFORE the strategy ran. Each strategy then ALSO cracked petals with
+    # `total_mana += 1` for each, double-counting every Petal in the opener
+    # (the framework counted them as available mana; the strategy added
+    # again when "cracking"). Result: a hand with Lotus Petal + Grim Monolith
+    # could deploy Monolith on T1 with no lands (Petal=2 mana phantom).
+    # Rule-phrased: a turn where the protagonist has 0 lands and 1 Petal in
+    # opener must allow casting at most a CMC-1 spell that turn — not CMC 2+.
+    # Pre-fix: painter T1 with 0 lands + 1 Petal deployed CMC-2 Painter's
+    # Servant and CMC-1 Grindstone simultaneously (3 mana phantom).
+    try:
+        import random as _rnd
+        _phantom_cmc2_casts = 0
+        _qualifying_games = 0
+        for _seed in range(1, 16):
+            _rnd.seed(_seed)
+            _r = run_game('painter', 'burn', trace=True)
+            opener = _r.p1_opening_hand
+            # Painter's lands: Ancient Tomb, Planar Nexus, Urza's Saga,
+            # Urza's Tower, Urza's Workshop. Mishra's Research Desk is an
+            # artifact cantrip, NOT a land.
+            n_lands = sum(1 for n in opener
+                          if n in ('Ancient Tomb', 'Planar Nexus',
+                                   'Urza\'s Saga', 'Urza\'s Tower',
+                                   'Urza\'s Workshop'))
+            n_petals = sum(1 for n in opener if n == 'Lotus Petal')
+            n_monoliths = sum(1 for n in opener if n == 'Grim Monolith')
+            has_painter = any('Painter\'s Servant' in n for n in opener)
+            # Qualifying setup: 0 lands, ≥1 Petal, has Monolith + Painter
+            if n_lands == 0 and n_petals >= 1 and n_monoliths >= 1 and has_painter:
+                _qualifying_games += 1
+                # T1 trace check: did the strategy deploy Painter's Servant
+                # (cmc 2)? With 0 lands and only Petal+Monolith, real magic
+                # cannot cast both Monolith (needs 2 mana from Petal alone
+                # → fails) and Painter's Servant on T1.
+                t1_painter_cast = any(
+                    'Painter\'s Servant' in line and 'RESOLVES' in line
+                    for line in _r.log_lines[:60]
+                )
+                if t1_painter_cast:
+                    _phantom_cmc2_casts += 1
+        # Post-fix: must be 0 phantom CMC-2 casts (T1 painter can only deploy
+        # CMC-1 Grindstone with Petal alone; Monolith waits for actual lands).
+        test(f"Lotus Petal not double-counted ("
+             f"{_qualifying_games} qualifying 0-land openers)",
+             _phantom_cmc2_casts == 0, True,
+             detail=f"got {_phantom_cmc2_casts} phantom CMC-2 casts on T1 "
+                    f"with 0 lands + 1 Petal + Monolith in opener")
+    except Exception as _e:
+        test(f"Lotus Petal double-count (error: {_e})", False, True)
 
     # ── Half-life cost spells must not self-kill (CR 119.5 + 704.5a) ───────
     # A spell that pays "half your life rounded up" cannot be cast when the
