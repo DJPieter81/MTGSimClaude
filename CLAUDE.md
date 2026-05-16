@@ -33,7 +33,7 @@ If three consecutive commits target the same outlier deck without moving the win
 ```bash
 # Verify installation
 python3 -c "from sim import run_rules_tests; run_rules_tests()"
-# Should print: 172 passed, 0 failed
+# Should print: 282+ passed, 0 failed
 
 # Run a game
 python3 -c "from sim import run_game; r = run_game('ur_delver', 'dimir'); print(r.winner, r.win_reason)"
@@ -46,6 +46,14 @@ python3 refresh_all.py --resim 200
 
 # Override worker pool size for any parallel entrypoint (sweep/matrix/field/gen_guides)
 MTGSIM_WORKERS=16 python3 refresh_all.py --resim 200
+
+# Regression-sweep gate (fixed-seed, fixed-matchup) — ~5 s
+python3 tools/regression_sweep.py
+# Fails (exit 1) if any of the 10 baseline matchups drops > 5pp.
+
+# Calibrate a JSON-sourced threshold against the regression sweep
+python3 tools/calibrate_bhi_threshold.py --write          # BHI_FREE_COUNTER_THRESHOLD
+python3 tools/calibrate_bhi_counter_threshold.py --write  # BHI_COUNTER_THRESHOLD
 ```
 
 **`MTGSIM_WORKERS`** — sets the parallel worker count for `parallel.py`
@@ -96,8 +104,39 @@ from sim import run_any_match, run_any_bo3, run_rules_tests
 
 run_any_match('ur_delver', 'dimir', verbose=True)   # any deck Bo3
 run_any_bo3('storm', 'bug', n_matches=100)           # Bo3 batch
-run_rules_tests()                                    # 116 unit tests
+run_rules_tests()                                    # 282+ unit tests (rule + structural + grader-prototype)
 ```
+
+## Combo-engine + grading subsystems
+
+```python
+# Single typed entry point for combo-deck decisions (see Phase B).
+from combo_engine import combo_plan, GameView, Execute, Hold, Defer, NoPlan
+plan = combo_plan(player, opponent, gs)
+match plan:
+    case Execute(path): ...
+    case Hold(card):    ...
+    case Defer():       ...
+    case NoPlan():      ...
+
+# Decision logger — sole emitter of the trace-line format llm_judge.collect()
+# parses (Phase A unified two prior APIs into this one).
+gs.strat_log.log_decision(turn=gs.turn, deck='storm',
+                          candidates=['proceed', 'hold', 'defer'],
+                          chosen='defer', reason='protect combo …',
+                          phase='combo')   # phase= overrides the gameplan lookup
+```
+
+```bash
+# Two graders consume traces; new "structural" one is gameability-resistant.
+python3 scripts/grade_traces.py results/traces/*.json --local --force   # heuristic
+python3 scripts/structural_grader.py results/traces/*.json              # structural
+python3 scripts/structural_grader.py --report                           # comparison
+```
+
+JSON-sourced calibrated thresholds live in `config/calibration.json` and
+are loaded into `config.py:InteractionParams` via `_load_calibrated()`
+at import time. See `docs/design/2026-05-15_post-phase-6-re-architecture.md`.
 
 ## CLI: run_meta.py
 

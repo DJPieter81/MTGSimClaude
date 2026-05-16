@@ -36,10 +36,6 @@ _MONK_TOKEN = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
                    mana_cost={}, colors=set(), tag='monk_token',
                    base_power=1, base_toughness=1, gy_type='creature')
 
-_ORC_ARMY_PROTO = Card(name='Orc Army', card_type=CardType.CREATURE, cmc=0,
-                       mana_cost={}, colors=set(), tag='orc_army',
-                       base_power=0, base_toughness=0, gy_type='creature')
-
 
 def _destroy_permanent_targets(gs, controller, targets) -> list[str]:
     """Move target permanents from `controller`'s artifact-or-enchantment
