@@ -20,6 +20,7 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     from engine import (opp_can_cast, _try_counter_any, bowmasters_triggers,
                         update_goyf, combat_declare, cast_spell, resolve_cantrip)
     from rules import MTGRules
+    from decision import DisruptionDecision
 
     budget = [total_mana]
 
@@ -98,6 +99,16 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
             opponent.lands.remove(wt); opponent.add_to_grave(wt.card)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland [ACTIVATED-uncounterable] -> {wt.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {wt.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=wt.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
     # ── Combat ──

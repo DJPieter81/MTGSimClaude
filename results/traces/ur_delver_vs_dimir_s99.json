@@ -155,6 +155,17 @@
       "turn": 6,
       "deck": "dimir",
       "phase": null,
+      "chosen": "land_destroy_dual_with_wasteland",
+      "candidates": [
+        "wasteland",
+        "pass"
+      ],
+      "reason": "wasteland destroys dual"
+    },
+    {
+      "turn": 6,
+      "deck": "dimir",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "thoughtseize",
@@ -846,6 +857,7 @@
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=0, threats_in_play=1",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=1",
     "T5 [ur_delver] chose counter_bowm_with_fow from [counter,let_resolve] \u2014 fow counters bowm (major threat)",
+    "T6 [dimir] chose land_destroy_dual_with_wasteland from [wasteland,pass] \u2014 wasteland destroys dual",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=1, threats_in_play=1",
     "T6 [dimir] chose remove_drc_with_push from [remove,pass] \u2014 push kills drc",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=1, threats_in_play=1",

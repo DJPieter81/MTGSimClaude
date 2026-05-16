@@ -143,6 +143,17 @@
       "reason": "mana=4, hand=2, threats_in_play=0"
     },
     {
+      "turn": 5,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "land_destroy_dual_with_wasteland",
+      "candidates": [
+        "wasteland",
+        "pass"
+      ],
+      "reason": "wasteland destroys dual"
+    },
+    {
       "turn": 6,
       "deck": "dimir",
       "phase": null,
@@ -839,6 +850,7 @@
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=0",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=1, threats_in_play=0",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=2, threats_in_play=0",
+    "T5 [dimir] chose land_destroy_dual_with_wasteland from [wasteland,pass] \u2014 wasteland destroys dual",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=3, threats_in_play=0",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=0",
     "T7 [ur_delver] chose counter_tamiyo_with_fow from [counter,let_resolve] \u2014 fow counters tamiyo (minor threat)",

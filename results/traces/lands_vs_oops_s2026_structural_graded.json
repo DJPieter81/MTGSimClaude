@@ -1,0 +1,45 @@
+{
+  "trace_file": "lands_vs_oops_s2026.json",
+  "matchup": "lands_vs_oops",
+  "seed": 2026,
+  "winner": "p2",
+  "win_reason": "Oops combo (Undercity Informer \u2192 Oracle)",
+  "kill_turn": 1,
+  "game_length": 1,
+  "deck1": "lands",
+  "deck2": "oops",
+  "grades": {
+    "mulligan": "B",
+    "mana": "C+",
+    "combat": "C",
+    "combo": "B",
+    "interaction": "C+",
+    "meta": "C",
+    "overall": "C+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
+    "mana": "Suboptimal mana utilization over 1 turns",
+    "combat": "0 combat decision(s); combat axis inactive",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "0 hold + 0 defer; interaction tokens fell short",
+    "meta": "Lost \u2014 limited decision points suggest structural disadvantage",
+    "overall": "Average across 6 domains \u2014 lost in 1 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 0,
+    "defer": 0,
+    "counter": 0,
+    "discard": 0,
+    "removal": 0,
+    "tried_combo": 0,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 1
+  },
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Suboptimal mana utilization over 1 turns\ncombat: C \u2014 0 combat decision(s); combat axis inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 0 hold + 0 defer; interaction tokens fell short\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 1 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T11:35:02.790978Z"
+}

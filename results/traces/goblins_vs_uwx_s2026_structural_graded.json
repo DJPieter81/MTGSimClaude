@@ -1,0 +1,45 @@
+{
+  "trace_file": "goblins_vs_uwx_s2026.json",
+  "matchup": "goblins_vs_uwx",
+  "seed": 2026,
+  "winner": "p1",
+  "win_reason": "Board/life advantage after T15",
+  "kill_turn": 15,
+  "game_length": 15,
+  "deck1": "goblins",
+  "deck2": "uwx",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "B",
+    "combat": "B+",
+    "combo": "B",
+    "interaction": "B",
+    "meta": "B",
+    "overall": "B"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Resource deployment supported a T15 win",
+    "combat": "Aggro plan won without surfaced combat decisions (lethal via burn / direct damage)",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "0 hold + 0 defer; interaction tokens sufficed",
+    "meta": "Eventually closed the matchup",
+    "overall": "Average across 6 domains \u2014 won in 15 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 0,
+    "defer": 0,
+    "counter": 0,
+    "discard": 0,
+    "removal": 0,
+    "tried_combo": 11,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 11
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T15 win\ncombat: B+ \u2014 Aggro plan won without surfaced combat decisions (lethal via burn / direct damage)\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B \u2014 0 hold + 0 defer; interaction tokens sufficed\nmeta: B \u2014 Eventually closed the matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 15 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T11:35:02.788465Z"
+}

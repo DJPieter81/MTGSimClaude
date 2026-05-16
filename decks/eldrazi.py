@@ -48,6 +48,7 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
     """
     from engine import _try_counter_any, combat_declare, update_goyf
     from rules import MTGRules
+    from decision import DisruptionDecision
     import random
 
     mana, ssg_avail = _eldrazi_effective_mana(player, total_mana)
@@ -210,6 +211,16 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.lands.remove(target)
             opponent.add_to_grave(target.card)
             log_fn(f"Wasteland → {target.card.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {target.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=target.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
     # ── 7. Combat ───────────────────────────────────────────────────────

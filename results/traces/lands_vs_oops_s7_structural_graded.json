@@ -1,0 +1,45 @@
+{
+  "trace_file": "lands_vs_oops_s7.json",
+  "matchup": "lands_vs_oops",
+  "seed": 7,
+  "winner": "p1",
+  "win_reason": "Opp life reaches 0 on turn 4",
+  "kill_turn": 4,
+  "game_length": 4,
+  "deck1": "lands",
+  "deck2": "oops",
+  "grades": {
+    "mulligan": "B+",
+    "mana": "B+",
+    "combat": "B",
+    "combo": "B",
+    "interaction": "B",
+    "meta": "B+",
+    "overall": "B+"
+  },
+  "justifications": {
+    "mulligan": "Kept 7; won \u2014 opening hand was adequate",
+    "mana": "Resource deployment supported a T4 win",
+    "combat": "0 combat decision(s); won via non-combat means",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "0 hold + 0 defer; interaction tokens sufficed",
+    "meta": "Efficiently closed the matchup",
+    "overall": "Average across 6 domains \u2014 won in 4 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
+  },
+  "structural_counts": {
+    "execute": 0,
+    "hold": 0,
+    "defer": 0,
+    "counter": 0,
+    "discard": 0,
+    "removal": 0,
+    "tried_combo": 0,
+    "combat": 0,
+    "combo_phase": 0,
+    "protect_phase": 0,
+    "total": 4
+  },
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Resource deployment supported a T4 win\ncombat: B \u2014 0 combat decision(s); won via non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B \u2014 0 hold + 0 defer; interaction tokens sufficed\nmeta: B+ \u2014 Efficiently closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
+  "model": "structural-v1",
+  "graded_at": "2026-05-16T11:35:02.791662Z"
+}

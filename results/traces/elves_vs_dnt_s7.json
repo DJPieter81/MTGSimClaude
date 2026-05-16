@@ -301,6 +301,17 @@
       "reason": "mana=7, hand=['recruiter', 'kaldra']"
     },
     {
+      "turn": 8,
+      "deck": "dnt",
+      "phase": null,
+      "chosen": "land_destroy_dual_with_wasteland",
+      "candidates": [
+        "wasteland",
+        "pass"
+      ],
+      "reason": "wasteland destroys dual"
+    },
+    {
       "turn": 9,
       "deck": "elves",
       "phase": null,
@@ -963,6 +974,7 @@
     "T7 [dnt] chose flickerwisp from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'flickerwisp', 'kaldra']",
     "T8 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=6, hand=4",
     "T8 [dnt] chose recruiter from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=7, hand=['recruiter', 'kaldra']",
+    "T8 [dnt] chose land_destroy_dual_with_wasteland from [wasteland,pass] \u2014 wasteland destroys dual",
     "T9 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=2, creatures=7, hand=4",
     "T9 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=6, hand=['phelia']"
   ]
