@@ -5882,6 +5882,18 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
 
 def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
 
+    # ── 0. Lotus Petal — crack all in hand for +1 mana each ──
+    # Storm previously got petal mana from the shared sim._execute_turn
+    # preamble (`total_mana += sum(petals in hand)`). That preamble was
+    # removed because it double-counted petals against per-deck strategy
+    # cracking. Storm now owns its own petal cracking, byte-equivalent to
+    # the prior framework behaviour: crack every Petal in hand on entry,
+    # +1 mana each.
+    for _petal in [c for c in list(player.hand) if c.tag == 'petal']:
+        player.remove_from_hand(_petal); player.add_to_grave(_petal)
+        total_mana += 1
+        log_fn(f"{_petal.name} → +1 mana")
+
     budget = [total_mana]
 
     # ── Thoughtseize — strip opp's best card before combo turn ──
