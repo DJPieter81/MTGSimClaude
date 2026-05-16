@@ -26,7 +26,71 @@
       "Searing Blaze"
     ]
   },
-  "strategic_decisions": [],
+  "strategic_decisions": [
+    {
+      "turn": 1,
+      "deck": "depths",
+      "phase": null,
+      "chosen": "none",
+      "candidates": [
+        "stage_copy",
+        "crop_finds_stage",
+        "crop_finds_depths",
+        "reclaimer_finds_stage",
+        "reclaimer_finds_depths",
+        "scrying_finds_stage",
+        "scrying_finds_depths",
+        "gsz_to_reclaimer_to_stage",
+        "gsz_to_reclaimer_to_depths",
+        "hold",
+        "defer",
+        "none"
+      ],
+      "reason": "no assembly path satisfiable"
+    },
+    {
+      "turn": 2,
+      "deck": "depths",
+      "phase": null,
+      "chosen": "none",
+      "candidates": [
+        "stage_copy",
+        "crop_finds_stage",
+        "crop_finds_depths",
+        "reclaimer_finds_stage",
+        "reclaimer_finds_depths",
+        "scrying_finds_stage",
+        "scrying_finds_depths",
+        "gsz_to_reclaimer_to_stage",
+        "gsz_to_reclaimer_to_depths",
+        "hold",
+        "defer",
+        "none"
+      ],
+      "reason": "no assembly path satisfiable"
+    },
+    {
+      "turn": 3,
+      "deck": "depths",
+      "phase": null,
+      "chosen": "none",
+      "candidates": [
+        "stage_copy",
+        "crop_finds_stage",
+        "crop_finds_depths",
+        "reclaimer_finds_stage",
+        "reclaimer_finds_depths",
+        "scrying_finds_stage",
+        "scrying_finds_depths",
+        "gsz_to_reclaimer_to_stage",
+        "gsz_to_reclaimer_to_depths",
+        "hold",
+        "defer",
+        "none"
+      ],
+      "reason": "no assembly path satisfiable"
+    }
+  ],
   "full_log": [
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "  DEPTHS vs BURN",
@@ -294,6 +358,11 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "  WINNER: BURN \u2014 BUG life reaches -1 on turn 3",
     "  Final life: depths -1 | burn 18",
-    "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+    "",
+    "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
+    "T2 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
+    "T3 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable"
   ]
 }

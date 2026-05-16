@@ -32,6 +32,18 @@
   "strategic_decisions": [
     {
       "turn": 1,
+      "deck": "sneak_a",
+      "phase": null,
+      "chosen": "hold_daze",
+      "candidates": [
+        "proceed",
+        "hold",
+        "defer"
+      ],
+      "reason": "protect combo: hold daze vs opp p_free_counter=0.53"
+    },
+    {
+      "turn": 1,
       "deck": "bug",
       "phase": null,
       "chosen": "entry",
@@ -44,6 +56,18 @@
         "pass"
       ],
       "reason": "mana=1, hand=7, threats_in_play=0"
+    },
+    {
+      "turn": 2,
+      "deck": "sneak_a",
+      "phase": null,
+      "chosen": "hold_daze",
+      "candidates": [
+        "proceed",
+        "hold",
+        "defer"
+      ],
+      "reason": "protect combo: hold daze vs opp p_free_counter=0.52"
     },
     {
       "turn": 2,
@@ -62,6 +86,18 @@
     },
     {
       "turn": 3,
+      "deck": "sneak_a",
+      "phase": null,
+      "chosen": "hold_daze",
+      "candidates": [
+        "proceed",
+        "hold",
+        "defer"
+      ],
+      "reason": "protect combo: hold daze vs opp p_free_counter=0.51"
+    },
+    {
+      "turn": 3,
       "deck": "bug",
       "phase": null,
       "chosen": "entry",
@@ -74,6 +110,18 @@
         "pass"
       ],
       "reason": "mana=2, hand=7, threats_in_play=1"
+    },
+    {
+      "turn": 4,
+      "deck": "sneak_a",
+      "phase": null,
+      "chosen": "hold_daze",
+      "candidates": [
+        "proceed",
+        "hold",
+        "defer"
+      ],
+      "reason": "protect combo: hold daze vs opp p_free_counter=0.44"
     },
     {
       "turn": 4,
@@ -119,6 +167,18 @@
         "pass"
       ],
       "reason": "mana=3, hand=6, threats_in_play=4"
+    },
+    {
+      "turn": 7,
+      "deck": "sneak_a",
+      "phase": null,
+      "chosen": "hold_daze",
+      "candidates": [
+        "proceed",
+        "hold",
+        "defer"
+      ],
+      "reason": "protect combo: hold daze vs opp p_free_counter=0.42"
     },
     {
       "turn": 7,
@@ -613,12 +673,17 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [sneak_a] chose hold_daze from [proceed,hold,defer] \u2014 protect combo: hold daze vs opp p_free_counter=0.53",
     "T1 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=7, threats_in_play=0",
+    "T2 [sneak_a] chose hold_daze from [proceed,hold,defer] \u2014 protect combo: hold daze vs opp p_free_counter=0.52",
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=8, threats_in_play=0",
+    "T3 [sneak_a] chose hold_daze from [proceed,hold,defer] \u2014 protect combo: hold daze vs opp p_free_counter=0.51",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=7, threats_in_play=1",
+    "T4 [sneak_a] chose hold_daze from [proceed,hold,defer] \u2014 protect combo: hold daze vs opp p_free_counter=0.44",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=6, threats_in_play=3",
     "T5 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=5, threats_in_play=4",
     "T6 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=6, threats_in_play=4",
+    "T7 [sneak_a] chose hold_daze from [proceed,hold,defer] \u2014 protect combo: hold daze vs opp p_free_counter=0.42",
     "T7 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=7, threats_in_play=4"
   ]
 }
