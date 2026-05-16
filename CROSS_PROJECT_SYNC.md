@@ -157,6 +157,88 @@ results/neural_logs/
 
 ---
 
+## Structural-grader learnings — for sister (2026-05-16)
+
+Legacy spent a session (10 PRs: R/T/C/G/E/IX/MA/DIAG-fix/CO/META) building a typed,
+gameability-resistant structural grader for LLM-trace evaluation. Modern's
+`scripts/grade_traces.py` is heuristic-only today; if/when Modern adds a
+structural pass, these are the non-obvious lessons:
+
+1. **Token strings are a transient retrofit; design the typed `Decision` algebra first.**
+   Legacy iterated through prefix-string contracts (`'counter_X_with_Y'`,
+   `'remove_X_with_Y'`, `'tried_combo:X'`) before refactoring to a frozen-dataclass
+   hierarchy (`decision.py`: `ComboDecision | DisruptionDecision | CombatDecision |
+   ManaDecision | MulliganDecision | MetaDecision`). Each has a `kind: Literal[...]`
+   discriminator. Grader iterates `isinstance(d, Decision)` and switches on
+   `(type, kind)`. The typed algebra makes new disruption kinds zero-cost
+   (just add `Literal[...'extract', 'land_destroy'...]`); the prefix-string
+   approach needs a new `_is_X()` helper + new `X_PREFIXES` constant every time.
+
+2. **Backward-compat is the gate.** `Decision.to_token()` must serialize byte-identical
+   with the legacy prefix-string format so trace JSON output is unchanged.
+   `StrategicLogger.log_decision(...)` keeps working as a raw-string shim;
+   `gs.strat_log.log(decision)` is the new canonical API. Both produce identical
+   trace JSON entries.
+
+3. **Disruption helper extraction collapses 50+ sites into 1.** Before refactor:
+   `_attacker_deck = gs.p1_deck if player is gs.p1 else gs.p2_deck;
+   gs.strat_log.log_decision(...chosen=f'{kind}_{tag}_with_{instr}'...)` was
+   duplicated at every counter/discard/remove/extract/land_destroy site.
+   After: `gs.strat_log.log_disruption(turn, gs, player, kind, target_tag,
+   instrument_tag, reason)` — one method, no boilerplate. Engine.py shrank
+   110 lines.
+
+4. **Deck-class buckets must derive from `deck_registry.get_decks_in_category()`,
+   not literal sets.** Legacy hit a regression where refactoring `COMBO_DECKS =
+   {'storm','reanimator',...}` → `_BUILTIN_COMBO | _registry_decks('combo')`
+   silently dropped `'elves'` (declared only `{'aggro','tribal'}` despite being
+   a Glimpse-of-Nature combo engine) and silently added `'painter'` (declared
+   `{'combo'}` but emits no Execute tokens). Net: +0.29 combo regression on
+   the audit set. **Lesson**: pin canonical membership in a unit test
+   (`test "deck-class membership: elves is a COMBO deck"`) so future
+   refactors can't drop a deck silently.
+
+5. **Calibrate grader thresholds via in-process sweep, not heuristics.** Pattern
+   from `tools/calibrate_structural_thresholds.py`: 4-param grid (`K_INTER_A`,
+   `K_INTER_C_PLUS`, `K_COMBO_GAME_LEN_A`, `K_MANA_GAME_LEN_B`), 144 candidates,
+   minimize `max(domain_avg)` subject to gameability invariants (adversarial-keyword
+   traces ≥ C, empty-decisions ≥ B, faked-deck-class tokens ≤ B). Writes to
+   `config/calibration.json`, loaded via `_load_calibrated('STRUCT_K_INTER_A', 3)`
+   at module import. Fully in-process — no subprocess isolation needed since the
+   grader is pure functions over JSON.
+
+6. **Three gameability invariants are non-negotiable.** Each candidate threshold
+   set must satisfy all three before being chosen:
+   - **Adversarial-keyword trace** (every `reason` field contains
+     `"protect combo counter attack force tendrils"` but no structured `chosen`
+     tokens): must score ≤ C on every domain.
+   - **Empty-decisions winning trace** (`strategic_decisions=[]`, winner=p1,
+     game_length=4): combo ≥ B (no Execute logged = no credit).
+   - **Storm-faked trace** (non-COMBO deck emits `chosen='kill_C'` without
+     actually casting Tendrils): combo ≤ C+ if deck1 not in COMBO_DECKS.
+   These caught two threshold candidates that minimized aggregate but failed
+   gameability.
+
+7. **Audit-set composition matters more than wire-site coverage.** META wired
+   12 `MetaDecision(kind='play_around')` emission sites and moved meta-axis avg
+   by +0.013 — essentially zero — because the 69-trace audit set has only
+   6 traces where deck1 emits a meta token. The signal IS structurally present
+   in `sneak_a_vs_bug` (7-8 emissions/game), but that matchup isn't in the
+   audit set. **Lesson for Modern**: over-sample combo-vs-interaction matchups
+   in the trace set before chasing wire-site coverage.
+
+8. **Honest negative reports are signal.** Both MA (mana ritual emissions,
+   ~0 GPA gradient) and META (~0 gradient) reported their own null result
+   with diagnosis. The wires are architecturally valuable (proving the typed
+   API across all six domains) even when the metric doesn't move. Don't reject
+   PRs solely on GPA delta — they unlock future grader-rule changes.
+
+9. **Don't chase residual gaps via more wiring once the audit set saturates.**
+   After R/T/C/G/E/IX/MA/CO/META, combo (3.06) and mulligan (2.91) hit B+;
+   mana/combat/interaction/meta cluster at 3.25-3.55 on the 69-trace set.
+   Further token wiring on the same audit set hits diminishing returns —
+   the gradient is in audit-set composition, not in the simulator.
+
 ## Next Actions
 
 1. **Modern:** Adopt `parallel.py` + `hypothesis_testing.py` (cuts matrix time 5×, adds stat rigor)
