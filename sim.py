@@ -3891,6 +3891,28 @@ def run_rules_tests():
              _combo_from_reg.issubset(_sg.COMBO_DECKS), True,
              detail=f"registry COMBO_DECKS missing: "
                     f"{sorted(_combo_from_reg - _sg.COMBO_DECKS)}")
+
+        # Rule 15c — Canonical bucket-membership pin. PR #156's bucket
+        # refactor (literal sets → `_BUILTIN_* ∪ _registry_decks(category)`)
+        # silently dropped 'elves' (Glimpse-of-Nature combo engine that
+        # declared only 'aggro','tribal') and silently added 'painter'
+        # (declared 'combo' but emits no Execute tokens). The fix:
+        # 'elves' adds 'combo' to its categories; 'painter' moves from
+        # 'combo' to 'control' until typed Execute tokens are wired at
+        # the Painter+Grindstone lock site. This test locks the
+        # canonical membership so future refactors can't drop a deck
+        # silently without re-declaring its category in DECK_META.
+        test("deck-class membership: elves is a COMBO deck (Glimpse engine)",
+             'elves' in _sg.COMBO_DECKS, True,
+             detail=f"COMBO_DECKS = {sorted(_sg.COMBO_DECKS)}")
+        test("deck-class membership: painter is NOT a COMBO deck "
+             "(no typed Execute tokens emitted)",
+             'painter' not in _sg.COMBO_DECKS, True,
+             detail=f"COMBO_DECKS = {sorted(_sg.COMBO_DECKS)}")
+        test("deck-class membership: painter is an INTERACTION deck "
+             "(control archetype)",
+             'painter' in _sg.INTERACTION_DECKS, True,
+             detail=f"INTERACTION_DECKS = {sorted(_sg.INTERACTION_DECKS)}")
     except Exception as _e:
         test(f"structural_grader rule tests (error: {_e})", False, True)
 

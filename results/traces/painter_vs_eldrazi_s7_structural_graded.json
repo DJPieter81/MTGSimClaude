@@ -12,18 +12,18 @@
     "mulligan": "B+",
     "mana": "B+",
     "combat": "B",
-    "combo": "C",
-    "interaction": "B",
+    "combo": "B",
+    "interaction": "B+",
     "meta": "B",
-    "overall": "B"
+    "overall": "B+"
   },
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
-    "mana": "Won but took 7 turns \u2014 mana was adequate (0 ramp tokens)",
-    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
-    "combo": "No combo Execute decision logged \u2014 deck did not fire its plan",
-    "interaction": "0 hold + 0 defer; combo resolved without holding protection",
-    "meta": "Eventually closed a favored matchup",
+    "mana": "Resource deployment supported a T7 win",
+    "combat": "0 combat decision(s); won via non-combat means",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; measured disruption backed the win",
+    "meta": "Eventually closed the matchup",
     "overall": "Average across 6 domains \u2014 won in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
   },
   "structural_counts": {
@@ -40,7 +40,7 @@
     "protect_phase": 0,
     "total": 7
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 7 turns \u2014 mana was adequate (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: B \u2014 Eventually closed a favored matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Resource deployment supported a T7 win\ncombat: B \u2014 0 combat decision(s); won via non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; measured disruption backed the win\nmeta: B \u2014 Eventually closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T11:59:21.206203Z"
+  "graded_at": "2026-05-16T12:07:40.260361Z"
 }

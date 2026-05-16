@@ -10,19 +10,19 @@
   "deck2": "dnt",
   "grades": {
     "mulligan": "B",
-    "mana": "B",
-    "combat": "C",
-    "combo": "B",
-    "interaction": "C+",
+    "mana": "C",
+    "combat": "B",
+    "combo": "C",
+    "interaction": "C",
     "meta": "C+",
     "overall": "C+"
   },
   "justifications": {
     "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
-    "mana": "Adequate mana utilization over 9 turns",
-    "combat": "Aggro deck without combat decisions \u2014 combat axis was inactive",
-    "combo": "Non-combo deck \u2014 domain not primary axis",
-    "interaction": "0 hold + 0 defer; interaction tokens fell short",
+    "mana": "Lost in 9 turns \u2014 possible mana sequencing issues (0 ramp tokens)",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "No combo Execute decision logged \u2014 deck did not fire its plan",
+    "interaction": "0 hold + 0 defer; no protection token surfaced",
     "meta": "Lost \u2014 played actively but could not overcome matchup",
     "overall": "Average across 6 domains \u2014 lost in 9 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
   },
@@ -40,7 +40,7 @@
     "protect_phase": 0,
     "total": 9
   },
-  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: B \u2014 Adequate mana utilization over 9 turns\ncombat: C \u2014 Aggro deck without combat decisions \u2014 combat axis was inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 0 hold + 0 defer; interaction tokens fell short\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 9 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C \u2014 Lost in 9 turns \u2014 possible mana sequencing issues (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 9 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T11:59:21.199025Z"
+  "graded_at": "2026-05-16T12:07:40.252595Z"
 }
