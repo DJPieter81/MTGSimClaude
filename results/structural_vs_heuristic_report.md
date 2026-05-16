@@ -10,8 +10,8 @@
 | mana | 41/41 = 100% | (all match) | (all match) |
 | combat | 41/41 = 100% | (all match) | (all match) |
 | combo | 27/41 = 66% | depths_vs_burn_s42: B+ | depths_vs_burn_s42: C |
-| interaction | 38/41 = 93% | bug_vs_storm_s2026: A | bug_vs_storm_s2026: B+ |
-| meta | 41/41 = 100% | (all match) | (all match) |
+| interaction | 31/41 = 76% | bug_vs_storm_s2026: A | bug_vs_storm_s2026: B+ |
+| meta | 40/41 = 98% | sneak_a_vs_bug_s2026: C+ | sneak_a_vs_bug_s2026: C |
 
 ## Per-trace grades (heuristic | structural)
 
@@ -35,9 +35,9 @@
 | goblins_vs_uwx_s42 | B/B | B/B | C/C | B/B | C+/C+ | C/C |
 | goblins_vs_uwx_s7 | B/B | B/B | C/C | B/B | C+/C+ | C/C |
 | goblins_vs_uwx_s99 | B/B | B/B | C/C | B/B | C+/C+ | C/C |
-| oops_vs_dimir_s42 | C+/C+ | C/C | B/B | C/C+ * | C/C | C+/C+ |
-| oops_vs_dimir_s7 | C+/C+ | C/C | B/B | C/C+ * | C/C | C+/C+ |
-| oops_vs_dimir_s99 | B+/B+ | B+/B+ | B/B | B+/A * | B/B | A/A |
+| oops_vs_dimir_s42 | C+/C+ | C/C | B/B | C/C+ * | C+/C * | C+/C+ |
+| oops_vs_dimir_s7 | C+/C+ | C/C | B/B | C/C+ * | C+/C * | C+/C+ |
+| oops_vs_dimir_s99 | B+/B+ | B+/B+ | B/B | B+/A * | B+/B * | A/A |
 | painter_vs_eldrazi_s42 | B/B | C+/C+ | C/C | B/B | C+/C+ | C/C |
 | painter_vs_eldrazi_s7 | B+/B+ | B+/B+ | B/B | B/B | B/B | B/B |
 | painter_vs_eldrazi_s99 | D/D | C+/C+ | C/C | B/B | C+/C+ | C/C |
@@ -45,10 +45,10 @@
 | reanimator_vs_burn_s42 | B+/B+ | A/A | B/B | A+/A+ | B/B | B+/B+ |
 | reanimator_vs_burn_s7 | B+/B+ | B+/B+ | B/B | B+/A * | B/B | B+/B+ |
 | reanimator_vs_burn_s99 | B/B | C+/C+ | B/B | D/C * | C/C | C/C |
-| sneak_a_vs_bug_s2026 | B/B | C+/C+ | B/B | D/C * | C/C | C/C |
-| sneak_a_vs_bug_s42 | B+/B+ | B+/B+ | B/B | B/C * | B/B | A/A |
-| sneak_a_vs_bug_s7 | B/B | C/C | B/B | C/C | C/C | C+/C+ |
-| sneak_a_vs_bug_s99 | B+/B+ | B+/B+ | B/B | B+/C * | B/B | A/A |
+| sneak_a_vs_bug_s2026 | B/B | C+/C+ | B/B | D/C * | C+/C * | C+/C * |
+| sneak_a_vs_bug_s42 | B+/B+ | B+/B+ | B/B | B/C * | B+/B * | A/A |
+| sneak_a_vs_bug_s7 | B/B | C/C | B/B | C/C | C+/C * | C+/C+ |
+| sneak_a_vs_bug_s99 | B+/B+ | B+/B+ | B/B | B+/C * | B+/B * | A/A |
 | storm_vs_dnt_s101 | B/B | A/A | B/B | A+/A+ | B/B | A/A |
 | storm_vs_dnt_s2026 | B+/B+ | B+/B+ | B/B | B+/A * | B/B | A/A |
 | storm_vs_dnt_s42 | B/B | C/C | B/B | C/C | C/C | C+/C+ |
@@ -68,4 +68,8 @@
 ### interaction: bug_vs_storm_s2026
 - heuristic = **A**, structural = **B+**
 - structural rationale: 0 hold + 0 defer decisions; measured disruption backed the win
+
+### meta: sneak_a_vs_bug_s2026
+- heuristic = **C+**, structural = **C**
+- structural rationale: Lost — limited decision points suggest structural disadvantage
 
