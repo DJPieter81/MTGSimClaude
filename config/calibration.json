@@ -1,54 +1,38 @@
 {
   "_meta": {
-    "generated_at": "2026-05-16T05:02:50+00:00",
+    "generated_at": "2026-05-16T05:14:11+00:00",
     "main_sha": "a1804cd",
     "n_games_per_matchup": 200,
-    "comment": "Phase D calibration output. Reading order: `values` dict is the canonical source of truth for the listed config constants. `data` is the raw sweep result the choice was derived from. To recalibrate after a behaviour change, run `python3 tools/calibrate_bhi_threshold.py --write`.",
-    "hash_seed_note": "The absolute WRs in `data` are produced by a fresh subprocess per threshold, which uses Python's default (randomized) PYTHONHASHSEED. Sim outcomes are mildly sensitive to hash-iteration order, so absolute values may not match `config/sweep_baseline.json` (generated via `python3 tools/regression_sweep.py` directly). The RELATIVE comparison across thresholds is valid \u2014 that's what `chosen` is based on. See the in-flight bug note in docs/design/2026-05-15_post-phase-6-re-architecture.md."
+    "comment": "Phase D calibration output. Reading order: `values` dict is the canonical source of truth for the listed config constants. `data` is the raw sweep result the most-recent choice was derived from. To recalibrate, re-run the appropriate tools/calibrate_*.py script with --write.",
+    "hash_seed_note": "A prior calibration run was biased by a circular-import bug in decks/bug.py that silently unregistered the BUG deck (fixed in PR #140). The previous PYTHONHASHSEED sensitivity diagnosis was a misdiagnosis of that import race. Current calibration data is clean.",
+    "last_key_calibrated": "BHI_COUNTER_THRESHOLD"
   },
   "values": {
-    "BHI_FREE_COUNTER_THRESHOLD": 0.5
+    "BHI_FREE_COUNTER_THRESHOLD": 0.5,
+    "BHI_COUNTER_THRESHOLD": 0.55
   },
   "summary": {
     "candidates_avg_wr": {
-      "0.30": 0.5365,
-      "0.35": 0.5375,
       "0.40": 0.5365,
-      "0.45": 0.5375,
-      "0.50": 0.5415
+      "0.45": 0.5365,
+      "0.50": 0.5365,
+      "0.55": 0.5365,
+      "0.60": 0.5365,
+      "0.65": 0.5365
     },
-    "chosen": 0.5,
-    "chosen_avg_wr": 0.5415,
-    "tiebreak_rule": "closest_to_0.40_then_lower",
+    "chosen": 0.55,
+    "chosen_avg_wr": 0.5365,
+    "tiebreak_rule": "closest_to_0.55_then_lower",
     "tied_candidates": [
-      "0.50"
+      "0.55",
+      "0.60",
+      "0.50",
+      "0.65",
+      "0.45",
+      "0.40"
     ]
   },
   "data": {
-    "0.30": {
-      "storm_vs_burn": 0.43,
-      "storm_vs_dimir": 0.67,
-      "reanimator_vs_burn": 0.245,
-      "reanimator_vs_dimir": 0.58,
-      "depths_vs_burn": 0.575,
-      "depths_vs_dimir": 0.745,
-      "goblins_vs_uwx": 0.61,
-      "goblins_vs_dimir": 0.35,
-      "bug_vs_storm": 0.46,
-      "ur_delver_vs_dimir": 0.7
-    },
-    "0.35": {
-      "storm_vs_burn": 0.43,
-      "storm_vs_dimir": 0.67,
-      "reanimator_vs_burn": 0.245,
-      "reanimator_vs_dimir": 0.585,
-      "depths_vs_burn": 0.575,
-      "depths_vs_dimir": 0.745,
-      "goblins_vs_uwx": 0.61,
-      "goblins_vs_dimir": 0.35,
-      "bug_vs_storm": 0.465,
-      "ur_delver_vs_dimir": 0.7
-    },
     "0.40": {
       "storm_vs_burn": 0.43,
       "storm_vs_dimir": 0.695,
@@ -65,24 +49,60 @@
       "storm_vs_burn": 0.43,
       "storm_vs_dimir": 0.695,
       "reanimator_vs_burn": 0.245,
-      "reanimator_vs_dimir": 0.59,
+      "reanimator_vs_dimir": 0.585,
       "depths_vs_burn": 0.575,
       "depths_vs_dimir": 0.745,
       "goblins_vs_uwx": 0.61,
       "goblins_vs_dimir": 0.35,
-      "bug_vs_storm": 0.435,
+      "bug_vs_storm": 0.43,
       "ur_delver_vs_dimir": 0.7
     },
     "0.50": {
       "storm_vs_burn": 0.43,
-      "storm_vs_dimir": 0.7,
+      "storm_vs_dimir": 0.695,
       "reanimator_vs_burn": 0.245,
       "reanimator_vs_dimir": 0.585,
       "depths_vs_burn": 0.575,
       "depths_vs_dimir": 0.745,
       "goblins_vs_uwx": 0.61,
       "goblins_vs_dimir": 0.35,
-      "bug_vs_storm": 0.475,
+      "bug_vs_storm": 0.43,
+      "ur_delver_vs_dimir": 0.7
+    },
+    "0.55": {
+      "storm_vs_burn": 0.43,
+      "storm_vs_dimir": 0.695,
+      "reanimator_vs_burn": 0.245,
+      "reanimator_vs_dimir": 0.585,
+      "depths_vs_burn": 0.575,
+      "depths_vs_dimir": 0.745,
+      "goblins_vs_uwx": 0.61,
+      "goblins_vs_dimir": 0.35,
+      "bug_vs_storm": 0.43,
+      "ur_delver_vs_dimir": 0.7
+    },
+    "0.60": {
+      "storm_vs_burn": 0.43,
+      "storm_vs_dimir": 0.695,
+      "reanimator_vs_burn": 0.245,
+      "reanimator_vs_dimir": 0.585,
+      "depths_vs_burn": 0.575,
+      "depths_vs_dimir": 0.745,
+      "goblins_vs_uwx": 0.61,
+      "goblins_vs_dimir": 0.35,
+      "bug_vs_storm": 0.43,
+      "ur_delver_vs_dimir": 0.7
+    },
+    "0.65": {
+      "storm_vs_burn": 0.43,
+      "storm_vs_dimir": 0.695,
+      "reanimator_vs_burn": 0.245,
+      "reanimator_vs_dimir": 0.585,
+      "depths_vs_burn": 0.575,
+      "depths_vs_dimir": 0.745,
+      "goblins_vs_uwx": 0.61,
+      "goblins_vs_dimir": 0.35,
+      "bug_vs_storm": 0.43,
       "ur_delver_vs_dimir": 0.7
     }
   }

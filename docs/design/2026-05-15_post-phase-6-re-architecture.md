@@ -69,19 +69,18 @@ sourcing helper `config._load_calibrated()` reads the value back
 into `InteractionParams.BHI_FREE_COUNTER_THRESHOLD` at import time
 with a 0.40 fallback if the JSON is unreadable.
 
-**In-flight bug found during calibration**: sim outcomes are
-mildly sensitive to Python's hash-randomization
-(`PYTHONHASHSEED`). Running the regression sweep via
-`python3 tools/regression_sweep.py` vs running it via
-`python -c "from regression_sweep import ..."` produces different
-absolute WRs (bug_vs_storm: 43.0% vs 31.5%) due to set/dict
-iteration order leaking into game outcomes. Workaround: the
-calibration runs each threshold in a fresh subprocess; absolute
-values aren't comparable to the baseline file, but the
-relative-to-each-other comparison is valid (which is what
-calibration needs). A follow-up should track down the
-non-deterministic iteration site in the sim and pin
-`PYTHONHASHSEED=0` in `.github/workflows/regression-sweep.yml`.
+**Retraction — root cause was an import bug, not hash randomization**:
+the apparent `PYTHONHASHSEED` sensitivity observed during this
+calibration was a misdiagnosis. PR #140 fixed a circular import
+in `decks/bug.py` that silently unregistered the BUG deck under
+specific import orders, producing the WR divergence between
+`python3 tools/regression_sweep.py` and the `-c` invocation. With
+that bug fixed the calibration data above remains valid — the
+chosen value (0.40) was already in the tie set — but later
+calibrations no longer need the subprocess-isolation workaround
+to be reasoned about as a hash-seed artefact. The calibration
+findings stand; the diagnosis paragraph that previously lived
+here did not.
 
 ## Sequence (refactor-first, per user)
 

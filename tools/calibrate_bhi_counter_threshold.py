@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 """
-calibrate_bhi_threshold.py — Phase D of the post-Phase-6 re-architecture.
+calibrate_bhi_counter_threshold.py — calibrate the second BHI threshold.
 
-Sweeps `config.InteractionParams.BHI_FREE_COUNTER_THRESHOLD` across a
+Sweeps `config.InteractionParams.BHI_COUNTER_THRESHOLD` across a
 candidate range and measures the per-matchup win-rate impact on the
 Phase C regression-sweep matchup set. Picks the value that maximises
 average win rate and writes the supporting data + chosen value to
-`config/calibration.json`.
+`config/calibration.json` (merging into the existing `values` dict
+alongside `BHI_FREE_COUNTER_THRESHOLD`).
 
 Usage:
     # Run the calibration sweep + print table (read-only)
-    python3 tools/calibrate_bhi_threshold.py
+    python3 tools/calibrate_bhi_counter_threshold.py
 
     # Write the chosen value to config/calibration.json
-    python3 tools/calibrate_bhi_threshold.py --write
+    python3 tools/calibrate_bhi_counter_threshold.py --write
 
-The threshold gates Hold/Defer in `combo_engine.combo_plan` (Phase B).
-A higher value defers less often (riskier — combo fires through opp
-counters more); a lower value defers more (safer — but wastes turns
-when opp doesn't actually have a counter).
+The threshold is the "any counter in hand" probability cutoff
+(`belief.p_counter`), counterpart to the `_FREE_` variant (free
+counters only). It governs strategy decisions where opponent
+counter-magic of any cost matters (vs only 0-mana counters). A higher
+value defers less often; a lower value defers more.
 """
 from __future__ import annotations
 
@@ -35,10 +37,13 @@ sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / 'tools'))
 
 
-# Candidate threshold values to sweep. The current main is 0.40.
-CANDIDATES: tuple[float, ...] = (0.30, 0.35, 0.40, 0.45, 0.50)
+# Candidate threshold values to sweep. Current main fallback is 0.55.
+CANDIDATES: tuple[float, ...] = (0.40, 0.45, 0.50, 0.55, 0.60, 0.65)
 
 CALIBRATION_PATH = REPO_ROOT / 'config' / 'calibration.json'
+
+KEY = 'BHI_COUNTER_THRESHOLD'
+FALLBACK = 0.55
 
 
 def run_sweep_at_threshold(threshold: float) -> dict[str, float]:
@@ -46,15 +51,11 @@ def run_sweep_at_threshold(threshold: float) -> dict[str, float]:
     threshold override applied at startup. Returns {matchup_key: p1_wr}.
 
     A fresh subprocess is used because the sim accumulates implicit
-    state between consecutive in-process sweeps (the source of the
-    leak hasn't been hunted down yet; subprocess isolation is the
-    pragmatic fix). Without isolation, threshold=0.40 sweeps that
-    follow a threshold=0.30 sweep produce different WRs than a
-    fresh-process baseline — defeating calibration.
+    state between consecutive in-process sweeps (same isolation pattern
+    used by calibrate_bhi_threshold.py — see PR #140 for the underlying
+    circular-import bug that this isolation now guards against).
     """
     import subprocess
-    # Run a one-shot script that overrides the constant, runs the
-    # sweep, and emits JSON on stdout.
     child = subprocess.run(
         [sys.executable, '-c', _CHILD_PROGRAM, str(threshold)],
         cwd=str(REPO_ROOT),
@@ -62,7 +63,6 @@ def run_sweep_at_threshold(threshold: float) -> dict[str, float]:
         text=True,
         check=True,
     )
-    # The child prints progress to stderr and the final JSON to stdout.
     return json.loads(child.stdout)
 
 
@@ -70,10 +70,8 @@ _CHILD_PROGRAM = """
 import contextlib, json, os, sys
 sys.path.insert(0, 'tools')
 from config import InteractionParams as IP
-IP.BHI_FREE_COUNTER_THRESHOLD = float(sys.argv[1])
+IP.BHI_COUNTER_THRESHOLD = float(sys.argv[1])
 from regression_sweep import run_sweep_matrix, DEFAULT_MATCHUPS
-# Redirect the sweep's progress prints to stderr; emit the result
-# JSON cleanly on stdout for parent json.loads().
 with contextlib.redirect_stdout(sys.stderr):
     results = run_sweep_matrix(DEFAULT_MATCHUPS, n_games=200)
 print(json.dumps({k: v['p1_wr'] for k, v in results.items()}))
@@ -83,7 +81,7 @@ print(json.dumps({k: v['p1_wr'] for k, v in results.items()}))
 def collect_calibration_data() -> dict:
     """Run the sweep at every candidate, return raw + aggregated data."""
     t0 = time.time()
-    print(f"=== BHI threshold calibration: "
+    print(f"=== BHI_COUNTER_THRESHOLD calibration: "
           f"sweeping {len(CANDIDATES)} candidates × 10 matchups × n=200 ===",
           flush=True)
 
@@ -122,8 +120,8 @@ def print_table(per_threshold: dict[float, dict[str, float]]) -> None:
 def pick_best(per_threshold: dict[float, dict[str, float]]) -> tuple[float, dict]:
     """Choose the threshold that maximises mean p1_wr across matchups.
 
-    Tiebreaks: closer to current main (0.40), then lower (more conservative).
-    Returns (chosen, summary_dict).
+    Tiebreaks: closer to current fallback (0.55), then lower (more
+    conservative). Returns (chosen, summary_dict).
     """
     candidates = sorted(per_threshold.keys())
     n = len(per_threshold[candidates[0]])
@@ -133,8 +131,8 @@ def pick_best(per_threshold: dict[float, dict[str, float]]) -> tuple[float, dict
 
     # Find all candidates within 0.1pp of best (treat as ties).
     ties = [c for c in candidates if best_avg - averages[c] < 0.001]
-    # Tiebreak: closest to 0.40 (current), then lower.
-    ties.sort(key=lambda c: (abs(c - 0.40), c))
+    # Tiebreak: closest to fallback (0.55), then lower.
+    ties.sort(key=lambda c: (abs(c - FALLBACK), c))
     chosen = ties[0]
 
     summary = {
@@ -142,7 +140,7 @@ def pick_best(per_threshold: dict[float, dict[str, float]]) -> tuple[float, dict
                               for c in candidates},
         'chosen': chosen,
         'chosen_avg_wr': round(averages[chosen], 4),
-        'tiebreak_rule': 'closest_to_0.40_then_lower',
+        'tiebreak_rule': f'closest_to_{FALLBACK:.2f}_then_lower',
         'tied_candidates': [f'{c:.2f}' for c in ties],
     }
     return chosen, summary
@@ -154,7 +152,12 @@ def write_calibration_file(
     summary: dict,
     path: Path,
 ) -> None:
-    """Write the calibration JSON: chosen value + supporting data."""
+    """Write the calibration JSON: chosen value + supporting data.
+
+    Merges into the existing file so other calibrated constants (e.g.
+    `BHI_FREE_COUNTER_THRESHOLD`) survive. Replaces top-level metadata
+    so the most recent calibration's provenance wins.
+    """
     import subprocess
     try:
         sha = subprocess.check_output(
@@ -164,6 +167,19 @@ def write_calibration_file(
     except subprocess.CalledProcessError:
         sha = 'unknown'
 
+    # Load existing values dict if present so we don't clobber prior
+    # calibrations of other constants.
+    existing_values: dict = {}
+    if path.exists():
+        try:
+            with path.open() as f:
+                existing = json.load(f)
+            existing_values = dict(existing.get('values', {}))
+        except (OSError, json.JSONDecodeError):
+            existing_values = {}
+
+    existing_values[KEY] = chosen
+
     out = {
         '_meta': {
             'generated_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
@@ -172,9 +188,9 @@ def write_calibration_file(
             'comment': (
                 'Phase D calibration output. Reading order: `values` dict '
                 'is the canonical source of truth for the listed config '
-                'constants. `data` is the raw sweep result the choice was '
-                'derived from. To recalibrate after a behaviour change, '
-                'run `python3 tools/calibrate_bhi_threshold.py --write`.'
+                'constants. `data` is the raw sweep result the most-recent '
+                'choice was derived from. To recalibrate, re-run the '
+                'appropriate tools/calibrate_*.py script with --write.'
             ),
             'hash_seed_note': (
                 'A prior calibration run was biased by a circular-import '
@@ -183,10 +199,9 @@ def write_calibration_file(
                 'sensitivity diagnosis was a misdiagnosis of that import '
                 'race. Current calibration data is clean.'
             ),
+            'last_key_calibrated': KEY,
         },
-        'values': {
-            'BHI_FREE_COUNTER_THRESHOLD': chosen,
-        },
+        'values': existing_values,
         'summary': summary,
         'data': {
             f'{thr:.2f}': per_threshold[thr]
