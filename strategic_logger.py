@@ -59,6 +59,54 @@ class StrategicLogger:
             'phase': phase,
         })
 
+    def log_disruption(self, turn: int, gs, player, kind: str, target_tag: str,
+                       instrument_tag: str, reason: str) -> None:
+        """Single canonical emit-site for a typed disruption token.
+
+        Replaces the `_attacker_deck = gs.p1_deck if player is gs.p1 else
+        gs.p2_deck` + `log_decision(..., chosen=f'{kind}_<tag>_with_<instr>')`
+        boilerplate that was duplicated across ~50 spot-removal / counter /
+        discard sites in engine.py and sim.py (PRs #150, #151, #155).
+
+        Args:
+            turn:            game turn (gs.turn).
+            gs:              GameState, used for the player→deck binding.
+            player:          PlayerState — the disrupting deck's player slot
+                             (the one CASTING the counter / discard / removal).
+                             Resolved to `gs.p1_deck` if player is gs.p1
+                             else `gs.p2_deck`.
+            kind:            one of 'counter', 'discard', 'remove' — produces
+                             the typed token prefix `{kind}_…`. Matches the
+                             strict-prefix contract in scripts/structural_grader.py.
+            target_tag:      tag of the targeted card (or fallback string
+                             like 'creature' / 'spell' / 'card' / 'permanent'
+                             at call-sites where the tag may be None).
+            instrument_tag:  tag of the disruption instrument
+                             (e.g. 'fow' for Force of Will, 'push' for Fatal
+                             Push, 'ts' for Thoughtseize).
+            reason:          short justification — passed through verbatim.
+
+        The candidates list is fixed per-kind to mirror the historic
+        wirings: ['counter','let_resolve'] for counter, ['thoughtseize','pass']
+        for discard, ['remove','pass'] for remove. Picked to be
+        byte-identical with the existing emissions so downstream parsers
+        (llm_judge, structural_grader) see no diff.
+        """
+        if kind == 'counter':
+            candidates = ['counter', 'let_resolve']
+        elif kind == 'discard':
+            candidates = ['thoughtseize', 'pass']
+        elif kind == 'remove':
+            candidates = ['remove', 'pass']
+        else:
+            raise ValueError(
+                f"log_disruption: kind must be one of "
+                f"'counter'/'discard'/'remove', got {kind!r}")
+        deck = gs.p1_deck if player is gs.p1 else gs.p2_deck
+        chosen = f'{kind}_{target_tag}_with_{instrument_tag}'
+        self.log_decision(turn, deck, candidates=candidates,
+                          chosen=chosen, reason=reason)
+
     def _phase_for(self, deck: str, turn: int):
         """Look up the gameplan phase for this turn. Returns None when no plan."""
         if deck not in self._plan_cache:

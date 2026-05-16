@@ -1144,11 +1144,9 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         # decks for actually using their counter spells. The counter-tag
         # used is the LAST one stored on gs (set by the matching branch).
         _counter_tag = getattr(gs, '_last_counter_used', 'counter') or 'counter'
-        _defender_deck = (gs.p1_deck if defender is gs.p1 else gs.p2_deck)
-        gs.strat_log.log_decision(
-            gs.turn, _defender_deck,
-            candidates=['counter', 'let_resolve'],
-            chosen=f'counter_{spell_card.tag or "spell"}_with_{_counter_tag}',
+        gs.strat_log.log_disruption(
+            gs.turn, gs, defender, 'counter',
+            spell_card.tag or 'spell', _counter_tag,
             reason=f'{_counter_tag} counters {spell_card.tag}'
                    f' ({"major" if is_major_threat else "minor"} threat)')
         return True
@@ -1331,11 +1329,9 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                     opponent.remove_from_hand(_t)
                     # Typed Execute log for the structural grader's
                     # interaction-deck signal (mirrors counter_*).
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['thoughtseize', 'pass'],
-                        chosen=f'discard_{_t.tag or "card"}_with_ts',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'discard',
+                        _t.tag or 'card', 'ts',
                         reason=f'TS strips {_t.tag} from opponent')
                     log_fn(f"Thoughtseize -> strips {_t.name}", key=True)
                 cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
@@ -1392,11 +1388,9 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                     rev = " [revolt CMC≤4]" if player.revolt_this_turn else " [CMC≤2]"
                     log_fn(f"Fatal Push{rev} → kills {target_early.name} (CMC {target_early.cmc})")
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{target_early.card.tag or "creature"}_with_push',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        target_early.card.tag or 'creature', 'push',
                         reason=f'push kills {target_early.card.tag or "creature"}')
                 if cast_spell(player, opponent, gs, push_early, budget, log_fn, log_entries,
                               on_resolve=_resolve_early_push, cost_override=effective_cmc(push_early)):
@@ -1423,11 +1417,9 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                         opponent.remove_creature(target_early)
                         log_fn(f"Snuff Out (free, −4 life → {player.life}) → kills {target_early.name}", key=True)
                         # Typed removal log for structural-grader interaction signal.
-                        _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                        gs.strat_log.log_decision(
-                            gs.turn, _attacker_deck,
-                            candidates=['remove', 'pass'],
-                            chosen=f'remove_{target_early.card.tag or "creature"}_with_snuff',
+                        gs.strat_log.log_disruption(
+                            gs.turn, gs, player, 'remove',
+                            target_early.card.tag or 'creature', 'snuff',
                             reason=f'snuff kills {target_early.card.tag or "creature"}')
                     if cast_spell(player, opponent, gs, snuff_early, None, log_fn, log_entries,
                                   on_resolve=_resolve_early_snuff):
@@ -1536,11 +1528,9 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn(f"Abrupt Decay [uncounterable] → {ad_target.name} (CMC {ad_target.cmc}≤3)",
                 key=True)
             # Typed removal log for structural-grader interaction signal.
-            _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-            gs.strat_log.log_decision(
-                gs.turn, _attacker_deck,
-                candidates=['remove', 'pass'],
-                chosen=f'remove_{ad_target.card.tag or "permanent"}_with_ad',
+            gs.strat_log.log_disruption(
+                gs.turn, gs, player, 'remove',
+                ad_target.card.tag or 'permanent', 'ad',
                 reason=f'ad destroys {ad_target.card.tag or "permanent"}')
             gs.on_permanent_destroyed(ad_target)
             update_goyf(gs)
@@ -1565,11 +1555,9 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                 rev = " [revolt CMC≤4]" if player.revolt_this_turn else " [CMC≤2]"
                 log_fn(f"Fatal Push{rev} → kills {target.name} (CMC {target.cmc})")
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{target.card.tag or "creature"}_with_push',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    target.card.tag or 'creature', 'push',
                     reason=f'push kills {target.card.tag or "creature"}')
             cast_spell(player, opponent, gs, push, budget, log_fn, log_entries,
                        on_resolve=_resolve_push, cost_override=effective_cmc(push))
@@ -1598,11 +1586,9 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                     player.revolt_this_turn = True
                     log_fn(f"Snuff Out (free, −4 life → {player.life}) → kills {target.name} (CMC {target.cmc})")
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{target.card.tag or "creature"}_with_snuff',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        target.card.tag or 'creature', 'snuff',
                         reason=f'snuff kills {target.card.tag or "creature"}')
                 cast_spell(player, opponent, gs, snuffout, None, log_fn, log_entries,
                            on_resolve=_resolve_snuff)
@@ -1625,11 +1611,9 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                     log_fn(f"Dismember (1 mana + 4 life → {player.life}) kills {big.name} "
                         f"({big.toughness}-5={big.toughness-5}≤0)")
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{big.card.tag or "creature"}_with_dismember',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        big.card.tag or 'creature', 'dismember',
                         reason=f'dismember kills {big.card.tag or "creature"}')
                 cast_spell(player, opponent, gs, dis, budget, log_fn, log_entries,
                            on_resolve=_resolve_dismember, cost_override=1)
@@ -1700,12 +1684,10 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                     names = _destroy_permanent_targets(gs, opponent, targets)
                     log_fn(f"★ Force of Vigor (paid {'{1}{G}{G}'}) → destroys {' + '.join(names)}", key=True)
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
                     for _tag in _target_tags:
-                        gs.strat_log.log_decision(
-                            gs.turn, _attacker_deck,
-                            candidates=['remove', 'pass'],
-                            chosen=f'remove_{_tag}_with_fov',
+                        gs.strat_log.log_disruption(
+                            gs.turn, gs, player, 'remove',
+                            _tag, 'fov',
                             reason=f'fov destroys {_tag}')
                 cast_spell(player, opponent, gs, fov_paid, budget, log_fn, log_entries,
                            on_resolve=_resolve_fov, cost_override=3)
@@ -1730,11 +1712,9 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.revolt_this_turn = True
                 log_fn(f"{c.name} → destroys {target_perm.name} ({color_name} permanent)")
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{target_perm.card.tag or "creature"}_with_{c.tag or "pyro"}',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    target_perm.card.tag or 'creature', c.tag or 'pyro',
                     reason=f'{c.tag or "pyro"} destroys {target_perm.card.tag or "creature"}')
             cast_spell(player, opponent, gs, pyro_card, budget, log_fn, log_entries,
                        on_resolve=_resolve_pyro, cost_override=1)
@@ -1772,12 +1752,10 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                         f" — opp kills: {[cc.name for cc in killed_opp]}"
                         f", BUG kills: {[cc.name for cc in killed_bug]}", key=True)
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
                     for _tag in _killed_opp_tags:
-                        gs.strat_log.log_decision(
-                            gs.turn, _attacker_deck,
-                            candidates=['remove', 'pass'],
-                            chosen=f'remove_{_tag}_with_deluge',
+                        gs.strat_log.log_disruption(
+                            gs.turn, gs, player, 'remove',
+                            _tag, 'deluge',
                             reason=f'deluge kills {_tag}')
                 cast_spell(player, opponent, gs, deluge_card, budget, log_fn, log_entries,
                            on_resolve=_resolve_deluge, cost_override=effective_cmc(deluge_card))
@@ -2071,11 +2049,9 @@ def _respond_on_opponent_turn(responder, active, gs, log_fn, log_entries):
             log_fn(f"★ STP (instant, opp's turn) → exiles {target.card.name} "
                    f"(+{life_gain} life → {active.life})", True)
             # Typed removal log for structural-grader interaction signal.
-            _attacker_deck = (gs.p1_deck if responder is gs.p1 else gs.p2_deck)
-            gs.strat_log.log_decision(
-                gs.turn, _attacker_deck,
-                candidates=['remove', 'pass'],
-                chosen=f'remove_{target.card.tag or "creature"}_with_stp',
+            gs.strat_log.log_disruption(
+                gs.turn, gs, responder, 'remove',
+                target.card.tag or 'creature', 'stp',
                 reason=f'stp exiles {target.card.tag or "creature"}')
             update_goyf(gs)
             gs.check_life_totals()
@@ -2098,11 +2074,9 @@ def _respond_on_opponent_turn(responder, active, gs, log_fn, log_entries):
                 rev = " [revolt]" if revolt else ""
                 log_fn(f"★ Push{rev} (instant, opp's turn) → kills {target.card.name}", True)
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if responder is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{target.card.tag or "creature"}_with_push',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, responder, 'remove',
+                    target.card.tag or 'creature', 'push',
                     reason=f'push kills {target.card.tag or "creature"}')
                 update_goyf(gs)
 
@@ -2126,11 +2100,9 @@ def _respond_on_opponent_turn(responder, active, gs, log_fn, log_entries):
                     log_fn(f"★ Snuff Out (free, −4 life → {responder.life}, opp's turn) "
                            f"→ kills {target.card.name}", True)
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if responder is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{target.card.tag or "creature"}_with_snuff',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, responder, 'remove',
+                        target.card.tag or 'creature', 'snuff',
                         reason=f'snuff kills {target.card.tag or "creature"}')
                     update_goyf(gs)
 
@@ -2153,11 +2125,9 @@ def _respond_on_opponent_turn(responder, active, gs, log_fn, log_entries):
             update_goyf(gs)
             if _will_die:
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if responder is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{target.card.tag or "creature"}_with_bolt',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, responder, 'remove',
+                    target.card.tag or 'creature', 'bolt',
                     reason=f'bolt kills {target.card.tag or "creature"}')
 
     # ── Flash Bowmasters: deploy on active's end step ──
@@ -2557,11 +2527,9 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.life += life_gain
             log_fn(f"Swords to Plowshares exiles {_t.card.name} (+{life_gain} life)")
             # Typed removal log for structural-grader interaction signal.
-            _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-            gs.strat_log.log_decision(
-                gs.turn, _attacker_deck,
-                candidates=['remove', 'pass'],
-                chosen=f'remove_{_t.card.tag or "creature"}_with_stp',
+            gs.strat_log.log_disruption(
+                gs.turn, gs, player, 'remove',
+                _t.card.tag or 'creature', 'stp',
                 reason=f'stp exiles {_t.card.tag or "creature"}')
             update_goyf(gs)
         cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
@@ -2596,11 +2564,9 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                     player.life += life_gain
                     log_fn(f"★ Solitude (evoke, pitch {_pitch.name}) exiles {_t.card.name} (+{life_gain} life)", True)
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{_t.card.tag or "creature"}_with_solitude',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        _t.card.tag or 'creature', 'solitude',
                         reason=f'solitude exiles {_t.card.tag or "creature"}')
                     update_goyf(gs)
                 cast_spell(player, opponent, gs, solitude, None, log_fn, log_entries,
@@ -2663,11 +2629,9 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                             gs.eidolon_active = False
                         log_fn(f"  Skyclave Apparition exiles {target.card.name}")
                         # Typed removal log for structural-grader interaction signal.
-                        _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                        gs.strat_log.log_decision(
-                            gs.turn, _attacker_deck,
-                            candidates=['remove', 'pass'],
-                            chosen=f'remove_{target.card.tag or "creature"}_with_skyclave',
+                        gs.strat_log.log_disruption(
+                            gs.turn, gs, player, 'remove',
+                            target.card.tag or 'creature', 'skyclave',
                             reason=f'skyclave exiles {target.card.tag or "creature"}')
                 if _tag == 'recruiter':
                     found = next((cc for cc in player.library
@@ -2849,11 +2813,9 @@ def _strategy_ocelot(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"Swords to Plowshares -> exiles {_t.card.name} "
                        f"(opp life +{_t.toughness} -> {opponent.life})")
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{_t.card.tag or "creature"}_with_stp',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    _t.card.tag or 'creature', 'stp',
                     reason=f'stp exiles {_t.card.tag or "creature"}')
                 update_goyf(gs)
             cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
@@ -3030,11 +2992,9 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
                     rev = " [revolt CMC≤4]" if player.revolt_this_turn else " [CMC≤2]"
                     log_fn(f"Fatal Push{rev} → kills {_t.card.name} (CMC {_t.card.cmc})")
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{_t.card.tag or "creature"}_with_push',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        _t.card.tag or 'creature', 'push',
                         reason=f'push kills {_t.card.tag or "creature"}')
                     update_goyf(gs)
                 cast_spell(player, opponent, gs, push, budget, log_fn, log_entries,
@@ -3057,11 +3017,9 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
                     log_fn(f"Snuff Out (free, −{c.life_cost} life → {player.life}) "
                            f"→ kills {_t.card.name} (CMC {_t.card.cmc})")
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{_t.card.tag or "creature"}_with_snuff',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        _t.card.tag or 'creature', 'snuff',
                         reason=f'snuff kills {_t.card.tag or "creature"}')
                     update_goyf(gs)
                 cast_spell(player, opponent, gs, snuff, None, log_fn, log_entries,
@@ -3241,11 +3199,9 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.life += life_gain
             log_fn(f"Swords to Plowshares exiles {_t.card.name} (+{life_gain} life)")
             # Typed removal log for structural-grader interaction signal.
-            _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-            gs.strat_log.log_decision(
-                gs.turn, _attacker_deck,
-                candidates=['remove', 'pass'],
-                chosen=f'remove_{_t.card.tag or "creature"}_with_stp',
+            gs.strat_log.log_disruption(
+                gs.turn, gs, player, 'remove',
+                _t.card.tag or 'creature', 'stp',
                 reason=f'stp exiles {_t.card.tag or "creature"}')
             update_goyf(gs)
         cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
@@ -3291,11 +3247,9 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.remove_creature(_small)
                 log_fn(f"Lightning Bolt → {_small.name}")
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{_small.card.tag or "creature"}_with_bolt',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    _small.card.tag or 'creature', 'bolt',
                     reason=f'bolt kills {_small.card.tag or "creature"}')
                 update_goyf(gs)
         cast_spell(player, opponent, gs, bolt, budget, log_fn, log_entries,
@@ -4016,11 +3970,9 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
                 log_fn(f"Snuff Out (free, −{c.life_cost} life → {player.life}) "
                        f"→ kills {_t.name} (nonblack)", True)
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{_t.card.tag or "creature"}_with_snuff',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    _t.card.tag or 'creature', 'snuff',
                     reason=f'snuff kills {_t.card.tag or "creature"}')
                 update_goyf(gs)
             cast_spell(player, opponent, gs, snuff, None, log_fn, log_entries,
@@ -4805,11 +4757,9 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.add_to_grave(_t)
                 player.life -= 2
                 # Typed discard log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['thoughtseize', 'pass'],
-                    chosen=f'discard_{_t.tag or "card"}_with_ts',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'discard',
+                    _t.tag or 'card', 'ts',
                     reason=f'TS strips {_t.tag} from opponent')
                 log_fn(f"Thoughtseize → takes {_t.name} (−2 life, {player.life})", True)
             cast_spell(player, opponent, gs, ts, budget, log_fn, log_entries,
@@ -4886,11 +4836,9 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
                     opponent.remove_creature(target)
                     log_fn(f"  Bowmasters ETB: pings {target.card.name} (dies)")
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{target.card.tag or "creature"}_with_bowm',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        target.card.tag or 'creature', 'bowm',
                         reason=f'bowmasters ping kills {target.card.tag or "creature"}')
                     update_goyf(gs)
             from rules import Permanent
@@ -4912,11 +4860,9 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
                 rev = "[revolt CMC≤4]" if player.revolt_this_turn else "[CMC≤2]"
                 log_fn(f"Fatal Push {rev} → kills {_t.name}")
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{_t.card.tag or "creature"}_with_push',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    _t.card.tag or 'creature', 'push',
                     reason=f'push kills {_t.card.tag or "creature"}')
                 update_goyf(gs)
             cast_spell(player, opponent, gs, push, budget, log_fn, log_entries,
@@ -4934,11 +4880,9 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.remove_creature(_t)
                 log_fn(f"Snuff Out (free, −{c.life_cost} life → {player.life}) → kills {_t.name} (nonblack)", True)
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{_t.card.tag or "creature"}_with_snuff',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    _t.card.tag or 'creature', 'snuff',
                     reason=f'snuff kills {_t.card.tag or "creature"}')
                 update_goyf(gs)
             cast_spell(player, opponent, gs, snuff, None, log_fn, log_entries,
@@ -5075,11 +5019,9 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
                 rev = "[revolt CMC≤4]" if player.revolt_this_turn else "[CMC≤2]"
                 log_fn(f"Fatal Push {rev} → kills {_t.name}")
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{_t.card.tag or "creature"}_with_push',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    _t.card.tag or 'creature', 'push',
                     reason=f'push kills {_t.card.tag or "creature"}')
                 update_goyf(gs)
             cast_spell(player, opponent, gs, push, budget, log_fn, log_entries,
@@ -5164,11 +5106,9 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.life += life_gain
                 log_fn(f"Swords to Plowshares → exiles {_t.card.name}, opp gains {life_gain} life")
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{_t.card.tag or "creature"}_with_stp',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    _t.card.tag or 'creature', 'stp',
                     reason=f'stp exiles {_t.card.tag or "creature"}')
                 update_goyf(gs)
                 mentor_trigger()
@@ -5223,11 +5163,9 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
                     player.graveyard.remove(_fb); player.exile.append(_fb)
                     log_fn(f"  Snapcaster flashback STP → exiles {t.card.name}", True)
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{t.card.tag or "creature"}_with_stp',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        t.card.tag or 'creature', 'stp',
                         reason=f'snap flashback stp exiles {t.card.tag or "creature"}')
                     update_goyf(gs)
                 elif _fb == _term_fb and opponent.creatures:
@@ -5996,11 +5934,9 @@ def _strategy_ur_aggro(player, opponent, gs, total_mana, log_fn, log_entries):
                     opponent.remove_creature(_t)
                     log_fn(f"Lightning Bolt → {_t.card.name}", True); update_goyf(gs)
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{_t.card.tag or "creature"}_with_bolt',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        _t.card.tag or 'creature', 'bolt',
                         reason=f'bolt kills {_t.card.tag or "creature"}')
                 else:
                     opponent.life -= 3
@@ -6120,12 +6056,10 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
                 label = f"ETB#{wave+1}" + (" (Ephemerate blink)" if wave else "")
                 log_fn(f"★ Fury {label} (4 divided) — kills: {[cc.name for cc in killed]}", True)
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
                 for _tag in _killed_tags:
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{_tag}_with_fury',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        _tag, 'fury',
                         reason=f'fury kills {_tag}')
             update_goyf(gs); gs.state_based_actions()
         cast_spell(player, opponent, gs, fury, None, log_fn, log_entries,
@@ -6172,11 +6106,9 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
                         opponent.remove_creature(_t)
                         log_fn(f"★ Swords to Plowshares → exiles Eidolon", True)
                         # Typed removal log for structural-grader interaction signal.
-                        _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                        gs.strat_log.log_decision(
-                            gs.turn, _attacker_deck,
-                            candidates=['remove', 'pass'],
-                            chosen=f'remove_{_t.card.tag or "creature"}_with_stp',
+                        gs.strat_log.log_disruption(
+                            gs.turn, gs, player, 'remove',
+                            _t.card.tag or 'creature', 'stp',
                             reason=f'stp exiles {_t.card.tag or "creature"}')
                         update_goyf(gs)
                 cast_spell(player, opponent, gs, stp_card, budget,
@@ -6192,11 +6124,9 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
                             opponent.remove_creature(_t)
                             log_fn("★ Lightning Bolt → kills Eidolon", True)
                             # Typed removal log for structural-grader interaction signal.
-                            _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                            gs.strat_log.log_decision(
-                                gs.turn, _attacker_deck,
-                                candidates=['remove', 'pass'],
-                                chosen=f'remove_{_t.card.tag or "creature"}_with_bolt',
+                            gs.strat_log.log_disruption(
+                                gs.turn, gs, player, 'remove',
+                                _t.card.tag or 'creature', 'bolt',
                                 reason=f'bolt kills {_t.card.tag or "creature"}')
                             update_goyf(gs)
                     cast_spell(player, opponent, gs, bolt_card, budget,
@@ -6238,11 +6168,9 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
                 opponent.remove_creature(_t)
                 log_fn(f"Swords to Plowshares exiles {_t.card.name}")
                 # Typed removal log for structural-grader interaction signal.
-                _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                gs.strat_log.log_decision(
-                    gs.turn, _attacker_deck,
-                    candidates=['remove', 'pass'],
-                    chosen=f'remove_{_t.card.tag or "creature"}_with_stp',
+                gs.strat_log.log_disruption(
+                    gs.turn, gs, player, 'remove',
+                    _t.card.tag or 'creature', 'stp',
                     reason=f'stp exiles {_t.card.tag or "creature"}')
                 update_goyf(gs)
             cast_spell(player, opponent, gs, stp, budget, log_fn, log_entries,
@@ -6272,11 +6200,9 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
                     opponent.remove_creature(_t)
                     log_fn(f"Lightning Bolt → kills {_t.card.name}", True); update_goyf(gs)
                     # Typed removal log for structural-grader interaction signal.
-                    _attacker_deck = (gs.p1_deck if player is gs.p1 else gs.p2_deck)
-                    gs.strat_log.log_decision(
-                        gs.turn, _attacker_deck,
-                        candidates=['remove', 'pass'],
-                        chosen=f'remove_{_t.card.tag or "creature"}_with_bolt',
+                    gs.strat_log.log_disruption(
+                        gs.turn, gs, player, 'remove',
+                        _t.card.tag or 'creature', 'bolt',
                         reason=f'bolt kills {_t.card.tag or "creature"}')
                 elif _face:
                     opponent.life -= 3
