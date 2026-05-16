@@ -68,6 +68,7 @@ HOLD_PREFIXES = ('hold_',)
 DEFER_TOKENS = {'defer'}
 COUNTER_PREFIXES = ('counter_',)   # interaction decks log counter_<spell>_with_<ctr>
 DISCARD_PREFIXES = ('discard_',)   # interaction decks log discard_<spell>_with_<ts>
+REMOVAL_PREFIXES = ('remove_',)    # removal spells log remove_<target>_with_<spell>
 ATTACK_PREFIX = 'attack'  # 'attack with N goblins'
 COMBAT_PHASE = 'combat'
 
@@ -107,6 +108,16 @@ def _is_discard(chosen: str) -> bool:
     return any(chosen.startswith(p) for p in DISCARD_PREFIXES)
 
 
+def _is_removal(chosen: str) -> bool:
+    """Decision indicates the strategy *removed* an opposing permanent
+    (creature, planeswalker, artifact, enchantment) via a spot-removal
+    spell (Push, STP, Snuff, Dismember, AD, Bolt-as-removal, Solitude,
+    Skyclave Apparition, Fury, Deluge, Pyro/Hydroblast, Force of Vigor)."""
+    if not chosen:
+        return False
+    return any(chosen.startswith(p) for p in REMOVAL_PREFIXES)
+
+
 def _is_combat_decision(decision: dict) -> bool:
     """Combat-axis decision: either tagged with combat phase or attack action."""
     if decision.get('phase') == COMBAT_PHASE:
@@ -129,7 +140,7 @@ def _count_structural(decisions: list[dict], deck1: str | None = None) -> dict:
         decisions = [d for d in decisions if d.get('deck') == deck1]
     counts = {
         'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'discard': 0,
-        'combat': 0, 'combo_phase': 0, 'protect_phase': 0,
+        'removal': 0, 'combat': 0, 'combo_phase': 0, 'protect_phase': 0,
         'total': len(decisions),
     }
     for d in decisions:
@@ -145,6 +156,8 @@ def _count_structural(decisions: list[dict], deck1: str | None = None) -> dict:
             counts['counter'] += 1
         if _is_discard(chosen):
             counts['discard'] += 1
+        if _is_removal(chosen):
+            counts['removal'] += 1
         if _is_combat_decision(d):
             counts['combat'] += 1
         if phase == 'combo':
@@ -190,18 +203,30 @@ def _grade_mana(trace: dict) -> tuple[str, str]:
 
 
 def _grade_combat(trace: dict, counts: dict) -> tuple[str, str]:
-    """Combat grading from structural combat-phase / attack tokens, no English keywords."""
+    """Combat grading from structural combat-phase / attack tokens, no English keywords.
+
+    For aggro decks that won, spot-removal tokens (`remove_*`) count toward
+    the combat tally too: a bolt or push that killed an opposing blocker
+    *enabled* the swing that closed the game. Without crediting removal
+    here, an aggro deck that cleared a Bowmasters/Goyf with a Bolt before
+    attacking would look like it skipped combat decisioning.
+    """
     deck1 = trace.get('deck1', '')
     p1_won = trace.get('winner') == 'p1'
     n_combat = counts['combat']
+    n_removal = counts.get('removal', 0)
 
     if deck1 in COMBO_DECKS:
         # Combo decks: combat is secondary; absence is neutral.
         return ('B',
                 f"Combo deck — {n_combat} combat decision(s); combat is not the primary axis")
     if deck1 in AGGRO_DECKS:
-        if p1_won and n_combat >= 1:
-            return 'A', f"Aggro plan with {n_combat} combat decision(s) — pressure converted to win"
+        # Aggro decks: roll spot-removal into the combat tally on wins —
+        # a bolt that cleared a blocker is a combat-enabling decision.
+        n_combat_aggro = n_combat + (n_removal if p1_won else 0)
+        if p1_won and n_combat_aggro >= 1:
+            return 'A', (f"Aggro plan with {n_combat} combat + {n_removal} remove "
+                         f"decision(s) — pressure converted to win")
         if p1_won:
             return 'B+', "Aggro plan won without surfaced combat decisions (lethal via burn / direct damage)"
         if n_combat >= 1:
@@ -254,18 +279,22 @@ def _grade_interaction(trace: dict, counts: dict) -> tuple[str, str]:
     n_defer = counts['defer']
     n_counter = counts.get('counter', 0)
     n_discard = counts.get('discard', 0)
-    # Interaction decks earn primary credit from counter_* and discard_*.
-    n_inter = n_hold + n_defer + n_counter + n_discard
+    n_removal = counts.get('removal', 0)
+    # Interaction decks earn primary credit from counter_*, discard_*, and
+    # remove_* tokens. A spot-removal spell that kills a threat is just as
+    # much "interaction" as a counter or a discard — it's how tempo/midrange
+    # decks (bug, dimir, ur_delver, …) interact with creature plans.
+    n_inter = n_hold + n_defer + n_counter + n_discard + n_removal
 
     if deck1 in INTERACTION_DECKS:
         if p1_won:
             return ('A' if n_inter >= 3 else 'B+',
-                    f"{n_counter} counter + {n_discard} discard + {n_hold} hold + "
-                    f"{n_defer} defer decisions; "
+                    f"{n_counter} counter + {n_discard} discard + {n_removal} remove + "
+                    f"{n_hold} hold + {n_defer} defer decisions; "
                     f"{'heavy structured disruption' if n_inter >= 3 else 'measured disruption'} backed the win")
         return ('C+' if n_inter >= 2 else 'C',
-                f"{n_counter} counter + {n_discard} discard + {n_hold} hold + "
-                f"{n_defer} defer decisions; "
+                f"{n_counter} counter + {n_discard} discard + {n_removal} remove + "
+                f"{n_hold} hold + {n_defer} defer decisions; "
                 f"{'logged but insufficient' if n_inter >= 2 else 'not enough disruption surfaced'}")
 
     if deck1 in COMBO_DECKS:
@@ -335,6 +364,7 @@ def grade_one_structural(trace_path: Path) -> Path | None:
                         f"in {trace.get('game_length','?')} turns; "
                         f"structural counts: exec={counts['execute']} "
                         f"hold={counts['hold']} defer={counts['defer']} "
+                        f"remove={counts.get('removal', 0)} "
                         f"combat={counts['combat']}")
 
     raw_lines = []

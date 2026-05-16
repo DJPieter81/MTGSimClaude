@@ -31,6 +31,17 @@
       "turn": 1,
       "deck": "dimir",
       "phase": null,
+      "chosen": "remove_drc_with_push",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "push kills drc"
+    },
+    {
+      "turn": 1,
+      "deck": "dimir",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "thoughtseize",
@@ -60,6 +71,17 @@
       "reason": "mana=2, hand=3, threats_in_play=0"
     },
     {
+      "turn": 2,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "remove_drc_with_push",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "push kills drc"
+    },
+    {
       "turn": 3,
       "deck": "dimir",
       "phase": null,
@@ -74,6 +96,17 @@
         "pass"
       ],
       "reason": "mana=3, hand=1, threats_in_play=1"
+    },
+    {
+      "turn": 3,
+      "deck": "ur_delver",
+      "phase": null,
+      "chosen": "remove_borrow_with_bolt",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "bolt kills borrow"
     },
     {
       "turn": 4,
@@ -133,6 +166,17 @@
         "pass"
       ],
       "reason": "mana=2, hand=1, threats_in_play=1"
+    },
+    {
+      "turn": 6,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "remove_drc_with_push",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "push kills drc"
     },
     {
       "turn": 7,
@@ -793,13 +837,17 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [dimir] chose remove_drc_with_push from [remove,pass] \u2014 push kills drc",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=3, threats_in_play=0",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=3, threats_in_play=0",
+    "T2 [dimir] chose remove_drc_with_push from [remove,pass] \u2014 push kills drc",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=1",
+    "T3 [ur_delver] chose remove_borrow_with_bolt from [remove,pass] \u2014 bolt kills borrow",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=0, threats_in_play=1",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=1",
     "T5 [ur_delver] chose counter_bowm_with_fow from [counter,let_resolve] \u2014 fow counters bowm (major threat)",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=1, threats_in_play=1",
+    "T6 [dimir] chose remove_drc_with_push from [remove,pass] \u2014 push kills drc",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=1, threats_in_play=1",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=0",
     "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=1, threats_in_play=0"

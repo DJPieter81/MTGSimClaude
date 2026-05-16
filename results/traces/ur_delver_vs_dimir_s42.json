@@ -74,6 +74,17 @@
     },
     {
       "turn": 2,
+      "deck": "ur_delver",
+      "phase": null,
+      "chosen": "remove_tamiyo_with_bolt",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "bolt kills tamiyo"
+    },
+    {
+      "turn": 2,
       "deck": "dimir",
       "phase": null,
       "chosen": "counter_drc_with_fow",
@@ -823,6 +834,7 @@
     "T1 [dimir] chose discard_murk_with_ts from [thoughtseize,pass] \u2014 TS strips murk from opponent",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=4, threats_in_play=0",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=4, threats_in_play=0",
+    "T2 [ur_delver] chose remove_tamiyo_with_bolt from [remove,pass] \u2014 bolt kills tamiyo",
     "T2 [dimir] chose counter_drc_with_fow from [counter,let_resolve] \u2014 fow counters drc (major threat)",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=0",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=1, threats_in_play=0",
