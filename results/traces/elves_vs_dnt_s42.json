@@ -169,6 +169,17 @@
       "reason": "mana=1, creatures=4, hand=7"
     },
     {
+      "turn": 5,
+      "deck": "elves",
+      "phase": null,
+      "chosen": "combo:natural_order_craterhoof_x8",
+      "candidates": [
+        "natural_order_craterhoof",
+        "pass"
+      ],
+      "reason": "Natural Order resolves, Craterhoof pumps 8 elves +8/+8"
+    },
+    {
       "turn": 6,
       "deck": "elves",
       "phase": null,
@@ -614,6 +625,7 @@
     "T4 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=3, hand=6",
     "T5 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['vial', 'prelate', 'sfm']",
     "T5 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=4, hand=7",
+    "T5 [elves] chose combo:natural_order_craterhoof_x8 from [natural_order_craterhoof,pass] \u2014 Natural Order resolves, Craterhoof pumps 8 elves +8/+8",
     "T6 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=2, creatures=8, hand=6"
   ]
 }

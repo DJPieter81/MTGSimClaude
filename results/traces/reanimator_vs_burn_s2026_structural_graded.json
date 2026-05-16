@@ -21,21 +21,21 @@
     "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
     "mana": "Lost in 4 turns \u2014 possible mana sequencing issues",
     "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
-    "combo": "1 Execute decision(s) but lost on T4 \u2014 disrupted early",
+    "combo": "2 Execute decision(s) but lost on T4 \u2014 disrupted early",
     "interaction": "0 hold + 0 defer; no protection token surfaced",
     "meta": "Lost a matchup that should be favored (reanimator vs burn) \u2014 possible role confusion",
-    "overall": "Average across 6 domains \u2014 lost in 4 turns; structural counts: exec=1 hold=0 defer=0 combat=0"
+    "overall": "Average across 6 domains \u2014 lost in 4 turns; structural counts: exec=2 hold=0 defer=0 combat=0"
   },
   "structural_counts": {
-    "execute": 1,
+    "execute": 2,
     "hold": 0,
     "defer": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
-    "total": 4
+    "total": 5
   },
-  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Lost in 4 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: D \u2014 1 Execute decision(s) but lost on T4 \u2014 disrupted early\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C \u2014 Lost a matchup that should be favored (reanimator vs burn) \u2014 possible role confusion\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 4 turns; structural counts: exec=1 hold=0 defer=0 combat=0",
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Lost in 4 turns \u2014 possible mana sequencing issues\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: D \u2014 2 Execute decision(s) but lost on T4 \u2014 disrupted early\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C \u2014 Lost a matchup that should be favored (reanimator vs burn) \u2014 possible role confusion\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 4 turns; structural counts: exec=2 hold=0 defer=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T05:15:23.405151Z"
+  "graded_at": "2026-05-16T07:20:34.280520Z"
 }
