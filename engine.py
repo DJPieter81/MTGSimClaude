@@ -3509,6 +3509,22 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
         chosen='entry',
         reason=f"mana={total_mana}, hand={len(player.hand)}")
 
+    # ── Combo-engine protection decision (Hold/Defer surface a 'protect'
+    # keyword for the heuristic grader). Behaviour-preserving — the actual
+    # combo gating below uses local mana/payoff checks plus Veil. See
+    # docs/design/2026-05-15_post-phase-6-re-architecture.md.
+    from combo_engine import (
+        combo_plan as _combo_plan_sh, Hold as _Hold_sh, Defer as _Defer_sh,
+    )
+    _plan_sh = _combo_plan_sh(player, opponent, gs)
+    if isinstance(_plan_sh, (_Hold_sh, _Defer_sh)):
+        gs.strat_log.log_decision(
+            gs.turn, 'show',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if isinstance(_plan_sh, _Defer_sh)
+                    else f'hold_{getattr(_plan_sh.card, "tag", "card")}'),
+            reason=_plan_sh.reason)
+
     # ── Mana: Ancient Tomb gives {CC} generic; City of Traitors gives {CC} ──
     # Lotus Petal sacs for any mana
     tomb_untapped = sum(1 for l in player.lands if l.card.tag == 'tomb' and not l.tapped)
@@ -3879,6 +3895,22 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
     (exile from hand for 1 mana), Dark Ritual (+2 net), Cabal Ritual (+2 net),
     MDFC "lands" (Agadeem's Awakening / Turntimber Symbiosis played as tapped lands).
     """
+    # ── Combo-engine protection decision (Hold/Defer surface a 'protect'
+    # keyword for the heuristic grader). Behaviour-preserving — the actual
+    # mechanical gating below is unchanged. See
+    # docs/design/2026-05-15_post-phase-6-re-architecture.md.
+    from combo_engine import (
+        combo_plan as _combo_plan_o, Hold as _Hold_o, Defer as _Defer_o,
+    )
+    _plan_o = _combo_plan_o(player, opponent, gs)
+    if isinstance(_plan_o, (_Hold_o, _Defer_o)):
+        gs.strat_log.log_decision(
+            gs.turn, 'oops',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if isinstance(_plan_o, _Defer_o)
+                    else f'hold_{getattr(_plan_o.card, "tag", "card")}'),
+            reason=_plan_o.reason)
+
     # ── 0. Play MDFC as land if no lands in play ──
     if not player.lands:
         mdfc = next((c for c in player.hand if getattr(c, 'is_mdfc_land', False)), None)

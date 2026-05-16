@@ -6,6 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import make_show_deck
+from combo_engine import AssemblyPath
 
 
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
@@ -42,4 +43,35 @@ DECK_META = {
     'categories': {'combo', 'land_combo'},
     'interaction': {'speed': 3, 'resilience': 5, 'uses_graveyard': False, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False, 'opp_threats': 10},
     'meta_share': 0.03,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # See docs/design/2026-05-09_combo_engine_architecture.md.
+    # Show & Tell variant: SaT into Emrakul / Omniscience / Sneak Attack /
+    # Griselbrand / Atraxa / Archon. Veil of Summer ('vos') protects the
+    # combo turn against blue/black disruption.
+    'combo': {
+        'pieces': frozenset({
+            'sat', 'sneak',                                  # combo enablers
+            'emrakul', 'omni', 'gris', 'atraxa', 'archon',   # win-condition payoffs
+            'petal',                                         # fast mana
+        }),
+        'protection_tags': frozenset({'fow', 'fon', 'daze', 'vos'}),
+        'assembly_paths': (
+            AssemblyPath(
+                tag='sat_into_payoff',
+                required_tags=frozenset({'sat'}),
+                mana_cost=3,
+                turns_to_kill=1,
+                target_tags=frozenset({'emrakul', 'omni', 'sneak',
+                                       'gris', 'atraxa', 'archon'}),
+            ),
+            AssemblyPath(
+                tag='sneak_into_creature',
+                required_tags=frozenset({'sneak'}),
+                mana_cost=3,
+                turns_to_kill=1,
+                target_tags=frozenset({'emrakul', 'gris', 'atraxa', 'archon'}),
+            ),
+        ),
+        'preamble_skip': False,
+    },
 }

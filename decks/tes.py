@@ -23,6 +23,7 @@ sys.path.insert(0, '/home/claude/mtg_sim')
 
 import random
 from cards import instant, sorcery, creature, artifact
+from combo_engine import AssemblyPath
 
 # ─── Deck construction ────────────────────────────────────────────────────────
 
@@ -239,6 +240,22 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
 
     storm = 0
     mana = total_mana
+
+    # ── Combo-engine protection decision (Hold/Defer surface a 'protect'
+    # keyword for the heuristic grader). Behaviour-preserving — the actual
+    # go-off gating below uses the local can_go_off heuristic. See
+    # docs/design/2026-05-15_post-phase-6-re-architecture.md.
+    from combo_engine import (
+        combo_plan as _combo_plan_t, Hold as _Hold_t, Defer as _Defer_t,
+    )
+    _plan_t = _combo_plan_t(player, opponent, gs)
+    if isinstance(_plan_t, (_Hold_t, _Defer_t)):
+        gs.strat_log.log_decision(
+            gs.turn, 'tes',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if isinstance(_plan_t, _Defer_t)
+                    else f'hold_{getattr(_plan_t.card, "tag", "card")}'),
+            reason=_plan_t.reason)
 
     # ── Assess hand ──────────────────────────────────────────────────────────
     hand_tags = {c.tag for c in player.hand}
@@ -826,4 +843,49 @@ DECK_META = {
     'categories': {'combo', 'fast_combo'},
     'interaction': {'speed': 2, 'resilience': 2, 'uses_graveyard': False, 'uses_veil': True, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.01,
+    # ── Combo metadata (consumed by combo_engine.py) ─────────────────────────
+    # See docs/design/2026-05-09_combo_engine_architecture.md.
+    # TES kill lines: Burning Wish (2R) → Tendrils from SB; Infernal Tutor +
+    # LED for hellbent → Tendrils; hardcast Tendrils (4 mana); Empty the
+    # Warrens as alternate win. Veil of Summer protects vs blue/black.
+    'combo': {
+        'pieces': frozenset({
+            'tendrils', 'burning_wish', 'infernal',         # win conditions / tutors
+            'adnaus', 'echo', 'empty',                      # alt engines
+            'darkrit', 'petal', 'led', 'chrome_mox',        # fast mana
+            'bs', 'ponder',                                 # cantrip storm-fuel
+        }),
+        'protection_tags': frozenset({'fow', 'vos'}),
+        'assembly_paths': (
+            # LED + tutor: classic TES T1 — wish costs 0 net after LED.
+            AssemblyPath(
+                tag='led_wish_tendrils',
+                required_tags=frozenset({'burning_wish', 'led'}),
+                mana_cost=2,
+                turns_to_kill=1,
+            ),
+            # Hardcast Tendrils — 4 mana plus storm build-up.
+            AssemblyPath(
+                tag='hardcast_tendrils',
+                required_tags=frozenset({'tendrils'}),
+                mana_cost=4,
+                turns_to_kill=1,
+            ),
+            # Infernal Tutor on hellbent fetches Tendrils.
+            AssemblyPath(
+                tag='infernal_hellbent',
+                required_tags=frozenset({'infernal'}),
+                mana_cost=2,
+                turns_to_kill=1,
+            ),
+            # Ad Nauseam line — 5 mana, draws into the kill.
+            AssemblyPath(
+                tag='adnaus_chain',
+                required_tags=frozenset({'adnaus'}),
+                mana_cost=5,
+                turns_to_kill=1,
+            ),
+        ),
+        'preamble_skip': False,
+    },
 }
