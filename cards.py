@@ -609,18 +609,21 @@ def make_doomsday_deck() -> List[Card]:
     d += [artifact('Lotus Petal', 0, {}, tag='petal', mana_ritual=True)] * 4
     d += [instant('Dark Ritual', 1, {'B':1}, {'B'}, tag='darkrit',
                   mana_ritual=True)] * 4
-    # Free cycler — 4 Wraiths for pile-chaining and pre-DD digging.
+    # Free cycler — 3 Wraiths for pile-chaining and pre-DD digging.
+    # (Trimmed from 4 to make room for Cabal Therapy.)
     d += [creature('Street Wraith', 5, {'B':2,'generic':3}, {'B'}, 3, 4,
-                   tag='wraith', is_cantrip=True)] * 4
-    # Protection (7) — FoW for opp combos, Veil/Fluster for stack interaction.
+                   tag='wraith', is_cantrip=True)] * 3
+    # Cabal Therapy (4) — strips opp's free counter pre-DD, plus Flashback
+    # from graveyard (sacrifice a creature for the second cast). 4-of in
+    # tier-1 lists per docs/design/2026-05-16_doomsday_cabal_therapy_piles.md.
+    d += [sorcery('Cabal Therapy', 1, {'B':1}, {'B'}, tag='therapy')] * 4
+    # Protection (5) — FoW for opp combos, Veil/Fluster for stack interaction.
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'}, tag='fow',
                   free_cast_if_blue=True)] * 4
     d += [instant('Veil of Summer', 1, {'G':1}, {'G'}, tag='vos',
-                  is_removal=True)] * 2
-    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 1
-    # Companion (1)
-    d += [creature("Lurrus of the Dream-Den", 2, {'B':1,'generic':1}, {'B'},
-                   3, 2, tag='lurrus', lifelink=True)] * 1
+                  is_removal=True)] * 1
+    # Note: Lurrus moved to companion zone via DECK_META['companion'].
+    # It is NOT in the 60-card maindeck. See docs/design/2026-05-16_doomsday_cabal_therapy_piles.md.
     # Lands (20) — fast mana base lets us cut to 20.  Tropical for Veil's G.
     d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 4
     d += [fetch_land('Misty Rainforest', ['Island','Forest'])] * 2
