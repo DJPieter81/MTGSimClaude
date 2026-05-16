@@ -108,6 +108,17 @@
       "reason": "mana=3, hand=1, threats_in_play=1"
     },
     {
+      "turn": 5,
+      "deck": "ur_delver",
+      "phase": null,
+      "chosen": "counter_bowm_with_fow",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "fow counters bowm (major threat)"
+    },
+    {
       "turn": 6,
       "deck": "dimir",
       "phase": null,
@@ -787,6 +798,7 @@
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=1",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=0, threats_in_play=1",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=1",
+    "T5 [ur_delver] chose counter_bowm_with_fow from [counter,let_resolve] \u2014 fow counters bowm (major threat)",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=1, threats_in_play=1",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=1, threats_in_play=1",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=0",

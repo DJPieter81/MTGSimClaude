@@ -66,6 +66,7 @@ EXECUTE_PREFIXES = ('combo:', 'kill_', 'cast_doomsday', 'cast_spy',
                     'entomb_', 'oracle_win', 't1_kill', 't2_kill')
 HOLD_PREFIXES = ('hold_',)
 DEFER_TOKENS = {'defer'}
+COUNTER_PREFIXES = ('counter_',)   # interaction decks log counter_<spell>_with_<ctr>
 ATTACK_PREFIX = 'attack'  # 'attack with N goblins'
 COMBAT_PHASE = 'combat'
 
@@ -91,6 +92,13 @@ def _is_defer(chosen: str) -> bool:
     return chosen in DEFER_TOKENS
 
 
+def _is_counter(chosen: str) -> bool:
+    """Decision indicates the strategy *countered* an opposing spell."""
+    if not chosen:
+        return False
+    return any(chosen.startswith(p) for p in COUNTER_PREFIXES)
+
+
 def _is_combat_decision(decision: dict) -> bool:
     """Combat-axis decision: either tagged with combat phase or attack action."""
     if decision.get('phase') == COMBAT_PHASE:
@@ -102,7 +110,7 @@ def _is_combat_decision(decision: dict) -> bool:
 def _count_structural(decisions: list[dict]) -> dict:
     """Bucket decisions by structural token. Returns counts only — no keyword pattern matching on `reason`."""
     counts = {
-        'execute': 0, 'hold': 0, 'defer': 0, 'combat': 0,
+        'execute': 0, 'hold': 0, 'defer': 0, 'counter': 0, 'combat': 0,
         'combo_phase': 0, 'protect_phase': 0,
         'total': len(decisions),
     }
@@ -115,6 +123,8 @@ def _count_structural(decisions: list[dict]) -> dict:
             counts['hold'] += 1
         if _is_defer(chosen):
             counts['defer'] += 1
+        if _is_counter(chosen):
+            counts['counter'] += 1
         if _is_combat_decision(d):
             counts['combat'] += 1
         if phase == 'combo':
@@ -209,19 +219,31 @@ def _grade_combo(trace: dict, counts: dict) -> tuple[str, str]:
 
 
 def _grade_interaction(trace: dict, counts: dict) -> tuple[str, str]:
-    """Interaction grading from Hold/Defer-token counts, no English keywords."""
+    """Interaction grading from Hold/Defer/Counter-token counts, no English keywords.
+
+    For interaction decks (bug, dimir, ur_delver, …), the relevant
+    structural signal is `counter_<spell>_with_<ctr>` tokens emitted by
+    `engine._try_counter_any` whenever the deck actually fires a
+    counter spell. Hold/Defer tokens (a combo-deck signal) also count.
+
+    For combo decks, Hold/Defer remains the primary signal.
+    """
     deck1 = trace.get('deck1', '')
     p1_won = trace.get('winner') == 'p1'
     n_hold = counts['hold']
     n_defer = counts['defer']
-    n_inter = n_hold + n_defer
+    n_counter = counts.get('counter', 0)
+    # Interaction decks earn primary credit from `counter_*` tokens.
+    n_inter = n_hold + n_defer + n_counter
 
     if deck1 in INTERACTION_DECKS:
         if p1_won:
             return ('A' if n_inter >= 3 else 'B+',
-                    f"{n_hold} hold + {n_defer} defer decisions; {'heavy structured disruption' if n_inter >= 3 else 'measured disruption'} backed the win")
+                    f"{n_counter} counter + {n_hold} hold + {n_defer} defer decisions; "
+                    f"{'heavy structured disruption' if n_inter >= 3 else 'measured disruption'} backed the win")
         return ('C+' if n_inter >= 2 else 'C',
-                f"{n_hold} hold + {n_defer} defer decisions; {'logged but insufficient' if n_inter >= 2 else 'not enough disruption surfaced'}")
+                f"{n_counter} counter + {n_hold} hold + {n_defer} defer decisions; "
+                f"{'logged but insufficient' if n_inter >= 2 else 'not enough disruption surfaced'}")
 
     if deck1 in COMBO_DECKS:
         # For combo decks, Hold/Defer surfaces *protection*-grade play.

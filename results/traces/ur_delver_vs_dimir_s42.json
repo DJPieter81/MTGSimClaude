@@ -62,6 +62,17 @@
       "reason": "mana=2, hand=4, threats_in_play=0"
     },
     {
+      "turn": 2,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "counter_drc_with_fow",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "fow counters drc (major threat)"
+    },
+    {
       "turn": 3,
       "deck": "dimir",
       "phase": null,
@@ -142,6 +153,17 @@
       "reason": "mana=3, hand=4, threats_in_play=0"
     },
     {
+      "turn": 7,
+      "deck": "ur_delver",
+      "phase": null,
+      "chosen": "counter_tamiyo_with_fow",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "fow counters tamiyo (minor threat)"
+    },
+    {
       "turn": 8,
       "deck": "dimir",
       "phase": null,
@@ -172,6 +194,17 @@
         "pass"
       ],
       "reason": "mana=3, hand=4, threats_in_play=2"
+    },
+    {
+      "turn": 9,
+      "deck": "dimir",
+      "phase": null,
+      "chosen": "counter_heat_with_daze",
+      "candidates": [
+        "counter",
+        "let_resolve"
+      ],
+      "reason": "daze counters heat (major threat)"
     }
   ],
   "full_log": [
@@ -778,12 +811,15 @@
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=4, threats_in_play=0",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=4, threats_in_play=0",
+    "T2 [dimir] chose counter_drc_with_fow from [counter,let_resolve] \u2014 fow counters drc (major threat)",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=1, threats_in_play=0",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=1, threats_in_play=0",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=2, threats_in_play=0",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=3, threats_in_play=0",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=0",
+    "T7 [ur_delver] chose counter_tamiyo_with_fow from [counter,let_resolve] \u2014 fow counters tamiyo (minor threat)",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=0",
-    "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=2"
+    "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=2",
+    "T9 [dimir] chose counter_heat_with_daze from [counter,let_resolve] \u2014 daze counters heat (major threat)"
   ]
 }
