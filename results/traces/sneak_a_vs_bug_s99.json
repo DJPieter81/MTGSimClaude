@@ -31,18 +31,6 @@
   "strategic_decisions": [
     {
       "turn": 1,
-      "deck": "sneak_a",
-      "phase": null,
-      "chosen": "hold_fow",
-      "candidates": [
-        "proceed",
-        "hold",
-        "defer"
-      ],
-      "reason": "protect combo: hold fow vs opp p_free_counter=0.47"
-    },
-    {
-      "turn": 1,
       "deck": "bug",
       "phase": null,
       "chosen": "entry",
@@ -100,6 +88,18 @@
         "pass"
       ],
       "reason": "mana=4, hand=3, threats_in_play=1"
+    },
+    {
+      "turn": 5,
+      "deck": "sneak_a",
+      "phase": null,
+      "chosen": "combo:show_and_tell_emrakul",
+      "candidates": [
+        "show_and_tell",
+        "sneak_attack",
+        "pass"
+      ],
+      "reason": "SaT resolved with emrakul from hand"
     }
   ],
   "full_log": [
@@ -433,10 +433,10 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
-    "T1 [sneak_a] chose hold_fow from [proceed,hold,defer] \u2014 protect combo: hold fow vs opp p_free_counter=0.47",
     "T1 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=0, hand=5, threats_in_play=0",
     "T2 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=4, threats_in_play=0",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=4, threats_in_play=0",
-    "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=3, threats_in_play=1"
+    "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=4, hand=3, threats_in_play=1",
+    "T5 [sneak_a] chose combo:show_and_tell_emrakul from [show_and_tell,sneak_attack,pass] \u2014 SaT resolved with emrakul from hand"
   ]
 }

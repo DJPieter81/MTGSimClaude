@@ -735,6 +735,14 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
 
         if mana >= 4 and (lethal or good_storm or protected_ok or desperate):
             if not _try_counter_any(player, opponent, gs, tendrils, log_entries):
+                # Typed Execute log so the structural grader credits TES
+                # for actually firing Tendrils (mirrors PR #147 depths fix).
+                gs.strat_log.log_decision(
+                    gs.turn, 'tes',
+                    candidates=['fire_tendrils', 'pass'],
+                    chosen=f'combo:tendrils_storm{effective_storm}',
+                    reason=f'storm={effective_storm}, mana={mana}, '
+                           f'lethal={lethal}, veil={veil_up}, desperate={desperate}')
                 player.remove_from_hand(tendrils); player.add_to_grave(tendrils)
                 effective_storm += 1; player.spells_cast_this_turn += 1
                 # With Veil protection, TES can chain spells freely → model as lethal storm

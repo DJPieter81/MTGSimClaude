@@ -3575,6 +3575,15 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
         total_mana = _budget_sat[0]
 
         if sat_resolved:
+            # Typed Execute log so the structural grader credits Show
+            # for actually firing the combo (parallel of #147 depths fix).
+            # combo_plan above can't see this — the win card lands on the
+            # battlefield via SaT, which combo_plan doesn't model.
+            gs.strat_log.log_decision(
+                gs.turn, 'show',
+                candidates=['show_and_tell', 'sneak_attack', 'pass'],
+                chosen=f'combo:show_and_tell_{win_card.tag}',
+                reason=f'SaT resolved with {win_card.tag} in hand')
             player.remove_from_hand(win_card)
             # BUG gets to put its best permanent in play too
             bug_put = opponent.find_any(lambda c: c.is_creature() and not c.is_land())

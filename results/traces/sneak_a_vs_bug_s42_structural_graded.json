@@ -12,30 +12,30 @@
     "mulligan": "B+",
     "mana": "B+",
     "combat": "B",
-    "combo": "C",
-    "interaction": "B",
+    "combo": "B+",
+    "interaction": "B+",
     "meta": "A",
-    "overall": "B"
+    "overall": "B+"
   },
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
     "mana": "Won but took 9 turns \u2014 mana was adequate",
     "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
-    "combo": "No combo Execute decision logged \u2014 deck did not fire its plan",
-    "interaction": "0 hold + 0 defer; combo resolved without holding protection",
+    "combo": "1 Execute decision(s); combo resolved late on T9",
+    "interaction": "1 hold + 0 defer; protected combo via typed hold",
     "meta": "Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness",
-    "overall": "Average across 6 domains \u2014 won in 9 turns; structural counts: exec=0 hold=0 defer=0 combat=0"
+    "overall": "Average across 6 domains \u2014 won in 9 turns; structural counts: exec=1 hold=1 defer=0 combat=0"
   },
   "structural_counts": {
-    "execute": 0,
-    "hold": 0,
+    "execute": 1,
+    "hold": 1,
     "defer": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
-    "total": 9
+    "total": 11
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 9 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness\noverall: B \u2014 Average across 6 domains \u2014 won in 9 turns; structural counts: exec=0 hold=0 defer=0 combat=0",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 9 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: B+ \u2014 1 Execute decision(s); combo resolved late on T9\ninteraction: B+ \u2014 1 hold + 0 defer; protected combo via typed hold\nmeta: A \u2014 Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 9 turns; structural counts: exec=1 hold=1 defer=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T05:15:23.407564Z"
+  "graded_at": "2026-05-16T06:53:07.899081Z"
 }
