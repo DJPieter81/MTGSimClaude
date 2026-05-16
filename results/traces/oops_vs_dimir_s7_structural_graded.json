@@ -20,11 +20,11 @@
   "justifications": {
     "mulligan": "Mulled to 6; card disadvantage contributed to loss",
     "mana": "Lost in 14 turns \u2014 possible mana sequencing issues (6 ramp tokens)",
-    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combat": "Combo deck \u2014 1 combat decision(s); combat is not the primary axis",
     "combo": "1 Execute + 4 tried_combo; lost on T14 \u2014 combo could not close but pieces deployed",
     "interaction": "0 hold + 2 defer; no protection token surfaced",
     "meta": "Lost \u2014 played actively but could not overcome matchup",
-    "overall": "Average across 6 domains \u2014 lost in 14 turns; structural counts: exec=1 hold=0 defer=2 remove=0 combat=0"
+    "overall": "Average across 6 domains \u2014 lost in 14 turns; structural counts: exec=1 hold=0 defer=2 remove=0 combat=1"
   },
   "structural_counts": {
     "execute": 1,
@@ -35,12 +35,12 @@
     "removal": 0,
     "tried_combo": 4,
     "ramp": 6,
-    "combat": 0,
+    "combat": 1,
     "combo_phase": 0,
     "protect_phase": 22,
-    "total": 26
+    "total": 27
   },
-  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 14 turns \u2014 possible mana sequencing issues (6 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 1 Execute + 4 tried_combo; lost on T14 \u2014 combo could not close but pieces deployed\ninteraction: C \u2014 0 hold + 2 defer; no protection token surfaced\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 14 turns; structural counts: exec=1 hold=0 defer=2 remove=0 combat=0",
+  "raw_response": "mulligan: C+ \u2014 Mulled to 6; card disadvantage contributed to loss\nmana: C \u2014 Lost in 14 turns \u2014 possible mana sequencing issues (6 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 1 combat decision(s); combat is not the primary axis\ncombo: C \u2014 1 Execute + 4 tried_combo; lost on T14 \u2014 combo could not close but pieces deployed\ninteraction: C \u2014 0 hold + 2 defer; no protection token surfaced\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 14 turns; structural counts: exec=1 hold=0 defer=2 remove=0 combat=1",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:07:40.258779Z"
+  "graded_at": "2026-05-16T12:32:48.140369Z"
 }

@@ -11,7 +11,7 @@
   "grades": {
     "mulligan": "B+",
     "mana": "B",
-    "combat": "B",
+    "combat": "B+",
     "combo": "B",
     "interaction": "A",
     "meta": "B",
@@ -20,11 +20,11 @@
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
     "mana": "Resource deployment supported a T12 win",
-    "combat": "0 combat decision(s); won via non-combat means",
+    "combat": "2 combat decision(s); combat contributed to win",
     "combo": "Non-combo deck \u2014 domain not primary axis",
     "interaction": "1 counter + 1 discard + 2 remove + 0 hold + 0 defer decisions; heavy structured disruption backed the win",
     "meta": "Eventually closed the matchup",
-    "overall": "Average across 6 domains \u2014 won in 12 turns; structural counts: exec=0 hold=0 defer=0 remove=2 combat=0"
+    "overall": "Average across 6 domains \u2014 won in 12 turns; structural counts: exec=0 hold=0 defer=0 remove=2 combat=2"
   },
   "structural_counts": {
     "execute": 0,
@@ -35,12 +35,12 @@
     "removal": 2,
     "tried_combo": 0,
     "ramp": 0,
-    "combat": 0,
+    "combat": 2,
     "combo_phase": 0,
     "protect_phase": 0,
-    "total": 16
+    "total": 18
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T12 win\ncombat: B \u2014 0 combat decision(s); won via non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: A \u2014 1 counter + 1 discard + 2 remove + 0 hold + 0 defer decisions; heavy structured disruption backed the win\nmeta: B \u2014 Eventually closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 12 turns; structural counts: exec=0 hold=0 defer=0 remove=2 combat=0",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T12 win\ncombat: B+ \u2014 2 combat decision(s); combat contributed to win\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: A \u2014 1 counter + 1 discard + 2 remove + 0 hold + 0 defer decisions; heavy structured disruption backed the win\nmeta: B \u2014 Eventually closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 12 turns; structural counts: exec=0 hold=0 defer=0 remove=2 combat=2",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:07:40.237893Z"
+  "graded_at": "2026-05-16T12:32:48.123193Z"
 }

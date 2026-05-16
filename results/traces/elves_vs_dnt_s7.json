@@ -106,6 +106,17 @@
     {
       "turn": 4,
       "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_thalia",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "thalia blocks nettle"
+    },
+    {
+      "turn": 4,
+      "deck": "dnt",
       "phase": null,
       "chosen": "thalia",
       "candidates": [
@@ -133,6 +144,17 @@
         "pass"
       ],
       "reason": "mana=3, creatures=7, hand=2"
+    },
+    {
+      "turn": 5,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_thalia",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "thalia blocks heritage"
     },
     {
       "turn": 5,
@@ -211,6 +233,17 @@
       "reason": "skyclave exiles shepherd"
     },
     {
+      "turn": 6,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
+    },
+    {
       "turn": 7,
       "deck": "elves",
       "phase": null,
@@ -270,6 +303,28 @@
       "reason": "mana=3, hand=['recruiter', 'flickerwisp', 'kaldra']"
     },
     {
+      "turn": 7,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
+    },
+    {
+      "turn": 7,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
+    },
+    {
       "turn": 8,
       "deck": "elves",
       "phase": null,
@@ -312,6 +367,28 @@
       "reason": "wasteland destroys dual"
     },
     {
+      "turn": 8,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
+    },
+    {
+      "turn": 8,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
+    },
+    {
       "turn": 9,
       "deck": "elves",
       "phase": null,
@@ -341,6 +418,17 @@
         "recruiter"
       ],
       "reason": "mana=6, hand=['phelia']"
+    },
+    {
+      "turn": 9,
+      "deck": "elves",
+      "phase": "combat",
+      "chosen": "block_shepherd",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "shepherd blocks recruiter"
     }
   ],
   "full_log": [
@@ -961,21 +1049,29 @@
     "T3 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=6, hand=2",
     "T3 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'skyclave', 'sfm', 'sfm', 'flickerwisp', 'skyclave', 'thalia']",
     "T4 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=7, hand=2",
+    "T4 [dnt] [phase:combat] chose block_thalia from [block,pass] \u2014 thalia blocks nettle",
     "T4 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'skyclave', 'sfm', 'sfm', 'flickerwisp', 'skyclave', 'thalia']",
     "T5 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=7, hand=2",
+    "T5 [dnt] [phase:combat] chose block_thalia from [block,pass] \u2014 thalia blocks heritage",
     "T5 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['recruiter', 'skyclave', 'sfm', 'sfm', 'flickerwisp', 'skyclave']",
     "T6 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=6, hand=3",
     "T6 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=5, hand=['recruiter', 'skyclave', 'sfm', 'flickerwisp', 'skyclave']",
     "T6 [dnt] chose skyclave from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'skyclave', 'flickerwisp', 'skyclave', 'kaldra']",
     "T6 [dnt] chose remove_shepherd_with_skyclave from [remove,pass] \u2014 skyclave exiles shepherd",
+    "T6 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block",
     "T7 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=4, creatures=6, hand=3",
     "T7 [dnt] chose skyclave from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=6, hand=['recruiter', 'flickerwisp', 'skyclave', 'kaldra']",
     "T7 [dnt] chose remove_dryad_arbor_with_skyclave from [remove,pass] \u2014 skyclave exiles dryad_arbor",
     "T7 [dnt] chose flickerwisp from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'flickerwisp', 'kaldra']",
+    "T7 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block",
+    "T7 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block",
     "T8 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=6, hand=4",
     "T8 [dnt] chose recruiter from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=7, hand=['recruiter', 'kaldra']",
     "T8 [dnt] chose land_destroy_dual_with_wasteland from [wasteland,pass] \u2014 wasteland destroys dual",
+    "T8 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block",
+    "T8 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block",
     "T9 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=2, creatures=7, hand=4",
-    "T9 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=6, hand=['phelia']"
+    "T9 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=6, hand=['phelia']",
+    "T9 [elves] [phase:combat] chose block_shepherd from [block,pass] \u2014 shepherd blocks recruiter"
   ]
 }

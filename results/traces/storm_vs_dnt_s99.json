@@ -249,6 +249,17 @@
       "reason": "mana=6, hand=['prelate', 'solitude', 'equipment', 'wl', 'thalia']"
     },
     {
+      "turn": 6,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_recruiter",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold recruiter back to block"
+    },
+    {
       "turn": 7,
       "deck": "storm",
       "phase": "desperate",
@@ -897,6 +908,7 @@
     "T6 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T6 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/9, rituals=4, safe=True, thalia=False, life=14",
     "T6 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=6, hand=['prelate', 'solitude', 'equipment', 'wl', 'thalia']",
+    "T6 [dnt] [phase:combat] chose hold_recruiter from [attack,hold] \u2014 hold recruiter back to block",
     "T7 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T7 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/7, rituals=4, safe=True, thalia=True, life=11",
     "T7 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=7, hand=['prelate', 'solitude', 'equipment', 'phelia']",

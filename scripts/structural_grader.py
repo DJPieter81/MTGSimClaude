@@ -75,6 +75,13 @@ K_COMBO_GAME_LEN_A = _load_calibrated('STRUCT_K_COMBO_GAME_LEN_A', 4)
 K_MANA_GAME_LEN_B  = _load_calibrated('STRUCT_K_MANA_GAME_LEN_B', 8)
 K_RAMP_A           = _load_calibrated('STRUCT_K_RAMP_A', 4)
 K_RAMP_B_PLUS      = _load_calibrated('STRUCT_K_RAMP_B_PLUS', 2)
+# K_INTER_COMBAT_A — interaction-deck win promotes combat → A when the trace
+# emits ≥ this many combat tokens (attacks + blocks + holds). Bug / dimir /
+# ur_delver typically log a handful of these per game once block + hold
+# wiring lands: a blocker assigned to a Murktide, a Tamiyo held back, a
+# DRC cycled rather than attacking. 3 is the floor for "actively engaged
+# the combat axis to win" vs lower counts that look incidental.
+K_INTER_COMBAT_A   = _load_calibrated('STRUCT_K_INTER_COMBAT_A', 3)
 
 GRADE_TO_NUM = {g: i for i, g in enumerate(GRADE_SCALE)}
 NUM_TO_GRADE = {i: g for g, i in GRADE_TO_NUM.items()}
@@ -141,6 +148,15 @@ INTERACTION_DECKS = (
 # a fixed meaning that does not depend on prose elsewhere in the entry.
 EXECUTE_PREFIXES = ('combo:', 'kill_', 'cast_doomsday', 'cast_spy',
                     'entomb_', 'oracle_win', 't1_kill', 't2_kill')
+# HOLD_PREFIXES — combo-axis "hold a piece" tokens (e.g. `hold_fow` to
+# protect storm's plan). The same `hold_<tag>` prefix is ALSO emitted by
+# CombatDecision(kind='hold').to_token() on the combat axis (defender
+# crouching a creature back to block). The two are disambiguated by
+# `phase`: combat-axis hold tokens carry `phase='combat'`; combo-axis hold
+# tokens carry the combo-phase from the gameplan (`'combo'`/`'protect'`).
+# `_is_hold` returns True for both prefixes; `_count_structural` uses the
+# phase guard to route the dict-path entry to the correct bucket so we
+# don't double-credit combat holds on the combo axis.
 HOLD_PREFIXES = ('hold_',)
 DEFER_TOKENS = {'defer'}
 COUNTER_PREFIXES = ('counter_',)   # interaction decks log counter_<spell>_with_<ctr>
@@ -162,6 +178,13 @@ TRIED_COMBO_PREFIXES = ('tried_combo:',)  # combo decks log when a piece was
 # subscore. Driven by `ManaDecision.to_token()` in decision.py.
 RAMP_PREFIXES = ('mana_ramp_',)
 ATTACK_PREFIX = 'attack'  # 'attack with N goblins'
+# BLOCK_PREFIXES — combat-axis "defender assigns blocker" tokens emitted by
+# CombatDecision(kind='block').to_token() == 'block_<attacker_tag>'.
+# Distinct from `HOLD_PREFIXES` (combo-axis) by phase: block tokens always
+# carry `phase='combat'`. The typed isinstance path is unambiguous; the
+# legacy dict path relies on the prefix alone (no combo decision uses
+# `block_*`), so the two never collide.
+BLOCK_PREFIXES = ('block_',)
 COMBAT_PHASE = 'combat'
 
 
@@ -238,11 +261,19 @@ def _is_ramp(chosen: str) -> bool:
 
 
 def _is_combat_decision(decision: dict) -> bool:
-    """Combat-axis decision: either tagged with combat phase or attack action."""
+    """Combat-axis decision: either tagged with combat phase, attack action,
+    or block-assignment token.
+
+    Block tokens (`block_<tag>`) always carry `phase='combat'`, so the phase
+    check above already catches them. The prefix check exists for legacy
+    trace JSON that may omit phase (e.g. early hand-rolled fixtures) so the
+    grader still buckets the decision correctly.
+    """
     if decision.get('phase') == COMBAT_PHASE:
         return True
     chosen = decision.get('chosen', '') or ''
-    return chosen.startswith(ATTACK_PREFIX)
+    return (chosen.startswith(ATTACK_PREFIX)
+            or any(chosen.startswith(p) for p in BLOCK_PREFIXES))
 
 
 # ─── typed Decision → bucket-name maps ────────────────────────────────────
@@ -330,7 +361,12 @@ def _count_structural(decisions, deck1: str | None = None) -> dict:
         phase = d.get('phase')
         if _is_execute(chosen):
             counts['execute'] += 1
-        if _is_hold(chosen):
+        # Combo-axis `hold_<tag>` and combat-axis `hold_<tag>` share a prefix;
+        # the phase guard routes combat holds to the `combat` bucket only.
+        # Without this guard, a typed `CombatDecision(kind='hold')` that lost
+        # its isinstance type during JSON serialization would double-count
+        # (combo hold AND combat axis).
+        if _is_hold(chosen) and phase != COMBAT_PHASE:
             counts['hold'] += 1
         if _is_defer(chosen):
             counts['defer'] += 1
@@ -415,13 +451,21 @@ def _grade_mana(trace: dict, counts: dict | None = None) -> tuple[str, str]:
 
 
 def _grade_combat(trace: dict, counts: dict) -> tuple[str, str]:
-    """Combat grading from structural combat-phase / attack tokens, no English keywords.
+    """Combat grading from structural combat-phase / attack / block / hold
+    tokens, no English keywords.
 
     For aggro decks that won, spot-removal tokens (`remove_*`) count toward
     the combat tally too: a bolt or push that killed an opposing blocker
     *enabled* the swing that closed the game. Without crediting removal
     here, an aggro deck that cleared a Bowmasters/Goyf with a Bolt before
     attacking would look like it skipped combat decisioning.
+
+    For interaction decks (tempo / control), combat decisions include block
+    assignments (defender chooses a blocker) and hold-back (defender keeps a
+    creature in the back row to block on the swing-back). A winning
+    interaction deck with K_INTER_COMBAT_A+ combat tokens grades A —
+    typically a bug / dimir / ur_delver game where the deck blocked the
+    threat AND held its own Murktide / Tamiyo back.
     """
     deck1 = trace.get('deck1', '')
     p1_won = trace.get('winner') == 'p1'
@@ -444,7 +488,23 @@ def _grade_combat(trace: dict, counts: dict) -> tuple[str, str]:
         if n_combat >= 1:
             return 'B-', f"Aggro plan logged {n_combat} combat decision(s) but lost — opponent stabilized"
         return 'C', "Aggro deck without combat decisions — combat axis was inactive"
-    # Mid-range / interaction / other
+    if deck1 in INTERACTION_DECKS:
+        # Interaction decks: combat is a real axis — block-assignment and
+        # hold-back decisions matter as much as the attack tally. A winning
+        # tempo deck with ≥ K_INTER_COMBAT_A combat tokens (attacks + blocks
+        # + holds) grades A; a leaner game grades B+ on the same win.
+        if p1_won:
+            if n_combat >= K_INTER_COMBAT_A:
+                return ('A',
+                        f"{n_combat} combat decision(s) (attacks/blocks/holds) — "
+                        f"defensive crouch + counter-clock converted to win")
+            return ('B+' if n_combat >= 1 else 'B',
+                    f"{n_combat} combat decision(s); "
+                    f"{'combat contributed to win' if n_combat else 'won via non-combat means'}")
+        return ('C+' if n_combat >= 1 else 'C',
+                f"{n_combat} combat decision(s); combat axis "
+                f"{'engaged but insufficient' if n_combat else 'inactive'}")
+    # Mid-range / other
     if p1_won:
         return ('B+' if n_combat >= 1 else 'B',
                 f"{n_combat} combat decision(s); {'combat contributed to win' if n_combat else 'won via non-combat means'}")

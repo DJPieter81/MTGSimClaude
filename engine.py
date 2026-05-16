@@ -25,7 +25,7 @@ from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as
                     GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
                     RaceThresholds as RT, WastelandPriority as WP,
                     BurnLethal as BL, Elves as EL)
-from decision import DisruptionDecision, ManaDecision
+from decision import DisruptionDecision, ManaDecision, CombatDecision
 
 
 # ─────────────────────────────────────────────
@@ -58,9 +58,17 @@ def _destroy_permanent_targets(gs, controller, targets) -> list[str]:
     return names
 
 
-def _select_attackers(player, opponent, hold_tags=CT.HOLD_ATTACK_TAGS, desperate_life=CT.DESPERATE_LIFE):
+def _select_attackers(player, opponent, hold_tags=CT.HOLD_ATTACK_TAGS,
+                      desperate_life=CT.DESPERATE_LIFE, gs=None):
     """Shared attacker selection for aggro/midrange strategies.
-    Returns list of creatures to attack with. Holds back value engines and 0-power."""
+    Returns list of creatures to attack with. Holds back value engines and 0-power.
+
+    When `gs` is supplied, emits a CombatDecision(kind='hold', ...) for each
+    creature held back due to `hold_tags` — surfaces the "defensive crouch"
+    decision (e.g. bug holds Murktide as a blocker, dimir keeps Bowmasters
+    pinging rather than trading in combat) on the combat axis for the
+    structural grader. Sick / 0-power skips are not strategic decisions —
+    those creatures *cannot* attack, so they don't emit a hold token."""
     opp_has_blockers = len(opponent.creatures) > 0
     desperate = player.life < desperate_life
     attackers = []
@@ -68,6 +76,17 @@ def _select_attackers(player, opponent, hold_tags=CT.HOLD_ATTACK_TAGS, desperate
         if c.summoning_sick: continue
         if c.power == 0: continue
         if c.card.tag in hold_tags and opp_has_blockers and not desperate:
+            if gs is not None:
+                gs.strat_log.log(CombatDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    phase='combat',
+                    reason=f'hold {c.card.tag or "creature"} back to block',
+                    candidates=('attack', 'hold'),
+                    kind='hold',
+                    attacker_count=1,
+                    attacker_tag=c.card.tag or 'creature',
+                ))
             continue
         attackers.append(c)
     return attackers
@@ -729,6 +748,20 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
             best = min(favorable, key=lambda b: b.toughness)
             assignments[id(atk)] = best
             available_blockers.remove(best)
+            # Typed block token: defender chooses to block — surfaces a
+            # combat-axis decision distinct from "attack with N" attacker
+            # tokens. The defender's deck label is the one the structural
+            # grader credits.
+            gs.strat_log.log(CombatDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if defender_player is gs.p1 else gs.p2_deck,
+                phase='combat',
+                reason=f'{best.card.tag or "creature"} blocks {atk.card.tag or "creature"}',
+                candidates=('block', 'pass'),
+                kind='block',
+                attacker_count=1,
+                attacker_tag=best.card.tag or 'creature',
+            ))
         elif atk.power >= 3:
             # Chump if attacker deals significant damage and we have spare blockers
             # Don't chump with our last creature unless defender near lethal
@@ -742,6 +775,19 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
                 chump = min(legal, key=lambda b: b.power)
                 assignments[id(atk)] = chump
                 available_blockers.remove(chump)
+                # Typed block token for the chump: same combat-axis credit.
+                # Distinguishing chump vs favorable trade lives in `reason`
+                # (humans read it) — the structural axis only buckets by kind.
+                gs.strat_log.log(CombatDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if defender_player is gs.p1 else gs.p2_deck,
+                    phase='combat',
+                    reason=f'{chump.card.tag or "creature"} chumps {atk.card.tag or "creature"}',
+                    candidates=('block', 'pass'),
+                    kind='block',
+                    attacker_count=1,
+                    attacker_tag=chump.card.tag or 'creature',
+                ))
 
     # ── Resolve damage for each blocked pair + all unblocked ─────────────────
     total_unblocked_dmg = 0
@@ -2791,13 +2837,27 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     alpha_strike = total_power >= opponent.life or (board_size >= 3 and opp_blockers == 0)
 
     attackers = []
+    def _emit_hold(c):
+        gs.strat_log.log(CombatDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='combat',
+            reason=f'hold {c.card.tag or "creature"} back to block',
+            candidates=('attack', 'hold'),
+            kind='hold',
+            attacker_count=1,
+            attacker_tag=c.card.tag or 'creature',
+        ))
     for c in player.creatures:
         if c.summoning_sick: continue
         if c.card.tag == 'thalia' and board_size < 3 and not alpha_strike:
+            _emit_hold(c)
             continue  # keep Thalia back as tax piece when we need her
         if c.card.tag == 'sfm' and equip_card:
+            _emit_hold(c)
             continue  # keep SFM for activation
         if c.card.tag == 'recruiter' and not alpha_strike:
+            _emit_hold(c)
             continue  # 1/1 not worth risking
         if c.power > 0:
             attackers.append(c)
@@ -2957,7 +3017,7 @@ def _strategy_ocelot(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # 7. Combat
     hold = ('bowm',) if opponent.life > 6 and len(player.creatures) >= 2 else ()
-    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold)
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold, gs=gs)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
     # 8. Goblin Bombardment post-combat reach
@@ -3171,7 +3231,7 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # ── 8. Combat ──
     hold = ('bowm',) if opponent.life > 6 and len(player.creatures) >= 2 else ()
-    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold)
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold, gs=gs)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
@@ -3352,7 +3412,7 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
     # Hold Eidolon back only if BUG has blockers that would kill it (2/2)
     eidolon_safe = not any(c.power >= 2 for c in opponent.creatures)
     hold = ('bowm',) if eidolon_safe else ('bowm', 'eidolon')
-    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold)
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=hold, gs=gs)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
     # Initiative — Seasoned Dungeoneer takes Initiative on ETB/attack.
@@ -3630,7 +3690,7 @@ def _strategy_prison(player, opponent, gs, total_mana, log_fn, log_entries):
         log_fn(f"Hand dump for Bridge — hand now {len(player.hand)}")
 
     # Combat — Prison attacks with TKS and creatures if available
-    attackers_this_turn = _select_attackers(player, opponent, hold_tags=())
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=(), gs=gs)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
@@ -3737,7 +3797,7 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
             update_goyf(gs)
 
     # Combat — Eldrazi attacks aggressively
-    attackers_this_turn = _select_attackers(player, opponent, hold_tags=())
+    attackers_this_turn = _select_attackers(player, opponent, hold_tags=(), gs=gs)
     combat_declare(player, opponent, gs, log_entries, attackers_this_turn)
 
 
@@ -4139,9 +4199,30 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
             # Hold Bowmasters back unless unblocked or desperate
             if not opp_has_blockers or mardu_desperate:
                 attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
+            else:
+                # else: keep pinging, don't trade in combat — typed hold token
+                gs.strat_log.log(CombatDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    phase='combat',
+                    reason=f'hold {c.card.tag or "creature"} back to block',
+                    candidates=('attack', 'hold'),
+                    kind='hold',
+                    attacker_count=1,
+                    attacker_tag=c.card.tag or 'creature',
+                ))
         elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
+            # 0/3 blocks, doesn't attack — typed hold token (defensive role)
+            gs.strat_log.log(CombatDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase='combat',
+                reason=f'hold {c.card.tag or "creature"} back to block',
+                candidates=('attack', 'hold'),
+                kind='hold',
+                attacker_count=1,
+                attacker_tag=c.card.tag or 'creature',
+            ))
         else:
             attackers_this_turn.append(c)
 
@@ -5142,9 +5223,30 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
             # Hold Bowmasters back unless unblocked or desperate
             if not opp_has_blockers or mardu_desperate:
                 attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
+            else:
+                # else: keep pinging, don't trade in combat — typed hold token
+                gs.strat_log.log(CombatDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    phase='combat',
+                    reason=f'hold {c.card.tag or "creature"} back to block',
+                    candidates=('attack', 'hold'),
+                    kind='hold',
+                    attacker_count=1,
+                    attacker_tag=c.card.tag or 'creature',
+                ))
         elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
+            # 0/3 blocks, doesn't attack — typed hold token (defensive role)
+            gs.strat_log.log(CombatDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase='combat',
+                reason=f'hold {c.card.tag or "creature"} back to block',
+                candidates=('attack', 'hold'),
+                kind='hold',
+                attacker_count=1,
+                attacker_tag=c.card.tag or 'creature',
+            ))
         else:
             attackers_this_turn.append(c)
 
@@ -5286,9 +5388,30 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
             # Hold Bowmasters back unless unblocked or desperate
             if not opp_has_blockers or mardu_desperate:
                 attackers_this_turn.append(c)
-            # else: keep pinging, don't trade in combat
+            else:
+                # else: keep pinging, don't trade in combat — typed hold token
+                gs.strat_log.log(CombatDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    phase='combat',
+                    reason=f'hold {c.card.tag or "creature"} back to block',
+                    candidates=('attack', 'hold'),
+                    kind='hold',
+                    attacker_count=1,
+                    attacker_tag=c.card.tag or 'creature',
+                ))
         elif c.card.tag == 'tamiyo':
-            pass   # 0/3 blocks, doesn't attack
+            # 0/3 blocks, doesn't attack — typed hold token (defensive role)
+            gs.strat_log.log(CombatDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase='combat',
+                reason=f'hold {c.card.tag or "creature"} back to block',
+                candidates=('attack', 'hold'),
+                kind='hold',
+                attacker_count=1,
+                attacker_tag=c.card.tag or 'creature',
+            ))
         else:
             attackers_this_turn.append(c)
 
@@ -5448,11 +5571,26 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Combat ──
     bug_max_t = max((c.toughness for c in opponent.creatures), default=0)
     attackers = []
+    def _uwx_emit_hold(c):
+        gs.strat_log.log(CombatDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='combat',
+            reason=f'hold {c.card.tag or "creature"} back to block',
+            candidates=('attack', 'hold'),
+            kind='hold',
+            attacker_count=1,
+            attacker_tag=c.card.tag or 'creature',
+        ))
     for c in player.creatures:
         if c.summoning_sick: continue
         if c.card.tag == 'riddler':
-            if c.power > bug_max_t: attackers.append(c)
-        elif c.card.tag in ('tamiyo',): pass   # 0/3 doesn't attack productively
+            if c.power > bug_max_t:
+                attackers.append(c)
+            else:
+                _uwx_emit_hold(c)
+        elif c.card.tag in ('tamiyo',):
+            _uwx_emit_hold(c)   # 0/3 doesn't attack productively
         else:
             attackers.append(c)
     if attackers:
@@ -6487,12 +6625,26 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     opp_has_blockers = len(opponent.creatures) > 0
     mardu_desperate  = player.life < CT.DESPERATE_LIFE
     attackers = []
+    def _mardu_emit_hold(c):
+        gs.strat_log.log(CombatDecision(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='combat',
+            reason=f'hold {c.card.tag or "creature"} back to block',
+            candidates=('attack', 'hold'),
+            kind='hold',
+            attacker_count=1,
+            attacker_tag=c.card.tag or 'creature',
+        ))
     for c in player.creatures:
         if c.summoning_sick: continue
         if c.card.tag == 'bowm':
-            if not opp_has_blockers or mardu_desperate: attackers.append(c)
+            if not opp_has_blockers or mardu_desperate:
+                attackers.append(c)
+            else:
+                _mardu_emit_hold(c)
         elif c.card.tag == 'tamiyo':
-            pass
+            _mardu_emit_hold(c)
         else:
             attackers.append(c)
     combat_declare(player, opponent, gs, log_entries, attackers)

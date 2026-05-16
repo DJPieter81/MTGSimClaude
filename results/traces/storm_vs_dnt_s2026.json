@@ -154,6 +154,17 @@
       "reason": "mana=3, hand=['phelia', 'wl', 'stp', 'kaldra', 'thalia']"
     },
     {
+      "turn": 3,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
+    },
+    {
       "turn": 4,
       "deck": "storm",
       "phase": "combo",
@@ -195,6 +206,17 @@
         "recruiter"
       ],
       "reason": "mana=4, hand=['phelia', 'stp', 'skyclave']"
+    },
+    {
+      "turn": 4,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_thalia",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold thalia back to block"
     },
     {
       "turn": 5,
@@ -699,9 +721,11 @@
     "T3 [storm] [phase:combo] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T3 [storm] [phase:combo] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=4/9, rituals=2, safe=True, thalia=False, life=17",
     "T3 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['phelia', 'wl', 'stp', 'kaldra', 'thalia']",
+    "T3 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block",
     "T4 [storm] [phase:combo] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T4 [storm] [phase:combo] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=5/8, rituals=3, safe=True, thalia=True, life=16",
     "T4 [dnt] chose skyclave from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['phelia', 'stp', 'skyclave']",
+    "T4 [dnt] [phase:combat] chose hold_thalia from [attack,hold] \u2014 hold thalia back to block",
     "T5 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T5 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=2/8, rituals=0, safe=True, thalia=True, life=15",
     "T5 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['phelia', 'stp', 'thalia']",

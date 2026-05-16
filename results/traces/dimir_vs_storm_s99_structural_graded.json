@@ -11,7 +11,7 @@
   "grades": {
     "mulligan": "B+",
     "mana": "B",
-    "combat": "B",
+    "combat": "A",
     "combo": "B",
     "interaction": "A",
     "meta": "B",
@@ -20,11 +20,11 @@
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
     "mana": "Resource deployment supported a T9 win",
-    "combat": "0 combat decision(s); won via non-combat means",
+    "combat": "3 combat decision(s) (attacks/blocks/holds) \u2014 defensive crouch + counter-clock converted to win",
     "combo": "Non-combo deck \u2014 domain not primary axis",
     "interaction": "0 counter + 2 discard + 1 remove + 0 hold + 0 defer decisions; heavy structured disruption backed the win",
     "meta": "Eventually closed the matchup",
-    "overall": "Average across 6 domains \u2014 won in 9 turns; structural counts: exec=0 hold=0 defer=0 remove=1 combat=0"
+    "overall": "Average across 6 domains \u2014 won in 9 turns; structural counts: exec=0 hold=0 defer=0 remove=1 combat=3"
   },
   "structural_counts": {
     "execute": 0,
@@ -35,12 +35,12 @@
     "removal": 1,
     "tried_combo": 0,
     "ramp": 0,
-    "combat": 0,
+    "combat": 3,
     "combo_phase": 0,
     "protect_phase": 0,
-    "total": 12
+    "total": 15
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T9 win\ncombat: B \u2014 0 combat decision(s); won via non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: A \u2014 0 counter + 2 discard + 1 remove + 0 hold + 0 defer decisions; heavy structured disruption backed the win\nmeta: B \u2014 Eventually closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 9 turns; structural counts: exec=0 hold=0 defer=0 remove=1 combat=0",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B \u2014 Resource deployment supported a T9 win\ncombat: A \u2014 3 combat decision(s) (attacks/blocks/holds) \u2014 defensive crouch + counter-clock converted to win\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: A \u2014 0 counter + 2 discard + 1 remove + 0 hold + 0 defer decisions; heavy structured disruption backed the win\nmeta: B \u2014 Eventually closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 9 turns; structural counts: exec=0 hold=0 defer=0 remove=1 combat=3",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:07:40.247784Z"
+  "graded_at": "2026-05-16T12:32:48.131375Z"
 }

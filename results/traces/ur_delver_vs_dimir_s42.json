@@ -238,6 +238,17 @@
         "let_resolve"
       ],
       "reason": "daze counters heat (major threat)"
+    },
+    {
+      "turn": 9,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "block_bowm",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "bowm blocks delver"
     }
   ],
   "full_log": [
@@ -856,6 +867,7 @@
     "T7 [ur_delver] chose counter_tamiyo_with_fow from [counter,let_resolve] \u2014 fow counters tamiyo (minor threat)",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=0",
     "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=2",
-    "T9 [dimir] chose counter_heat_with_daze from [counter,let_resolve] \u2014 daze counters heat (major threat)"
+    "T9 [dimir] chose counter_heat_with_daze from [counter,let_resolve] \u2014 daze counters heat (major threat)",
+    "T9 [dimir] [phase:combat] chose block_bowm from [block,pass] \u2014 bowm blocks delver"
   ]
 }

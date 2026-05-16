@@ -4270,6 +4270,105 @@ def run_rules_tests():
              "does NOT raise counts['ramp']",
              _adv_rc['ramp'], 0)
 
+        # ── CombatDecision block/hold wiring (PR combat-axis) ────────────────
+        # Mechanic: defender assigning a blocker, or strategy holding a
+        # creature back to block, emits a typed CombatDecision the structural
+        # grader credits on the combat axis. Tempo/interaction decks (bug,
+        # dimir, ur_delver) now surface block + hold tokens distinct from
+        # attacker emissions, so the grader can distinguish "attacked for 3"
+        # from "blocked Murktide + held Bowm back to keep pinging".
+
+        # Rule CB1 — to_token() byte-equality for block: 'block_<tag>'.
+        test("Combat algebra: CombatDecision(block, 'murktide').to_token() == 'block_murktide'",
+             _CbD(turn=3, deck='bug', kind='block', attacker_count=1,
+                  attacker_tag='murktide').to_token(),
+             'block_murktide')
+
+        # Rule CB2 — to_token() byte-equality for hold: 'hold_<tag>'. Same
+        # prefix the combo-axis ComboDecision(hold) uses; they're routed to
+        # different buckets via `phase` (combat-axis hold carries phase='combat').
+        test("Combat algebra: CombatDecision(hold, 'ragavan').to_token() == 'hold_ragavan'",
+             _CbD(turn=2, deck='ur_delver', kind='hold', attacker_count=1,
+                  attacker_tag='ragavan').to_token(),
+             'hold_ragavan')
+
+        # Rule CB3 — typed-path bucketing: a single typed block decision
+        # increments counts['combat'] to 1. Verifies the isinstance fast-path
+        # treats block / hold / attack identically (any CombatDecision counts).
+        _typed_block = [
+            _CbD(turn=3, deck='bug', phase='combat',
+                 kind='block', attacker_count=1, attacker_tag='murktide'),
+        ]
+        _tb_counts = _sg2._count_structural(_typed_block, deck1='bug')
+        test("Combat algebra: typed CombatDecision(block) raises counts['combat'] to 1",
+             _tb_counts['combat'], 1)
+
+        # Rule CB4 — typed mix of block + hold + attack all roll into combat.
+        _typed_mix = [
+            _CbD(turn=2, deck='bug', phase='combat', kind='hold',
+                 attacker_count=1, attacker_tag='murktide'),
+            _CbD(turn=3, deck='bug', phase='combat', kind='block',
+                 attacker_count=1, attacker_tag='goyf'),
+            _CbD(turn=4, deck='bug', phase='combat', kind='attack',
+                 attacker_count=2, attacker_tag='creatures'),
+        ]
+        _tm_counts = _sg2._count_structural(_typed_mix, deck1='bug')
+        test("Combat algebra: typed block+hold+attack mix raises counts['combat'] to 3",
+             _tm_counts['combat'], 3)
+
+        # Rule CB5 — interaction-deck win with 3 combat tokens grades A on
+        # the combat axis (K_INTER_COMBAT_A floor). This is the load-bearing
+        # rule: bug / dimir / ur_delver wins that actively engage combat
+        # (block + hold + counter-swing) get the top combat grade.
+        _trace_int_win = {'deck1': 'bug', 'deck2': 'storm', 'winner': 'p1',
+                          'game_length': 8}
+        _g_combat, _j_combat = _sg2._grade_combat(_trace_int_win, _tm_counts)
+        test("Combat algebra: interaction-deck win + 3 combat tokens → grade 'A'",
+             _g_combat, 'A', detail=f"justification: {_j_combat}")
+
+        # Rule CB6 — gameability resistance: prose with 'block hold defend'
+        # in `reason` and `chosen='pass'` must NOT raise counts['combat'].
+        # The bucket is sole source-of-truth.
+        _prose_combat = [
+            {'turn': 2, 'deck': 'bug', 'chosen': 'pass',
+             'candidates': [], 'reason': 'block hold defend murktide back to block',
+             'phase': 'main'},
+            {'turn': 3, 'deck': 'bug', 'chosen': 'pass',
+             'candidates': [], 'reason': 'considered block + hold tamiyo',
+             'phase': 'main'},
+        ]
+        _pc_counts = _sg2._count_structural(_prose_combat, deck1='bug')
+        test("Combat algebra: prose 'block hold defend' with chosen='pass' "
+             "does NOT raise counts['combat']",
+             _pc_counts['combat'], 0)
+
+        # Rule CB7 — phase guard: a legacy dict `chosen='hold_murktide'` with
+        # `phase='combat'` buckets to combat ONLY, not to combo's hold count.
+        # Pins the collision-avoidance contract spelled out in HOLD_PREFIXES
+        # docstring. (Same prefix as combo hold — phase disambiguates.)
+        _combat_hold_dict = [
+            {'turn': 3, 'deck': 'bug', 'chosen': 'hold_murktide',
+             'candidates': ['attack','hold'], 'reason': 'hold to block',
+             'phase': 'combat'},
+        ]
+        _chd_counts = _sg2._count_structural(_combat_hold_dict, deck1='bug')
+        test("Combat algebra: legacy 'hold_murktide' with phase='combat' "
+             "buckets to combat only (not combo hold)",
+             (_chd_counts['combat'], _chd_counts['hold']), (1, 0))
+
+        # Rule CB8 — counterpart to CB7: same `hold_<tag>` with combo phase
+        # still routes to the combo hold bucket. Back-compat with pre-algebra
+        # combo-protection emissions (storm holding FoW).
+        _combo_hold_dict = [
+            {'turn': 2, 'deck': 'storm', 'chosen': 'hold_fow',
+             'candidates': ['hold','fire'], 'reason': 'protect kill turn',
+             'phase': 'protect'},
+        ]
+        _cbhd_counts = _sg2._count_structural(_combo_hold_dict, deck1='storm')
+        test("Combat algebra: legacy 'hold_fow' with phase!='combat' "
+             "still buckets to combo hold (back-compat)",
+             (_cbhd_counts['hold'], _cbhd_counts['combat']), (1, 0))
+
     except Exception as _e:
         test(f"typed Decision algebra rule tests (error: {_e})", False, True)
 

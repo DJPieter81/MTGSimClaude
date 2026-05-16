@@ -135,6 +135,17 @@
       "reason": "stp exiles cratermaker"
     },
     {
+      "turn": 7,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_expert",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "expert blocks monk_token"
+    },
+    {
       "turn": 8,
       "deck": "goblins",
       "phase": null,
@@ -160,6 +171,17 @@
     {
       "turn": 10,
       "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_sling",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "sling blocks snap"
+    },
+    {
+      "turn": 10,
+      "deck": "goblins",
       "phase": null,
       "chosen": "tried_combo:ringleader",
       "candidates": [
@@ -168,6 +190,17 @@
         "pass"
       ],
       "reason": "played ringleader but combo did not fire this turn"
+    },
+    {
+      "turn": 11,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_ringleader",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "ringleader blocks mentor"
     },
     {
       "turn": 11,
@@ -203,6 +236,17 @@
         "pass"
       ],
       "reason": "played prospector but combo did not fire this turn"
+    },
+    {
+      "turn": 12,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_prospector",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "prospector blocks monk_token"
     },
     {
       "turn": 15,
@@ -1131,12 +1175,16 @@
     "T5 [uwx] chose remove_expert_with_stp from [remove,pass] \u2014 stp exiles expert",
     "T6 [goblins] chose tried_combo:cratermaker from [execute,tried_combo,pass] \u2014 played cratermaker but combo did not fire this turn",
     "T7 [uwx] chose remove_cratermaker_with_stp from [remove,pass] \u2014 stp exiles cratermaker",
+    "T7 [goblins] [phase:combat] chose block_expert from [block,pass] \u2014 expert blocks monk_token",
     "T8 [goblins] chose discard_fon_with_ts from [thoughtseize,pass] \u2014 TS strips fon from opponent",
     "T9 [goblins] chose tried_combo:sling from [execute,tried_combo,pass] \u2014 played sling but combo did not fire this turn",
+    "T10 [goblins] [phase:combat] chose block_sling from [block,pass] \u2014 sling blocks snap",
     "T10 [goblins] chose tried_combo:ringleader from [execute,tried_combo,pass] \u2014 played ringleader but combo did not fire this turn",
+    "T11 [goblins] [phase:combat] chose block_ringleader from [block,pass] \u2014 ringleader blocks mentor",
     "T11 [uwx] chose counter_lackey_with_counter from [counter,let_resolve] \u2014 counter counters lackey (major threat)",
     "T11 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
     "T11 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn",
+    "T12 [goblins] [phase:combat] chose block_prospector from [block,pass] \u2014 prospector blocks monk_token",
     "T15 [goblins] chose tried_combo:cratermaker from [execute,tried_combo,pass] \u2014 played cratermaker but combo did not fire this turn"
   ]
 }

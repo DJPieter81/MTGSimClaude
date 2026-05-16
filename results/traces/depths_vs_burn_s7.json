@@ -148,6 +148,17 @@
       "reason": "no assembly path satisfiable"
     },
     {
+      "turn": 5,
+      "deck": "burn",
+      "phase": "combat",
+      "chosen": "block_swiftspear",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "swiftspear chumps knight"
+    },
+    {
       "turn": 6,
       "deck": "depths",
       "phase": null,
@@ -178,6 +189,17 @@
         "pass"
       ],
       "reason": "crop rotation tutored stage, both lands in play"
+    },
+    {
+      "turn": 6,
+      "deck": "burn",
+      "phase": "combat",
+      "chosen": "block_guide",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "guide chumps knight"
     }
   ],
   "full_log": [
@@ -618,7 +640,9 @@
     "T3 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T4 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T5 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
+    "T5 [burn] [phase:combat] chose block_swiftspear from [block,pass] \u2014 swiftspear chumps knight",
     "T6 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
-    "T6 [depths] chose combo:crop_rotation_finds_stage from [crop_finds_missing,pass] \u2014 crop rotation tutored stage, both lands in play"
+    "T6 [depths] chose combo:crop_rotation_finds_stage from [crop_finds_missing,pass] \u2014 crop rotation tutored stage, both lands in play",
+    "T6 [burn] [phase:combat] chose block_guide from [block,pass] \u2014 guide chumps knight"
   ]
 }

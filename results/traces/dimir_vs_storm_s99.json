@@ -330,6 +330,17 @@
     },
     {
       "turn": 7,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 7,
       "deck": "storm",
       "phase": "desperate",
       "chosen": "p=0.27",
@@ -384,6 +395,17 @@
     },
     {
       "turn": 8,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 8,
       "deck": "storm",
       "phase": "desperate",
       "chosen": "p=0.26",
@@ -423,6 +445,17 @@
         "pass"
       ],
       "reason": "mana=2, hand=4, threats_in_play=4"
+    },
+    {
+      "turn": 9,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     }
   ],
   "full_log": [
@@ -1014,12 +1047,15 @@
     "T6 [storm] [phase:desperate] chose p=0.36 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T6 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=7/7, rituals=5, safe=True, thalia=False, life=14",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=4, threats_in_play=2",
+    "T7 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T7 [storm] [phase:desperate] chose p=0.27 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T7 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/6, rituals=4, safe=True, thalia=False, life=9",
     "T7 [storm] [phase:desperate] chose tried_combo:petal from [execute,tried_combo,pass] \u2014 played petal but combo did not fire this turn",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=4, threats_in_play=4",
+    "T8 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T8 [storm] [phase:desperate] chose p=0.26 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T8 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=7/6, rituals=5, safe=True, thalia=False, life=4",
-    "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=4, threats_in_play=4"
+    "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=4, threats_in_play=4",
+    "T9 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block"
   ]
 }

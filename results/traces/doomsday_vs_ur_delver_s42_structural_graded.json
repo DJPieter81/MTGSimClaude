@@ -42,5 +42,5 @@
   },
   "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Lost in 6 turns \u2014 possible mana sequencing issues (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C+ \u2014 4 Execute decision(s) but lost on T6 \u2014 combo could not close\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C \u2014 Lost a matchup that should be favored (doomsday vs ur_delver) \u2014 possible role confusion\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 6 turns; structural counts: exec=4 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:07:40.250248Z"
+  "graded_at": "2026-05-16T12:32:48.133181Z"
 }

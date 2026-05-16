@@ -76,6 +76,17 @@
       "reason": "mana=1, creatures=1, hand=7"
     },
     {
+      "turn": 2,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_thalia",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "thalia blocks shepherd"
+    },
+    {
       "turn": 3,
       "deck": "dnt",
       "phase": null,
@@ -180,6 +191,28 @@
       "reason": "Natural Order resolves, Craterhoof pumps 8 elves +8/+8"
     },
     {
+      "turn": 5,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_sfm",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "sfm chumps hoof"
+    },
+    {
+      "turn": 5,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_phelia",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "phelia chumps mystic"
+    },
+    {
       "turn": 6,
       "deck": "elves",
       "phase": null,
@@ -192,6 +225,17 @@
         "pass"
       ],
       "reason": "mana=2, creatures=8, hand=6"
+    },
+    {
+      "turn": 6,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_flickerwisp",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "flickerwisp chumps hoof"
     }
   ],
   "full_log": [
@@ -619,6 +663,7 @@
     "T1 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=0, hand=7",
     "T2 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=2, hand=['thalia', 'flickerwisp', 'phelia', 'vial', 'wl']",
     "T2 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=1, hand=7",
+    "T2 [dnt] [phase:combat] chose block_thalia from [block,pass] \u2014 thalia blocks shepherd",
     "T3 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['flickerwisp', 'phelia', 'vial', 'wl']",
     "T3 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=1, hand=7",
     "T4 [dnt] chose flickerwisp from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['flickerwisp', 'vial', 'prelate']",
@@ -626,6 +671,9 @@
     "T5 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['vial', 'prelate', 'sfm']",
     "T5 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=4, hand=7",
     "T5 [elves] chose combo:natural_order_craterhoof_x8 from [natural_order_craterhoof,pass] \u2014 Natural Order resolves, Craterhoof pumps 8 elves +8/+8",
-    "T6 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=2, creatures=8, hand=6"
+    "T5 [dnt] [phase:combat] chose block_sfm from [block,pass] \u2014 sfm chumps hoof",
+    "T5 [dnt] [phase:combat] chose block_phelia from [block,pass] \u2014 phelia chumps mystic",
+    "T6 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=2, creatures=8, hand=6",
+    "T6 [dnt] [phase:combat] chose block_flickerwisp from [block,pass] \u2014 flickerwisp chumps hoof"
   ]
 }

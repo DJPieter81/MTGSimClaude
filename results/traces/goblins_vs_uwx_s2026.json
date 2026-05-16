@@ -194,6 +194,17 @@
       "reason": "played expert but combo did not fire this turn"
     },
     {
+      "turn": 13,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_expert",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "expert blocks snap"
+    },
+    {
       "turn": 14,
       "deck": "goblins",
       "phase": null,
@@ -1146,6 +1157,7 @@
     "T12 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
     "T12 [uwx] chose remove_expert_with_stp from [remove,pass] \u2014 stp exiles expert",
     "T13 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
+    "T13 [goblins] [phase:combat] chose block_expert from [block,pass] \u2014 expert blocks snap",
     "T14 [goblins] chose tried_combo:cratermaker from [execute,tried_combo,pass] \u2014 played cratermaker but combo did not fire this turn",
     "T15 [uwx] chose counter_muxus_with_fon from [counter,let_resolve] \u2014 fon counters muxus (major threat)",
     "T15 [goblins] chose tried_combo:muxus from [execute,tried_combo,pass] \u2014 played muxus but combo did not fire this turn"
