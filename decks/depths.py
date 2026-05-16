@@ -292,7 +292,14 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
         else:
             gs._executing_mana = _saved_em
     if isinstance(_plan_d, _Execute):
-        _chosen_label = _plan_d.path.tag
+        # Prefix path tag with `combo:` so the structural grader's
+        # EXECUTE_PREFIXES matcher sees a typed Execute token. Without
+        # this, depths' raw path tags (`stage_copy`, `crop_finds_stage`,
+        # …) failed every prefix check and the structural grader
+        # reported `combo = C` even on clean wins (depths_vs_burn s42 /
+        # s99, elves_vs_dnt s42 / s99 — all flagged in
+        # results/structural_vs_heuristic_report.md).
+        _chosen_label = f'combo:{_plan_d.path.tag}'
     elif isinstance(_plan_d, _Hold):
         _chosen_label = f'hold_{getattr(_plan_d.card, "tag", "card")}'
     elif isinstance(_plan_d, _Defer):
@@ -308,6 +315,16 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Step 1: Activate combo — Stage copies Depths ─────────────────────────
     depths_in_play, stage_in_play = _has_combo_in_play(player)
     if depths_in_play and stage_in_play and mana >= 2 and not marit_in_play:
+        # Log a typed Execute decision so the structural grader credits
+        # depths for actually firing the combo. combo_plan above can't
+        # see this — its LandComboPath checks `view.available` (hand ∪
+        # graveyard) but the combo lands win FROM PLAY. The strategy
+        # alone knows when the kill triggers; this log tells the grader.
+        gs.strat_log.log_decision(
+            gs.turn, 'depths',
+            candidates=['stage_copies_depths', 'pass'],
+            chosen='combo:stage_copies_depths',
+            reason='depths + stage in play, 2 mana available — Marit Lage created')
         log_fn("★ Stage copies Depths → Marit Lage 20/20!", True)
         # Remove the Stage (legend rule: copied Depths is legendary,
         # sacrifice the original Depths)
@@ -433,6 +450,14 @@ def _strategy_depths(player, opponent, gs, total_mana, log_fn, log_entries):
                     # Re-check combo after tutoring
                     depths_in_play, stage_in_play = _has_combo_in_play(player)
                     if depths_in_play and stage_in_play and mana >= 2 and not marit_in_play:
+                        # Typed Execute log so the structural grader credits
+                        # the Crop-Rotation kill line (parallel of the
+                        # Stage-copies-Depths log above).
+                        gs.strat_log.log_decision(
+                            gs.turn, 'depths',
+                            candidates=['crop_finds_missing', 'pass'],
+                            chosen=f'combo:crop_rotation_finds_{missing}',
+                            reason=f'crop rotation tutored {missing}, both lands in play')
                         log_fn("★ Stage copies Depths → Marit Lage 20/20!", True)
                         stage_perm = _find_land_in_play(player, 'stage')
                         depths_perm = _find_land_in_play(player, 'depths')
