@@ -84,6 +84,17 @@
         "pass"
       ],
       "reason": "mana=6, creatures=3, hand=3"
+    },
+    {
+      "turn": 4,
+      "deck": "elves",
+      "phase": null,
+      "chosen": "combo:natural_order_craterhoof_x4",
+      "candidates": [
+        "natural_order_craterhoof",
+        "pass"
+      ],
+      "reason": "Natural Order resolves, Craterhoof pumps 4 elves +4/+4"
     }
   ],
   "full_log": [
@@ -334,6 +345,7 @@
     "T1 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=1, creatures=0, hand=6",
     "T2 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=2, creatures=0, hand=5",
     "T3 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=5, creatures=2, hand=3",
-    "T4 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=6, creatures=3, hand=3"
+    "T4 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=6, creatures=3, hand=3",
+    "T4 [elves] chose combo:natural_order_craterhoof_x4 from [natural_order_craterhoof,pass] \u2014 Natural Order resolves, Craterhoof pumps 4 elves +4/+4"
   ]
 }

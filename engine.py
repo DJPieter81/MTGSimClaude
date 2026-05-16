@@ -2167,6 +2167,13 @@ def _elves_strategy(player, opponent, gs: GameState, total_mana: int,
         for c in player.creatures:
             c.power_mod       = getattr(c, 'power_mod', 0) + n
             c.toughness_mod   = getattr(c, 'toughness_mod', 0) + n
+        # Typed Execute log so the structural grader credits Elves for
+        # actually firing Natural Order → Craterhoof (mirrors PR #147).
+        gs.strat_log.log_decision(
+            gs.turn, 'elves',
+            candidates=['natural_order_craterhoof', 'pass'],
+            chosen=f'combo:natural_order_craterhoof_x{n}',
+            reason=f'Natural Order resolves, Craterhoof pumps {n} elves +{n}/+{n}')
         log_fn(f"★ Natural Order → Craterhoof ETB: {n} creatures +{n}/+{n} trample", True)
         mana_ref[0] -= 4
         return True
@@ -5609,6 +5616,13 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
                     gs.check_life_totals()
                 player.graveyard.remove(_gy)
                 perm = player.put_creature_in_play(_gy)
+                # Typed Execute log so the structural grader credits
+                # Reanimator for actually firing the kill (mirrors #147).
+                gs.strat_log.log_decision(
+                    gs.turn, 'reanimator',
+                    candidates=['reanimate', 'exhume', 'animatedead'],
+                    chosen=f'combo:{c.tag}_{_gy.tag}',
+                    reason=f'{c.tag} resolves, {_gy.tag} enters play from GY')
                 log_fn(f"★ {c.name} → {_gy.name} enters play", True)
                 # Griselbrand/Archon: extremely powerful but NOT instant-win.
                 # Real Legacy gives the opponent a turn to answer (Karakas, Borrower,
