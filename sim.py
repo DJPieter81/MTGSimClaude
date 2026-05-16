@@ -763,6 +763,12 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                     o.creatures.remove(target)
                     o.add_to_grave(target.card)
                     log(f"Fatal Push → {target.card.name} ({'revolt' if revolt else 'no revolt'})")
+                    # Typed removal log for structural-grader interaction signal.
+                    gs.strat_log.log_decision(
+                        gs.turn, active_deck,
+                        candidates=['remove', 'pass'],
+                        chosen=f'remove_{target.card.tag or "creature"}_with_push',
+                        reason=f'push kills {target.card.tag or "creature"}')
                 else:
                     b.add_to_grave(push)
 
@@ -783,6 +789,12 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                     o.creatures.remove(target)
                     o.life += target.power
                     log(f"Swords to Plowshares → exile {target.card.name} (opp +{target.power} life)")
+                    # Typed removal log for structural-grader interaction signal.
+                    gs.strat_log.log_decision(
+                        gs.turn, active_deck,
+                        candidates=['remove', 'pass'],
+                        chosen=f'remove_{target.card.tag or "creature"}_with_stp',
+                        reason=f'stp exiles {target.card.tag or "creature"}')
                 else:
                     b.add_to_grave(stp)
 
@@ -3529,6 +3541,89 @@ def run_rules_tests():
                                    _sg._count_structural(_t_aggro_win['strategic_decisions']))
         test("structural_grader: aggro deck + combat token + win raises combat grade to A",
              _g, 'A', detail=f"justification: {_j}")
+
+        # Rule 9 — Removal tokens. `remove_<target>_with_<spell>` is the
+        # typed signal that a spot-removal spell killed a permanent
+        # (Push/STP/Snuff/AD/Dismember/Bolt-as-removal/Solitude/Skyclave/
+        # Fury/Deluge/Pyro/Hydro/FoV/Bowmasters-ping). Sole emitter:
+        # engine._resolve_* lambdas + sim.protagonist_turn. Mirrors the
+        # counter_/discard_ pattern. The mechanic-name is *opp's threat
+        # tag* + *removal-spell tag*, never a literal card name.
+        test("structural_grader: 'remove_bowm_with_push' is a removal token",
+             _sg._is_removal('remove_bowm_with_push'), True)
+        test("structural_grader: 'remove_creature_with_stp' is a removal token",
+             _sg._is_removal('remove_creature_with_stp'), True)
+        test("structural_grader: 'remove_*' is NOT a counter token",
+             _sg._is_counter('remove_bowm_with_push'), False)
+        test("structural_grader: 'remove_*' is NOT a discard token",
+             _sg._is_discard('remove_bowm_with_push'), False)
+        test("structural_grader: 'remove_*' is NOT an execute token",
+             _sg._is_execute('remove_bowm_with_push'), False)
+        test("structural_grader: 'pass' is NOT a removal token",
+             _sg._is_removal('pass'), False)
+
+        # Rule 9b — _count_structural records remove_ tokens in
+        # counts['removal']. Pin: a 3-removal trace must surface 3.
+        _xremovals = [
+            {'turn': 2, 'deck': 'bug', 'chosen': 'remove_ragavan_with_push',
+             'candidates': [], 'reason': ''},
+            {'turn': 3, 'deck': 'bug', 'chosen': 'remove_goyf_with_snuff',
+             'candidates': [], 'reason': ''},
+            {'turn': 4, 'deck': 'bug', 'chosen': 'remove_murk_with_push',
+             'candidates': [], 'reason': ''},
+        ]
+        _rcounts = _sg._count_structural(_xremovals, deck1='bug')
+        test("structural_grader: 3 remove_ tokens raise counts['removal'] to 3",
+             _rcounts['removal'], 3)
+
+        # Rule 9c — n_inter rolls in removal for interaction decks.
+        # An interaction deck win with 3 remove_ tokens (no counters/holds)
+        # crosses the n_inter >= 3 threshold to A.
+        _t_bug_removes = {
+            'deck1': 'bug', 'deck2': 'goblins', 'winner': 'p1',
+            'game_length': 8, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 2, 'deck': 'bug', 'chosen': 'remove_lackey_with_push',
+                 'candidates': [], 'reason': ''},
+                {'turn': 3, 'deck': 'bug', 'chosen': 'remove_warchief_with_snuff',
+                 'candidates': [], 'reason': ''},
+                {'turn': 4, 'deck': 'bug', 'chosen': 'remove_matron_with_push',
+                 'candidates': [], 'reason': ''},
+            ],
+        }
+        _icounts = _sg._count_structural(_t_bug_removes['strategic_decisions'],
+                                         deck1='bug')
+        _g, _j = _sg._grade_interaction(_t_bug_removes, _icounts)
+        test("structural_grader: n_inter rolls in removal for interaction decks (3 removes → A)",
+             _g, 'A', detail=f"justification: {_j}")
+
+        # Rule 9d — Aggro deck + win + remove_ tokens credit the combat
+        # tally: a bolt that cleared a blocker IS a combat-enabling
+        # decision. Aggro-win with 1 remove and no `attack` token still
+        # reaches A on combat (because removal stood in for the swing).
+        _t_aggro_removes = {
+            'deck1': 'burn', 'deck2': 'bug', 'winner': 'p1',
+            'game_length': 5, 'p1_mulls': 0,
+            'strategic_decisions': [
+                {'turn': 2, 'deck': 'burn', 'chosen': 'remove_bowm_with_bolt',
+                 'candidates': [], 'reason': ''},
+            ],
+        }
+        _acounts = _sg._count_structural(_t_aggro_removes['strategic_decisions'],
+                                         deck1='burn')
+        _g, _j = _sg._grade_combat(_t_aggro_removes, _acounts)
+        test("structural_grader: aggro win + remove token (no attack token) lifts combat to A",
+             _g, 'A', detail=f"justification: {_j}")
+
+        # Rule 9e — gameability resistance: an English-prose 'reason'
+        # field containing the word 'remove' must NOT raise counts.
+        _adv_remove = [
+            {'turn': 1, 'deck': 'bug', 'chosen': 'pass',
+             'candidates': [], 'reason': 'remove kill destroy push snuff'},
+        ]
+        _adv_rcounts = _sg._count_structural(_adv_remove, deck1='bug')
+        test("structural_grader: adversarial 'remove' in reason does NOT raise removal count",
+             _adv_rcounts['removal'], 0)
     except Exception as _e:
         test(f"structural_grader rule tests (error: {_e})", False, True)
 
