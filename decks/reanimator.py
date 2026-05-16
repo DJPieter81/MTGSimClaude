@@ -6,7 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import make_reanimator_deck
-from combo_engine import AssemblyPath
+from combo_engine import ReanimatePath
 
 
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
@@ -58,19 +58,22 @@ DECK_META = {
         }),
         'protection_tags': frozenset({'fow', 'fon', 'daze'}),
         # Cartesian product: {reanimate, exhume, animatedead} × {darkrit, unmask}
-        # — six paths, each specific enough that the predicate captures the
-        # OLD hardcoded check's "any reanimate-class spell × any enabler"
-        # disjunction. Mana_cost=1 throughout: Dark Ritual nets +2 (covers
-        # exhume/animatedead's higher base cost) and Unmask is alt-cast for
-        # free (the chain still needs 1 land to cast the reanimate spell).
-        # Target must be present in hand or graveyard.
+        # — six paths. Phase B2 migrated to ReanimatePath so each path
+        # names its `reanimate_tag` and `enabler_tag` directly instead
+        # of overloading `required_tags`. Mana_cost=1 throughout: Dark
+        # Ritual nets +2 (covers exhume/animatedead's higher base cost)
+        # and Unmask is alt-cast for free (chain still needs 1 land to
+        # cast the reanimate spell). At least one target must be in
+        # hand or graveyard.
         'assembly_paths': tuple(
-            AssemblyPath(
+            ReanimatePath(
                 tag=f'{enabler}_{rean}',
                 required_tags=frozenset({rean, enabler}),
                 mana_cost=1,
                 turns_to_kill=1,
                 target_tags=frozenset({'gris', 'archon', 'atraxa', 'emrakul'}),
+                enabler_tag=enabler,
+                reanimate_tag=rean,
             )
             for enabler in ('darkrit', 'unmask')
             for rean    in ('reanimate', 'exhume', 'animatedead')

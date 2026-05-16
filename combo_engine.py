@@ -30,25 +30,28 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-# ─── Path schema (subtypes in Phase B2) ──────────────────────────────────
+# ─── Path schema (base + Phase B2 deck-shape subtypes) ───────────────────
 
 @dataclass(frozen=True)
 class AssemblyPath:
     """One way for a combo deck to assemble its win condition.
 
-    Phase B2 will split this into deck-shape subtypes (StormPath,
+    Phase B2 split this base into deck-shape subtypes (StormPath,
     ReanimatePath, LandComboPath, TribalPath) so each subtype's fields
-    name what that mechanic actually needs. For now the schema is the
-    Phase 5 shape:
+    name what that mechanic actually needs. The base shape is the
+    backward-compatible default for any deck that has not yet migrated:
 
       tag:           internal name (no card-name string)
       required_tags: tag strings (NOT card names) that must be present
                      in hand ∪ graveyard
-      mana_cost:     minimum mana floor to start the chain (semantics
-                     vary by deck — Phase B2 fixes this)
+      mana_cost:     minimum mana floor to start the chain
       turns_to_kill: turns from path-completion to win
       target_tags:   optional — when non-empty, at least one tag from
                      this set must also be in hand ∪ graveyard
+
+    Subtypes override `is_satisfiable` with mechanic-named field checks
+    that are *equivalent* to the base check (so the combo_plan chooser
+    sees the same satisfiable set before and after migration).
     """
     tag:           str
     required_tags: frozenset
@@ -61,6 +64,157 @@ class AssemblyPath:
             return False
         if self.target_tags and not (self.target_tags & view.available):
             return False
+        if self.mana_cost > view.mana:
+            return False
+        return True
+
+
+@dataclass(frozen=True)
+class StormPath(AssemblyPath):
+    """Storm-style storm-count → Tendrils kill.
+
+    Subtype fields:
+      needed_storm_count: storm count required when Tendrils resolves
+                          (for ANT this is the spell count, not the
+                          final mana floor — `mana_cost` already covers
+                          the mana floor to *start* the chain).
+
+    Inherited:
+      tag, required_tags, mana_cost, turns_to_kill, target_tags
+
+    `target_tags` is expected to be empty for storm: the win-condition
+    (e.g. tendrils) lives in `required_tags`, and the chain itself
+    builds the storm count rather than referencing a board-side target.
+    """
+    needed_storm_count: int = 0
+
+    def is_satisfiable(self, view: GameView) -> bool:
+        # Storm wins iff the named win-condition tag is in hand/graveyard
+        # AND the mana floor to start the chain is available. The base
+        # generic check is exactly that (target_tags empty by design).
+        if not self.required_tags.issubset(view.available):
+            return False
+        if self.mana_cost > view.mana:
+            return False
+        return True
+
+
+@dataclass(frozen=True)
+class ReanimatePath(AssemblyPath):
+    """Reanimate-class + enabler + target.
+
+    Subtype fields:
+      enabler_tag:    fast-mana / discard enabler tag
+                      (e.g. 'darkrit', 'unmask').
+      reanimate_tag:  reanimate-class spell tag
+                      (e.g. 'reanimate', 'exhume', 'animatedead').
+
+    Inherited:
+      target_tags:    the set of legal targets (e.g. {gris, archon,
+                      atraxa, emrakul}) — at least one must be in
+                      hand or graveyard.
+      mana_cost:      mana floor to cast the reanimate spell (typically
+                      1 with a ritual / petal in play).
+
+    `required_tags` is conventionally `frozenset({reanimate_tag,
+    enabler_tag})` so the base check still works on the satisfiability
+    side; subtype check uses the named fields directly for clarity.
+    """
+    enabler_tag:   str = ''
+    reanimate_tag: str = ''
+
+    def is_satisfiable(self, view: GameView) -> bool:
+        if self.reanimate_tag and self.reanimate_tag not in view.available:
+            return False
+        if self.enabler_tag and self.enabler_tag not in view.available:
+            return False
+        if self.target_tags and not (self.target_tags & view.available):
+            return False
+        if self.mana_cost > view.mana:
+            return False
+        return True
+
+
+@dataclass(frozen=True)
+class LandComboPath(AssemblyPath):
+    """Two-land combo (Dark Depths / Thespian's Stage class).
+
+    Subtype fields:
+      required_lands:  the combo-land tags that must be present in
+                       hand/graveyard for *this* path. For the trivial
+                       "both lands together" line this is the full
+                       pair (e.g. {'depths', 'stage'}). For a tutor
+                       line it is just the land *already held* — the
+                       tutor fetches the other piece (e.g. {'depths'}
+                       when Crop Rotation will fetch Stage).
+      enabler_tag:     optional tutor / sac-enabler tag (e.g. 'crop'
+                       for Crop Rotation, 'hexmage' for Vampire Hexmage,
+                       'scrying' for Sylvan Scrying). None for the
+                       trivial line that needs no tutor.
+
+    Inherited:
+      mana_cost:       mana floor to fire the line on the kill turn
+                       (excludes the land drops themselves).
+
+    Each declared path is specific: separate paths exist for
+    `crop_finds_stage` (held=depths) and `crop_finds_depths`
+    (held=stage), because the kill turn differs by which land was
+    already in play.
+    """
+    required_lands: frozenset = frozenset()
+    enabler_tag:    Optional[str] = None
+
+    def is_satisfiable(self, view: GameView) -> bool:
+        # Each combo land that must be in hand for THIS path's variant
+        # of the line.
+        if not self.required_lands.issubset(view.available):
+            return False
+        # The tutor (if this is a tutor variant) must also be present.
+        if self.enabler_tag is not None:
+            if self.enabler_tag not in view.available:
+                return False
+        if self.mana_cost > view.mana:
+            return False
+        return True
+
+
+@dataclass(frozen=True)
+class TribalPath(AssemblyPath):
+    """Tribal cheat-on-trigger line (Goblin Lackey class).
+
+    Subtype fields:
+      tribe_tags:          set of tribe-payoff tags reachable via the
+                           cheat trigger (e.g. {'muxus', 'ringleader',
+                           'matron'}). At least one must be in hand
+                           or graveyard at decision time.
+      cheat_enabler_tag:   the cheat enabler tag (e.g. 'lackey' for
+                           Goblin Lackey, 'vial' for Aether Vial). May
+                           be empty for a hardcast variant that has no
+                           cheat enabler — in which case `required_tags`
+                           holds the hardcast piece itself.
+
+    Inherited:
+      mana_cost:           mana floor to deploy the enabler / hardcast.
+
+    A pure hardcast line (no cheat) can use `cheat_enabler_tag=''` and
+    encode the payoff via `required_tags` in the usual way.
+    """
+    tribe_tags:        frozenset = frozenset()
+    cheat_enabler_tag: str = ''
+
+    def is_satisfiable(self, view: GameView) -> bool:
+        # The cheat enabler (if any) must be in hand.
+        if self.cheat_enabler_tag:
+            if self.cheat_enabler_tag not in view.available:
+                return False
+            # When the enabler is present, the path also needs a tribe
+            # payoff target available to cheat into play.
+            if self.tribe_tags and not (self.tribe_tags & view.available):
+                return False
+        else:
+            # No cheat enabler — fall back to generic required_tags.
+            if not self.required_tags.issubset(view.available):
+                return False
         if self.mana_cost > view.mana:
             return False
         return True

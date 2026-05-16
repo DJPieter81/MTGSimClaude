@@ -6,7 +6,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import make_storm_deck
-from combo_engine import AssemblyPath
+from combo_engine import StormPath
 
 
 # ─── Strategy wrapper ────────────────────────────────────────────────────────
@@ -55,14 +55,17 @@ DECK_META = {
             'ritual', 'darkrit', 'cabalrit', 'petal', 'led',   # mana engines
         }),
         'protection_tags': frozenset({'fow', 'fon', 'daze', 'fluster', 'veil'}),
-        # Phase 5 will populate full assembly paths; Phase 2 declares the
-        # primary line so combo_protection_check has a non-empty schema.
+        # Phase B2 migrated to StormPath subtype. `mana_cost` is the
+        # literal mana floor to start the chain; `needed_storm_count`
+        # names the storm count Tendrils must hit on resolution
+        # (ANT's standard ~10 spells for lethal at 20 life).
         'assembly_paths': (
-            AssemblyPath(
+            StormPath(
                 tag='ritual_chain_tendrils',
                 required_tags=frozenset({'tendrils'}),
                 mana_cost=4,            # storm count + Tendrils cost
                 turns_to_kill=1,
+                needed_storm_count=10,  # ANT lethal storm count at 20 life
             ),
         ),
         'preamble_skip': False,         # Storm has no shared discard preamble

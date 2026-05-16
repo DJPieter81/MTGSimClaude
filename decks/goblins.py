@@ -13,7 +13,7 @@ sys.path.insert(0, '.')
 
 from cards import creature, instant, sorcery, artifact
 from rules import Card, CardType
-from combo_engine import AssemblyPath
+from combo_engine import TribalPath
 
 
 # Tag set used as the "Goblin tribe" filter for the Lackey-style cheat trigger.
@@ -516,19 +516,28 @@ DECK_META = {
         'assembly_paths': (
             # Lackey-cheat line: Lackey ({R}) + any tribe piece in hand →
             # combat damage triggers free play. Mana_cost=1 = Lackey itself.
-            AssemblyPath(
+            # Phase B2 migrated to TribalPath: `cheat_enabler_tag` names
+            # the Lackey-class trigger, `tribe_tags` lists the payoffs
+            # reachable via the cheat.
+            TribalPath(
                 tag='lackey_cheat_muxus',
                 required_tags=frozenset({'lackey'}),
                 mana_cost=1,
                 turns_to_kill=2,    # T1 Lackey → T2 attack triggers
                 target_tags=frozenset({'muxus', 'ringleader', 'matron'}),
+                tribe_tags=frozenset({'muxus', 'ringleader', 'matron'}),
+                cheat_enabler_tag='lackey',
             ),
-            # Hard-cast Muxus line: 6 mana for direct cast.
-            AssemblyPath(
+            # Hard-cast Muxus line: 6 mana for direct cast. No cheat
+            # enabler — `cheat_enabler_tag=''` falls back to the base
+            # `required_tags` check.
+            TribalPath(
                 tag='hardcast_muxus',
                 required_tags=frozenset({'muxus'}),
                 mana_cost=6,
                 turns_to_kill=1,
+                tribe_tags=frozenset(),
+                cheat_enabler_tag='',
             ),
         ),
         'preamble_skip': False,    # Goblins has no shared discard preamble
