@@ -28,5 +28,5 @@
   },
   "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: A \u2014 Fast kill (T2) implies efficient mana sequencing\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: A+ \u2014 Clean combo kill on T2 \u2014 optimal assembly\ninteraction: B \u2014 Combo resolved without needing protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 2 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-15T18:38:58.401866Z"
+  "graded_at": "2026-05-16T05:11:11.635120Z"
 }

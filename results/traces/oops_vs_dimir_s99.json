@@ -31,6 +31,18 @@
       "turn": 1,
       "deck": "oops",
       "phase": "t1_kill",
+      "chosen": "hold_pact",
+      "candidates": [
+        "proceed",
+        "hold",
+        "defer"
+      ],
+      "reason": "protect combo: hold pact vs opp p_free_counter=0.40"
+    },
+    {
+      "turn": 1,
+      "deck": "oops",
+      "phase": "t1_kill",
       "chosen": "pass",
       "candidates": [
         "cast_spy",
@@ -609,6 +621,7 @@
     "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
     "",
     "\u2500\u2500 STRATEGIC DECISIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "T1 [oops] [phase:t1_kill] chose hold_pact from [proceed,hold,defer] \u2014 protect combo: hold pact vs opp p_free_counter=0.40",
     "T1 [oops] [phase:t1_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=1, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.40",
     "T1 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=4, threats_in_play=0",
     "T2 [oops] [phase:t2_kill] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=2, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.31",

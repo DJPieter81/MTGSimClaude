@@ -13,7 +13,7 @@
     "mana": "B+",
     "combat": "B",
     "combo": "B+",
-    "interaction": "B",
+    "interaction": "B+",
     "meta": "A",
     "overall": "B+"
   },
@@ -22,11 +22,11 @@
     "mana": "Won but took 5 turns \u2014 mana was adequate",
     "combat": "Combo deck \u2014 combat decisions minimal",
     "combo": "Combo executed on T5 \u2014 efficient",
-    "interaction": "Combo resolved without needing protection",
+    "interaction": "Protected combo with countermagic",
     "meta": "Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness",
     "overall": "Average across 6 domains \u2014 won in 5 turns"
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 5 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: B+ \u2014 Combo executed on T5 \u2014 efficient\ninteraction: B \u2014 Combo resolved without needing protection\nmeta: A \u2014 Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 5 turns",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 5 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: B+ \u2014 Combo executed on T5 \u2014 efficient\ninteraction: B+ \u2014 Protected combo with countermagic\nmeta: A \u2014 Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 5 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-15T18:38:58.401560Z"
+  "graded_at": "2026-05-16T05:11:11.634717Z"
 }

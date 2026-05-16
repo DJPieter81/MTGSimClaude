@@ -28,5 +28,5 @@
   },
   "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 6 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 combat decisions minimal\ncombo: B+ \u2014 Combo executed on T6 \u2014 efficient\ninteraction: B \u2014 Combo resolved without needing protection\nmeta: B+ \u2014 Efficiently closed a favored matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 6 turns",
   "model": "heuristic-v1",
-  "graded_at": "2026-05-15T18:38:58.399732Z"
+  "graded_at": "2026-05-16T05:11:11.631941Z"
 }
