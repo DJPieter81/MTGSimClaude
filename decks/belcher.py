@@ -429,19 +429,63 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
                        on_resolve=_resolve_vos, cost_override=1)
 
     # ── Step 9: Cast + Activate Goblin Charbelcher ──────────────────────────
+    # Canonical line: cast Charbelcher (4 mana), then crack LEDs in response
+    # to activation (CR 605.1 — activated mana abilities resolve at instant
+    # speed, before the activation cost is paid). LED gives +3 mana but
+    # discards the rest of hand. Worth it when activating Belcher because
+    # Belcher reveals its own kill condition — the discarded hand is
+    # irrelevant. Without this, the deck capped at ~6 mana on T1 even with
+    # the combo assembled (Charbelcher + 4-5 fast-mana sources).
     belcher = player.find_tag('belcher')
-    if belcher and budget[0] >= 7 and not gs.game_over:
-        def _resolve_belcher_full(c):
-            player.put_artifact_in_play(c)
-            storm[0] += 1
-            log_fn(f"★ Goblin Charbelcher (mana={budget[0]}, storm={storm[0]})", True)
-            # Activate Charbelcher (3 mana, tap)
-            if budget[0] >= 3:
-                budget[0] -= 3
-                _activate_charbelcher(player, opponent, gs, log_fn, log_entries)
-        if not cast_spell(player, opponent, gs, belcher, budget, log_fn, log_entries,
-                          on_resolve=_resolve_belcher_full, cost_override=4):
-            log_fn("Goblin Charbelcher countered")
+    # Conservative gate: only cast Belcher if we can ALSO activate it this
+    # turn — either via pre-existing mana (budget >= 7) or by cracking LEDs
+    # in response (budget >= 4 + 3*N_LED where N_LED * 3 covers the gap).
+    if belcher and not gs.game_over:
+        leds_in_hand = [c for c in player.hand if c.tag == 'led']
+        # Total mana available if we crack all LEDs in response to activation.
+        post_led_mana = budget[0] + 3 * len(leds_in_hand)
+        if budget[0] >= 4 and post_led_mana >= 7:
+            def _resolve_belcher_full(c, _leds=leds_in_hand):
+                player.put_artifact_in_play(c)
+                storm[0] += 1
+                log_fn(f"★ Goblin Charbelcher (mana={budget[0]}, storm={storm[0]})", True)
+                # Crack LEDs in response to Charbelcher activation. LED is an
+                # activated mana ability — exile from play (or hand, in sim),
+                # +3 mana, discard hand. Order: stack Belcher activation,
+                # then crack LED, LED ability resolves first.
+                for led in _leds:
+                    if budget[0] >= 3:
+                        # Already have enough — no need to crack
+                        break
+                    player.remove_from_hand(led)
+                    player.exile.append(led)
+                    budget[0] += 3
+                    storm[0] += 1
+                    player.spells_cast_this_turn += 1
+                    gs.strat_log.log(ManaDecision(
+                        turn=gs.turn,
+                        deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                        reason='led_crack_for_belcher → +3 mana',
+                        candidates=('ritual', 'pass'),
+                        kind='ramp',
+                        mana_value=3,
+                    ))
+                    log_fn(f"★ LED cracked (in response to Charbelcher activation) "
+                           f"→ +3 mana={budget[0]}, storm={storm[0]}", True)
+                # LED's "discard remaining hand" cost — clear non-LED, non-Belcher
+                # cards (the cracked LEDs are already in exile; Charbelcher is
+                # already on the stack). Other LEDs in hand still need discarding.
+                if _leds:
+                    for c in list(player.hand):
+                        player.remove_from_hand(c)
+                        player.add_to_grave(c)
+                # Activate Charbelcher (3 mana, tap)
+                if budget[0] >= 3:
+                    budget[0] -= 3
+                    _activate_charbelcher(player, opponent, gs, log_fn, log_entries)
+            if not cast_spell(player, opponent, gs, belcher, budget, log_fn, log_entries,
+                              on_resolve=_resolve_belcher_full, cost_override=4):
+                log_fn("Goblin Charbelcher countered")
 
     # ── Step 10: Cast Charbelcher without activating (if mana < 7 but >= 4)
     if not gs.game_over and player.find_tag('belcher') and budget[0] >= 4 and budget[0] < 7:
