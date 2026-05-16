@@ -10,20 +10,20 @@
   "deck2": "dnt",
   "grades": {
     "mulligan": "B+",
-    "mana": "B+",
-    "combat": "B+",
-    "combo": "B",
+    "mana": "A",
+    "combat": "B",
+    "combo": "A+",
     "interaction": "B",
-    "meta": "B+",
+    "meta": "A",
     "overall": "B+"
   },
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
-    "mana": "Resource deployment supported a T4 win",
-    "combat": "Aggro plan won without surfaced combat decisions (lethal via burn / direct damage)",
-    "combo": "Non-combo deck \u2014 domain not primary axis",
-    "interaction": "0 hold + 0 defer; interaction tokens sufficed",
-    "meta": "Efficiently closed the matchup",
+    "mana": "0 ramp tokens, T4 kill \u2014 fast kill backed the win",
+    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
+    "combo": "1 Execute decision(s); combo resolved on T4",
+    "interaction": "0 hold + 0 defer; combo resolved without holding protection",
+    "meta": "Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness",
     "overall": "Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0"
   },
   "structural_counts": {
@@ -40,7 +40,7 @@
     "protect_phase": 0,
     "total": 5
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Resource deployment supported a T4 win\ncombat: B+ \u2014 Aggro plan won without surfaced combat decisions (lethal via burn / direct damage)\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B \u2014 0 hold + 0 defer; interaction tokens sufficed\nmeta: B+ \u2014 Efficiently closed the matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: A \u2014 0 ramp tokens, T4 kill \u2014 fast kill backed the win\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 1 Execute decision(s); combo resolved on T4\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T11:59:21.199361Z"
+  "graded_at": "2026-05-16T12:07:40.253045Z"
 }
