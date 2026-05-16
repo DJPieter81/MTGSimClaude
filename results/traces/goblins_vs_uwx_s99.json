@@ -64,6 +64,17 @@
       "reason": "played vial but combo did not fire this turn"
     },
     {
+      "turn": 2,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "remove_cratermaker_with_stp",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "stp exiles cratermaker"
+    },
+    {
       "turn": 3,
       "deck": "goblins",
       "phase": null,
@@ -100,6 +111,17 @@
       "reason": "played matron but combo did not fire this turn"
     },
     {
+      "turn": 5,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "remove_matron_with_stp",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "stp exiles matron"
+    },
+    {
       "turn": 6,
       "deck": "goblins",
       "phase": null,
@@ -110,6 +132,17 @@
         "pass"
       ],
       "reason": "played sling but combo did not fire this turn"
+    },
+    {
+      "turn": 6,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "remove_sling_with_stp",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "stp exiles sling"
     },
     {
       "turn": 8,
@@ -201,6 +234,17 @@
         "pass"
       ],
       "reason": "played lackey but combo did not fire this turn"
+    },
+    {
+      "turn": 13,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "remove_muxus_with_stp",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "stp exiles muxus"
     },
     {
       "turn": 15,
@@ -1214,10 +1258,13 @@
     "T1 [goblins] chose tried_combo:cratermaker from [execute,tried_combo,pass] \u2014 played cratermaker but combo did not fire this turn",
     "T1 [goblins] chose tried_combo:matron from [execute,tried_combo,pass] \u2014 played matron but combo did not fire this turn",
     "T2 [goblins] chose tried_combo:vial from [execute,tried_combo,pass] \u2014 played vial but combo did not fire this turn",
+    "T2 [uwx] chose remove_cratermaker_with_stp from [remove,pass] \u2014 stp exiles cratermaker",
     "T3 [goblins] chose tried_combo:matron from [execute,tried_combo,pass] \u2014 played matron but combo did not fire this turn",
     "T5 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
     "T5 [goblins] chose tried_combo:matron from [execute,tried_combo,pass] \u2014 played matron but combo did not fire this turn",
+    "T5 [uwx] chose remove_matron_with_stp from [remove,pass] \u2014 stp exiles matron",
     "T6 [goblins] chose tried_combo:sling from [execute,tried_combo,pass] \u2014 played sling but combo did not fire this turn",
+    "T6 [uwx] chose remove_sling_with_stp from [remove,pass] \u2014 stp exiles sling",
     "T8 [uwx] chose counter_lackey_with_fon from [counter,let_resolve] \u2014 fon counters lackey (major threat)",
     "T8 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
     "T8 [goblins] chose tried_combo:muxus from [execute,tried_combo,pass] \u2014 played muxus but combo did not fire this turn",
@@ -1226,6 +1273,7 @@
     "T11 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
     "T13 [goblins] [phase:combat] chose attack with 3 goblins from [Goblin Lackey(cmc=1)] \u2014 lackey trigger cheats lackey",
     "T13 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
+    "T13 [uwx] chose remove_muxus_with_stp from [remove,pass] \u2014 stp exiles muxus",
     "T15 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn"
   ]
 }

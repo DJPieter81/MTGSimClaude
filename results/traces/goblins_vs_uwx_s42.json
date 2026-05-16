@@ -101,6 +101,17 @@
       "reason": "played expert but combo did not fire this turn"
     },
     {
+      "turn": 5,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "remove_expert_with_stp",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "stp exiles expert"
+    },
+    {
       "turn": 6,
       "deck": "goblins",
       "phase": null,
@@ -111,6 +122,17 @@
         "pass"
       ],
       "reason": "played cratermaker but combo did not fire this turn"
+    },
+    {
+      "turn": 7,
+      "deck": "uwx",
+      "phase": null,
+      "chosen": "remove_cratermaker_with_stp",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "stp exiles cratermaker"
     },
     {
       "turn": 8,
@@ -1106,7 +1128,9 @@
     "T3 [goblins] chose tried_combo:fury from [execute,tried_combo,pass] \u2014 played fury but combo did not fire this turn",
     "T3 [goblins] chose tried_combo:warchief from [execute,tried_combo,pass] \u2014 played warchief but combo did not fire this turn",
     "T4 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
+    "T5 [uwx] chose remove_expert_with_stp from [remove,pass] \u2014 stp exiles expert",
     "T6 [goblins] chose tried_combo:cratermaker from [execute,tried_combo,pass] \u2014 played cratermaker but combo did not fire this turn",
+    "T7 [uwx] chose remove_cratermaker_with_stp from [remove,pass] \u2014 stp exiles cratermaker",
     "T8 [goblins] chose discard_fon_with_ts from [thoughtseize,pass] \u2014 TS strips fon from opponent",
     "T9 [goblins] chose tried_combo:sling from [execute,tried_combo,pass] \u2014 played sling but combo did not fire this turn",
     "T10 [goblins] chose tried_combo:ringleader from [execute,tried_combo,pass] \u2014 played ringleader but combo did not fire this turn",

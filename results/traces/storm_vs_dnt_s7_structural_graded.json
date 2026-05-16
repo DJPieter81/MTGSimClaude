@@ -24,7 +24,7 @@
     "combo": "1 Execute decision(s); combo resolved on T4",
     "interaction": "0 hold + 0 defer; combo resolved without holding protection",
     "meta": "Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness",
-    "overall": "Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 combat=0"
+    "overall": "Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0"
   },
   "structural_counts": {
     "execute": 1,
@@ -32,13 +32,14 @@
     "defer": 0,
     "counter": 0,
     "discard": 0,
+    "removal": 0,
     "tried_combo": 0,
     "combat": 0,
     "combo_phase": 4,
     "protect_phase": 0,
     "total": 8
   },
-  "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: A \u2014 Fast kill (T4) implies efficient mana sequencing\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 1 Execute decision(s); combo resolved on T4\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 combat=0",
+  "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: A \u2014 Fast kill (T4) implies efficient mana sequencing\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 1 Execute decision(s); combo resolved on T4\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T08:36:19.241027Z"
+  "graded_at": "2026-05-16T08:54:30.327565Z"
 }

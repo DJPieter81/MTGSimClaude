@@ -10,21 +10,21 @@
   "deck2": "dimir",
   "grades": {
     "mulligan": "D",
-    "mana": "C+",
+    "mana": "B",
     "combat": "C",
     "combo": "B",
     "interaction": "C",
     "meta": "C",
-    "overall": "C"
+    "overall": "C+"
   },
   "justifications": {
     "mulligan": "Mulled to 4; aggressive mulligan strategy backfired",
-    "mana": "Suboptimal mana utilization over 7 turns",
+    "mana": "Adequate mana utilization over 7 turns",
     "combat": "0 combat decision(s); combat axis inactive",
     "combo": "Non-combo deck \u2014 domain not primary axis",
-    "interaction": "0 counter + 0 discard + 0 hold + 0 defer decisions; not enough disruption surfaced",
+    "interaction": "0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; not enough disruption surfaced",
     "meta": "Lost \u2014 limited decision points suggest structural disadvantage",
-    "overall": "Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=0 combat=0"
+    "overall": "Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
   },
   "structural_counts": {
     "execute": 0,
@@ -32,13 +32,14 @@
     "defer": 0,
     "counter": 0,
     "discard": 0,
+    "removal": 0,
     "tried_combo": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
     "total": 0
   },
-  "raw_response": "mulligan: D \u2014 Mulled to 4; aggressive mulligan strategy backfired\nmana: C+ \u2014 Suboptimal mana utilization over 7 turns\ncombat: C \u2014 0 combat decision(s); combat axis inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C \u2014 0 counter + 0 discard + 0 hold + 0 defer decisions; not enough disruption surfaced\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C \u2014 Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=0 combat=0",
+  "raw_response": "mulligan: D \u2014 Mulled to 4; aggressive mulligan strategy backfired\nmana: B \u2014 Adequate mana utilization over 7 turns\ncombat: C \u2014 0 combat decision(s); combat axis inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C \u2014 0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; not enough disruption surfaced\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T08:36:19.241861Z"
+  "graded_at": "2026-05-16T08:54:30.328419Z"
 }

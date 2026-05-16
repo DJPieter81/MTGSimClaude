@@ -33,6 +33,7 @@
     "counter": 0,
     "discard": 0,
     "removal": 0,
+    "tried_combo": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
@@ -40,5 +41,5 @@
   },
   "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: B+ \u2014 Resource deployment supported a T7 win\ncombat: B \u2014 0 combat decision(s); won via non-combat means\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: B+ \u2014 0 counter + 0 discard + 0 remove + 0 hold + 0 defer decisions; measured disruption backed the win\nmeta: B \u2014 Eventually closed the matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T08:42:14.724064Z"
+  "graded_at": "2026-05-16T08:54:30.329147Z"
 }

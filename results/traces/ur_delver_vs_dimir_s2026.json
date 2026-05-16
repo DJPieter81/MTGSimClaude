@@ -138,6 +138,17 @@
       "turn": 7,
       "deck": "dimir",
       "phase": null,
+      "chosen": "remove_delver_with_push",
+      "candidates": [
+        "remove",
+        "pass"
+      ],
+      "reason": "push kills delver"
+    },
+    {
+      "turn": 7,
+      "deck": "dimir",
+      "phase": null,
       "chosen": "entry",
       "candidates": [
         "thoughtseize",
@@ -616,6 +627,7 @@
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=3, threats_in_play=1",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=2, threats_in_play=2",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=3, threats_in_play=2",
+    "T7 [dimir] chose remove_delver_with_push from [remove,pass] \u2014 push kills delver",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=2, threats_in_play=2"
   ]
 }

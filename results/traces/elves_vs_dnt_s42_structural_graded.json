@@ -12,7 +12,7 @@
     "mulligan": "B+",
     "mana": "B+",
     "combat": "B",
-    "combo": "A",
+    "combo": "A+",
     "interaction": "B",
     "meta": "A",
     "overall": "B+"
@@ -24,7 +24,7 @@
     "combo": "1 Execute decision(s); combo resolved on T6",
     "interaction": "0 hold + 0 defer; combo resolved without holding protection",
     "meta": "Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness",
-    "overall": "Average across 6 domains \u2014 won in 6 turns; structural counts: exec=1 hold=0 defer=0 combat=0"
+    "overall": "Average across 6 domains \u2014 won in 6 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0"
   },
   "structural_counts": {
     "execute": 1,
@@ -32,13 +32,14 @@
     "defer": 0,
     "counter": 0,
     "discard": 0,
+    "removal": 0,
     "tried_combo": 0,
     "combat": 0,
     "combo_phase": 0,
     "protect_phase": 0,
     "total": 7
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 6 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A \u2014 1 Execute decision(s); combo resolved on T6\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 6 turns; structural counts: exec=1 hold=0 defer=0 combat=0",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 6 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 1 Execute decision(s); combo resolved on T6\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (elves vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 6 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T08:36:19.231580Z"
+  "graded_at": "2026-05-16T08:54:30.317830Z"
 }
