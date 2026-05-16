@@ -41,5 +41,5 @@
   },
   "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 9 turns \u2014 mana was adequate\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: B+ \u2014 1 Execute decision(s); combo resolved late on T9\ninteraction: B+ \u2014 1 hold + 0 defer; protected combo via typed hold\nmeta: A \u2014 Won an unfavored matchup (sneak_a vs bug) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 9 turns; structural counts: exec=1 hold=1 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T08:54:30.325444Z"
+  "graded_at": "2026-05-16T11:35:02.798721Z"
 }

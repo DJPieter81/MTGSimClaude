@@ -134,8 +134,15 @@ EXECUTE_PREFIXES = ('combo:', 'kill_', 'cast_doomsday', 'cast_spy',
 HOLD_PREFIXES = ('hold_',)
 DEFER_TOKENS = {'defer'}
 COUNTER_PREFIXES = ('counter_',)   # interaction decks log counter_<spell>_with_<ctr>
-DISCARD_PREFIXES = ('discard_',)   # interaction decks log discard_<spell>_with_<ts>
-REMOVAL_PREFIXES = ('remove_',)    # removal spells log remove_<target>_with_<spell>
+# Discard / extract share an axis: both empty out opponent's hand or graveyard
+# of a specific card, denying access to that resource. The grader bucket is
+# 'discard' for both; the dict-path predicate accepts either prefix so
+# pre-algebra trace JSON with `extract_*` strings still rolls in.
+DISCARD_PREFIXES = ('discard_', 'extract_')
+# Removal includes land destruction: a Wasteland that removes a key dual is
+# resource-denial on the same axis as a Push that removes a Goyf. Strategic
+# tokens for both kinds share the 'removal' bucket via this prefix set.
+REMOVAL_PREFIXES = ('remove_', 'land_destroy_')
 TRIED_COMBO_PREFIXES = ('tried_combo:',)  # combo decks log when a piece was
                                           # played but the full kill did not fire
 ATTACK_PREFIX = 'attack'  # 'attack with N goblins'
@@ -171,17 +178,23 @@ def _is_counter(chosen: str) -> bool:
 
 
 def _is_discard(chosen: str) -> bool:
-    """Decision indicates the strategy *forced opp to discard* a card."""
+    """Decision indicates the strategy *denied a specific card to opp* —
+    either forced discard from hand (Thoughtseize, Inquisition, Hymn) or
+    extract from graveyard (Surgical Extraction, Endurance, Leyline). Both
+    bucket the same axis: opponent loses access to a known card."""
     if not chosen:
         return False
     return any(chosen.startswith(p) for p in DISCARD_PREFIXES)
 
 
 def _is_removal(chosen: str) -> bool:
-    """Decision indicates the strategy *removed* an opposing permanent
-    (creature, planeswalker, artifact, enchantment) via a spot-removal
-    spell (Push, STP, Snuff, Dismember, AD, Bolt-as-removal, Solitude,
-    Skyclave Apparition, Fury, Deluge, Pyro/Hydroblast, Force of Vigor)."""
+    """Decision indicates the strategy *removed* an opposing permanent.
+    Includes spot-removal spells on creature / planeswalker / artifact /
+    enchantment (Push, STP, Snuff, Dismember, AD, Bolt-as-removal, Solitude,
+    Skyclave Apparition, Fury, Deluge, Pyro/Hydroblast, Force of Vigor) and
+    land destruction (Wasteland, Strip Mine, Ghost Quarter). Both kinds
+    share the 'removal' bucket because they're the same axis: deny a
+    permanent on the opposing battlefield."""
     if not chosen:
         return False
     return any(chosen.startswith(p) for p in REMOVAL_PREFIXES)

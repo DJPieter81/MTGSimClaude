@@ -4096,6 +4096,71 @@ def run_rules_tests():
         test("Decision algebra: legacy trace JSON path (storm) bucket discard=1, counter=0",
              (_legacy_storm['discard'], _legacy_storm['counter']), (1, 0))
 
+        # Rule A17 — land_destroy / extract token-string format. The
+        # 'land_destroy_<target>_with_<instrument>' and
+        # 'extract_<target>_with_<instrument>' templates mirror counter/
+        # discard/remove. This is the byte-equality gate that lets trace
+        # JSON read by older graders still parse cleanly.
+        _d_ld = _DiD(turn=2, deck='lands', kind='land_destroy',
+                     target_tag='ws', instrument_tag='wasteland')
+        test("Decision algebra: DisruptionDecision(land_destroy, ws, wasteland).to_token()",
+             _d_ld.to_token(), 'land_destroy_ws_with_wasteland')
+        _d_ext = _DiD(turn=3, deck='bug', kind='extract',
+                      target_tag='reanimate', instrument_tag='surgical')
+        test("Decision algebra: DisruptionDecision(extract, reanimate, surgical).to_token()",
+             _d_ext.to_token(), 'extract_reanimate_with_surgical')
+
+        # Rule A18 — legacy dict-path: land_destroy_<…> and extract_<…>
+        # string tokens (i.e. trace JSON written by the post-wired engine
+        # without typed Decision objects) bucket into removal / discard
+        # respectively via the prefix predicates. This pins the
+        # back-compat path even before any callsite uses typed objects.
+        _legacy_new_kinds = [
+            {'turn': 2, 'deck': 'bug', 'chosen': 'land_destroy_dual_with_wasteland'},
+            {'turn': 3, 'deck': 'bug', 'chosen': 'extract_reanimate_with_surgical'},
+        ]
+        _legacy_nk_counts = _sg2._count_structural(_legacy_new_kinds, deck1='bug')
+        test("Decision algebra: legacy 'land_destroy_*' dict token buckets to counts['removal']",
+             _legacy_nk_counts['removal'], 1)
+        test("Decision algebra: legacy 'extract_*' dict token buckets to counts['discard']",
+             _legacy_nk_counts['discard'], 1)
+
+        # Rule A19 — interaction-deck grade promotion on win. The grade
+        # function takes (trace, counts); with 3 land_destroy tokens and
+        # an interaction-deck win, n_inter ≥ K_INTER_A → grade 'A'.
+        # This is the load-bearing rule the spec calls out: structural
+        # interaction signal now picks up Wasteland firings.
+        _ld3 = [
+            _DiD(turn=2, deck='bug', kind='land_destroy',
+                 target_tag='dual', instrument_tag='wasteland'),
+            _DiD(turn=3, deck='bug', kind='land_destroy',
+                 target_tag='dual', instrument_tag='wasteland'),
+            _DiD(turn=4, deck='bug', kind='land_destroy',
+                 target_tag='depths', instrument_tag='wasteland'),
+        ]
+        _ld3_counts = _sg2._count_structural(_ld3, deck1='bug')
+        _trace_win = {'deck1': 'bug', 'winner': 'p1', 'game_length': 10}
+        _g_int, _ = _sg2._grade_interaction(_trace_win, _ld3_counts)
+        test("Decision algebra: 3 land_destroy tokens on interaction-deck win → grade 'A'",
+             _g_int, 'A')
+
+        # Rule A20 — gameability resistance: the grader buckets ONLY by
+        # the typed `kind` (and the prefix of `chosen` on the legacy path),
+        # never by English prose in `reason`. A pass-decision whose reason
+        # string says "wasteland surgical extract" must NOT raise removal
+        # or discard counts. The literal `chosen='pass'` has no recognized
+        # prefix, so all axis counters stay at 0.
+        _prose_gaming = [
+            {'turn': 2, 'deck': 'bug', 'chosen': 'pass',
+             'reason': 'considered wasteland surgical extract but held back'},
+            {'turn': 3, 'deck': 'bug', 'chosen': 'pass',
+             'reason': 'wasteland and surgical extraction in hand'},
+        ]
+        _prose_counts = _sg2._count_structural(_prose_gaming, deck1='bug')
+        test("Decision algebra: prose 'wasteland'/'extract' in reason with chosen='pass' "
+             "does NOT raise removal/discard",
+             (_prose_counts['removal'], _prose_counts['discard']), (0, 0))
+
     except Exception as _e:
         test(f"typed Decision algebra rule tests (error: {_e})", False, True)
 

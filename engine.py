@@ -25,6 +25,7 @@ from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as
                     GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
                     RaceThresholds as RT, WastelandPriority as WP,
                     BurnLethal as BL, Elves as EL)
+from decision import DisruptionDecision
 
 
 # ─────────────────────────────────────────────
@@ -1310,6 +1311,19 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                 update_goyf(gs)
             else:
                 log_fn(f"Wasteland [ACTIVATED-uncounterable] → destroys {target.name}", key=True)
+                # Typed land_destroy log for the structural grader's
+                # interaction-deck signal (rolls into the 'removal' bucket
+                # via _DISRUPTION_KIND_TO_BUCKET).
+                gs.strat_log.log(DisruptionDecision(
+                    turn=gs.turn,
+                    deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                    phase=None,
+                    reason=f'wasteland destroys {target.card.tag or "nonbasic"}',
+                    candidates=('wasteland', 'pass'),
+                    kind='land_destroy',
+                    target_tag=target.card.tag or 'nonbasic',
+                    instrument_tag='wasteland',
+                ))
             budget[0] = player.available_mana_count()
             update_goyf(gs)
 
@@ -1649,6 +1663,19 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                     # Endurance is sacrificed immediately (evoke) — does NOT enter creatures list
                     log_fn(f"★ Endurance (EVOKE, exiles {green_pitch.name}) — {gy_count} opp GY cards"
                         f" put on bottom of library in random order", key=True)
+                    # Typed extract log — graveyard hate rolls into 'discard'
+                    # bucket via _DISRUPTION_KIND_TO_BUCKET.
+                    if gy_count > 0:
+                        gs.strat_log.log(DisruptionDecision(
+                            turn=gs.turn,
+                            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                            phase=None,
+                            reason=f'endurance extracts {gy_count} graveyard cards',
+                            candidates=('extract', 'pass'),
+                            kind='extract',
+                            target_tag='graveyard',
+                            instrument_tag='endurance',
+                        ))
                 cast_spell(player, opponent, gs, endurance_card, None, log_fn, log_entries,
                            on_resolve=_resolve_endurance_evoke)
                 update_goyf(gs)
@@ -1664,6 +1691,17 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                     opponent.library.extend(shuffled)
                     log_fn(f"★ Endurance 3/4 Reach (full cast) — {gy_count} opp GY cards"
                         f" put on bottom of library in random order", key=True)
+                    if gy_count > 0:
+                        gs.strat_log.log(DisruptionDecision(
+                            turn=gs.turn,
+                            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                            phase=None,
+                            reason=f'endurance extracts {gy_count} graveyard cards',
+                            candidates=('extract', 'pass'),
+                            kind='extract',
+                            target_tag='graveyard',
+                            instrument_tag='endurance',
+                        ))
                 cast_spell(player, opponent, gs, endurance_card, budget, log_fn, log_entries,
                            on_resolve=_resolve_endurance_full,
                            cost_override=effective_cmc(endurance_card))
@@ -1768,6 +1806,7 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
         target_card = next((c for c in opponent.graveyard
                             if c.is_combo_piece), None)
         if target_card:
+            _surgical_target_tag = target_card.tag or 'combo_piece'
             def _resolve_surgical(c):
                 player.add_to_grave(c)
                 if c.life_cost > 0:
@@ -1787,6 +1826,19 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
                 random.shuffle(opponent.library)
                 log_fn(f"★ Surgical Extraction → exiles {removed} copies of {target_name}"
                     f" (opp shuffles library)", key=True)
+                # Typed extract log — graveyard hate rolls into 'discard'
+                # bucket via _DISRUPTION_KIND_TO_BUCKET.
+                if removed > 0:
+                    gs.strat_log.log(DisruptionDecision(
+                        turn=gs.turn,
+                        deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                        phase=None,
+                        reason=f'surgical extracts {_surgical_target_tag}',
+                        candidates=('extract', 'pass'),
+                        kind='extract',
+                        target_tag=_surgical_target_tag,
+                        instrument_tag='surgical',
+                    ))
             cast_spell(player, opponent, gs, surgical_card, None, log_fn, log_entries,
                        on_resolve=_resolve_surgical)
             update_goyf(gs)
@@ -2167,6 +2219,16 @@ def _respond_on_opponent_turn(responder, active, gs, log_fn, log_entries):
             active.lands.remove(target)
             active.add_to_grave(target.card)
             log_fn(f"★ Wasteland (opp's turn) → destroys {target.card.name}", True)
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if responder is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {target.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=target.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
 
@@ -2683,6 +2745,16 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.lands.remove(target); opponent.add_to_grave(target.card)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland → destroys {target.card.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {target.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=target.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
     # Karakas — bounce legendary creatures
@@ -2871,6 +2943,16 @@ def _strategy_ocelot(player, opponent, gs, total_mana, log_fn, log_entries):
             player.lands.remove(wl); player.add_to_grave(wl.card)
             opponent.lands.remove(target); opponent.add_to_grave(target.card)
             log_fn(f"Wasteland -> destroys {target.card.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {target.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=target.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
     # 7. Combat
@@ -3075,6 +3157,16 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.lands.remove(target); opponent.add_to_grave(target.card)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland → destroys {target.card.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {target.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=target.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
     # ── 8. Combat ──
@@ -3286,6 +3378,16 @@ def _strategy_boros(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.lands.remove(target); opponent.add_to_grave(target.card)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland → destroys {target.card.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {target.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=target.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
     # Karakas — bounce BUG's legendary creatures
@@ -3622,6 +3724,16 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.lands.remove(target); opponent.add_to_grave(target.card)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland → destroys {target.card.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {target.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=target.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
     # Combat — Eldrazi attacks aggressively
@@ -3997,6 +4109,16 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.lands.remove(wt); opponent.add_to_grave(wt.card)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland [ACTIVATED-uncounterable] → {wt.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {wt.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=wt.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
     # UWx selective combat: only attack with creatures that can deal unblocked damage
     # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
@@ -4904,6 +5026,16 @@ def _strategy_dimir(player, opponent, gs, total_mana, log_fn, log_entries):
             opponent.lands.remove(wt); opponent.add_to_grave(wt.card)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland [ACTIVATED-uncounterable] → {wt.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {wt.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=wt.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
     # UWx selective combat: only attack with creatures that can deal unblocked damage
     # or that trade favourably. Hold Riddler back until it's larger than BUG blockers.
@@ -5037,6 +5169,16 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
             opponent.lands.remove(wt); opponent.add_to_grave(wt.card)
             opponent.revolt_this_turn = True
             log_fn(f"Wasteland [ACTIVATED-uncounterable] → {wt.name}")
+            gs.strat_log.log(DisruptionDecision(
+                turn=gs.turn,
+                deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                phase=None,
+                reason=f'wasteland destroys {wt.card.tag or "nonbasic"}',
+                candidates=('wasteland', 'pass'),
+                kind='land_destroy',
+                target_tag=wt.card.tag or 'nonbasic',
+                instrument_tag='wasteland',
+            ))
             update_goyf(gs)
 
     # UWx selective combat: only attack with creatures that can deal unblocked damage

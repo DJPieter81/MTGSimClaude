@@ -41,5 +41,5 @@
   },
   "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: A \u2014 Fast kill (T4) implies efficient mana sequencing\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 3 Execute decision(s); combo resolved on T4\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: B+ \u2014 Efficiently closed a favored matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=3 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T08:54:30.323963Z"
+  "graded_at": "2026-05-16T11:35:02.797119Z"
 }
