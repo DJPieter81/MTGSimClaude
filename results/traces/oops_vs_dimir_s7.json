@@ -172,6 +172,17 @@
       "reason": "mana=1, hand=4, threats_in_play=2"
     },
     {
+      "turn": 3,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
       "turn": 4,
       "deck": "oops",
       "phase": "disruption",
@@ -200,6 +211,17 @@
       "reason": "mana=3, hand=4, threats_in_play=2"
     },
     {
+      "turn": 4,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
       "turn": 5,
       "deck": "oops",
       "phase": "disruption",
@@ -226,6 +248,17 @@
         "pass"
       ],
       "reason": "mana=4, hand=4, threats_in_play=2"
+    },
+    {
+      "turn": 5,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 6,
@@ -325,6 +358,17 @@
       "reason": "mana=4, hand=5, threats_in_play=2"
     },
     {
+      "turn": 6,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
       "turn": 7,
       "deck": "oops",
       "phase": "disruption",
@@ -351,6 +395,17 @@
         "pass"
       ],
       "reason": "mana=5, hand=5, threats_in_play=2"
+    },
+    {
+      "turn": 7,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 8,
@@ -381,6 +436,17 @@
       "reason": "mana=5, hand=6, threats_in_play=2"
     },
     {
+      "turn": 8,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
       "turn": 9,
       "deck": "oops",
       "phase": "disruption",
@@ -407,6 +473,17 @@
         "pass"
       ],
       "reason": "mana=5, hand=7, threats_in_play=2"
+    },
+    {
+      "turn": 9,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 10,
@@ -437,6 +514,17 @@
       "reason": "mana=5, hand=6, threats_in_play=3"
     },
     {
+      "turn": 10,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
       "turn": 11,
       "deck": "oops",
       "phase": "disruption",
@@ -463,6 +551,17 @@
         "pass"
       ],
       "reason": "mana=6, hand=6, threats_in_play=3"
+    },
+    {
+      "turn": 11,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 12,
@@ -548,6 +647,39 @@
       "reason": "mana=6, hand=4, threats_in_play=3"
     },
     {
+      "turn": 12,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 12,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_bowm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold bowm back to block"
+    },
+    {
+      "turn": 12,
+      "deck": "oops",
+      "phase": "combat",
+      "chosen": "block_narco",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "narco chumps nether"
+    },
+    {
       "turn": 13,
       "deck": "oops",
       "phase": "disruption",
@@ -574,6 +706,17 @@
         "pass"
       ],
       "reason": "mana=7, hand=5, threats_in_play=3"
+    },
+    {
+      "turn": 13,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 14,
@@ -613,6 +756,17 @@
         "pass"
       ],
       "reason": "mana=6, hand=4, threats_in_play=3"
+    },
+    {
+      "turn": 14,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     }
   ],
   "full_log": [
@@ -1504,10 +1658,13 @@
     "T3 [oops] [phase:disruption] chose tried_combo:spact from [execute,tried_combo,pass] \u2014 played spact but combo did not fire this turn",
     "T3 [dimir] chose discard_spy_with_ts from [thoughtseize,pass] \u2014 TS strips spy from opponent",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=4, threats_in_play=2",
+    "T3 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T4 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.38",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=2",
+    "T4 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T5 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.37",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=4, threats_in_play=2",
+    "T5 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T6 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 ssg_exile \u2192 +1 mana",
     "T6 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 cantor_crack \u2192 +1 mana",
     "T6 [oops] [phase:disruption] chose mana_ramp_2 from [ritual,pass] \u2014 cabalrit \u2192 +2 mana",
@@ -1516,16 +1673,22 @@
     "T6 [oops] [phase:disruption] chose tried_combo:cantor from [execute,tried_combo,pass] \u2014 played cantor but combo did not fire this turn",
     "T6 [oops] [phase:disruption] chose tried_combo:ssg from [execute,tried_combo,pass] \u2014 played ssg but combo did not fire this turn",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=5, threats_in_play=2",
+    "T6 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T7 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.43",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=5, threats_in_play=2",
+    "T7 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T8 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.42",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=6, threats_in_play=2",
+    "T8 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T9 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.48",
     "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=7, threats_in_play=2",
+    "T9 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T10 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.40",
     "T10 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=6, threats_in_play=3",
+    "T10 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T11 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=True, informer=True, leyline=False, bhi_p_free_counter=0.46",
     "T11 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=6, threats_in_play=3",
+    "T11 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T12 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 petal_crack \u2192 +1 mana",
     "T12 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 esg_exile \u2192 +1 mana",
     "T12 [oops] [phase:disruption] chose mana_ramp_1 from [ritual,pass] \u2014 esg_exile \u2192 +1 mana",
@@ -1533,10 +1696,15 @@
     "T12 [dimir] chose remove_narco_with_push from [remove,pass] \u2014 push kills narco",
     "T12 [dimir] chose remove_narco_with_push from [remove,pass] \u2014 push kills narco",
     "T12 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=4, threats_in_play=3",
+    "T12 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
+    "T12 [dimir] [phase:combat] chose hold_bowm from [attack,hold] \u2014 hold bowm back to block",
+    "T12 [oops] [phase:combat] chose block_narco from [block,pass] \u2014 narco chumps nether",
     "T13 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=True, leyline=False, bhi_p_free_counter=0.31",
     "T13 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=7, hand=5, threats_in_play=3",
+    "T13 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T14 [oops] [phase:disruption] chose pass from [cast_spy,cast_informer,pass] \u2014 mana=0, spy=False, informer=True, leyline=False, bhi_p_free_counter=0.30",
     "T14 [dimir] chose discard_oracle_with_ts from [thoughtseize,pass] \u2014 TS strips oracle from opponent",
-    "T14 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=4, threats_in_play=3"
+    "T14 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=4, threats_in_play=3",
+    "T14 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block"
   ]
 }

@@ -144,6 +144,17 @@
     },
     {
       "turn": 4,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_thalia",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold thalia back to block"
+    },
+    {
+      "turn": 4,
       "deck": "storm",
       "phase": "combo",
       "chosen": "p=0.00",
@@ -184,6 +195,17 @@
         "recruiter"
       ],
       "reason": "mana=4, hand=['flickerwisp', 'vial', 'prelate', 'sfm']"
+    },
+    {
+      "turn": 5,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_thalia",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold thalia back to block"
     },
     {
       "turn": 5,
@@ -715,9 +737,11 @@
     "T3 [storm] [phase:combo] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T3 [storm] [phase:combo] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/8, rituals=0, safe=False, thalia=True, life=20",
     "T4 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['flickerwisp', 'phelia', 'vial', 'prelate']",
+    "T4 [dnt] [phase:combat] chose hold_thalia from [attack,hold] \u2014 hold thalia back to block",
     "T4 [storm] [phase:combo] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T4 [storm] [phase:combo] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=7/8, rituals=0, safe=False, thalia=True, life=18",
     "T5 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['flickerwisp', 'vial', 'prelate', 'sfm']",
+    "T5 [dnt] [phase:combat] chose hold_thalia from [attack,hold] \u2014 hold thalia back to block",
     "T5 [storm] [phase:desperate] chose p=0.00 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T5 [storm] [phase:desperate] chose pass from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=7/8, rituals=0, safe=False, thalia=True, life=16",
     "T6 [dnt] chose flickerwisp from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=5, hand=['flickerwisp', 'vial', 'prelate']",

@@ -10,21 +10,21 @@
   "deck2": "dnt",
   "grades": {
     "mulligan": "B",
-    "mana": "C",
-    "combat": "B",
-    "combo": "C",
-    "interaction": "C",
+    "mana": "B",
+    "combat": "B-",
+    "combo": "B",
+    "interaction": "C+",
     "meta": "C+",
-    "overall": "C+"
+    "overall": "B"
   },
   "justifications": {
     "mulligan": "Kept 7; lost \u2014 opening hand was possibly too greedy",
-    "mana": "Lost in 7 turns \u2014 possible mana sequencing issues (0 ramp tokens)",
-    "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
-    "combo": "No combo Execute decision logged \u2014 deck did not fire its plan",
-    "interaction": "0 hold + 0 defer; no protection token surfaced",
+    "mana": "Adequate mana utilization over 7 turns",
+    "combat": "Aggro plan logged 1 combat decision(s) but lost \u2014 opponent stabilized",
+    "combo": "Non-combo deck \u2014 domain not primary axis",
+    "interaction": "0 hold + 0 defer; interaction tokens fell short",
     "meta": "Lost \u2014 played actively but could not overcome matchup",
-    "overall": "Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
+    "overall": "Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=1"
   },
   "structural_counts": {
     "execute": 0,
@@ -35,12 +35,12 @@
     "removal": 0,
     "tried_combo": 0,
     "ramp": 0,
-    "combat": 0,
+    "combat": 1,
     "combo_phase": 0,
     "protect_phase": 0,
-    "total": 7
+    "total": 8
   },
-  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C \u2014 Lost in 7 turns \u2014 possible mana sequencing issues (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: C \u2014 0 hold + 0 defer; no protection token surfaced\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
+  "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: B \u2014 Adequate mana utilization over 7 turns\ncombat: B- \u2014 Aggro plan logged 1 combat decision(s) but lost \u2014 opponent stabilized\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 0 hold + 0 defer; interaction tokens fell short\nmeta: C+ \u2014 Lost \u2014 played actively but could not overcome matchup\noverall: B \u2014 Average across 6 domains \u2014 lost in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=1",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:07:40.251550Z"
+  "graded_at": "2026-05-16T12:32:48.134172Z"
 }

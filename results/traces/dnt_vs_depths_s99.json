@@ -100,6 +100,17 @@
     },
     {
       "turn": 3,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
+    },
+    {
+      "turn": 3,
       "deck": "depths",
       "phase": null,
       "chosen": "none",
@@ -207,6 +218,17 @@
       "reason": "combo:stage_copy (turns=1, mana=2)"
     },
     {
+      "turn": 5,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_flickerwisp",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "flickerwisp chumps marit"
+    },
+    {
       "turn": 6,
       "deck": "dnt",
       "phase": null,
@@ -222,6 +244,17 @@
         "recruiter"
       ],
       "reason": "mana=6, hand=['prelate', 'flickerwisp']"
+    },
+    {
+      "turn": 6,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_recruiter",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold recruiter back to block"
     },
     {
       "turn": 6,
@@ -243,6 +276,39 @@
         "none"
       ],
       "reason": "combo:stage_copy (turns=1, mana=2)"
+    },
+    {
+      "turn": 6,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_flickerwisp",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "flickerwisp chumps marit"
+    },
+    {
+      "turn": 6,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_sfm",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "sfm chumps knight"
+    },
+    {
+      "turn": 7,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_recruiter",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold recruiter back to block"
     },
     {
       "turn": 7,
@@ -742,14 +808,20 @@
     "T1 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T2 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=2, hand=['wl', 'sfm', 'port', 'port']",
     "T2 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
+    "T3 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block",
     "T3 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T4 [dnt] chose flickerwisp from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['wl', 'port', 'flickerwisp']",
     "T4 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable",
     "T4 [depths] chose combo:stage_copies_depths from [stage_copies_depths,pass] \u2014 depths + stage in play, 2 mana available \u2014 Marit Lage created",
     "T5 [dnt] chose recruiter from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=5, hand=['wl', 'recruiter']",
     "T5 [depths] chose combo:stage_copy from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 combo:stage_copy (turns=1, mana=2)",
+    "T5 [dnt] [phase:combat] chose block_flickerwisp from [block,pass] \u2014 flickerwisp chumps marit",
     "T6 [dnt] chose flickerwisp from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=6, hand=['prelate', 'flickerwisp']",
+    "T6 [dnt] [phase:combat] chose hold_recruiter from [attack,hold] \u2014 hold recruiter back to block",
     "T6 [depths] chose combo:stage_copy from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 combo:stage_copy (turns=1, mana=2)",
+    "T6 [dnt] [phase:combat] chose block_flickerwisp from [block,pass] \u2014 flickerwisp chumps marit",
+    "T6 [dnt] [phase:combat] chose block_sfm from [block,pass] \u2014 sfm chumps knight",
+    "T7 [dnt] [phase:combat] chose hold_recruiter from [attack,hold] \u2014 hold recruiter back to block",
     "T7 [depths] chose none from [stage_copy,crop_finds_stage,crop_finds_depths,reclaimer_finds_stage,reclaimer_finds_depths,scrying_finds_stage,scrying_finds_depths,gsz_to_reclaimer_to_stage,gsz_to_reclaimer_to_depths,hold,defer,none] \u2014 no assembly path satisfiable"
   ]
 }

@@ -110,6 +110,17 @@
         "pass"
       ],
       "reason": "played prospector but combo did not fire this turn"
+    },
+    {
+      "turn": 10,
+      "deck": "uwx",
+      "phase": "combat",
+      "chosen": "block_snap",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "snap blocks prospector"
     }
   ],
   "full_log": [
@@ -1119,6 +1130,7 @@
     "T3 [uwx] chose remove_lackey_with_stp from [remove,pass] \u2014 stp exiles lackey",
     "T4 [goblins] chose tried_combo:warchief from [execute,tried_combo,pass] \u2014 played warchief but combo did not fire this turn",
     "T4 [uwx] chose remove_warchief_with_stp from [remove,pass] \u2014 stp exiles warchief",
-    "T8 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn"
+    "T8 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn",
+    "T10 [uwx] [phase:combat] chose block_snap from [block,pass] \u2014 snap blocks prospector"
   ]
 }

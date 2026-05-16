@@ -8,7 +8,7 @@
 |--------|-----------|-------------------|--------------------|
 | mulligan | 41/41 = 100% | (all match) | (all match) |
 | mana | 37/41 = 90% | elves_vs_dnt_s2026: C | elves_vs_dnt_s2026: B |
-| combat | 31/41 = 76% | elves_vs_dnt_s2026: B | elves_vs_dnt_s2026: C |
+| combat | 30/41 = 73% | elves_vs_dnt_s2026: B | elves_vs_dnt_s2026: B- |
 | combo | 22/41 = 54% | depths_vs_burn_s42: B+ | depths_vs_burn_s42: A+ |
 | interaction | 32/41 = 78% | bug_vs_storm_s42: C+ | bug_vs_storm_s42: C |
 | meta | 28/41 = 68% | bug_vs_storm_s42: C+ | bug_vs_storm_s42: C |
@@ -28,11 +28,11 @@
 | doomsday_vs_ur_delver_s42 | B/B | C+/C+ | B/B | C/C+ * | C/C | C+/C * |
 | doomsday_vs_ur_delver_s7 | B/B | C+/C+ | B/B | D/D | C/C | C+/C * |
 | doomsday_vs_ur_delver_s99 | B/B | C+/C+ | B/B | D/D | C/C | C+/C * |
-| elves_vs_dnt_s2026 | B/B | C/B * | B/C * | C/B * | C/C+ * | C+/C+ |
+| elves_vs_dnt_s2026 | B/B | C/B * | B/B- * | C/B * | C/C+ * | C+/C+ |
 | elves_vs_dnt_s42 | B+/B+ | B+/B+ | B/B+ * | B+/B * | B/B | A/B+ * |
-| elves_vs_dnt_s7 | B/B | C/B * | B/C * | C/B * | C/C+ * | C+/C+ |
+| elves_vs_dnt_s7 | B/B | C/B * | B/B- * | C/B * | C/C+ * | C+/C+ |
 | elves_vs_dnt_s99 | B+/B+ | A/B+ * | B/B+ * | A+/B * | B/B | A/B+ * |
-| goblins_vs_uwx_s42 | B/B | B/B | C/C | B/B | C+/C+ | C/C+ * |
+| goblins_vs_uwx_s42 | B/B | B/B | C/B- * | B/B | C+/C+ | C/C+ * |
 | goblins_vs_uwx_s7 | B/B | B/B | C/C | B/B | C+/C+ | C/C+ * |
 | goblins_vs_uwx_s99 | B/B | B/B | C/B- * | B/B | C+/C+ | C/C+ * |
 | oops_vs_dimir_s42 | C+/C+ | C/C | B/B | C/C | C+/C * | C+/C+ |
@@ -66,8 +66,8 @@
 - structural rationale: Adequate mana utilization over 7 turns
 
 ### combat: elves_vs_dnt_s2026
-- heuristic = **B**, structural = **C**
-- structural rationale: Aggro deck without combat decisions — combat axis was inactive
+- heuristic = **B**, structural = **B-**
+- structural rationale: Aggro plan logged 1 combat decision(s) but lost — opponent stabilized
 
 ### combo: depths_vs_burn_s42
 - heuristic = **B+**, structural = **A+**

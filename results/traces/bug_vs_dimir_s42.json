@@ -260,6 +260,17 @@
       "reason": "mana=2, hand=3, threats_in_play=2"
     },
     {
+      "turn": 6,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "block_tamiyo",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "tamiyo blocks orc_army"
+    },
+    {
       "turn": 7,
       "deck": "dimir",
       "phase": null,
@@ -274,6 +285,17 @@
         "pass"
       ],
       "reason": "mana=3, hand=3, threats_in_play=1"
+    },
+    {
+      "turn": 7,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 7,
@@ -316,6 +338,28 @@
         "pass"
       ],
       "reason": "mana=2, hand=2, threats_in_play=2"
+    },
+    {
+      "turn": 8,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 8,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_bowm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold bowm back to block"
     },
     {
       "turn": 8,
@@ -372,6 +416,28 @@
     },
     {
       "turn": 9,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 9,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_bowm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold bowm back to block"
+    },
+    {
+      "turn": 9,
       "deck": "bug",
       "phase": null,
       "chosen": "entry",
@@ -400,6 +466,28 @@
         "pass"
       ],
       "reason": "mana=3, hand=0, threats_in_play=2"
+    },
+    {
+      "turn": 10,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 10,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_bowm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold bowm back to block"
     },
     {
       "turn": 10,
@@ -445,6 +533,28 @@
     },
     {
       "turn": 11,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 11,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_bowm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold bowm back to block"
+    },
+    {
+      "turn": 11,
       "deck": "bug",
       "phase": null,
       "chosen": "remove_bowm_with_push",
@@ -487,6 +597,17 @@
     },
     {
       "turn": 12,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 12,
       "deck": "bug",
       "phase": null,
       "chosen": "entry",
@@ -515,6 +636,17 @@
         "pass"
       ],
       "reason": "mana=4, hand=0, threats_in_play=1"
+    },
+    {
+      "turn": 13,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 13,
@@ -560,6 +692,17 @@
     },
     {
       "turn": 14,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 14,
       "deck": "bug",
       "phase": null,
       "chosen": "entry",
@@ -588,6 +731,17 @@
         "pass"
       ],
       "reason": "mana=5, hand=0, threats_in_play=1"
+    },
+    {
+      "turn": 15,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 15,
@@ -1523,29 +1677,43 @@
     "T5 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=3, threats_in_play=1",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=3, threats_in_play=0",
     "T6 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=3, threats_in_play=2",
+    "T6 [dimir] [phase:combat] chose block_tamiyo from [block,pass] \u2014 tamiyo blocks orc_army",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=3, threats_in_play=1",
+    "T7 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T7 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=3, threats_in_play=2",
     "T7 [dimir] chose counter_kaito_with_daze from [counter,let_resolve] \u2014 daze counters kaito (major threat)",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=2, threats_in_play=2",
+    "T8 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
+    "T8 [dimir] [phase:combat] chose hold_bowm from [attack,hold] \u2014 hold bowm back to block",
     "T8 [bug] chose discard_murk_with_ts from [thoughtseize,pass] \u2014 TS strips murk from opponent",
     "T8 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=2, threats_in_play=2",
     "T9 [dimir] chose remove_orc_army_with_push from [remove,pass] \u2014 push kills orc_army",
     "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=0, threats_in_play=2",
+    "T9 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
+    "T9 [dimir] [phase:combat] chose hold_bowm from [attack,hold] \u2014 hold bowm back to block",
     "T9 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=2, threats_in_play=1",
     "T10 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=0, threats_in_play=2",
+    "T10 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
+    "T10 [dimir] [phase:combat] chose hold_bowm from [attack,hold] \u2014 hold bowm back to block",
     "T10 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=2, threats_in_play=1",
     "T11 [dimir] chose discard_tamiyo_with_ts from [thoughtseize,pass] \u2014 TS strips tamiyo from opponent",
     "T11 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=0, threats_in_play=2",
+    "T11 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
+    "T11 [dimir] [phase:combat] chose hold_bowm from [attack,hold] \u2014 hold bowm back to block",
     "T11 [bug] chose remove_bowm_with_push from [remove,pass] \u2014 push kills bowm",
     "T11 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=1, threats_in_play=1",
     "T12 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=0, threats_in_play=1",
+    "T12 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T12 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=2, threats_in_play=1",
     "T13 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=0, threats_in_play=1",
+    "T13 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T13 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=3, threats_in_play=1",
     "T14 [dimir] chose discard_daze_with_ts from [thoughtseize,pass] \u2014 TS strips daze from opponent",
     "T14 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=0, threats_in_play=1",
+    "T14 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T14 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=3, threats_in_play=1",
     "T15 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=0, threats_in_play=1",
+    "T15 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T15 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=4, threats_in_play=1"
   ]
 }

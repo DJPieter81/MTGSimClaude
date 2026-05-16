@@ -90,6 +90,17 @@
     },
     {
       "turn": 2,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 2,
       "deck": "storm",
       "phase": "setup",
       "chosen": "p=0.40",
@@ -129,6 +140,17 @@
         "pass"
       ],
       "reason": "mana=3, hand=4, threats_in_play=1"
+    },
+    {
+      "turn": 3,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 3,
@@ -174,6 +196,17 @@
     },
     {
       "turn": 4,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 4,
       "deck": "storm",
       "phase": "combo",
       "chosen": "p=0.29",
@@ -213,6 +246,17 @@
         "pass"
       ],
       "reason": "mana=5, hand=3, threats_in_play=3"
+    },
+    {
+      "turn": 5,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     },
     {
       "turn": 5,
@@ -258,6 +302,17 @@
     },
     {
       "turn": 6,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 6,
       "deck": "storm",
       "phase": "desperate",
       "chosen": "p=0.28",
@@ -300,6 +355,17 @@
     },
     {
       "turn": 7,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 7,
       "deck": "storm",
       "phase": "desperate",
       "chosen": "p=0.27",
@@ -339,6 +405,17 @@
         "pass"
       ],
       "reason": "mana=6, hand=4, threats_in_play=3"
+    },
+    {
+      "turn": 8,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
     }
   ],
   "full_log": [
@@ -871,23 +948,30 @@
     "T1 [storm] [phase:setup] chose p=0.49 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T1 [storm] [phase:setup] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=5/9, rituals=4, safe=True, thalia=False, life=20",
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=5, threats_in_play=1",
+    "T2 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T2 [storm] [phase:setup] chose p=0.40 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T2 [storm] [phase:setup] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=5/9, rituals=4, safe=True, thalia=False, life=20",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=3, hand=4, threats_in_play=1",
+    "T3 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T3 [storm] [phase:combo] chose p=0.30 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T3 [storm] [phase:combo] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=6/9, rituals=5, safe=True, thalia=False, life=20",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=4, hand=3, threats_in_play=2",
+    "T4 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T4 [storm] [phase:combo] chose p=0.29 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=False",
     "T4 [storm] [phase:combo] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=7/8, rituals=5, safe=True, thalia=False, life=16",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=5, hand=3, threats_in_play=3",
+    "T5 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T5 [storm] [phase:desperate] chose p=0.28 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=True",
     "T5 [storm] [phase:desperate] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=7/8, rituals=6, safe=True, thalia=False, life=12",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=3, threats_in_play=3",
+    "T6 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T6 [storm] [phase:desperate] chose p=0.28 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=True",
     "T6 [storm] [phase:desperate] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=8/8, rituals=7, safe=True, thalia=False, life=8",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=7, hand=3, threats_in_play=3",
+    "T7 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T7 [storm] [phase:desperate] chose p=0.27 from [bhi_free_counter] \u2014 bhi_thinks_opp_has_free_counter=False scan_said=True",
     "T7 [storm] [phase:desperate] chose kill_C from [kill_A,kill_B,kill_C,kill_D,kill_E,kill_F,pass] \u2014 storm=8/8, rituals=7, safe=True, thalia=False, life=4",
-    "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=4, threats_in_play=3"
+    "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=6, hand=4, threats_in_play=3",
+    "T8 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block"
   ]
 }

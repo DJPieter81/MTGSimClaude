@@ -233,6 +233,17 @@
     {
       "turn": 6,
       "deck": "dimir",
+      "phase": "combat",
+      "chosen": "block_tamiyo",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "tamiyo blocks orc_army"
+    },
+    {
+      "turn": 6,
+      "deck": "dimir",
       "phase": null,
       "chosen": "entry",
       "candidates": [
@@ -812,6 +823,7 @@
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=5, threats_in_play=0",
     "T5 [bug] chose land_destroy_dual_with_wasteland from [wasteland,pass] \u2014 wasteland destroys dual",
     "T6 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=4, threats_in_play=4",
+    "T6 [dimir] [phase:combat] chose block_tamiyo from [block,pass] \u2014 tamiyo blocks orc_army",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=5, threats_in_play=0",
     "T7 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=1, hand=5, threats_in_play=3",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=6, threats_in_play=0",

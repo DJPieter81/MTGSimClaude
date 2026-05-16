@@ -117,6 +117,17 @@
     {
       "turn": 4,
       "deck": "dnt",
+      "phase": "combat",
+      "chosen": "block_thalia",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "thalia blocks llanowar"
+    },
+    {
+      "turn": 4,
+      "deck": "dnt",
       "phase": null,
       "chosen": "sfm",
       "candidates": [
@@ -178,6 +189,28 @@
         "recruiter"
       ],
       "reason": "mana=4, hand=['recruiter', 'skyclave', 'kaldra', 'thalia']"
+    },
+    {
+      "turn": 5,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
+    },
+    {
+      "turn": 5,
+      "deck": "elves",
+      "phase": "combat",
+      "chosen": "block_mystic",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "mystic chumps phelia"
     },
     {
       "turn": 6,
@@ -251,6 +284,17 @@
         "recruiter"
       ],
       "reason": "mana=3, hand=['recruiter', 'flickerwisp', 'sfm']"
+    },
+    {
+      "turn": 7,
+      "deck": "dnt",
+      "phase": "combat",
+      "chosen": "hold_sfm",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold sfm back to block"
     }
   ],
   "full_log": [
@@ -718,14 +762,18 @@
     "T3 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=3, creatures=1, hand=4",
     "T3 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'phelia', 'sfm', 'wl', 'thalia']",
     "T4 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=5, creatures=1, hand=4",
+    "T4 [dnt] [phase:combat] chose block_thalia from [block,pass] \u2014 thalia blocks llanowar",
     "T4 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['recruiter', 'phelia', 'sfm', 'skyclave']",
     "T4 [dnt] chose phelia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=2, hand=['recruiter', 'phelia', 'skyclave', 'kaldra']",
     "T5 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=4, creatures=1, hand=4",
     "T5 [dnt] chose thalia from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=4, hand=['recruiter', 'skyclave', 'kaldra', 'thalia']",
+    "T5 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block",
+    "T5 [elves] [phase:combat] chose block_mystic from [block,pass] \u2014 mystic chumps phelia",
     "T6 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=4, creatures=1, hand=3",
     "T6 [dnt] chose skyclave from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'skyclave', 'flickerwisp']",
     "T6 [dnt] chose remove_symbiote_with_skyclave from [remove,pass] \u2014 skyclave exiles symbiote",
     "T7 [elves] chose entry from [mana_elf,natural_order,craterhoof,glimpse,pass] \u2014 mana=4, creatures=0, hand=3",
-    "T7 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'flickerwisp', 'sfm']"
+    "T7 [dnt] chose sfm from [thalia,sfm,skyclave,phelia,flickerwisp,orchid,mom,recruiter] \u2014 mana=3, hand=['recruiter', 'flickerwisp', 'sfm']",
+    "T7 [dnt] [phase:combat] chose hold_sfm from [attack,hold] \u2014 hold sfm back to block"
   ]
 }

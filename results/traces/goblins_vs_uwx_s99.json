@@ -122,6 +122,28 @@
       "reason": "stp exiles matron"
     },
     {
+      "turn": 5,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_matron",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "matron blocks monk_token"
+    },
+    {
+      "turn": 5,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_expert",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "expert blocks monk_token"
+    },
+    {
       "turn": 6,
       "deck": "goblins",
       "phase": null,
@@ -180,6 +202,28 @@
       "reason": "played muxus but combo did not fire this turn"
     },
     {
+      "turn": 9,
+      "deck": "uwx",
+      "phase": "combat",
+      "chosen": "block_monk_token",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "monk_token chumps muxus"
+    },
+    {
+      "turn": 10,
+      "deck": "uwx",
+      "phase": "combat",
+      "chosen": "block_monk_token",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "monk_token chumps muxus"
+    },
+    {
       "turn": 10,
       "deck": "goblins",
       "phase": null,
@@ -214,6 +258,17 @@
       "reason": "played expert but combo did not fire this turn"
     },
     {
+      "turn": 12,
+      "deck": "uwx",
+      "phase": "combat",
+      "chosen": "block_monk_token",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "monk_token chumps muxus"
+    },
+    {
       "turn": 13,
       "deck": "goblins",
       "phase": "combat",
@@ -222,6 +277,17 @@
         "Goblin Lackey(cmc=1)"
       ],
       "reason": "lackey trigger cheats lackey"
+    },
+    {
+      "turn": 13,
+      "deck": "uwx",
+      "phase": "combat",
+      "chosen": "block_monk_token",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "monk_token chumps muxus"
     },
     {
       "turn": 13,
@@ -247,6 +313,39 @@
       "reason": "stp exiles muxus"
     },
     {
+      "turn": 13,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_lackey",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "lackey blocks monk_token"
+    },
+    {
+      "turn": 13,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_expert",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "expert blocks monk_token"
+    },
+    {
+      "turn": 14,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_lackey",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "lackey blocks snap"
+    },
+    {
       "turn": 15,
       "deck": "goblins",
       "phase": null,
@@ -257,6 +356,17 @@
         "pass"
       ],
       "reason": "played prospector but combo did not fire this turn"
+    },
+    {
+      "turn": 15,
+      "deck": "goblins",
+      "phase": "combat",
+      "chosen": "block_prospector",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "prospector blocks monk_token"
     }
   ],
   "full_log": [
@@ -1263,17 +1373,27 @@
     "T5 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
     "T5 [goblins] chose tried_combo:matron from [execute,tried_combo,pass] \u2014 played matron but combo did not fire this turn",
     "T5 [uwx] chose remove_matron_with_stp from [remove,pass] \u2014 stp exiles matron",
+    "T5 [goblins] [phase:combat] chose block_matron from [block,pass] \u2014 matron blocks monk_token",
+    "T5 [goblins] [phase:combat] chose block_expert from [block,pass] \u2014 expert blocks monk_token",
     "T6 [goblins] chose tried_combo:sling from [execute,tried_combo,pass] \u2014 played sling but combo did not fire this turn",
     "T6 [uwx] chose remove_sling_with_stp from [remove,pass] \u2014 stp exiles sling",
     "T8 [uwx] chose counter_lackey_with_fon from [counter,let_resolve] \u2014 fon counters lackey (major threat)",
     "T8 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
     "T8 [goblins] chose tried_combo:muxus from [execute,tried_combo,pass] \u2014 played muxus but combo did not fire this turn",
+    "T9 [uwx] [phase:combat] chose block_monk_token from [block,pass] \u2014 monk_token chumps muxus",
+    "T10 [uwx] [phase:combat] chose block_monk_token from [block,pass] \u2014 monk_token chumps muxus",
     "T10 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
     "T11 [goblins] [phase:combat] chose attack with 2 goblins from [Munitions Expert(cmc=2)] \u2014 lackey trigger cheats expert",
     "T11 [goblins] chose tried_combo:expert from [execute,tried_combo,pass] \u2014 played expert but combo did not fire this turn",
+    "T12 [uwx] [phase:combat] chose block_monk_token from [block,pass] \u2014 monk_token chumps muxus",
     "T13 [goblins] [phase:combat] chose attack with 3 goblins from [Goblin Lackey(cmc=1)] \u2014 lackey trigger cheats lackey",
+    "T13 [uwx] [phase:combat] chose block_monk_token from [block,pass] \u2014 monk_token chumps muxus",
     "T13 [goblins] chose tried_combo:lackey from [execute,tried_combo,pass] \u2014 played lackey but combo did not fire this turn",
     "T13 [uwx] chose remove_muxus_with_stp from [remove,pass] \u2014 stp exiles muxus",
-    "T15 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn"
+    "T13 [goblins] [phase:combat] chose block_lackey from [block,pass] \u2014 lackey blocks monk_token",
+    "T13 [goblins] [phase:combat] chose block_expert from [block,pass] \u2014 expert blocks monk_token",
+    "T14 [goblins] [phase:combat] chose block_lackey from [block,pass] \u2014 lackey blocks snap",
+    "T15 [goblins] chose tried_combo:prospector from [execute,tried_combo,pass] \u2014 played prospector but combo did not fire this turn",
+    "T15 [goblins] [phase:combat] chose block_prospector from [block,pass] \u2014 prospector blocks monk_token"
   ]
 }

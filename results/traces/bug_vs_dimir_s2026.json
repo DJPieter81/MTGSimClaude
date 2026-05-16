@@ -135,6 +135,17 @@
       "reason": "mana=2, hand=6, threats_in_play=1"
     },
     {
+      "turn": 3,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
       "turn": 4,
       "deck": "bug",
       "phase": null,
@@ -166,6 +177,28 @@
       "reason": "mana=1, hand=6, threats_in_play=2"
     },
     {
+      "turn": 4,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 4,
+      "deck": "bug",
+      "phase": "combat",
+      "chosen": "block_tamiyo",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "tamiyo chumps nether"
+    },
+    {
       "turn": 5,
       "deck": "bug",
       "phase": null,
@@ -195,6 +228,28 @@
         "pass"
       ],
       "reason": "mana=0, hand=6, threats_in_play=2"
+    },
+    {
+      "turn": 5,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 5,
+      "deck": "bug",
+      "phase": "combat",
+      "chosen": "block_tamiyo",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "tamiyo chumps nether"
     },
     {
       "turn": 6,
@@ -240,6 +295,17 @@
     },
     {
       "turn": 6,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
+      "turn": 6,
       "deck": "bug",
       "phase": null,
       "chosen": "land_destroy_dual_with_wasteland",
@@ -281,6 +347,17 @@
       "reason": "mana=1, hand=6, threats_in_play=1"
     },
     {
+      "turn": 7,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "hold_tamiyo",
+      "candidates": [
+        "attack",
+        "hold"
+      ],
+      "reason": "hold tamiyo back to block"
+    },
+    {
       "turn": 8,
       "deck": "bug",
       "phase": null,
@@ -294,6 +371,17 @@
         "pass"
       ],
       "reason": "mana=2, hand=3, threats_in_play=1"
+    },
+    {
+      "turn": 8,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "block_tamiyo",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "tamiyo chumps nether"
     },
     {
       "turn": 8,
@@ -340,6 +428,17 @@
     {
       "turn": 9,
       "deck": "dimir",
+      "phase": "combat",
+      "chosen": "block_bowm",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "bowm chumps nether"
+    },
+    {
+      "turn": 9,
+      "deck": "dimir",
       "phase": null,
       "chosen": "discard_fow_with_ts",
       "candidates": [
@@ -378,6 +477,17 @@
         "pass"
       ],
       "reason": "mana=2, hand=2, threats_in_play=1"
+    },
+    {
+      "turn": 10,
+      "deck": "dimir",
+      "phase": "combat",
+      "chosen": "block_army",
+      "candidates": [
+        "block",
+        "pass"
+      ],
+      "reason": "army chumps nether"
     },
     {
       "turn": 10,
@@ -1165,23 +1275,33 @@
     "T2 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=7, threats_in_play=0",
     "T3 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=3, threats_in_play=1",
     "T3 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=6, threats_in_play=1",
+    "T3 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T4 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=3, threats_in_play=1",
     "T4 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=6, threats_in_play=2",
+    "T4 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
+    "T4 [bug] [phase:combat] chose block_tamiyo from [block,pass] \u2014 tamiyo chumps nether",
     "T5 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=3, threats_in_play=1",
     "T5 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=0, hand=6, threats_in_play=2",
+    "T5 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
+    "T5 [bug] [phase:combat] chose block_tamiyo from [block,pass] \u2014 tamiyo chumps nether",
     "T6 [bug] chose remove_nether_with_push from [remove,pass] \u2014 push kills nether",
     "T6 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=2, threats_in_play=1",
     "T6 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=6, threats_in_play=1",
+    "T6 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T6 [bug] chose land_destroy_dual_with_wasteland from [wasteland,pass] \u2014 wasteland destroys dual",
     "T7 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=3, hand=2, threats_in_play=1",
     "T7 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=6, threats_in_play=1",
+    "T7 [dimir] [phase:combat] chose hold_tamiyo from [attack,hold] \u2014 hold tamiyo back to block",
     "T8 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=3, threats_in_play=1",
+    "T8 [dimir] [phase:combat] chose block_tamiyo from [block,pass] \u2014 tamiyo chumps nether",
     "T8 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=6, threats_in_play=0",
     "T8 [bug] chose counter_bowm_with_fon from [counter,let_resolve] \u2014 fon counters bowm (major threat)",
     "T9 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=2, threats_in_play=1",
+    "T9 [dimir] [phase:combat] chose block_bowm from [block,pass] \u2014 bowm chumps nether",
     "T9 [dimir] chose discard_fow_with_ts from [thoughtseize,pass] \u2014 TS strips fow from opponent",
     "T9 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=1, hand=4, threats_in_play=1",
     "T10 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=2, threats_in_play=1",
+    "T10 [dimir] [phase:combat] chose block_army from [block,pass] \u2014 army chumps nether",
     "T10 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=5, threats_in_play=0",
     "T11 [bug] chose entry from [cantrip,discard,removal,threat,waste,pass] \u2014 mana=2, hand=3, threats_in_play=1",
     "T11 [dimir] chose entry from [thoughtseize,cantrip,removal,threat,wasteland,counter,pass] \u2014 mana=2, hand=6, threats_in_play=0",
