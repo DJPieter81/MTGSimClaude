@@ -184,14 +184,13 @@ def main():
 
     # Engine tests still green?
     print(f"\n{'='*56}")
-    print("  Engine regression (103 tests)")
+    print("  Engine regression (pytest -m fast)")
     print(f"{'='*56}")
     import subprocess
-    r = subprocess.run(['python','-c',
-        'exec(open("sim.py").read().split("if __name__")[0]); run_rules_tests()'],
-        capture_output=True, text=True, cwd='/home/claude/mtg_sim', timeout=60)
-    ok = '103 passed' in r.stdout or 'All rules verified' in r.stdout
-    print(f"  {'✓' if ok else '✗'} 103 rules tests: {'PASS' if ok else 'FAIL'}")
+    r = subprocess.run(['python3', '-m', 'pytest', '-m', 'fast', '-q'],
+        capture_output=True, text=True, cwd='/home/claude/mtg_sim', timeout=120)
+    ok = r.returncode == 0 and 'passed' in r.stdout
+    print(f"  {'✓' if ok else '✗'} pytest fast suite: {'PASS' if ok else 'FAIL'}")
     if not ok: print(r.stdout[-300:])
     results['engine'] = {'status':'PASS' if ok else 'FAIL'}
 

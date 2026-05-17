@@ -45,15 +45,14 @@ def main():
     
     # Module 4: Existing engine still healthy
     print(f"\n{'='*50}")
-    print("  Existing engine (103 tests)")
+    print("  Existing engine (pytest -m fast)")
     print(f"{'='*50}")
     t0 = time.time()
     import subprocess
-    r = subprocess.run(['python', '-c',
-        'exec(open("sim.py").read().split("if __name__")[0]); run_rules_tests()'],
-        capture_output=True, text=True, cwd='/home/claude/mtg_sim', timeout=60)
-    ok = '103 passed' in r.stdout or 'All rules verified' in r.stdout
-    print(f"  {'✓' if ok else '✗'} 103 rules tests: {'PASS' if ok else 'FAIL'}")
+    r = subprocess.run(['python3', '-m', 'pytest', '-m', 'fast', '-q'],
+        capture_output=True, text=True, cwd='/home/claude/mtg_sim', timeout=120)
+    ok = r.returncode == 0 and 'passed' in r.stdout
+    print(f"  {'✓' if ok else '✗'} pytest fast suite: {'PASS' if ok else 'FAIL'}")
     RESULTS['existing_engine'] = {'status': 'PASS' if ok else 'FAIL', 
                                    'time': round(time.time()-t0,1)}
 

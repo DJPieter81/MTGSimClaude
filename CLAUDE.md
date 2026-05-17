@@ -32,8 +32,8 @@ If three consecutive commits target the same outlier deck without moving the win
 
 ```bash
 # Verify installation
-python3 -c "from sim import run_rules_tests; run_rules_tests()"
-# Should print: 282+ passed, 0 failed
+python3 -m pytest -m fast
+# Should print: 495+ passed, 2 skipped in ~3s
 
 # Run a game
 python3 -c "from sim import run_game; r = run_game('ur_delver', 'dimir'); print(r.winner, r.win_reason)"
@@ -100,11 +100,12 @@ matrix = run_meta_matrix(decks=['bug','storm'], parallel=False)  # debug
 
 ### Other functions
 ```python
-from sim import run_any_match, run_any_bo3, run_rules_tests
+from sim import run_any_match, run_any_bo3
 
 run_any_match('ur_delver', 'dimir', verbose=True)   # any deck Bo3
 run_any_bo3('storm', 'bug', n_matches=100)           # Bo3 batch
-run_rules_tests()                                    # 282+ unit tests (rule + structural + grader-prototype)
+# Rules suite: `pytest -m fast` (495+ tests, ~3s under xdist).
+# Tests live in tests/rules/ — one mechanic per file, one assert per `def test_…`.
 ```
 
 ## Combo-engine + grading subsystems
