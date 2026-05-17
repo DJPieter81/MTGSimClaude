@@ -54,11 +54,14 @@ def make_wst_deck():
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
     d += [fetch_land('Marsh Flats', ['Swamp','Plains'])] * 4
     d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 3
-    d += [basic_land('Island', 'U', 'Island')] * 3
-    d += [basic_land('Plains', 'W', 'Plains')] * 3
+    d += [basic_land('Island', 'U', 'Island')] * 2
+    d += [basic_land('Plains', 'W', 'Plains')] * 2
     d += [dual_land('Plateau', ['R','W'], ['Mountain','Plains'])] * 1
     d += [utility_land('Karakas', ['W'], 'karakas')] * 1
-    d += [utility_land('Wasteland', ['C'], 'wl')] * 1
+    # Wasteland bumped 1 → 3 to disrupt nonbasic-heavy manabases
+    # (Cloudpost, Lands, Dimir Bayou/Underground Sea). Real Legacy WST
+    # Control lists run 3-4. See docs/audits/wan_shi_tong_vs_cloudpost.md.
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 3
     d += [utility_land('Meticulous Archive', ['W','U'], 'archive')] * 1
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 1
     d += [utility_land('Mystic Sanctuary', ['U'], 'sanctuary')] * 1

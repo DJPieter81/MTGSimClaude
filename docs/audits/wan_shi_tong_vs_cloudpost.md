@@ -4,7 +4,13 @@ date: 2026-05-17
 observed_wr: 0.12
 target_wr: 0.45
 gap_pp: -33
-status: open
+status: partial
+follow_up: 2026-05-17 — Wasteland bumped 1 → 3 in WST decklist (cut
+  1 Island + 1 Plains; 23 lands total unchanged). Sweep n=200: 12% →
+  16% (+4pp on this matchup). Bonus: vs lands 61%, vs depths 49%
+  (Wastelands disrupt land-combo engines broadly). Strategy gaps
+  remain open: no Wasteland activation block in `_strategy_wst`, no
+  counter-mana reservation against ramp payoffs, no Stock Up counter.
 ---
 
 # wan_shi_tong vs cloudpost — 12% WR
