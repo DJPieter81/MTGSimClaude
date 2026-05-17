@@ -275,6 +275,77 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
                    on_resolve=_resolve_sanc)
 
 
+    # ── 1g. Karn, the Great Creator (SB) — 4 generic, anti-artifact ──
+    # Lands in artifacts list to activate gs.p1_karn_active / gs.p2_karn_-
+    # active properties (game.py:286).  Opp's Mox/Petal/LED/Ring become
+    # dead.  Drain mana fuels the all-generic cost.
+    karn = player.find_tag('karn')
+    karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
+    if karn and not karn_on_board and can_cast(karn):
+        def _resolve_karn(c):
+            player.put_artifact_in_play(c)
+            log_fn("★ Karn, the Great Creator — opp's artifact activations locked",
+                   True)
+        cast_spell(player, opponent, gs, karn, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_karn)
+
+    # ── 1h. Ugin, Eye of the Storms (SB) — 6 generic, exile colored ──
+    # Cloudpost pattern (engine.py:341-355): exile all colored creatures
+    # opp controls + flag ongoing engine.  Drain a 4-cmc spell → free
+    # Ugin with 2 lands.
+    ugin = player.find_tag('ugin')
+    if ugin and can_cast(ugin):
+        colored = [cc for cc in opponent.creatures if cc.card.colors]
+        if colored:
+            def _resolve_ugin(c, _col=list(colored)):
+                player.add_to_grave(c)
+                for cc in _col:
+                    if cc in opponent.creatures:
+                        opponent.remove_creature(cc)
+                        opponent.exile.append(cc.card)
+                log_fn(f"★ Ugin — exiles {len(_col)} colored creatures + ongoing engine",
+                       True)
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, ugin, mana_ref, log_fn, log_entries,
+                       on_resolve=_resolve_ugin)
+
+    # ── 1i. Karn Liberated (SB) — 7 generic, PW removal + hand attack ──
+    # Drain a 5-6 cmc spell → free Karn Lib with 1-2 lands.  -3 ability
+    # exiles any permanent — including planeswalkers (Narset, Jace TMS)
+    # that our STP/wraths can't touch.
+    karn_lib = player.find_tag('karn_lib')
+    karn_lib_on_board = any(p.card.tag == 'karn_lib' for p in player.planeswalkers)
+    if karn_lib and not karn_lib_on_board and can_cast(karn_lib):
+        def _resolve_karn_lib(c):
+            player.put_planeswalker_in_play(c)
+            # ETB: -3 to exile a permanent.  Priority: planeswalker >
+            # biggest creature > biggest land > artifact.
+            target = None
+            target_zone = None
+            if opponent.planeswalkers:
+                target = max(opponent.planeswalkers,
+                              key=lambda pp: pp.card.cmc)
+                target_zone = 'pw'
+            elif opponent.creatures:
+                target = max(opponent.creatures, key=lambda cc: cc.power)
+                target_zone = 'creature'
+            if target:
+                if target_zone == 'pw':
+                    opponent.planeswalkers.remove(target)
+                    opponent.exile.append(target.card)
+                    log_fn(f"★ Karn Liberated — exiles planeswalker {target.card.name}",
+                           True)
+                else:
+                    opponent.remove_creature(target, to_exile=True)
+                    log_fn(f"★ Karn Liberated — exiles creature {target.card.name}",
+                           True)
+                update_goyf(gs)
+            else:
+                log_fn("★ Karn Liberated — no exile target, ticks +4 loyalty",
+                       True)
+        cast_spell(player, opponent, gs, karn_lib, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_karn_lib)
+
     # ── 2. Jace, the Mind Sculptor — primary drain payoff at 4 mana ──
     jace = player.find_tag('jace')
     jace_on_board = any(p.card.tag == 'jace' for p in player.planeswalkers)
