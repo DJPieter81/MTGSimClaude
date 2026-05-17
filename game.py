@@ -56,6 +56,7 @@ class PlayerState:
     opp_cast_blue_black_this_turn: bool = False  # for Veil of Summer conditional draw
     leyline_exile: bool = False  # if True, cards go to exile instead of GY (Leyline of the Void)
     suspended: List = field(default_factory=list)  # [(Card, turns_remaining)] for suspend mechanic
+    companion_zone: Optional[Card] = None  # Card waiting outside the 60-card deck (Bo1 companion mechanic, CR 702.139); placed at game start when DECK_META declares 'companion'. None for decks without a companion.
 
     @property
     def all_permanents(self):

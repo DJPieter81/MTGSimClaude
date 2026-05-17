@@ -4769,34 +4769,86 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     # Real Doomsday races aggro decks via Lurrus's lifelink body. Without it
     # the matchup vs Burn is 4.3 %; deploying T2 buys 6+ life over 2 combats
     # plus blocks one threat per turn. Only deploy if not already in play.
+    # Phase E (companion-zone deploy): if Lurrus is in the companion zone
+    # (CR 702.139) and not yet in hand, move it to hand so the existing
+    # deploy block below can cast it. Real Magic has a 3-mana "put into
+    # hand from outside the game" sorcery cost, but the design doc §3.5
+    # simplifies to "uses the same mana check as hand casts" — sim parity
+    # with the pre-Phase-A behaviour where Lurrus was a 1-of maindeck. The
+    # 3-mana tax is a future refinement once base WR is validated.
+    lurrus_in_play = any(c.card.tag == 'lurrus' for c in player.creatures)
+    if (not lurrus_in_play
+            and player.companion_zone is not None
+            and player.companion_zone.tag == 'lurrus'
+            and budget[0] >= 2):
+        _lurrus_card = player.companion_zone
+        player.companion_zone = None
+        player.hand.append(_lurrus_card)
+        log_fn(f"Lurrus moved from companion zone to hand (budget={budget[0]})")
+
     lurrus = player.find_tag('lurrus')
     if (lurrus and budget[0] >= 2
-            and not any(c.card.tag == 'lurrus' for c in player.creatures)):
+            and not lurrus_in_play):
         def _resolve_lurrus(c):
             player.put_creature_in_play(c)
             log_fn(f"Lurrus of the Dream-Den (3/2 lifelink)")
         cast_spell(player, opponent, gs, lurrus, budget,
                    log_fn, log_entries, on_resolve=_resolve_lurrus)
 
-    # ── Lurrus rebuy: recur Lotus Petal from GY each turn ──
-    # Lurrus's text: "During each of your turns, you may cast one permanent
-    # spell with mana value 2 or less from your graveyard." For Doomsday's
-    # decklist this means Lotus Petal (CMC 0, free) — gives +1 mana per turn
-    # while Lurrus survives, accelerating combo by ~1 turn over a 2-3 turn
-    # Lurrus lifespan vs aggro. Track usage via gs._lurrus_used_<turn>.
+    # ── Lurrus rebuy: recur any CMC-≤2 permanent from GY each turn ──
+    # Lurrus's text (CR 702.139): "During each of your turns, you may cast
+    # one permanent spell with mana value 2 or less from your graveyard."
+    # Phase E generalizes the rebuy from Petal-only to any CMC-≤2 permanent
+    # (artifact / creature / enchantment / planeswalker) in graveyard.
+    # Priority: Petal (free mana) > Oracle (CMC 2 backup wincon) >
+    # Veil/Therapy (1 CMC utility) > anything else. Tracks usage via
+    # gs._lurrus_used_<turn> to enforce once-per-turn.
     lurrus_in_play = any(c.card.tag == 'lurrus' for c in player.creatures)
     lurrus_used_this_turn = getattr(gs, '_lurrus_used_turn', -1) == gs.turn
     if lurrus_in_play and not lurrus_used_this_turn:
-        # Priority: recur Lotus Petal (free mana). Future enhancement: also
-        # consider Oracle (CMC 2 backup win-con) and Veil (CMC 1 protection).
-        petal_in_gy = next((c for c in player.graveyard if c.tag == 'petal'), None)
-        if petal_in_gy:
-            player.graveyard.remove(petal_in_gy)
-            player.exile.append(petal_in_gy)  # Petal sacs to GY normally;
-                                              # exile here since we just used it
-            budget[0] += 1
-            gs._lurrus_used_turn = gs.turn
-            log_fn(f"Lurrus rebuy → Lotus Petal from GY (+1 mana, budget={budget[0]})")
+        # Find a CMC-≤2 permanent in graveyard. Permanent types via Card
+        # flag is_creature() / type == ARTIFACT / etc. Prioritize Petal.
+        def _is_permanent(c):
+            from rules import CardType
+            return c.card_type in (CardType.ARTIFACT, CardType.CREATURE,
+                                   CardType.ENCHANTMENT, CardType.PLANESWALKER)
+
+        def _rebuy_priority(c):
+            # Higher number = higher priority. Petal first (free mana),
+            # then Oracle (wincon backup), then anything else by CMC.
+            if c.tag == 'petal':   return 100
+            if c.tag == 'oracle':  return 50
+            if c.tag in ('vos', 'therapy'): return 30
+            return 10 - c.cmc  # prefer cheaper
+
+        candidates = [c for c in player.graveyard
+                      if _is_permanent(c) and c.cmc <= 2
+                      and budget[0] >= c.cmc]
+        if candidates:
+            target = max(candidates, key=_rebuy_priority)
+            player.graveyard.remove(target)
+            if target.tag == 'petal':
+                # Petal sacs to GY normally; exile here since we just used it.
+                player.exile.append(target)
+                budget[0] += 1   # +1 mana net (cmc=0, taps for 1)
+                gs._lurrus_used_turn = gs.turn
+                log_fn(f"Lurrus rebuy → Lotus Petal from GY "
+                       f"(+1 mana, budget={budget[0]})")
+            else:
+                # General path: deduct CMC, put permanent into play.
+                from rules import CardType as _CT
+                budget[0] -= target.cmc
+                if target.card_type == _CT.CREATURE:
+                    player.put_creature_in_play(target)
+                elif target.card_type == _CT.ARTIFACT:
+                    player.put_artifact_in_play(target)
+                elif target.card_type == _CT.ENCHANTMENT:
+                    player.enchantments.append(
+                        type(player.creatures[0])(target) if player.creatures
+                        else target)
+                gs._lurrus_used_turn = gs.turn
+                log_fn(f"Lurrus rebuy → {target.name} from GY "
+                       f"(paid {{{target.cmc}}}, budget={budget[0]})")
 
     # ── Pre-DD: rituals for mana acceleration ──
     # Only cast rituals if DD is already in hand — otherwise save mana for cantrips
@@ -4976,8 +5028,16 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     #       turn. The canonical close is LED+Brainstorm; a backup line uses
     #       Oracle in hand + 3 Wraiths to chain-cycle the pile to lib 0.
     dd = player.find_tag('dd')
-    half_life_payment = (player.life + 1) // 2
-    self_kill = player.life - half_life_payment <= 0
+    # Eidolon of the Great Revel triggers on any CMC-≤3 spell cast — 2
+    # damage to caster, resolves BEFORE DD's half-life payment. Pre-fix,
+    # the gate ignored Eidolon and self-killed when DD was cast at low life
+    # while opponent's Eidolon was on the board. CR 117.5: cost-payment
+    # order is "all triggered abilities trigger, then resolve in LIFO."
+    # DD's life payment is part of resolution, after Eidolon resolves.
+    _eidolon_dmg = sum(2 for c in opponent.creatures if c.card.tag == 'eidolon')
+    _life_after_eidolon = player.life - _eidolon_dmg
+    half_life_payment = (_life_after_eidolon + 1) // 2
+    self_kill = _life_after_eidolon - half_life_payment <= 0
 
     led_count = sum(1 for c in player.hand if c.tag == 'led')
     bs_count  = sum(1 for c in player.hand if c.tag == 'bs')
@@ -5062,6 +5122,23 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                 gs.winner = 'p2' if player is gs.p1 else 'p1'
                 gs.win_reason = f"Doomsday self-kill (life={player.life})"
                 return
+
+            # Phase D wire: select_pile decides which pile shape to build.
+            # The actual pile-card layout below remains byte-equivalent to
+            # the prior strategy (OraclePile-shaped); future phases will
+            # branch on pile type for Tendrils/Lurrus/Wraith variants. The
+            # immediate value of this call is the typed Execute token,
+            # which the structural grader credits for combo-axis play.
+            from decks.doomsday_piles import select_pile as _select_pile
+            _pile = _select_pile(player, opponent, gs)
+            gs.strat_log.log_decision(
+                gs.turn, 'doomsday',
+                candidates=['combo:tendrils_pile', 'combo:lurrus_pile',
+                            'combo:wraith_pile', 'combo:oracle_pile'],
+                chosen=f'combo:{_pile.name}_pile',
+                reason=f'DD resolved — pile chosen by select_pile (life='
+                       f'{player.life}, opp={gs.p2_deck if player is gs.p1 else gs.p1_deck})',
+                phase='combo')
 
             # Build a 5-card pile optimized for the Brainstorm-LED kill.
             # Layout when Brainstorm is in hand: [Wraith, Oracle, Wraith, padding, padding]

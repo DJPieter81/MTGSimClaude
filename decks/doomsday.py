@@ -41,4 +41,8 @@ DECK_META = {
     'categories': {'combo', 'gy_combo'},
     'interaction': {'speed': 3, 'resilience': 2, 'uses_graveyard': True, 'uses_veil': False, 'soft_to_wasteland': False, 'creature_based': False},
     'meta_share': 0.06,
+    # Bo1 companion (CR 702.139) — Lurrus of the Dream-Den. Placed in
+    # `player.companion_zone` at game start; not part of the 60-card deck.
+    # See docs/design/2026-05-16_doomsday_cabal_therapy_piles.md Phase A.
+    'companion':  'lurrus',
 }

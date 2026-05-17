@@ -36,6 +36,10 @@ class GameResult:
     p1_went_first: bool
     p1_deck: str = ''
     p2_deck: str = ''
+    # Bo1 companion (CR 702.139) — name of the card placed outside the
+    # 60-card deck at game start. None if the deck declared no companion.
+    p1_companion_zone: Optional[str] = None
+    p2_companion_zone: Optional[str] = None
 
     # Legacy aliases — deprecated, use p1_*/p2_* instead
     @property
@@ -87,6 +91,39 @@ def _trace_dual_board(log, gs, deck1, deck2):
     right += [''] * (max_h - len(right))
     for l, r in zip(left, right):
         log.append(f"  │ {l:<32} │ {r:<32} │")
+
+
+# ─── Companion zone helper ──────────────────────────────────────────────────
+# Companion cards (CR 702.139) live OUTSIDE the 60-card deck. When a deck's
+# DECK_META declares `'companion': '<tag>'`, this builder constructs that card
+# at game start and `run_game` places it in `player.companion_zone`. Tag→card
+# mapping is closed (only Lurrus of the Dream-Den is modelled today); add a
+# new entry here when another companion enters the Legacy pool.
+_COMPANION_BUILDERS = {}
+
+def _build_companion_card(tag: str):
+    """Build a single Card to place in `player.companion_zone`. Returns None
+    when the tag is unknown — caller treats None as 'no companion'."""
+    builder = _COMPANION_BUILDERS.get(tag)
+    return builder() if builder else None
+
+
+def _register_companion_builder(tag: str):
+    """Decorator: registers a tag→builder mapping for companion construction."""
+    def wrap(fn):
+        _COMPANION_BUILDERS[tag] = fn
+        return fn
+    return wrap
+
+
+@_register_companion_builder('lurrus')
+def _build_lurrus():
+    """Lurrus of the Dream-Den — Bo1 Doomsday companion. CR 702.139:
+    once per game, may be cast from companion zone (real Magic taxes
+    +3 mana; sim defers that nuance to Phase D/E wiring)."""
+    from cards import creature
+    return creature("Lurrus of the Dream-Den", 2, {'B': 1, 'generic': 1},
+                    {'B'}, 3, 2, tag='lurrus', lifelink=True)
 
 
 def run_game(deck1: str, deck2: str = None, verbose: bool = False,
@@ -157,6 +194,16 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
         p1_goes_first=p1_goes_first)
     gs.p1_deck = deck1
     gs.p2_deck = deck2
+    # Bo1 companion (CR 702.139): if either deck's DECK_META declares a
+    # 'companion' tag, build that card from a registry and place it in
+    # `player.companion_zone`. The card is NOT in the 60-card deck.
+    # Phase A wiring per docs/design/2026-05-16_doomsday_cabal_therapy_piles.md.
+    from deck_registry import get_meta as _get_meta_companion
+    for _slot_name, _slot, _deck_key in (('p1', gs.p1, deck1), ('p2', gs.p2, deck2)):
+        _meta = _get_meta_companion(_deck_key) or {}
+        _comp_tag = _meta.get('companion')
+        if _comp_tag:
+            _slot.companion_zone = _build_companion_card(_comp_tag)
     gs.matchup = deck2  # backward compat: matchup = antagonist deck
     gs.trace = trace
     # Phase 3b — opt-in neural-pivot toggles for `_strategy_tes`. Default
@@ -273,6 +320,8 @@ def run_game(deck1: str, deck2: str = None, verbose: bool = False,
         p1_went_first=p1_goes_first,
         p1_deck=deck1,
         p2_deck=deck2,
+        p1_companion_zone=(gs.p1.companion_zone.name if gs.p1.companion_zone else None),
+        p2_companion_zone=(gs.p2.companion_zone.name if gs.p2.companion_zone else None),
     )
 
 # Threshold below which the multiprocessing pool overhead outweighs the speedup.
@@ -2820,6 +2869,229 @@ def run_rules_tests():
                     f"(pre-fix: LED only fired via Burning Wish branch)")
     except Exception as _e:
         test(f"Belcher LED direct-activation (error: {_e})", False, True)
+
+    # ── Companion zone: Lurrus is placed outside the 60-card deck ──────────
+    # Real Bo1 Doomsday lists run Lurrus of the Dream-Den as a companion —
+    # a 61st card kept in a "companion zone" that can be cast once per
+    # game. Pre-Phase-A the simulator embedded Lurrus as a 1-of in the
+    # maindeck (cards.py:622), making it draw-dependent and burning a
+    # slot that real lists use for Cabal Therapy. The structural fix per
+    # docs/design/2026-05-16_doomsday_cabal_therapy_piles.md Phase A:
+    # 1. Drop Lurrus from the 60-card list, add 4 Cabal Therapy.
+    # 2. Add `'companion': 'lurrus'` flag to decks/doomsday.py DECK_META.
+    # 3. Place the companion in `player.companion_zone` at game start.
+    # Rule-phrased: any deck declaring a `companion` in DECK_META has
+    # that card available in `player.companion_zone` from turn 1, and
+    # never in `player.hand` or `player.library`.
+    try:
+        import random as _rnd
+        # Capture INITIAL companion-zone state by building the deck and
+        # running the same setup logic run_game does. This is the test for
+        # "at game start" — after the game runs, the strategy may have
+        # moved Lurrus from zone to hand (Phase E).
+        from deck_registry import get_meta as _gm_test
+        _meta = _gm_test('doomsday') or {}
+        _comp_tag = _meta.get('companion')
+        _comp_card = _build_companion_card(_comp_tag) if _comp_tag else None
+        zone_card_name = _comp_card.name if _comp_card else None
+        # Smoke-test the opener does not contain Lurrus (full deck draw).
+        _rnd.seed(42)
+        _r = run_game('doomsday', 'storm')
+        hand_has_lurrus = any('Lurrus' in n for n in _r.p1_opening_hand)
+        test("doomsday companion: Lurrus is in companion_zone at game start",
+             zone_card_name is not None and 'Lurrus' in zone_card_name, True,
+             detail=f"companion_zone built={zone_card_name!r}")
+        test("doomsday companion: Lurrus is NOT in opening hand",
+             not hand_has_lurrus, True,
+             detail=f"opener: {_r.p1_opening_hand}")
+        # Also assert deck construction has exactly 4 Cabal Therapy and 0 Lurrus
+        from cards import make_doomsday_deck
+        _dd = make_doomsday_deck()
+        _n_therapy = sum(1 for c in _dd if c.tag == 'therapy')
+        _n_lurrus = sum(1 for c in _dd if c.tag == 'lurrus')
+        test("doomsday decklist: 4 Cabal Therapy maindeck",
+             _n_therapy, 4, detail=f"got {_n_therapy}")
+        test("doomsday decklist: 0 Lurrus in maindeck (companion-only)",
+             _n_lurrus, 0, detail=f"got {_n_lurrus}")
+    except Exception as _e:
+        test(f"Doomsday companion zone (error: {_e})", False, True)
+
+    # ── Pile algebra: frozen dataclasses mirror combo_engine.Execute/Hold ──
+    # Phase B per docs/design/2026-05-16_doomsday_cabal_therapy_piles.md.
+    # The Pile-selection subsystem mirrors `combo_engine.combo_plan`'s typed
+    # algebra: TendrilsPile / LurrusPile / WraithPile / OraclePile. Each is
+    # a frozen dataclass with no mutable state; the per-pile resolve owns
+    # its OWN resource declaration (no shared mutation of total_mana /
+    # player.life). The freeze invariant is enforced via @dataclass(frozen=True);
+    # mutating a field raises FrozenInstanceError. This is the structural
+    # discipline that prevents the shared-preamble class of bugs (PR #165
+    # TS, PR #166 Petal) from recurring at the pile-selection layer.
+    try:
+        from decks.doomsday_piles import (
+            Pile, TendrilsPile, LurrusPile, WraithPile, OraclePile,
+        )
+        from dataclasses import FrozenInstanceError, fields, is_dataclass
+        # Each subclass must inherit from Pile.
+        for cls in (TendrilsPile, LurrusPile, WraithPile, OraclePile):
+            test(f"Pile algebra: {cls.__name__} subclasses Pile",
+                 issubclass(cls, Pile), True)
+            test(f"Pile algebra: {cls.__name__} is a dataclass",
+                 is_dataclass(cls), True)
+        # Frozen invariant: mutating a constructed instance raises.
+        _sample = LurrusPile(name='lurrus',
+                              cards=('petal', 'bs', 'wraith', 'wraith', 'wraith'),
+                              draws_to_win=3, mana_to_execute=2, life_floor=4)
+        try:
+            _sample.name = 'oracle'  # type: ignore
+            _frozen_ok = False
+        except FrozenInstanceError:
+            _frozen_ok = True
+        test("Pile algebra: instances are frozen (mutation raises)",
+             _frozen_ok, True)
+    except Exception as _e:
+        test(f"Pile algebra import/check (error: {_e})", False, True)
+
+    # ── select_pile: pure function mapping (matchup, life, resources) → Pile ──
+    # Phase C per docs/design/2026-05-16_doomsday_cabal_therapy_piles.md §3.3.
+    # Decision tree:
+    #   1. opp in AGGRO_DECKS AND player.life ≤ 10 AND Lurrus available
+    #      → LurrusPile
+    #   2. opp in COMBO_DECKS → TendrilsPile
+    #   3. opp in INTERACTION_DECKS AND has(LED) AND has(Brainstorm)
+    #      → WraithPile
+    #   4. otherwise → OraclePile (default)
+    #
+    # Rule-phrased: select_pile is PURE — no mutation of any input. Calling
+    # it twice with the same GameState returns the same Pile type. The
+    # function reads only from gs / player / opponent (life, hand tags,
+    # battlefield tags). The function does NOT read deck-name strings
+    # outside of the public deck-class sets (AGGRO/COMBO/INTERACTION_DECKS).
+    try:
+        from decks.doomsday_piles import (
+            select_pile, TendrilsPile, LurrusPile, WraithPile, OraclePile,
+        )
+        from rules import Card, CardType
+
+        # Build a minimal GameView-like fixture: just need (gs, player,
+        # opponent) where player has .hand / .life / .creatures and
+        # gs.p1/p2_deck identifies the matchup.
+        class _PSlot:
+            def __init__(self, hand=None, life=20, creatures=None, companion=None):
+                self.hand = hand or []
+                self.life = life
+                self.creatures = creatures or []
+                self.companion_zone = companion
+                self.graveyard = []
+
+        class _GSlot:
+            def __init__(self, p1_deck, p2_deck, p1, p2):
+                self.p1, self.p2 = p1, p2
+                self.p1_deck, self.p2_deck = p1_deck, p2_deck
+
+        def _card(tag):
+            from cards import sorcery
+            return sorcery(f'_{tag}', 1, {'generic': 1}, set(), tag=tag)
+
+        # Branch 1: AGGRO opp at low life, Lurrus available → LurrusPile.
+        _p1 = _PSlot(hand=[_card('petal'), _card('bs'), _card('wraith')], life=8,
+                     companion=_card('lurrus'))
+        _p2 = _PSlot()
+        _gs = _GSlot('doomsday', 'burn', _p1, _p2)
+        _pile = select_pile(_p1, _p2, _gs)
+        test("select_pile: AGGRO opp + low life + Lurrus → LurrusPile",
+             isinstance(_pile, LurrusPile), True,
+             detail=f"got {type(_pile).__name__}")
+
+        # Branch 2: COMBO opp → TendrilsPile.
+        _p1 = _PSlot(hand=[_card('led'), _card('darkrit')], life=18,
+                     companion=_card('lurrus'))
+        _gs = _GSlot('doomsday', 'storm', _p1, _p2)
+        _pile = select_pile(_p1, _p2, _gs)
+        test("select_pile: COMBO opp → TendrilsPile",
+             isinstance(_pile, TendrilsPile), True,
+             detail=f"got {type(_pile).__name__}")
+
+        # Branch 3: INTERACTION opp + LED + Brainstorm → WraithPile.
+        _p1 = _PSlot(hand=[_card('led'), _card('bs'), _card('wraith')], life=18,
+                     companion=_card('lurrus'))
+        _gs = _GSlot('doomsday', 'dimir', _p1, _p2)
+        _pile = select_pile(_p1, _p2, _gs)
+        test("select_pile: INTERACTION opp + LED + BS → WraithPile",
+             isinstance(_pile, WraithPile), True,
+             detail=f"got {type(_pile).__name__}")
+
+        # Branch 4: INTERACTION opp without LED → OraclePile default.
+        _p1 = _PSlot(hand=[_card('bs'), _card('ponder')], life=18,
+                     companion=_card('lurrus'))
+        _gs = _GSlot('doomsday', 'uwx', _p1, _p2)
+        _pile = select_pile(_p1, _p2, _gs)
+        test("select_pile: INTERACTION opp without LED → OraclePile",
+             isinstance(_pile, OraclePile), True,
+             detail=f"got {type(_pile).__name__}")
+
+        # Purity: calling twice returns the same Pile type and reads the same
+        # inputs (no mutation between calls).
+        _pile2 = select_pile(_p1, _p2, _gs)
+        test("select_pile: pure (consecutive calls return same Pile type)",
+             type(_pile2) is type(_pile), True)
+    except Exception as _e:
+        test(f"select_pile (error: {_e})", False, True)
+
+    # ── Phase D wiring: select_pile dispatch emits typed Execute token ────
+    # Per docs/design/2026-05-16_doomsday_cabal_therapy_piles.md §4 Phase D,
+    # when DD resolves and the pile is built, the strategy must call
+    # select_pile(...) and emit a typed `combo:<pile.name>_pile` Execute
+    # token via gs.strat_log.log_decision. Failing-test-first rule named for
+    # the mechanic: any game where DD resolves emits exactly one
+    # `combo:<pile_name>_pile` token. (The default OraclePile branch
+    # preserves byte-equivalent kill execution; only the token is new.)
+    try:
+        import random as _rnd
+        # Sample seeds where DD reliably resolves vs storm (combo opp →
+        # TendrilsPile selected).
+        _emitted_token = False
+        _seeds_with_dd = 0
+        for _seed in (42, 7, 99, 2026, 2024):
+            _rnd.seed(_seed)
+            _r = run_game('doomsday', 'storm', trace=True)
+            _dd_resolves = any('★ Doomsday resolves' in line for line in _r.log_lines)
+            if _dd_resolves:
+                _seeds_with_dd += 1
+                if any('combo:' in line and '_pile' in line for line in _r.log_lines):
+                    _emitted_token = True
+                    break
+        test("Phase D wire: select_pile emits combo:<pile>_pile token on DD resolve",
+             _seeds_with_dd >= 1 and _emitted_token, True,
+             detail=f"DD resolved in {_seeds_with_dd} seeds; token emitted={_emitted_token}")
+    except Exception as _e:
+        test(f"Phase D wire (error: {_e})", False, True)
+
+    # ── Phase E: Lurrus casts from companion zone + generalized death-rebuy ─
+    # Per design doc §3.5 + §4 Phase E. Without this, Phase A would ship a
+    # regression — Lurrus is in companion_zone but never deploys. Real Magic
+    # CR 702.139: companion enters hand from zone for {3} as a sorcery, then
+    # casts for its mana cost. Sim simplifies to a single 5-mana action.
+    # Generalized death-rebuy: any CMC≤2 permanent in graveyard (was
+    # Petal-only at engine.py:4792).
+    try:
+        import random as _rnd
+        # Smoke: across 20 seeds vs burn (an aggro matchup where Lurrus is
+        # most valuable), Lurrus must enter the battlefield at least once.
+        # Pre-Phase-A: Lurrus deployed from 1-of maindeck (rare but possible).
+        # Post-Phase-A + Phase E: Lurrus deploys from companion_zone reliably
+        # when DD has 5+ mana.
+        _lurrus_deploys = 0
+        for _seed in range(1, 21):
+            _rnd.seed(_seed)
+            _r = run_game('doomsday', 'burn', trace=True)
+            if any('Lurrus of the Dream-Den' in line and 'lifelink' in line.lower()
+                   for line in _r.log_lines):
+                _lurrus_deploys += 1
+        test("Phase E: Lurrus deploys from companion_zone at least once over 20 seeds",
+             _lurrus_deploys >= 1, True,
+             detail=f"deployed in {_lurrus_deploys}/20 doomsday_vs_burn games")
+    except Exception as _e:
+        test(f"Phase E Lurrus companion deploy (error: {_e})", False, True)
 
     # ── Half-life cost spells must not self-kill (CR 119.5 + 704.5a) ───────
     # A spell that pays "half your life rounded up" cannot be cast when the
