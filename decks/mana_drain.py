@@ -37,37 +37,36 @@ def make_mana_drain_deck():
     d += [instant('Mana Drain', 2, {'U':2}, {'U'}, tag='drain')] * 4
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'},
                   tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 4
+    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 3
     d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'},
                   tag='fon', free_cast_if_blue=True)] * 2
 
-    # ── Removal (4) ──
+    # ── Removal (7) ──
     d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'},
                   tag='stp', is_removal=True)] * 4
+    # Terminus — miracle wrath at {W}.  Critical vs cmc-1/2 aggro (Ocelot,
+    # Delver) where the engine's counter gate treats every threat as "minor"
+    # and our 14 counter slots otherwise sit dead in hand.  Hardcast cost {6W}
+    # also makes Terminus a legitimate drain-mana sink (drain a 6-cmc spell
+    # → Terminus free) for the late game.
+    d += [sorcery('Terminus', 6, {'W':1,'generic':5}, {'W'},
+                  tag='terminus', is_removal=True, is_mass_removal=True)] * 3
 
     # ── Cantrips (10) ──
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
     d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 2
 
-    # ── Threats / drain payoffs (8) ──
+    # ── Threats / drain payoffs (5) ──
+    # Cut 1 Snapcaster (marginal under aggro pressure — needs a useful flashback
+    # target in yard) and 1 Emrakul (15 cmc never realistically cast).
     d += [creature('Snapcaster Mage', 2, {'U':1,'generic':1}, {'U'},
-                   2, 1, tag='snap', flash=True)] * 2
-    # Jace, the Mind Sculptor — 4 cmc planeswalker.  Tagged 'jace' (engine
-    # treats it as an ongoing draw engine via engine=True).
+                   2, 1, tag='snap', flash=True)] * 1
     d += [planeswalker('Jace, the Mind Sculptor', 4, {'U':2,'generic':2}, {'U'},
                        tag='jace', engine=True, draw_trigger=True)] * 3
-    # Sphinx of the Final Word — 6 cmc 5/5 flying, hexproof, uncounterable.
-    # Modeled as a big flyer that lands once you've drained something for 5+.
     d += [creature('Sphinx of the Final Word', 6, {'U':2,'generic':4}, {'U'},
                    5, 5, tag='sphinx', flying=True, indestructible=True,
                    win_condition=True)] * 2
-    # Emrakul, the Aeons Torn — 15 cmc dream finisher.  Drain ramp from
-    # large CMC opp spells (Show & Tell, Karn, Cryptic Command) can put you
-    # on 15+ mana faster than hardcasting alone.
-    d += [creature('Emrakul, the Aeons Torn', 15, {'generic':15}, set(),
-                   15, 15, tag='emrakul', flying=True, trample=True,
-                   haste=True, win_condition=True)] * 1
 
     # ── Lands (24) ──
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
@@ -104,6 +103,7 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
     from engine import (opp_can_cast, combat_declare, cast_spell, update_goyf,
                         bowmasters_triggers)
     from rules import MTGRules
+    from config import MatchupCategory as _MC, CombatThresholds as _CT
 
     mana_ref = [total_mana]
 
@@ -111,6 +111,12 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
         return opp_can_cast(card, mana_ref[0], gs, caster=player)
 
     # ── 1. Swords to Plowshares — remove biggest threat ──
+    # Vs aggro / burn, STP fires on ANY creature ≥ 1 power (Bowmasters,
+    # Ocelot Pride, Guide of Souls are all 1/1s that snowball if left
+    # unanswered).  Vs fair / combo, STP holds for ≥ 2-power threats.
+    p2_deck = getattr(gs, 'p2_deck', '') or getattr(gs, 'matchup', '')
+    opp_is_aggro = p2_deck in _MC.AGGRO or p2_deck == 'burn'
+    stp_threshold = _CT.STP_THRESHOLD_AGGRO if opp_is_aggro else _CT.STP_THRESHOLD_FAIR
     _mom_protected = getattr(gs, '_mom_protected_tag', None)
     while opponent.creatures and mana_ref[0] >= 1:
         stp = player.find_tag('stp')
@@ -120,7 +126,7 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
         if not valid:
             break
         target = max(valid, key=lambda c: c.power)
-        if target.power < 2:
+        if target.power < stp_threshold:
             break
         def _resolve_stp(c, _t=target):
             player.add_to_grave(c)
@@ -133,24 +139,54 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
         cast_spell(player, opponent, gs, stp, mana_ref, log_fn, log_entries,
                    on_resolve=_resolve_stp)
 
+    # ── 1b. Terminus (Miracle wrath, {W} cost-override) ──
+    # Fires when opp has 2+ creatures (the snowball state — Bowmasters + tokens,
+    # Ocelot Pride + copies, multiple Delver/Goblins).  We sweep our own
+    # board too (including Jace via summoning sickness on creatures) but
+    # mana_drain is creature-light so this is acceptable.
+    term = player.find_tag('terminus')
+    if term and len(opponent.creatures) >= 2:
+        def _resolve_term(c):
+            player.add_to_grave(c)
+            for cc in list(opponent.creatures):
+                opponent.exile.append(cc.card)
+                opponent.revolt_this_turn = True
+            opponent.creatures.clear()
+            for cc in list(player.creatures):
+                player.library.append(cc.card)
+            player.creatures.clear()
+            log_fn("★ Terminus (Miracle {W}) — all creatures to bottom of library",
+                   True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, term, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_term, cost_override=1)
+
     # ── 2. Snapcaster Mage — flashback Drain / STP / Brainstorm ──
     snap = player.find_tag('snap')
     if snap and can_cast(snap):
         drain_fb = next((c for c in player.graveyard if c.tag == 'drain'), None)
+        term_fb = (next((c for c in player.graveyard if c.tag == 'terminus'), None)
+                   if len(opponent.creatures) >= 2 else None)
         stp_fb = next((c for c in player.graveyard
                        if c.tag == 'stp' and opponent.creatures
-                       and max(cc.power for cc in opponent.creatures) >= 2), None)
+                       and max(cc.power for cc in opponent.creatures) >= stp_threshold), None)
         bs_fb = next((c for c in player.graveyard if c.is_cantrip), None)
-        fb = drain_fb or stp_fb or bs_fb
+        fb = drain_fb or term_fb or stp_fb or bs_fb
         if fb:
-            def _resolve_snap(c, _fb=fb, _drain=drain_fb, _stp=stp_fb, _bs=bs_fb):
+            def _resolve_snap(c, _fb=fb, _drain=drain_fb, _term=term_fb,
+                              _stp=stp_fb, _bs=bs_fb):
                 player.put_creature_in_play(c)
                 log_fn(f"Snapcaster Mage (2/1) — flashback {_fb.name}")
                 if _fb is _drain:
-                    # Flashback Drain — sits on the stack reactively, but the
-                    # engine's counter pipeline only fires on opp spells.
-                    # Simplest: exile the flashbacked copy, no immediate effect.
                     player.graveyard.remove(_fb); player.exile.append(_fb)
+                elif _fb is _term and opponent.creatures:
+                    for cc in list(opponent.creatures):
+                        opponent.exile.append(cc.card)
+                        opponent.revolt_this_turn = True
+                    opponent.creatures.clear()
+                    player.graveyard.remove(_fb); player.exile.append(_fb)
+                    log_fn("  Snapcaster flashback Terminus — board cleared")
+                    update_goyf(gs)
                 elif _fb is _stp and opponent.creatures:
                     t = max(opponent.creatures, key=lambda cc: cc.power)
                     lg = MTGRules.stp_life_gain(t)
@@ -248,9 +284,9 @@ def _keep_mana_drain(hand, matchup=''):
     cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
     counters = sum(1 for c in nonlands
                    if c.tag in ('drain', 'fow', 'fon', 'counter', 'daze', 'fluster'))
-    removal = sum(1 for c in nonlands if c.tag == 'stp')
+    removal = sum(1 for c in nonlands if c.tag in ('stp', 'terminus'))
     threats = sum(1 for c in nonlands
-                  if c.tag in ('jace', 'sphinx', 'emrakul', 'snap'))
+                  if c.tag in ('jace', 'sphinx', 'snap'))
     action = cantrips + counters + removal + threats
 
     if lc < 2 or lc > 5:
