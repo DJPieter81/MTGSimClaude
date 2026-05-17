@@ -229,10 +229,16 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Chrome Mox for fast mana ────────────────────────────────────────────
     mox = player.find_tag('chrome_mox')
     if mox and not any(p.card.tag == 'chrome_mox' for p in player.artifacts):
-        pitch = next((c for c in player.hand
-                      if c is not mox and not c.is_land()
-                      and c.tag not in ('chrome_mox', 'muxus', 'lackey')
-                      and c.colors), None)
+        # Mox needs a colored pitch. Goblins protects its tutors (matron,
+        # ringleader, recruiter), Vial enabler, and finishers (muxus, sling)
+        # from being exiled — picking them was the documented audit bug
+        # (docs/audits/goblins_vs_burn.md).
+        from engine import select_pitch_target
+        _gob_protected = frozenset({'chrome_mox', 'muxus', 'lackey', 'matron',
+                                    'ringleader', 'recruiter', 'sling',
+                                    'warchief', 'pashalik'})
+        pitch = (select_pitch_target(player.hand, 'R', mox, _gob_protected)
+                 or select_pitch_target(player.hand, 'B', mox, _gob_protected))
         if pitch:
             player.remove_from_hand(mox)
             player.put_artifact_in_play(mox)

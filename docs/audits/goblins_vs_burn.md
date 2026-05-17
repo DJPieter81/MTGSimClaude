@@ -4,7 +4,11 @@ date: 2026-05-17
 observed_wr: 0.125
 target_wr: 0.45
 gap_pp: -32.5
-status: open
+status: partial
+follow_up: 2026-05-17 — pitch-target picker fixed (`select_pitch_target` in `engine.py`).
+  Goblins Mox no longer exiles matron/ringleader/sling/muxus/warchief/pashalik.
+  Sweep n=200 unchanged (13.5% vs 12.5% baseline; pitch-fuel is not the bottleneck
+  in this matchup — race-mode chump-trade gating + Vial priority remain open).
 ---
 
 # goblins vs burn — 12.5% WR

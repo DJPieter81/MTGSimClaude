@@ -893,6 +893,35 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
 # ─────────────────────────────────────────────
 
 
+def select_pitch_target(hand, color, exclude_card, protected_tags=frozenset()):
+    """Select a pitch-cost target of `color` from `hand` (CR 113.9 alt cost).
+
+    Generic across every "exile a card of color X from hand" mechanic
+    (Chrome Mox imprint, Force of Will / Force of Negation, evoke pitch on
+    the Modern Horizons elementals, Force of Vigor). The caller passes the
+    deck's protected-tag set; the helper filters lands, the spell being
+    cast, win conditions, combo pieces, and protected tags.
+
+    Returns the first valid candidate (deterministic by hand order), or
+    None if every same-color card is protected.
+    """
+    for c in hand:
+        if c is exclude_card:
+            continue
+        if c.is_land():
+            continue
+        if color not in getattr(c, 'colors', set()):
+            continue
+        if c.tag in protected_tags:
+            continue
+        if getattr(c, 'is_combo_piece', False):
+            continue
+        if getattr(c, 'win_condition', False):
+            continue
+        return c
+    return None
+
+
 def _select_fow_pitch(hand, exclude_card):
     """Select least-valuable blue card for FoW/FoN pitch. Never exile blue threats
     or combo win conditions."""
@@ -6690,11 +6719,18 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     # Requires a non-Grief black card in hand for evoke cost (was implicitly
     # cheated in the prior direct-manipulation code).
     if grief and ephemerate and gs.turn == 1:
-        blacks = [c for c in player.hand
-                  if 'B' in getattr(c, 'colors', set())
-                  and c is not grief and c is not ephemerate]
-        if blacks:
-            pitch = blacks[0]
+        # Mardu protects evoke fuel + ephemerate + its own threats from
+        # being pitched as Grief evoke cost (docs/audits/mardu_vs_ur_tempo.md).
+        _mardu_protected = frozenset({'grief', 'ephemerate', 'fury', 'solitude',
+                                      'dauthi', 'kalitas', 'lurrus', 'bowmasters'})
+        pitch = select_pitch_target(player.hand, 'B', grief, _mardu_protected)
+        if pitch is None:
+            # Fall back to any non-ephemerate black card (matches old contract
+            # — only ephemerate was excluded before).
+            pitch = next((c for c in player.hand
+                          if 'B' in getattr(c, 'colors', set())
+                          and c is not grief and c is not ephemerate), None)
+        if pitch is not None:
             player.remove_from_hand(pitch); player.exile.append(pitch)
             t1_budget = [total_mana]
 
@@ -6728,9 +6764,13 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Evoke Grief T1-2 (no Ephemerate)
     elif grief and gs.turn <= 2:
-        blacks = [c for c in player.hand if 'B' in getattr(c,'colors',set()) and c.tag != 'grief']
-        if blacks:
-            pitch = blacks[0]
+        _mardu_protected = frozenset({'grief', 'ephemerate', 'fury', 'solitude',
+                                      'dauthi', 'kalitas', 'lurrus', 'bowmasters'})
+        pitch = select_pitch_target(player.hand, 'B', grief, _mardu_protected)
+        if pitch is None:
+            pitch = next((c for c in player.hand
+                          if 'B' in getattr(c, 'colors', set()) and c.tag != 'grief'), None)
+        if pitch is not None:
             player.remove_from_hand(pitch); player.exile.append(pitch)
             def _resolve_grief_evoke(c, _p=pitch):
                 if opponent.hand:
@@ -6747,7 +6787,12 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     fury = player.find_tag('fury')
     eph2 = player.find_tag('ephemerate')
     if fury and opponent.creatures:
-        red_pitch = next((c for c in player.hand if 'R' in getattr(c,'colors',set()) and c is not fury), None)
+        _fury_protected = frozenset({'fury', 'ephemerate', 'ragavan', 'bolt',
+                                     'lightning_bolt', 'lookout', 'goblin_guide'})
+        red_pitch = select_pitch_target(player.hand, 'R', fury, _fury_protected)
+        if red_pitch is None:
+            red_pitch = next((c for c in player.hand
+                              if 'R' in getattr(c, 'colors', set()) and c is not fury), None)
         if red_pitch: player.remove_from_hand(red_pitch); player.exile.append(red_pitch)
         n_waves = 2 if (eph2 and not (grief and ephemerate)) else 1
         if n_waves == 2: player.remove_from_hand(eph2); player.add_to_grave(eph2)
