@@ -951,6 +951,16 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             log_list.append(f"    → Veil of Summer active — spell cannot be countered")
             log_list.append(f"    → {spell_card.name} RESOLVES")
         return False
+    # Teferi, Time Raveler: opponents can cast spells only at sorcery speed
+    # (CR oracle).  The defender here is reacting to the active player's
+    # cast on the active player's turn — that's instant speed, blocked.
+    # Defender's counter window is closed.
+    caster_has_teferi = any(p.card.tag == 'teferi' for p in caster.planeswalkers)
+    if caster_has_teferi:
+        if gs.trace:
+            log_list.append(f"    → Caster controls Teferi, Time Raveler — defender locked to sorcery speed")
+            log_list.append(f"    → {spell_card.name} RESOLVES")
+        return False
     if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card, 'colors', set()):
         if gs.trace:
             log_list.append(f"    → Allosaurus Shepherd — green spells uncounterable")

@@ -72,8 +72,15 @@ def make_mana_drain_deck():
     # deal_face_damage).  Also evades Push / black removal.  Cheap blocker
     # vs goblin/burn/mardu and a pro-red shield against the deck's life
     # total being burned out before drains can swing the game.
+    # Sanctifier en-Vec — anti-burn / anti-red / anti-black creature.
+    # Pro-red+black blanket nullifies face damage from burn AND Push/Snuff
+    # Out (Mono Black), and once in play it's safe from Hymn/TS targeting.
+    # Also valuable vs Reanimator (pro-black means Reanimate-targeting
+    # graveyard recursion can't hit a Sanctifier we've gotten into play
+    # via some kind of recursion).  v14 tests confirmed cutting maindeck
+    # copies regresses Burn −15pp / Ocelot −17pp.
     d += [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'}, 2, 2,
-                   tag='sanctifier', pro_red=True)] * 1
+                   tag='sanctifier', pro_red=True)] * 2
     # Stoneforge Mystic — 2 cmc {1}{W}, ETB tutors an equipment to hand,
     # then activates {W}{1} to put a 0-cost equipment in play.  In sim,
     # SFM auto-tutors Batterskull on ETB and the strategy puts it in
@@ -99,9 +106,8 @@ def make_mana_drain_deck():
                    5, 5, tag='sphinx', flying=True, indestructible=True,
                    win_condition=True)] * 1
     # Wan Shi Tong, Librarian — 4 cmc 3/5 flying card-draw engine.  Drain
-    # mana easily pays the {2}WU cost.  Real Magic effect: replace each
-    # opp draw with "look at top 3, put on top in any order" — modelled
-    # in engine.py as a draw-on-opp-draw engine (see decks/wan_shi_tong.py).
+    # mana easily pays the {2}WU cost.  Tested 2 maindeck (v15) — net
+    # neutral (-0.2pp); WST is legendary so the 2nd copy mostly bricks.
     d += [creature('Wan Shi Tong, Librarian', 4, {'W':1,'U':1,'generic':2},
                    {'W','U'}, 3, 5, tag='wst', engine=True, flying=True)] * 1
 
@@ -112,11 +118,9 @@ def make_mana_drain_deck():
     d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 3
     d += [basic_land('Island', 'U', 'Island')] * 8
     d += [basic_land('Plains', 'W', 'Plains')] * 4
-    # Karakas — legendary land producing {W}, taps to bounce a legendary
-    # creature.  Bounces opp's Atraxa / Iona / Emrakul / Murktide / Thalia,
-    # also recurs our own Wan Shi Tong (legendary) or Stoneforge Mystic
-    # (legendary in real Magic) for ETB-trigger value.
-    d += [utility_land('Karakas', ['W'], 'karakas')] * 1
+    # Karakas — cut after v14/v15 planeswalker experiments confirmed
+    # the +0.2pp margin wasn't worth the slot pressure once Sanctifier ×2
+    # and SFM ×2 were both kept maindeck for anti-aggro density.
 
     assert len(d) == 60, f"Mana Drain deck: {len(d)}"
     return d
@@ -151,25 +155,6 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
 
     def can_cast(card):
         return opp_can_cast(card, mana_ref[0], gs, caster=player)
-
-    # ── 0b. Karakas — bounce opp's legendary creatures ──
-    # Tags treated as legendary creatures in the existing codebase
-    # (engine.py:3543 has the same legendary set for BUG-side use).
-    LEGENDARY_TAGS = {'murk', 'tamiyo', 'wst', 'atraxa', 'iona', 'emrakul',
-                      'griselbrand', 'thalia', 'kaito', 'ajani', 'voice',
-                      'narset', 'ulamog'}
-    for karakas in [l for l in player.lands
-                    if l.card.tag == 'karakas' and not l.tapped]:
-        target = next((c for c in opponent.creatures
-                       if c.card.tag in LEGENDARY_TAGS), None)
-        if target:
-            karakas.tapped = True
-            opponent.remove_creature(target)
-            opponent.hand.append(target.card)
-            log_fn(f"★ Karakas → returns {target.card.name} to opp's hand",
-                   True)
-            update_goyf(gs)
-            break
 
     # ── 1. Swords to Plowshares — remove biggest threat ──
     # Vs aggro / burn, STP fires on ANY creature ≥ 1 power (Bowmasters,
@@ -288,6 +273,7 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn("Sanctifier en-Vec (2/2, pro black/red)", True)
         cast_spell(player, opponent, gs, sanc, mana_ref, log_fn, log_entries,
                    on_resolve=_resolve_sanc)
+
 
     # ── 2. Jace, the Mind Sculptor — primary drain payoff at 4 mana ──
     jace = player.find_tag('jace')

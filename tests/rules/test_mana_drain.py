@@ -180,6 +180,51 @@ def test_bowmasters_is_major_threat_in_non_mirror_matchup():
 
 
 @pytest.mark.fast
+def test_teferi_time_raveler_blocks_defender_reactive_counters():
+    """Teferi, Time Raveler's static ability ("opponents cast spells only
+    as a sorcery"): when the caster controls Teferi, the defender's
+    counter window is closed because defender's instants would be cast
+    at the wrong speed.  engine.try_reactive_counter shortcuts to False.
+    """
+    teferi_card = Card(
+        name='Teferi, Time Raveler',  # abstraction-allow: rules-test fixture
+        card_type=CardType.PLANESWALKER,
+        cmc=3,
+        mana_cost={'W': 1, 'U': 1, 'generic': 1},
+        colors={'W', 'U'},
+        tag='teferi',
+        gy_type='planeswalker',
+    )
+    from rules import Permanent
+    teferi_perm = Permanent(card=teferi_card, controller='p1')
+
+    p1 = PlayerState(name='p1')
+    p2 = PlayerState(name='p2')
+    # Caster (p1) controls Teferi.
+    p1.planeswalkers = [teferi_perm]
+    # Defender (p2) has a Force of Will + pitch — would normally fire.
+    fow = Card(name='Force of Will', card_type=CardType.INSTANT,  # abstraction-allow
+               cmc=5, mana_cost={'U': 1, 'generic': 4}, colors={'U'},
+               tag='fow', gy_type='instant', free_cast_if_blue=True)
+    bs = Card(name='Brainstorm', card_type=CardType.INSTANT,  # abstraction-allow
+              cmc=1, mana_cost={'U': 1}, colors={'U'},
+              tag='bs', gy_type='instant')
+    p2.hand = [fow, bs]
+    gs = GameState(p1=p1, p2=p2)
+    gs.turn = 4
+
+    spell = _major_threat_spell(cmc=4)
+    log: list[str] = []
+    countered = try_reactive_counter(gs, caster=gs.p1, defender=gs.p2,
+                                     spell_card=spell, log_list=log)
+
+    assert countered is False, ("Defender should not be able to counter "
+                                  "when caster controls Teferi")
+    # FoW stays in hand
+    assert fow in gs.p2.hand
+
+
+@pytest.mark.fast
 def test_mindbreak_trap_fires_free_when_caster_cast_3_spells_this_turn():
     """Mindbreak Trap (cmc 4, alt cost free): "If an opponent cast 3 or more
     spells this turn, you may pay {0} rather than paying this spell's mana
