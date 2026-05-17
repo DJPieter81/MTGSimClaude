@@ -37,7 +37,7 @@ def make_mana_drain_deck():
     d += [instant('Mana Drain', 2, {'U':2}, {'U'}, tag='drain')] * 4
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'},
                   tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 3
+    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 2
     d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'},
                   tag='fon', free_cast_if_blue=True)] * 2
 
@@ -59,8 +59,16 @@ def make_mana_drain_deck():
 
     # ── Cantrips (10) ──
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
-    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 1
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 3
+
+    # ── Anti-aggro hate creature (2) ──
+    # Sanctifier en-Vec — 2 cmc 2/2 pro-red+black.  Burn / red aggro deal
+    # 0 damage while it's in play (pro_red blanket — see decks/burn.py
+    # deal_face_damage).  Also evades Push / black removal.  Cheap blocker
+    # vs goblin/burn/mardu and a pro-red shield against the deck's life
+    # total being burned out before drains can swing the game.
+    d += [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'}, 2, 2,
+                   tag='sanctifier', pro_red=True)] * 2
 
     # ── Threats / drain payoffs (6) — all-generic / hard-to-kill bodies ──
     d += [planeswalker('Jace, the Mind Sculptor', 4, {'U':2,'generic':2}, {'U'},
@@ -74,6 +82,12 @@ def make_mana_drain_deck():
     d += [creature('Sphinx of the Final Word', 6, {'U':2,'generic':4}, {'U'},
                    5, 5, tag='sphinx', flying=True, indestructible=True,
                    win_condition=True)] * 1
+    # Wan Shi Tong, Librarian — 4 cmc 3/5 flying card-draw engine.  Drain
+    # mana easily pays the {2}WU cost.  Real Magic effect: replace each
+    # opp draw with "look at top 3, put on top in any order" — modelled
+    # in engine.py as a draw-on-opp-draw engine (see decks/wan_shi_tong.py).
+    d += [creature('Wan Shi Tong, Librarian', 4, {'W':1,'U':1,'generic':2},
+                   {'W','U'}, 3, 5, tag='wst', engine=True, flying=True)] * 1
 
     # ── Lands (24) ──
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
@@ -188,6 +202,19 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
         cast_spell(player, opponent, gs, wrath, mana_ref, log_fn, log_entries,
                    on_resolve=_resolve_wrath)
 
+    # ── 1d. Sanctifier en-Vec — anti-burn / anti-red blanket ──
+    # Cheap 2/2 pro-red+black blocker.  Burn's deal_face_damage checks for
+    # opponent-side pro_red creatures and skips all damage.  Critical
+    # life-saver vs burn / mardu / mono_black aggression.
+    sanc = player.find_tag('sanctifier')
+    sanc_on_board = any(c.card.tag == 'sanctifier' for c in player.creatures)
+    if sanc and not sanc_on_board and can_cast(sanc):
+        def _resolve_sanc(c):
+            player.put_creature_in_play(c)
+            log_fn("Sanctifier en-Vec (2/2, pro black/red)", True)
+        cast_spell(player, opponent, gs, sanc, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_sanc)
+
     # ── 2. Jace, the Mind Sculptor — primary drain payoff at 4 mana ──
     jace = player.find_tag('jace')
     jace_on_board = any(p.card.tag == 'jace' for p in player.planeswalkers)
@@ -212,6 +239,20 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
         log_fn(f"Jace +0 (Brainstorm-style): draw {len(drawn)}")
         bowmasters_triggers(len(drawn), gs, log_entries,
                             controller='o' if player is gs.p1 else 'b')
+
+    # ── 2b. Wan Shi Tong, Librarian — 4 cmc 3/5 flying draw engine ──
+    # Cheap alternative to the 4-cmc Jace slot when Jace is unavailable
+    # or already on board.  Triggers on opp draws so it grinds value vs
+    # other blue decks especially.
+    wst = player.find_tag('wst')
+    wst_on_board = any(c.card.tag == 'wst' for c in player.creatures)
+    if wst and not wst_on_board and can_cast(wst):
+        def _resolve_wst(c):
+            player.put_creature_in_play(c)
+            log_fn("★ Wan Shi Tong, Librarian (3/5 flying)", True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, wst, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_wst)
 
     # ── 3. Wurmcoil Engine — 6 cmc colourless anti-aggro haymaker ──
     # Deathtouch + lifelink makes every block a value-trade and swings the
@@ -274,7 +315,7 @@ def _keep_mana_drain(hand, matchup=''):
                    if c.tag in ('drain', 'fow', 'fon', 'counter', 'daze', 'fluster'))
     removal = sum(1 for c in nonlands if c.tag in ('stp', 'terminus', 'wrath'))
     threats = sum(1 for c in nonlands
-                  if c.tag in ('jace', 'sphinx', 'wurmcoil'))
+                  if c.tag in ('jace', 'sphinx', 'wurmcoil', 'wst', 'sanctifier'))
     action = cantrips + counters + removal + threats
 
     if lc < 2 or lc > 5:
