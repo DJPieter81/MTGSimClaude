@@ -23,7 +23,7 @@ Drain payoffs in the list:
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from cards import (creature, instant, sorcery, planeswalker,
+from cards import (creature, instant, sorcery, artifact, planeswalker,
                    fetch_land, dual_land, basic_land)
 
 
@@ -70,10 +70,10 @@ def make_mana_drain_deck():
     # swings a losing race by 6+, deathtouch makes every chump-block lethal.
     d += [creature('Wurmcoil Engine', 6, {'generic':6}, set(),
                    6, 6, tag='wurmcoil', deathtouch=True, lifelink=True,
-                   win_condition=True)] * 1
+                   win_condition=True)] * 2
     d += [creature('Sphinx of the Final Word', 6, {'U':2,'generic':4}, {'U'},
                    5, 5, tag='sphinx', flying=True, indestructible=True,
-                   win_condition=True)] * 2
+                   win_condition=True)] * 1
 
     # ── Lands (24) ──
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
