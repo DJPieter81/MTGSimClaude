@@ -5861,11 +5861,54 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         gs.win_reason = "Painter + Grindstone combo"
         return
 
+    # ── 1b. Combo-plan protection check (consume painter's COMBO_META) ──
+    # Painter runs zero counters, so `_check_protection` returns Defer
+    # whenever opp BHI p_free_counter exceeds the threshold. Defer skips
+    # naked combo-piece deployment this turn — Ring/Karn/Tezzeret deploy
+    # regardless because their loss to a free counter is a smaller tempo
+    # swing than losing Painter's Servant pre-combo turn.
+    # See docs/audits/painter_vs_sneak_b.md, docs/audits/painter_vs_ur_tempo.md.
+    from combo_engine import (
+        combo_plan as _combo_plan_p, Hold as _Hold_p, Defer as _Defer_p,
+    )
+    _saved_em_p = getattr(gs, '_executing_mana', None)
+    gs._executing_mana = total_mana
+    try:
+        _plan_p = _combo_plan_p(player, opponent, gs)
+    finally:
+        if _saved_em_p is None:
+            try:
+                del gs._executing_mana
+            except AttributeError:
+                pass
+        else:
+            gs._executing_mana = _saved_em_p
+
+    _defer_combo_pieces = isinstance(_plan_p, _Defer_p)
+    if isinstance(_plan_p, (_Hold_p, _Defer_p)):
+        gs.strat_log.log_decision(
+            gs.turn, 'painter',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if _defer_combo_pieces
+                    else f'hold_{getattr(_plan_p.card, "tag", "card")}'),
+            reason=_plan_p.reason)
+        from decision import MetaDecision as _MetaDecision_p
+        gs.strat_log.log(_MetaDecision_p(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold painter combo — {_plan_p.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
+
     budget = [total_mana]
 
     # ── 2. Deploy combo pieces from hand ──
+    # Skip naked combo-piece deployment when combo_plan returned Defer.
     p_card = player.find_tag('painter')
-    if p_card and not painter_in_play and budget[0] >= 2:
+    if p_card and not painter_in_play and budget[0] >= 2 and not _defer_combo_pieces:
         def _resolve_painter(c):
             nonlocal painter_in_play
             player.put_artifact_in_play(c)
@@ -5875,7 +5918,7 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
                    on_resolve=_resolve_painter)
 
     grind_card = player.find_tag('grind')
-    if grind_card and not grind_in_play and budget[0] >= 1:
+    if grind_card and not grind_in_play and budget[0] >= 1 and not _defer_combo_pieces:
         def _resolve_grind(c):
             nonlocal grind_in_play
             player.put_artifact_in_play(c)

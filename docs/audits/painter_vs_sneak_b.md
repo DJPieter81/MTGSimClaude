@@ -4,7 +4,14 @@ date: 2026-05-17
 observed_wr: 0.31
 target_wr: 0.45
 gap_pp: -14
-status: open
+status: partial
+follow_up: 2026-05-17 — COMBO_META declared in `decks/painter.py` and
+  `_strategy_painter` now consults `combo_plan` before deploying naked
+  combo pieces. When opp BHI `p_free_counter > BHI_FREE_COUNTER_THRESHOLD`
+  (and painter has no `protection_tags` to Hold), Defer skips Painter +
+  Grindstone deployment this turn; Ring/Karn/Tezzeret still deploy.
+  Sweep n=200: 31.0% → 38.5% (+7.5pp). Decklist gap (Veil of Summer /
+  Defense Grid) remains open to make Hold viable.
 ---
 
 # painter vs sneak_b — 31% WR
