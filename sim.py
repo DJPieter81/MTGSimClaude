@@ -1827,16 +1827,21 @@ PROTAGONIST_SB_SWAPS = {
     # makes our counters fire), board up to more FoNs and Flusterstorms.
     # vs aggro/control we leave the main deck mostly intact.
     'mana_drain': {
-        'storm':      ([('preordain',1),('counter',1)],     [('fluster',1),('fon',1)]),
-        'doomsday':   ([('terminus',1),('wrath',1)],         [('fon',2)]),
-        'oops':       ([('terminus',1),('wrath',1)],         [('fon',2)]),
-        'reanimator': ([('terminus',1),('wrath',1)],         [('fon',2)]),
-        'show':       ([('terminus',1),('sanctifier',1)],    [('fon',2)]),
-        'sneak_a':    ([('terminus',1),('sanctifier',1)],    [('fon',2)]),
-        'sneak_b':    ([('terminus',1),('sanctifier',1)],    [('fon',2)]),
-        'painter':    ([('terminus',1)],                     [('fon',1)]),
+        # 'storm' SB intentionally omitted — empirical sweeps showed any SFM/
+        # Counterspell trim regressed the matchup (Storm is naturally bad for
+        # us since the engine treats their rituals/cantrips as minor threats
+        # so our counters rarely fire reactively; SB shaping doesn't help).
+        'doomsday':   ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),
+        'oops':       ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),
+        'reanimator': ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),
+        # vs combo: SFM/Batterskull are dead (no aggro to wall); trim them
+        # for fast counter density.
+        'show':       ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),
+        'sneak_a':    ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),
+        'sneak_b':    ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),
+        'painter':    ([('sfm',1),('equipment',1)],          [('fon',1),('fluster',1)]),
         'depths':     ([('counter',1)],                      [('fon',1)]),
-        'lands':      ([('counter',1),('terminus',1)],       [('fon',2)]),
+        'lands':      ([('sfm',2),('terminus',1)],           [('fon',2),('fluster',1)]),
         'uwx':        ([('stp',1),('terminus',1)],           [('fon',1),('fluster',1)]),
         'dimir_flash':([('terminus',1)],                     [('fon',1)]),
         'eldrazi':    ([('drain',1)],                        [('fon',1)]),
