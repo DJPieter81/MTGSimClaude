@@ -34,7 +34,7 @@ def test_clone_roundtrip() -> tuple[int, int]:
     """Self-test: clone a fresh game state, mutate the clone, assert
     the original is untouched. Returns (passed, failed) counts.
 
-    Called from `run_rules_tests` to keep regression coverage tight.
+    Mirrored by `tests/rules/test_*.py` clone-roundtrip checks.
     """
     import random as _r
     from sim import run_game  # noqa: F401  — proves sim imports cleanly

@@ -37,29 +37,24 @@ def _fail(msg): print(f"\033[31mFAIL\033[0m  {msg}")
 
 
 def check_tests() -> bool:
-    """Run the 137-rule suite."""
-    try:
-        from sim import run_rules_tests
-    except ImportError as e:
-        _fail(f"can't import sim: {e}")
-        return False
-    # run_rules_tests prints its own summary; capture pass/fail
-    import io, contextlib
-    buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
-        run_rules_tests()
-    output = buf.getvalue()
-    m = re.search(r'Tests:\s*(\d+)\s*passed,\s*(\d+)\s*failed', output)
+    """Run the pytest fast suite (~3s under xdist)."""
+    import subprocess
+    r = subprocess.run(
+        ['python3', '-m', 'pytest', '-m', 'fast', '-q', '--no-header'],
+        capture_output=True, text=True, timeout=120,
+    )
+    output = r.stdout + r.stderr
+    m = re.search(r'(\d+)\s+passed', output)
     if not m:
-        _fail("couldn't parse test output")
-        print(output)
+        _fail("couldn't parse pytest output")
+        print(output[-500:])
         return False
-    passed, failed = int(m.group(1)), int(m.group(2))
-    if failed == 0:
-        _ok(f"tests: {passed} passed, 0 failed")
+    passed = int(m.group(1))
+    if r.returncode == 0:
+        _ok(f"tests: {passed} passed")
         return True
-    _fail(f"tests: {passed} passed, {failed} failed")
-    print(output)
+    _fail(f"tests: pytest exit {r.returncode}")
+    print(output[-500:])
     return False
 
 
