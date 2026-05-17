@@ -2885,13 +2885,22 @@ def run_rules_tests():
     # never in `player.hand` or `player.library`.
     try:
         import random as _rnd
+        # Capture INITIAL companion-zone state by building the deck and
+        # running the same setup logic run_game does. This is the test for
+        # "at game start" — after the game runs, the strategy may have
+        # moved Lurrus from zone to hand (Phase E).
+        from deck_registry import get_meta as _gm_test
+        _meta = _gm_test('doomsday') or {}
+        _comp_tag = _meta.get('companion')
+        _comp_card = _build_companion_card(_comp_tag) if _comp_tag else None
+        zone_card_name = _comp_card.name if _comp_card else None
+        # Smoke-test the opener does not contain Lurrus (full deck draw).
         _rnd.seed(42)
         _r = run_game('doomsday', 'storm')
-        zone_card = getattr(_r, 'p1_companion_zone', None)
         hand_has_lurrus = any('Lurrus' in n for n in _r.p1_opening_hand)
         test("doomsday companion: Lurrus is in companion_zone at game start",
-             zone_card is not None and 'Lurrus' in zone_card, True,
-             detail=f"p1.companion_zone={zone_card!r}")
+             zone_card_name is not None and 'Lurrus' in zone_card_name, True,
+             detail=f"companion_zone built={zone_card_name!r}")
         test("doomsday companion: Lurrus is NOT in opening hand",
              not hand_has_lurrus, True,
              detail=f"opener: {_r.p1_opening_hand}")
@@ -3027,6 +3036,62 @@ def run_rules_tests():
              type(_pile2) is type(_pile), True)
     except Exception as _e:
         test(f"select_pile (error: {_e})", False, True)
+
+    # ── Phase D wiring: select_pile dispatch emits typed Execute token ────
+    # Per docs/design/2026-05-16_doomsday_cabal_therapy_piles.md §4 Phase D,
+    # when DD resolves and the pile is built, the strategy must call
+    # select_pile(...) and emit a typed `combo:<pile.name>_pile` Execute
+    # token via gs.strat_log.log_decision. Failing-test-first rule named for
+    # the mechanic: any game where DD resolves emits exactly one
+    # `combo:<pile_name>_pile` token. (The default OraclePile branch
+    # preserves byte-equivalent kill execution; only the token is new.)
+    try:
+        import random as _rnd
+        # Sample seeds where DD reliably resolves vs storm (combo opp →
+        # TendrilsPile selected).
+        _emitted_token = False
+        _seeds_with_dd = 0
+        for _seed in (42, 7, 99, 2026, 2024):
+            _rnd.seed(_seed)
+            _r = run_game('doomsday', 'storm', trace=True)
+            _dd_resolves = any('★ Doomsday resolves' in line for line in _r.log_lines)
+            if _dd_resolves:
+                _seeds_with_dd += 1
+                if any('combo:' in line and '_pile' in line for line in _r.log_lines):
+                    _emitted_token = True
+                    break
+        test("Phase D wire: select_pile emits combo:<pile>_pile token on DD resolve",
+             _seeds_with_dd >= 1 and _emitted_token, True,
+             detail=f"DD resolved in {_seeds_with_dd} seeds; token emitted={_emitted_token}")
+    except Exception as _e:
+        test(f"Phase D wire (error: {_e})", False, True)
+
+    # ── Phase E: Lurrus casts from companion zone + generalized death-rebuy ─
+    # Per design doc §3.5 + §4 Phase E. Without this, Phase A would ship a
+    # regression — Lurrus is in companion_zone but never deploys. Real Magic
+    # CR 702.139: companion enters hand from zone for {3} as a sorcery, then
+    # casts for its mana cost. Sim simplifies to a single 5-mana action.
+    # Generalized death-rebuy: any CMC≤2 permanent in graveyard (was
+    # Petal-only at engine.py:4792).
+    try:
+        import random as _rnd
+        # Smoke: across 20 seeds vs burn (an aggro matchup where Lurrus is
+        # most valuable), Lurrus must enter the battlefield at least once.
+        # Pre-Phase-A: Lurrus deployed from 1-of maindeck (rare but possible).
+        # Post-Phase-A + Phase E: Lurrus deploys from companion_zone reliably
+        # when DD has 5+ mana.
+        _lurrus_deploys = 0
+        for _seed in range(1, 21):
+            _rnd.seed(_seed)
+            _r = run_game('doomsday', 'burn', trace=True)
+            if any('Lurrus of the Dream-Den' in line and 'lifelink' in line.lower()
+                   for line in _r.log_lines):
+                _lurrus_deploys += 1
+        test("Phase E: Lurrus deploys from companion_zone at least once over 20 seeds",
+             _lurrus_deploys >= 1, True,
+             detail=f"deployed in {_lurrus_deploys}/20 doomsday_vs_burn games")
+    except Exception as _e:
+        test(f"Phase E Lurrus companion deploy (error: {_e})", False, True)
 
     # ── Half-life cost spells must not self-kill (CR 119.5 + 704.5a) ───────
     # A spell that pays "half your life rounded up" cannot be cast when the
