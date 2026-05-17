@@ -40,6 +40,11 @@ def make_mana_drain_deck():
     d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 2
     d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'},
                   tag='fon', free_cast_if_blue=True)] * 2
+    # Flusterstorm — 1 cmc instant counter targeting instants/sorceries.
+    # Specifically punishes storm chains (Tendrils, rituals, copy
+    # spells); engine.try_reactive_counter auto-picks it via the
+    # 'fluster' tag in COUNTER_TAGS.
+    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 1
 
     # ── Removal (7) ──
     d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'},
@@ -59,7 +64,7 @@ def make_mana_drain_deck():
 
     # ── Cantrips (10) ──
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 3
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 2
 
     # ── Anti-aggro hate creature (2) ──
     # Sanctifier en-Vec — 2 cmc 2/2 pro-red+black.  Burn / red aggro deal
