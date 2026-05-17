@@ -180,6 +180,76 @@ def test_bowmasters_is_major_threat_in_non_mirror_matchup():
 
 
 @pytest.mark.fast
+def test_mindbreak_trap_fires_free_when_caster_cast_3_spells_this_turn():
+    """Mindbreak Trap (cmc 4, alt cost free): "If an opponent cast 3 or more
+    spells this turn, you may pay {0} rather than paying this spell's mana
+    cost."  Engine branch in try_reactive_counter fires when
+    caster.spells_cast_this_turn >= 3, regardless of major-threat gate
+    (storm rituals are cmc-1 minor threats, but the 3-spell threshold IS
+    the eligibility check).
+    """
+    mindbreak = Card(
+        name='Mindbreak Trap',  # abstraction-allow: rules-test fixture
+        card_type=CardType.INSTANT,
+        cmc=4,
+        mana_cost={'W': 1, 'generic': 3},
+        colors={'W'},
+        tag='mindbreak',
+        gy_type='instant',
+    )
+    p1 = PlayerState(name='p1')  # caster (storm)
+    p2 = PlayerState(name='p2')  # defender (mana_drain)
+    p2.hand = [mindbreak]
+    gs = GameState(p1=p1, p2=p2)
+    gs.turn = 3
+    log: list[str] = []
+
+    # Storm has chained 5 spells before the kill — Mindbreak's free
+    # alt-cost is online.
+    p1.spells_cast_this_turn = 5
+    spell = _major_threat_spell(cmc=1)  # Tendrils, ritual, etc — cmc 1 minor
+    spell.tag = 'ritual'
+    spell.win_condition = False
+
+    countered = try_reactive_counter(gs, caster=gs.p1, defender=gs.p2,
+                                     spell_card=spell, log_list=log)
+
+    assert countered is True
+    assert mindbreak in gs.p2.graveyard
+    assert gs._last_counter_used == 'mindbreak'
+
+
+@pytest.mark.fast
+def test_mindbreak_trap_does_not_fire_when_caster_cast_fewer_than_3_spells():
+    """Below 3 spells/turn, Mindbreak's free alt-cost is offline."""
+    mindbreak = Card(
+        name='Mindbreak Trap',  # abstraction-allow: rules-test fixture
+        card_type=CardType.INSTANT,
+        cmc=4,
+        mana_cost={'W': 1, 'generic': 3},
+        colors={'W'},
+        tag='mindbreak',
+        gy_type='instant',
+    )
+    p1 = PlayerState(name='p1')
+    p2 = PlayerState(name='p2')
+    p2.hand = [mindbreak]
+    gs = GameState(p1=p1, p2=p2)
+    gs.turn = 3
+    p1.spells_cast_this_turn = 2  # below threshold
+    spell = _major_threat_spell(cmc=1)
+    spell.tag = 'ritual'
+    spell.win_condition = False
+    log: list[str] = []
+
+    countered = try_reactive_counter(gs, caster=gs.p1, defender=gs.p2,
+                                     spell_card=spell, log_list=log)
+
+    assert countered is False  # Mindbreak sits unused — paid cost (4 mana) not modeled here
+    assert mindbreak in gs.p2.hand  # still in hand
+
+
+@pytest.mark.fast
 def test_cryptic_command_counters_and_draws_a_card():
     """Cryptic Command (1UUU): counter target spell, draw a card.  Engine
     branch in try_reactive_counter fires when defender has 4+ mana, 3+

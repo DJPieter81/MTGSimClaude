@@ -1096,6 +1096,12 @@ def _make_sb_cards():
     # Used by mana_drain SB plan vs burn / mono_black matchups.
     pool['sanctifier'] = [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'},
                                     2, 2, tag='sanctifier', pro_red=True)] * 2
+    # Sphinx of the Final Word — 6 cmc uncounterable hexproof finisher.
+    # Used by mana_drain SB plan vs control mirrors (UWx, dimir_flash)
+    # where every other threat we cast eats a counterspell.
+    pool['sphinx'] = [creature('Sphinx of the Final Word', 6, {'U':2,'generic':4}, {'U'},
+                                5, 5, tag='sphinx', flying=True, indestructible=True,
+                                win_condition=True)] * 2
     pool['sblood']    = [instant('Searing Blood', 2, {'R':2}, {'R'}, tag='sblood',
                                   is_removal=True)] * 4
     pool['eidolon']   = [creature('Eidolon of the Great Revel', 2, {'R':2}, {'R'}, 2, 2,
@@ -1831,10 +1837,12 @@ PROTAGONIST_SB_SWAPS = {
     # makes our counters fire), board up to more FoNs and Flusterstorms.
     # vs aggro/control we leave the main deck mostly intact.
     'mana_drain': {
-        # 'storm' SB intentionally omitted — empirical sweeps showed any SFM/
-        # Counterspell trim regressed the matchup (Storm is naturally bad for
-        # us since the engine treats their rituals/cantrips as minor threats
-        # so our counters rarely fire reactively; SB shaping doesn't help).
+        # 'storm' SB omitted — engine.try_reactive_counter has Mindbreak
+        # Trap wired (3-spell-this-turn alt-cost gate), but Storm's strategy
+        # in engine.py:6320-6336 bypasses the spell-cast pipeline and
+        # declares the win atomically.  Mindbreak Trap in our deck never
+        # gets a reaction window, so any SB swap that trims cards for
+        # Mindbreak/Fluster regresses the matchup.
         # vs red-heavy aggro — Sanctifier blanket is the single strongest
         # card.  Swap SFM (vulnerable to Bolt at cmc 2) and a Counterspell
         # (mostly dead vs cmc-1 spells) for 2 extra Sanctifiers from the SB.
@@ -1858,8 +1866,16 @@ PROTAGONIST_SB_SWAPS = {
         'painter':    ([('sfm',1),('equipment',1)],          [('fon',1),('fluster',1)]),
         'depths':     ([('counter',1)],                      [('fon',1)]),
         'lands':      ([('sfm',2),('terminus',1)],           [('fon',2),('fluster',1)]),
-        'uwx':        ([('stp',1),('terminus',1)],           [('fon',1),('fluster',1)]),
-        'dimir_flash':([('terminus',1)],                     [('fon',1)]),
+        # vs UWx mirror — every counterable threat we cast eats their FoW
+        # / Counterspell / FoN.  Sphinx of the Final Word is uncounterable
+        # and indestructible: the only threat that reliably lands.  Trim 4
+        # cards that are weak in the mirror (STP, Terminus, Wrath, SFM)
+        # for the uncounterable finisher plus extra flex.
+        'uwx':        ([('stp',2),('terminus',1),('wrath',1)],
+                       [('sphinx',2),('fon',1),('fluster',1)]),
+        # vs Dimir Flash — also a control mirror with counters; boarding 1
+        # Sphinx + 1 FoN helps land an uncounterable threat.
+        'dimir_flash':([('terminus',1),('wrath',1)],         [('sphinx',1),('fon',1)]),
         'eldrazi':    ([('drain',1)],                        [('fon',1)]),
         # Dimir tempo variants — Fluster swaps in for Counterspell.  Empirically
         # helps the cantrip-heavy variants (dimir, dimir_c); hurts barrowgoyf

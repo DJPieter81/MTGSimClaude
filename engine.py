@@ -979,14 +979,16 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     d_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
     d_drain = counters_by_tag.get('drain')
     d_cryptic = counters_by_tag.get('cryptic')
+    d_mindbreak = counters_by_tag.get('mindbreak')
 
     # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
     if gs.trinisphere_active:
         d_fow = None
         d_fon = None
         d_daze = None  # Daze alternate cost = 0 mana, doesn't meet Trini minimum
+        d_mindbreak = None  # alt cost is free, blocked by Trinisphere min-3 floor
 
-    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_drain, d_cryptic]):
+    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_drain, d_cryptic, d_mindbreak]):
         return False
 
     # ── Don't counter cantrips — save counters for threats ──
@@ -1077,6 +1079,14 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             and not getattr(spell_card, 'engine', False)):
         is_major_threat = False
 
+    # Mindbreak Trap exception: its alt-cost (free if caster has cast 3+
+    # spells this turn) IS the threat-evaluation gate — bypass major/minor
+    # gating because by the time storm has chained 3+ spells, EVERY spell
+    # on the stack is a kill threat.
+    caster_spells_cast = getattr(caster, 'spells_cast_this_turn', 0)
+    if d_mindbreak and caster_spells_cast >= 3:
+        is_major_threat = True
+
     is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
     if is_minor_threat and total_counters <= CL.FOW_MINOR_THREAT_COUNTER_FLOOR:
         if gs.trace:
@@ -1116,6 +1126,16 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             defender.remove_from_hand(blue_pitch); defender.exile.append(blue_pitch)
             gs._last_counter_used = 'fow'
             ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+
+    # ── Mindbreak Trap — alt cost is free if caster has cast 3+ spells
+    # this turn (CR 118.6 alternate-cost trap).  Threshold is checked
+    # earlier in the function (which forces is_major_threat=True so the
+    # function doesn't return early on the cmc-1 ritual gate).
+    if not ctr and d_mindbreak and caster_spells_cast >= 3:
+        defender.remove_from_hand(d_mindbreak); defender.add_to_grave(d_mindbreak)
+        gs._last_counter_used = 'mindbreak'
+        ctr.append(f"Mindbreak Trap (free alt cost — {caster_spells_cast} spells this turn) "
+                   f"exiles {spell_card.name}")
 
     # ── Cryptic Command (1UUU hard counter + draw — modal in real Magic; we
     # model the counter-spell+draw-card mode).  Strictly stronger than
