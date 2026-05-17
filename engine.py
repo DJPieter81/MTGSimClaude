@@ -977,6 +977,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     d_cs = counters_by_tag.get('counter')
     d_fluster = counters_by_tag.get('fluster')
     d_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
+    d_drain = counters_by_tag.get('drain')
 
     # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
     if gs.trinisphere_active:
@@ -984,7 +985,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         d_fon = None
         d_daze = None  # Daze alternate cost = 0 mana, doesn't meet Trini minimum
 
-    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro]):
+    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_drain]):
         return False
 
     # ── Don't counter cantrips — save counters for threats ──
@@ -1111,6 +1112,23 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             defender.remove_from_hand(blue_pitch); defender.exile.append(blue_pitch)
             gs._last_counter_used = 'fow'
             ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+
+    # ── Mana Drain (UU hard counter; controller gains {C}×spell.cmc on their
+    # next main phase — CR 113.9 / oracle text).  Routed through the standard
+    # treasure attr (sim.py:686-695) which is consumed at start of main and
+    # added to total_mana.  Preferred over Counterspell when both available
+    # because the cost is identical but Drain ramps the controller. ──
+    if not ctr and d_drain and is_major_threat and len(defender.hand) >= 4:
+        d_mana = defender.available_mana_count()
+        d_has_uu = sum(1 for l in defender.lands if not l.tapped and 'U' in l.effective_produces()) >= 2
+        if d_mana >= 2 and d_has_uu:
+            defender.remove_from_hand(d_drain); defender.add_to_grave(d_drain)
+            gs._last_counter_used = 'drain'
+            drained = max(0, spell_card.cmc)
+            treasure_attr = 'p1_treasure' if defender is gs.p1 else 'p2_treasure'
+            setattr(gs, treasure_attr, getattr(gs, treasure_attr, 0) + drained)
+            ctr.append(f"Mana Drain counters {spell_card.name} "
+                       f"(+{{C}}×{drained} on next main phase)")
 
     # ── Counterspell (UU, requires mana + hand depth ≥ 4) ──
     if not ctr and d_cs and is_major_threat and len(defender.hand) >= 4:
