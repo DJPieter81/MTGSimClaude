@@ -5953,8 +5953,16 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         cast_spell(player, opponent, gs, p_card, budget, log_fn, log_entries,
                    on_resolve=_resolve_painter)
 
+    # Chalice@1 in play makes Grindstone (CMC 1) uncastable from hand.
+    # Skip the cast to preserve mana for the Karn-wish bypass.
+    # See docs/audits/painter_vs_eldrazi.md.
     grind_card = player.find_tag('grind')
-    if grind_card and not grind_in_play and budget[0] >= 1 and not _defer_combo_pieces:
+    grind_blocked_by_chalice = (gs.chalice_x is not None
+                                and grind_card is not None
+                                and grind_card.cmc == gs.chalice_x)
+    if (grind_card and not grind_in_play and budget[0] >= 1
+            and not _defer_combo_pieces
+            and not grind_blocked_by_chalice):
         def _resolve_grind(c):
             nonlocal grind_in_play
             player.put_artifact_in_play(c)
@@ -5980,9 +5988,16 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── 3. The One Ring — card draw + protection ──
+    # Chalice-aware priority (docs/audits/painter_vs_eldrazi.md):
+    # When Chalice@1 blocks Grindstone, Karn is the only combo path
+    # (Karn wishes Grindstone directly into play, bypassing the
+    # continuous effect). Ring draws cards but the lock keeps the
+    # combo offline, so Karn outranks Ring in the budget queue. With
+    # only 4 mana, only one of the two can deploy this turn.
+    karn_first = grind_blocked_by_chalice and player.find_tag('karn') is not None
     budget[0] = total_mana
     ring = player.find_tag('ring')
-    if ring and budget[0] >= 4:
+    if ring and budget[0] >= 4 and not karn_first:
         def _resolve_ring(c):
             player.put_artifact_in_play(c)
             player.draw(2)
