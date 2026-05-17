@@ -1,0 +1,18 @@
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--timeout=10",
+    "-n", "auto",
+]
+markers = [
+    "fast: pure-rules unit tests, no run_game(), must finish under 100ms each",
+    "sim: seeded game simulations, deterministic, may take seconds",
+    "regression: wraps tools/regression_sweep.py — minutes",
+    "slow: anything that doesn't fit the budgets above",
+]
