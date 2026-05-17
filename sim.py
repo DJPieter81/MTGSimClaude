@@ -1840,6 +1840,13 @@ PROTAGONIST_SB_SWAPS = {
         'uwx':        ([('stp',1),('terminus',1)],           [('fon',1),('fluster',1)]),
         'dimir_flash':([('terminus',1)],                     [('fon',1)]),
         'eldrazi':    ([('drain',1)],                        [('fon',1)]),
+        # Dimir tempo variants — Fluster swaps in for Counterspell.  Empirically
+        # helps the cantrip-heavy variants (dimir, dimir_c); hurts barrowgoyf
+        # variants where the goyf is a creature target Counterspell hits via
+        # the major-threat gate.  Limited to the matchups where it tested
+        # positively.
+        'dimir':      ([('counter',1)],                      [('fluster',1)]),
+        'dimir_c':    ([('counter',1)],                      [('fluster',1)]),
     },
 }
 
