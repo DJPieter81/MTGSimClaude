@@ -4,7 +4,12 @@ date: 2026-05-17
 observed_wr: 0.145
 target_wr: 0.45
 gap_pp: -30.5
-status: open
+status: partial
+follow_up: 2026-05-17 — Chalice@1 gate now library-aware. Fires only if
+  opp is a cantrip-combo deck (storm/tes/doomsday/oops/cephalid/belcher)
+  or own remaining CMC-1 in library ≤2. Sweep n=200: 14.5% → 19.5% (+5pp).
+  Wasteland-activation + Karakas line gaps remain open (companion audit
+  notes them as deck-plugin coverage holes).
 ---
 
 # wan_shi_tong vs dnt — 14.5% WR
