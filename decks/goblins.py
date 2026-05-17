@@ -406,8 +406,19 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     # sat in hand all game vs aggro matchups (goblins vs burn 8.5 % at iter
     # 10 confirms catastrophic outcome).
     # Pashalik Mons (CMC 3 zombie): also a goblin, attacks/blocks.
-    for tag in ('cratermaker', 'warchief', 'expert', 'prospector',
-                'pashalik', 'sling', 'ringleader'):
+    #
+    # Audit-fix (docs/audits/goblins_vs_ur_tempo.md): Ringleader is the
+    # only refill engine in the deck — when Muxus isn't in hand, hard-
+    # casting Ringleader at 4 mana before Warchief (also 3 mana) guarantees
+    # 0-4 new goblins in hand. Warchief's discount only matters if a 5-CMC
+    # piece (Muxus) is in hand; otherwise Ringleader's card-advantage wins.
+    has_muxus = player.find_tag('muxus') is not None
+    deploy_order = (('cratermaker', 'ringleader', 'warchief', 'expert', 'prospector',
+                     'pashalik', 'sling')
+                    if not has_muxus
+                    else ('cratermaker', 'warchief', 'expert', 'prospector',
+                          'pashalik', 'sling', 'ringleader'))
+    for tag in deploy_order:
         crea = player.find_tag(tag)
         if crea and rem >= crea.cmc:
             _b = [rem]
