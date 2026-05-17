@@ -4,7 +4,13 @@ date: 2026-05-17
 observed_wr: 0.155
 target_wr: 0.45
 gap_pp: -29.5
-status: open
+status: partial
+follow_up: 2026-05-17 — Chalice@1 deploy gate now considers library
+  composition + opp archetype. Fires only when (a) opp is a cantrip-combo
+  deck whose engine spells are CMC-1, OR (b) the controller's own CMC-1
+  pool in library is ≤2 (most spent / drawn). Sweep n=200: 15.5% → 22%
+  (+6.5pp). WST engine deployment (no mana reservation for FoW/FoN)
+  remains open.
 ---
 
 # wan_shi_tong vs mono_black — 15.5% WR

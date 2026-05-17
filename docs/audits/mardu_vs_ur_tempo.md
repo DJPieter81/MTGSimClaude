@@ -4,7 +4,12 @@ date: 2026-05-17
 observed_wr: 0.09
 target_wr: 0.45
 gap_pp: -36
-status: open
+status: partial
+follow_up: 2026-05-17 — Grief/Fury pitch picker now routes through
+  `select_pitch_target` with `_mardu_protected` tag set, so the deck no
+  longer exiles its own Bowmasters/Lurrus/Fury/Solitude as evoke fuel.
+  Sweep n=200: 9.0% → 15.5% (+6.5pp). BHI counter-gate for naked Fury
+  casts + decklist gap (no Murktide answer) remain open.
 ---
 
 # mardu vs ur_tempo — 9% WR

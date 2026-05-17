@@ -4,7 +4,17 @@ date: 2026-05-17
 observed_wr: 0.29
 target_wr: 0.45
 gap_pp: -16
-status: open
+status: partial
+follow_up: 2026-05-17 — Burning Wish gate now requires enough mana to
+  cast the fetched Empty the Warrens same turn. Floor = 6 mana
+  without LED, 3 mana with LED (LED-crack adds +3 during Wish
+  resolution). Prevents the audit-cited bug where Wish fired with
+  insufficient post-resolve mana. Sweep n=200: 29% → 38% (+9pp,
+  cumulative with Mox-imprint protection from b896e6b).
+  Burning-Wish-for-Charbelcher (audit's wish-fetch line) note: per
+  CR 700.2, Wish only fetches sorceries; Charbelcher is an artifact
+  so it's NOT a valid Wish target — the audit author was mistaken.
+  Empty-only fetch is correct.
 ---
 
 # belcher vs ur_delver — 29% WR

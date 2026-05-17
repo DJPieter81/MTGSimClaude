@@ -22,6 +22,18 @@ def _make_strat_log() -> StrategicLogger:
     return StrategicLogger(enabled=False)
 
 
+# Single source of truth for legendary creature tags in the sim.
+# Used by:
+#   - The legend rule (CR 704.5j) below
+#   - Karakas activation in deck strategies (engine.py:_strategy_dnt,
+#     decks/wan_shi_tong.py:_strategy_wst)
+# Extend this set when adding a new legendary creature card; both the
+# rule enforcement AND Karakas targeting will pick it up automatically.
+LEGENDARY_CREATURE_TAGS: frozenset[str] = frozenset({
+    'tamiyo', 'murk', 'wst', 'thalia',
+})
+
+
 @dataclass
 class LogEntry:
     turn: int
@@ -529,9 +541,9 @@ class GameState:
 
             # CR 704.5j - Legend rule: if a player controls two or more legendary
             # permanents with the same name, keep one (highest power), rest to GY.
-            # Legendary creatures in the sim: Tamiyo, Murktide Regent, Wan Shi Tong
-            # NOTE: Orcish Bowmasters is NOT legendary (Creature - Orc Archer)
-            legendary_tags = {'tamiyo', 'murk', 'wst'}
+            # Single source of truth for legendary creatures in the sim.
+            # NOTE: Orcish Bowmasters is NOT legendary (Creature - Orc Archer).
+            legendary_tags = LEGENDARY_CREATURE_TAGS
             for tag in legendary_tags:
                 copies = [c for c in player.creatures if c.card.tag == tag]
                 if len(copies) > 1:

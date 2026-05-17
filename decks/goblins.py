@@ -25,6 +25,55 @@ GOBLIN_TRIBE_TAGS = frozenset({
 })
 
 
+def _fire_goblin_etb(card, player, opponent, gs, log_fn):
+    """Resolve a Goblin's ETB-triggered ability regardless of entry path
+    (hard-cast, Aether Vial flash, Goblin Lackey cheat). CR 603.6a — an
+    ETB ability triggers on *every* zone change into the battlefield.
+
+    Returns the number of additional Goblins that hit the battlefield
+    via cascading ETBs (Muxus → reveal-6). Caller adds to its own
+    `goblin_count` counter.
+    """
+    tag = card.tag
+    cascaded = 0
+    if tag == 'muxus':
+        revealed = player.library[:6]
+        hits = 0
+        for c in revealed:
+            if c.is_creature() and c.tag in (GOBLIN_TRIBE_TAGS - {'muxus'}):
+                player.library.remove(c)
+                perm = player.put_creature_in_play(c)
+                perm.summoning_sick = False
+                hits += 1
+        cascaded = hits
+        log_fn(f"★ Muxus reveals {hits} Goblins!", True)
+    elif tag == 'matron':
+        muxus_lib = next((c for c in player.library if c.tag == 'muxus'), None)
+        if muxus_lib:
+            player.library.remove(muxus_lib)
+            player.hand.append(muxus_lib)
+            log_fn("Goblin Matron → tutors Muxus!", True)
+        else:
+            ringleader = next((c for c in player.library if c.tag == 'ringleader'), None)
+            if ringleader:
+                player.library.remove(ringleader)
+                player.hand.append(ringleader)
+                log_fn("Goblin Matron → tutors Ringleader", True)
+            else:
+                log_fn("Goblin Matron ETB (no target)")
+    elif tag == 'ringleader':
+        revealed = player.library[:4]
+        taken = []
+        for c in revealed:
+            if c.is_creature() and c.tag in GOBLIN_TRIBE_TAGS:
+                player.library.remove(c)
+                player.hand.append(c)
+                taken.append(c.name)
+        if taken:
+            log_fn(f"  Ringleader reveals → takes {', '.join(taken)}", True)
+    return cascaded
+
+
 # ─── Deck construction ────────────────────────────────────────────────────────
 
 def make_goblins_deck():
@@ -140,14 +189,16 @@ def make_goblins_deck():
         c.produces = set()
         d.append(c)
 
-    # Mountain (basic)
+    # Wasteland — land disruption vs land-combo (Depths/Lands/Cloudpost)
+    # and nonbasic-heavy manabases. Real Legacy Goblins lists run 2-4.
+    # See docs/audits/goblins_vs_depths.md.
     for _ in range(2):
-        c = Card('Mountain', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='basic', produces={'R'}, gy_type='land',
-                 is_basic=True, subtypes={'Mountain'})
+        c = Card('Wasteland', CardType.LAND, cmc=0, mana_cost={},
+                 colors=set(), tag='wl', produces={'C'}, gy_type='land')
         d.append(c)
 
-    # Swamp (basic)
+    # Swamp (basic) — cut from 2 to 2 (unchanged); Mountain cut 2 → 0 to
+    # make room for Wasteland. Auntie's Hovel + Badlands cover red sources.
     for _ in range(2):
         c = Card('Swamp', CardType.LAND, cmc=0, mana_cost={},
                  colors=set(), tag='basic', produces={'B'}, gy_type='land',
@@ -229,10 +280,16 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── Chrome Mox for fast mana ────────────────────────────────────────────
     mox = player.find_tag('chrome_mox')
     if mox and not any(p.card.tag == 'chrome_mox' for p in player.artifacts):
-        pitch = next((c for c in player.hand
-                      if c is not mox and not c.is_land()
-                      and c.tag not in ('chrome_mox', 'muxus', 'lackey')
-                      and c.colors), None)
+        # Mox needs a colored pitch. Goblins protects its tutors (matron,
+        # ringleader, recruiter), Vial enabler, and finishers (muxus, sling)
+        # from being exiled — picking them was the documented audit bug
+        # (docs/audits/goblins_vs_burn.md).
+        from engine import select_pitch_target
+        _gob_protected = frozenset({'chrome_mox', 'muxus', 'lackey', 'matron',
+                                    'ringleader', 'recruiter', 'sling',
+                                    'warchief', 'pashalik'})
+        pitch = (select_pitch_target(player.hand, 'R', mox, _gob_protected)
+                 or select_pitch_target(player.hand, 'B', mox, _gob_protected))
         if pitch:
             player.remove_from_hand(mox)
             player.put_artifact_in_play(mox)
@@ -319,16 +376,29 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
         rem = _b[0]
 
     # ── Vial deploy (flash in creatures at vial_counters CMC) ──────────────
+    # ETB triggers fire on Vial flash same as on hard-cast (CR 603.6a).
+    # Audit-fix (docs/audits/goblins_vs_dimir_d.md): Vial-flashed Muxus /
+    # Matron / Ringleader now resolve their ETB via `_fire_goblin_etb`.
     vial_on_board = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
     vc = getattr(gs, 'vial_counters', 0)
     if vial_on_board and vc > 0:
-        vial_target = next((c for c in player.hand
-                           if c.is_creature() and c.cmc == vc), None)
+        # Prefer the highest-value target at CMC vc: Muxus (vc=6) > Ringleader
+        # (vc=4) > Matron (vc=3) > anything else.
+        vial_candidates = [c for c in player.hand
+                           if c.is_creature() and c.cmc == vc]
+        _vial_priority = {'muxus': 0, 'ringleader': 1, 'matron': 2,
+                          'warchief': 3, 'sling': 3, 'expert': 4,
+                          'cratermaker': 5, 'lackey': 6, 'pashalik': 6,
+                          'prospector': 7, 'fury': 7}
+        vial_target = (min(vial_candidates,
+                           key=lambda c: _vial_priority.get(c.tag, 99))
+                       if vial_candidates else None)
         if vial_target:
             player.remove_from_hand(vial_target)
             player.put_creature_in_play(vial_target)
             goblin_count += 1
             log_fn(f"Vial ({vc}) → {vial_target.name}")
+            goblin_count += _fire_goblin_etb(vial_target, player, opponent, gs, log_fn)
 
     # ── Deploy remaining creatures (cheap → mid → big) ────────────────────
     # Ringleader (CMC 4): hard-cast for value; reveals top 4, all goblins to
@@ -336,8 +406,19 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     # sat in hand all game vs aggro matchups (goblins vs burn 8.5 % at iter
     # 10 confirms catastrophic outcome).
     # Pashalik Mons (CMC 3 zombie): also a goblin, attacks/blocks.
-    for tag in ('cratermaker', 'warchief', 'expert', 'prospector',
-                'pashalik', 'sling', 'ringleader'):
+    #
+    # Audit-fix (docs/audits/goblins_vs_ur_tempo.md): Ringleader is the
+    # only refill engine in the deck — when Muxus isn't in hand, hard-
+    # casting Ringleader at 4 mana before Warchief (also 3 mana) guarantees
+    # 0-4 new goblins in hand. Warchief's discount only matters if a 5-CMC
+    # piece (Muxus) is in hand; otherwise Ringleader's card-advantage wins.
+    has_muxus = player.find_tag('muxus') is not None
+    deploy_order = (('cratermaker', 'ringleader', 'warchief', 'expert', 'prospector',
+                     'pashalik', 'sling')
+                    if not has_muxus
+                    else ('cratermaker', 'warchief', 'expert', 'prospector',
+                          'pashalik', 'sling', 'ringleader'))
+    for tag in deploy_order:
         crea = player.find_tag(tag)
         if crea and rem >= crea.cmc:
             _b = [rem]

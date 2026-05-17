@@ -4,7 +4,14 @@ date: 2026-05-17
 observed_wr: 0.28
 target_wr: 0.45
 gap_pp: -17
-status: open
+status: partial
+follow_up: 2026-05-17 — COMBO_META wired into `decks/painter.py` and
+  `_strategy_painter` now consults `combo_plan`; combo-piece deployment
+  is gated on Defer. Sweep n=200: 28.0% → 27.0% (no improvement — ur_tempo's
+  Daze/Bolt mix produces lower opp `p_free_counter` than dimir/sneak_b,
+  so Defer fires less often; the gap here is driven by the decklist's
+  lack of any Murktide answer rather than naked-piece casting. Companion
+  audit (`painter_vs_sneak_b`) moved +7.5pp on the same fix.
 ---
 
 # painter vs ur_tempo — 28% WR

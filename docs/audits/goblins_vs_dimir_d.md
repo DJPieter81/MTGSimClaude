@@ -4,7 +4,15 @@ date: 2026-05-17
 observed_wr: 0.08
 target_wr: 0.45
 gap_pp: -37
-status: open
+status: partial
+follow_up: 2026-05-17 — Vial-flash ETB triggers now fire via shared
+  `_fire_goblin_etb` helper (Muxus reveal-6, Matron tutor, Ringleader
+  reveal-4). Vial target picker also prioritises Muxus > Ringleader >
+  Matron > rest at matching CMC. Sweep n=200 vs dimir_d unchanged (8.5%
+  — removal + counter-magic still dominate); regression sweep moved
+  goblins_vs_uwx +3.5pp, goblins_vs_dimir +5pp (boundary). Remaining
+  audit issues: Lackey cheat trigger pre-combat block sequencing,
+  Warchief deploy-before-Muxus race awareness.
 ---
 
 # goblins vs dimir_d — 8% WR

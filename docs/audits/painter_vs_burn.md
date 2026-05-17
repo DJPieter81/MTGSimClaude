@@ -4,7 +4,14 @@ date: 2026-05-17
 observed_wr: 0.315
 target_wr: 0.45
 gap_pp: -13.5
-status: open
+status: partial
+follow_up: 2026-05-17 — `_strategy_painter` now has a removal-deployment
+  branch: Portable Hole (CMC 1) exiles small threats; Kozilek's Command
+  (CMC 4) kills the biggest remaining attacker. Fires whenever opp has
+  any creature on board, not gated on archetype. Sweep n=200: 31.5% →
+  34.5% (+3pp). Companion audit `painter_vs_eldrazi` requires a separate
+  Chalice-aware Karn-vs-Ring priority gate (loop-break-aware: deferred
+  to next fix-cycle). `_keep_painter` matchup-awareness also still open.
 ---
 
 # painter vs burn — 31.5% WR

@@ -4,7 +4,15 @@ date: 2026-05-17
 observed_wr: 0.275
 target_wr: 0.45
 gap_pp: -17.5
-status: open
+status: partial
+follow_up: 2026-05-17 — Chrome Mox imprint now routes through
+  `engine.select_pitch_target` (filters `is_combo_piece` / `win_condition`
+  flags, so Wish / Empty / Tendrils / LED / Belcher never imprint) plus
+  payoff-redundancy gate (only imprint when hand still has ≥1 castable
+  payoff after pitch). Sweep n=200: vs uwx unchanged (26.5%); vs ur_delver
+  29% → 33% (+4pp); regression sweep clean. The 0pp on the audited matchup
+  suggests another bottleneck (Wish-into-Empty token clock vs UWX's
+  Solitude/Sanctifier control plan) dominates after the imprint fix.
 ---
 
 # belcher vs uwx — 27.5% WR

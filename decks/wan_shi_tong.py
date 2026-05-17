@@ -54,11 +54,14 @@ def make_wst_deck():
     d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
     d += [fetch_land('Marsh Flats', ['Swamp','Plains'])] * 4
     d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 3
-    d += [basic_land('Island', 'U', 'Island')] * 3
-    d += [basic_land('Plains', 'W', 'Plains')] * 3
+    d += [basic_land('Island', 'U', 'Island')] * 2
+    d += [basic_land('Plains', 'W', 'Plains')] * 2
     d += [dual_land('Plateau', ['R','W'], ['Mountain','Plains'])] * 1
     d += [utility_land('Karakas', ['W'], 'karakas')] * 1
-    d += [utility_land('Wasteland', ['C'], 'wl')] * 1
+    # Wasteland bumped 1 → 3 to disrupt nonbasic-heavy manabases
+    # (Cloudpost, Lands, Dimir Bayou/Underground Sea). Real Legacy WST
+    # Control lists run 3-4. See docs/audits/wan_shi_tong_vs_cloudpost.md.
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 3
     d += [utility_land('Meticulous Archive', ['W','U'], 'archive')] * 1
     d += [utility_land('Ancient Tomb', ['C','C'], 'tomb', mana_ritual=True)] * 1
     d += [utility_land('Mystic Sanctuary', ['U'], 'sanctuary')] * 1
@@ -77,10 +80,42 @@ def _strategy_wst(player, opponent, gs, total_mana, log_fn, log_entries):
     budget = [total_mana]
 
     # ── 1. Chalice of the Void on 1 — T1 priority ──
+    # CR 113.6 — Chalice@1 counters every CMC-1 spell on cast, including
+    # the controller's own. Two layered gates:
+    #
+    # (a) Matchup gate (`opp_is_cantrip_combo`): vs combo decks whose
+    #     engine spell is CMC-1 (storm cantrips, doomsday cantrips, oops
+    #     petals/probe, cephalid Brainstorm/Ponder), Chalice@1 is high-EV
+    #     and locking out own STP/March is acceptable collateral.
+    # (b) Library-drained gate (`library_safe`): vs everything else,
+    #     require most of the controller's own CMC-1 pool to be already
+    #     drawn before firing — otherwise the bug from
+    #     docs/audits/wan_shi_tong_vs_dnt.md / mono_black.md occurs (turn-1
+    #     Chalice locks out 4 STP + 4 March still in library).
+    from config import MatchupCategory as MC
+    opp_deck = gs.p2_deck if player is gs.p1 else gs.p1_deck
+    # Cantrip-combo subset of MC.COMBO — these decks rely on CMC-1 spells
+    # (Brainstorm, Ponder, Petal, Probe, Ritual etc.) for engine velocity.
+    # Decks like show/sneak land their payoff at CMC ≥ 3, so they're in
+    # MC.COMBO but not cantrip-engine-driven.
+    _cantrip_combo_keys = frozenset({
+        'storm', 'tes', 'doomsday', 'oops', 'cephalid', 'belcher',
+    })
+    opp_is_cantrip_combo = opp_deck in _cantrip_combo_keys
+
     ch = player.find_tag('chalice')
-    own_cmc1 = sum(1 for c in player.hand
-                   if c is not ch and not c.is_land() and c.cmc == 1)
-    if ch and gs.chalice_x is None and budget[0] >= 2 and own_cmc1 == 0:
+    own_cmc1_hand = sum(1 for c in player.hand
+                        if c is not ch and not c.is_land() and c.cmc == 1)
+    own_cmc1_lib = sum(1 for c in player.library
+                       if not c.is_land() and c.cmc == 1)
+    # Threshold derived from deck composition: WST runs 8 CMC-1 spells
+    # (4 STP + 4 March). The lock is positive-EV only when most of the
+    # pool is already spent / drawn (≥6 of 8).
+    LATE_GAME_CMC1_REMAINING = 2
+    library_safe = own_cmc1_lib <= LATE_GAME_CMC1_REMAINING
+    gate_ok = opp_is_cantrip_combo or library_safe
+    if (ch and gs.chalice_x is None and budget[0] >= 2
+            and own_cmc1_hand == 0 and gate_ok):
         def _resolve_ch(c):
             player.put_artifact_in_play(c)
             _resolve_lock(gs, c, log_fn)
@@ -162,6 +197,27 @@ def _strategy_wst(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn("★ Wan Shi Tong, Librarian (3/5 flying) — draws on each opponent draw", True)
         cast_spell(player, opponent, gs, wst, budget, log_fn, log_entries,
                    on_resolve=_resolve_wst, cost_override=4)
+
+    # ── 5b. Karakas — bounce opponent's legendary creatures ──
+    # CR 109.3 + audit (docs/audits/wan_shi_tong_vs_dnt.md): WST runs 1
+    # Karakas; the existing _strategy_dnt Karakas block only targets
+    # Murktide. WST needs its own bounce block for Thalia and any other
+    # tag in the shared `LEGENDARY_CREATURE_TAGS` set.
+    from game import LEGENDARY_CREATURE_TAGS as _LEGEND_TAGS
+    karakas = next((l for l in player.lands
+                    if l.card.tag == 'karakas' and not l.tapped), None)
+    if karakas and opponent.creatures:
+        legend = next((c for c in opponent.creatures
+                       if c.card.tag in _LEGEND_TAGS), None)
+        if legend is not None:
+            karakas.tapped = True
+            opponent.creatures.remove(legend)
+            opponent.hand.append(legend.card)
+            log_fn(f"★ Karakas → returns {legend.card.name}", True)
+            gs.strat_log.log_disruption(
+                gs.turn, gs, player, 'remove',
+                legend.card.tag or 'creature', 'karakas',
+                reason=f'karakas bounces {legend.card.tag or "legendary"}')
 
     # ── 6. Sanctifier en-Vec ──
     sanc = player.find_tag('sanctifier')

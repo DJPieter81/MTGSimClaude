@@ -893,6 +893,35 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
 # ─────────────────────────────────────────────
 
 
+def select_pitch_target(hand, color, exclude_card, protected_tags=frozenset()):
+    """Select a pitch-cost target of `color` from `hand` (CR 113.9 alt cost).
+
+    Generic across every "exile a card of color X from hand" mechanic
+    (Chrome Mox imprint, Force of Will / Force of Negation, evoke pitch on
+    the Modern Horizons elementals, Force of Vigor). The caller passes the
+    deck's protected-tag set; the helper filters lands, the spell being
+    cast, win conditions, combo pieces, and protected tags.
+
+    Returns the first valid candidate (deterministic by hand order), or
+    None if every same-color card is protected.
+    """
+    for c in hand:
+        if c is exclude_card:
+            continue
+        if c.is_land():
+            continue
+        if color not in getattr(c, 'colors', set()):
+            continue
+        if c.tag in protected_tags:
+            continue
+        if getattr(c, 'is_combo_piece', False):
+            continue
+        if getattr(c, 'win_condition', False):
+            continue
+        return c
+    return None
+
+
 def _select_fow_pitch(hand, exclude_card):
     """Select least-valuable blue card for FoW/FoN pitch. Never exile blue threats
     or combo win conditions."""
@@ -1707,8 +1736,17 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
         # Full cast (1GG): enters as a 3/4 reach creature
         if opp_gy_size >= 2:
             if can_evoke:
-                # Evoke path — free, instant speed, creature sacrificed after ETB
-                green_pitch = next(c for c in player.hand if 'G' in c.colors and c.tag != 'endurance')
+                # Evoke path — free, instant speed, creature sacrificed after ETB.
+                # Pitch picker filters combo pieces / win conditions (e.g.
+                # Crop Rotation, Loam) via `select_pitch_target`. Fallback
+                # to first-green preserves old behaviour when only protected
+                # cards remain.
+                _endurance_protected = frozenset({'endurance'})
+                end_card = player.find_tag('endurance')
+                green_pitch = select_pitch_target(player.hand, 'G', end_card,
+                                                   _endurance_protected)
+                if green_pitch is None:
+                    green_pitch = next(c for c in player.hand if 'G' in c.colors and c.tag != 'endurance')
                 # Exile the green pitch as alternative cost (paid before cast)
                 player.remove_from_hand(green_pitch)
                 player.exile.append(green_pitch)
@@ -2140,7 +2178,10 @@ def _p1_force_of_vigor(gs, target_tags, log_list):
     b = gs.p1
     fov = b.find_tag('fov')
     if not fov: return False
-    green_pitch = next((c for c in b.hand if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
+    green_pitch = select_pitch_target(b.hand, 'G', fov,
+                                       frozenset({'fov', 'endurance'}))
+    if green_pitch is None:
+        green_pitch = next((c for c in b.hand if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
     if not green_pitch: return False
     targets = [p for p in gs.p2.artifacts + gs.p2.enchantments
                if p.card.tag in target_tags][:2]
@@ -2162,8 +2203,14 @@ def _force_of_vigor_generic(responder, active, gs, target_tags, log_list):
     """
     fov = responder.find_tag('fov')
     if not fov: return False
-    green_pitch = next((c for c in responder.hand
-                        if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
+    # Helper filters is_combo_piece / win_condition (excludes Crop Rotation,
+    # Endurance, etc. from being pitched). Fallback preserves old behaviour
+    # if no flagged-safe card is in hand.
+    green_pitch = select_pitch_target(responder.hand, 'G', fov,
+                                       frozenset({'fov', 'endurance'}))
+    if green_pitch is None:
+        green_pitch = next((c for c in responder.hand
+                            if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
     if not green_pitch: return False
     targets = [p for p in active.artifacts + active.enchantments
                if p.card.tag in target_tags][:2]
@@ -5832,11 +5879,90 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         gs.win_reason = "Painter + Grindstone combo"
         return
 
+    # ── 1b. Combo-plan protection check (consume painter's COMBO_META) ──
+    # Painter runs zero counters, so `_check_protection` returns Defer
+    # whenever opp BHI p_free_counter exceeds the threshold. Defer skips
+    # naked combo-piece deployment this turn — Ring/Karn/Tezzeret deploy
+    # regardless because their loss to a free counter is a smaller tempo
+    # swing than losing Painter's Servant pre-combo turn.
+    # See docs/audits/painter_vs_sneak_b.md, docs/audits/painter_vs_ur_tempo.md.
+    from combo_engine import (
+        combo_plan as _combo_plan_p, Hold as _Hold_p, Defer as _Defer_p,
+    )
+    _saved_em_p = getattr(gs, '_executing_mana', None)
+    gs._executing_mana = total_mana
+    try:
+        _plan_p = _combo_plan_p(player, opponent, gs)
+    finally:
+        if _saved_em_p is None:
+            try:
+                del gs._executing_mana
+            except AttributeError:
+                pass
+        else:
+            gs._executing_mana = _saved_em_p
+
+    _defer_combo_pieces = isinstance(_plan_p, _Defer_p)
+    if isinstance(_plan_p, (_Hold_p, _Defer_p)):
+        gs.strat_log.log_decision(
+            gs.turn, 'painter',
+            candidates=['proceed', 'hold', 'defer'],
+            chosen=('defer' if _defer_combo_pieces
+                    else f'hold_{getattr(_plan_p.card, "tag", "card")}'),
+            reason=_plan_p.reason)
+        from decision import MetaDecision as _MetaDecision_p
+        gs.strat_log.log(_MetaDecision_p(
+            turn=gs.turn,
+            deck=gs.p1_deck if player is gs.p1 else gs.p2_deck,
+            phase='meta',
+            reason=f'hold painter combo — {_plan_p.reason}',
+            candidates=('execute', 'play_around'),
+            kind='play_around',
+            threat_tag='free_counter',
+        ))
+
     budget = [total_mana]
 
+    # ── 1c. Removal vs opponent creatures (deploy unused cards) ──
+    # Audit-fix (docs/audits/painter_vs_burn.md): Portable Hole + Kozilek's
+    # Command sat in hand vs aggro because no strategy branch cast them.
+    # Portable Hole exiles a permanent with CMC ≤ 2 (covers most aggro
+    # 1-drops); Kozilek's Command is a 4-mana modal removal instant.
+    # Both fire any time an opp creature is on the board, not gated on
+    # archetype — wasting a Hole on a 1-drop in a combo matchup is fine
+    # when there's nothing else to spend mana on.
+    if opponent.creatures:
+        # Portable Hole — cheapest, exile a 1-drop / small threat first.
+        hole = player.find_tag('hole')
+        if hole and budget[0] >= 1:
+            target = next((c for c in opponent.creatures
+                           if c.card.cmc <= 2), None)
+            if target is not None:
+                def _resolve_hole(c, _t=target):
+                    player.put_artifact_in_play(c)
+                    if _t in opponent.creatures:
+                        opponent.remove_creature(_t, to_exile=True)
+                        log_fn(f"Portable Hole → exiles {_t.card.name}", True)
+                cast_spell(player, opponent, gs, hole, budget, log_fn, log_entries,
+                           on_resolve=_resolve_hole)
+
+        # Kozilek's Command — 4 mana, hit the biggest remaining threat.
+        kcmd = player.find_tag('kozcommand')
+        if kcmd and budget[0] >= 4 and opponent.creatures:
+            target = max(opponent.creatures, key=lambda c: c.power + c.toughness)
+            def _resolve_kcmd(c, _t=target):
+                player.add_to_grave(c)
+                if _t in opponent.creatures:
+                    opponent.remove_creature(_t)
+                    log_fn(f"Kozilek's Command → kills {_t.card.name}", True)
+            cast_spell(player, opponent, gs, kcmd, budget, log_fn, log_entries,
+                       on_resolve=_resolve_kcmd)
+    total_mana = budget[0]
+
     # ── 2. Deploy combo pieces from hand ──
+    # Skip naked combo-piece deployment when combo_plan returned Defer.
     p_card = player.find_tag('painter')
-    if p_card and not painter_in_play and budget[0] >= 2:
+    if p_card and not painter_in_play and budget[0] >= 2 and not _defer_combo_pieces:
         def _resolve_painter(c):
             nonlocal painter_in_play
             player.put_artifact_in_play(c)
@@ -5845,8 +5971,16 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         cast_spell(player, opponent, gs, p_card, budget, log_fn, log_entries,
                    on_resolve=_resolve_painter)
 
+    # Chalice@1 in play makes Grindstone (CMC 1) uncastable from hand.
+    # Skip the cast to preserve mana for the Karn-wish bypass.
+    # See docs/audits/painter_vs_eldrazi.md.
     grind_card = player.find_tag('grind')
-    if grind_card and not grind_in_play and budget[0] >= 1:
+    grind_blocked_by_chalice = (gs.chalice_x is not None
+                                and grind_card is not None
+                                and grind_card.cmc == gs.chalice_x)
+    if (grind_card and not grind_in_play and budget[0] >= 1
+            and not _defer_combo_pieces
+            and not grind_blocked_by_chalice):
         def _resolve_grind(c):
             nonlocal grind_in_play
             player.put_artifact_in_play(c)
@@ -5872,9 +6006,16 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
         return
 
     # ── 3. The One Ring — card draw + protection ──
+    # Chalice-aware priority (docs/audits/painter_vs_eldrazi.md):
+    # When Chalice@1 blocks Grindstone, Karn is the only combo path
+    # (Karn wishes Grindstone directly into play, bypassing the
+    # continuous effect). Ring draws cards but the lock keeps the
+    # combo offline, so Karn outranks Ring in the budget queue. With
+    # only 4 mana, only one of the two can deploy this turn.
+    karn_first = grind_blocked_by_chalice and player.find_tag('karn') is not None
     budget[0] = total_mana
     ring = player.find_tag('ring')
-    if ring and budget[0] >= 4:
+    if ring and budget[0] >= 4 and not karn_first:
         def _resolve_ring(c):
             player.put_artifact_in_play(c)
             player.draw(2)
@@ -6690,11 +6831,18 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     # Requires a non-Grief black card in hand for evoke cost (was implicitly
     # cheated in the prior direct-manipulation code).
     if grief and ephemerate and gs.turn == 1:
-        blacks = [c for c in player.hand
-                  if 'B' in getattr(c, 'colors', set())
-                  and c is not grief and c is not ephemerate]
-        if blacks:
-            pitch = blacks[0]
+        # Mardu protects evoke fuel + ephemerate + its own threats from
+        # being pitched as Grief evoke cost (docs/audits/mardu_vs_ur_tempo.md).
+        _mardu_protected = frozenset({'grief', 'ephemerate', 'fury', 'solitude',
+                                      'dauthi', 'kalitas', 'lurrus', 'bowmasters'})
+        pitch = select_pitch_target(player.hand, 'B', grief, _mardu_protected)
+        if pitch is None:
+            # Fall back to any non-ephemerate black card (matches old contract
+            # — only ephemerate was excluded before).
+            pitch = next((c for c in player.hand
+                          if 'B' in getattr(c, 'colors', set())
+                          and c is not grief and c is not ephemerate), None)
+        if pitch is not None:
             player.remove_from_hand(pitch); player.exile.append(pitch)
             t1_budget = [total_mana]
 
@@ -6728,9 +6876,13 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
 
     # Evoke Grief T1-2 (no Ephemerate)
     elif grief and gs.turn <= 2:
-        blacks = [c for c in player.hand if 'B' in getattr(c,'colors',set()) and c.tag != 'grief']
-        if blacks:
-            pitch = blacks[0]
+        _mardu_protected = frozenset({'grief', 'ephemerate', 'fury', 'solitude',
+                                      'dauthi', 'kalitas', 'lurrus', 'bowmasters'})
+        pitch = select_pitch_target(player.hand, 'B', grief, _mardu_protected)
+        if pitch is None:
+            pitch = next((c for c in player.hand
+                          if 'B' in getattr(c, 'colors', set()) and c.tag != 'grief'), None)
+        if pitch is not None:
             player.remove_from_hand(pitch); player.exile.append(pitch)
             def _resolve_grief_evoke(c, _p=pitch):
                 if opponent.hand:
@@ -6747,7 +6899,12 @@ def _strategy_mardu(player, opponent, gs, total_mana, log_fn, log_entries):
     fury = player.find_tag('fury')
     eph2 = player.find_tag('ephemerate')
     if fury and opponent.creatures:
-        red_pitch = next((c for c in player.hand if 'R' in getattr(c,'colors',set()) and c is not fury), None)
+        _fury_protected = frozenset({'fury', 'ephemerate', 'ragavan', 'bolt',
+                                     'lightning_bolt', 'lookout', 'goblin_guide'})
+        red_pitch = select_pitch_target(player.hand, 'R', fury, _fury_protected)
+        if red_pitch is None:
+            red_pitch = next((c for c in player.hand
+                              if 'R' in getattr(c, 'colors', set()) and c is not fury), None)
         if red_pitch: player.remove_from_hand(red_pitch); player.exile.append(red_pitch)
         n_waves = 2 if (eph2 and not (grief and ephemerate)) else 1
         if n_waves == 2: player.remove_from_hand(eph2); player.add_to_grave(eph2)
