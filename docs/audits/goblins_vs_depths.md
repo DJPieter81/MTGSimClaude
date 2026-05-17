@@ -4,7 +4,15 @@ date: 2026-05-17
 observed_wr: 0.085
 target_wr: 0.45
 gap_pp: -36.5
-status: open
+status: partial
+follow_up: 2026-05-17 — Added 2 Wastelands to goblins decklist
+  (cut 2 Mountains; 20 lands total unchanged). Engine's existing
+  Wasteland selectors auto-activate without strategy edits. Sweep
+  n=200: 8% → 11.5% (+3.5pp on this matchup). Bonus: goblins vs
+  lands 35.0%, vs cloudpost 40.0% (broader meta lift from one deck
+  edit). `interaction.soft_to_wasteland=False` now signals correctly.
+  Real-Legacy ratio (3-4 Wasteland) would yield more but trades
+  against creature count — current 2 is conservative.
 ---
 
 # goblins vs depths — 8.5% WR

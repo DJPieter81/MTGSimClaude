@@ -189,14 +189,16 @@ def make_goblins_deck():
         c.produces = set()
         d.append(c)
 
-    # Mountain (basic)
+    # Wasteland — land disruption vs land-combo (Depths/Lands/Cloudpost)
+    # and nonbasic-heavy manabases. Real Legacy Goblins lists run 2-4.
+    # See docs/audits/goblins_vs_depths.md.
     for _ in range(2):
-        c = Card('Mountain', CardType.LAND, cmc=0, mana_cost={},
-                 colors=set(), tag='basic', produces={'R'}, gy_type='land',
-                 is_basic=True, subtypes={'Mountain'})
+        c = Card('Wasteland', CardType.LAND, cmc=0, mana_cost={},
+                 colors=set(), tag='wl', produces={'C'}, gy_type='land')
         d.append(c)
 
-    # Swamp (basic)
+    # Swamp (basic) — cut from 2 to 2 (unchanged); Mountain cut 2 → 0 to
+    # make room for Wasteland. Auntie's Hovel + Badlands cover red sources.
     for _ in range(2):
         c = Card('Swamp', CardType.LAND, cmc=0, mana_cost={},
                  colors=set(), tag='basic', produces={'B'}, gy_type='land',
