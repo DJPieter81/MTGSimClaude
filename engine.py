@@ -4836,12 +4836,13 @@ def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
                        f"(+1 mana, budget={budget[0]})")
             else:
                 # General path: deduct CMC, put permanent into play.
+                from rules import CardType as _CT
                 budget[0] -= target.cmc
-                if target.card_type.name == 'CREATURE':
+                if target.card_type == _CT.CREATURE:
                     player.put_creature_in_play(target)
-                elif target.card_type.name == 'ARTIFACT':
+                elif target.card_type == _CT.ARTIFACT:
                     player.put_artifact_in_play(target)
-                elif target.card_type.name == 'ENCHANTMENT':
+                elif target.card_type == _CT.ENCHANTMENT:
                     player.enchantments.append(
                         type(player.creatures[0])(target) if player.creatures
                         else target)
