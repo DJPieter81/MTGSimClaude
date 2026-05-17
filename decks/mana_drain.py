@@ -46,24 +46,31 @@ def make_mana_drain_deck():
                   tag='stp', is_removal=True)] * 4
     # Terminus — miracle wrath at {W}.  Critical vs cmc-1/2 aggro (Ocelot,
     # Delver) where the engine's counter gate treats every threat as "minor"
-    # and our 14 counter slots otherwise sit dead in hand.  Hardcast cost {6W}
-    # also makes Terminus a legitimate drain-mana sink (drain a 6-cmc spell
-    # → Terminus free) for the late game.
+    # and our 14 counter slots otherwise sit dead in hand.
     d += [sorcery('Terminus', 6, {'W':1,'generic':5}, {'W'},
-                  tag='terminus', is_removal=True, is_mass_removal=True)] * 3
+                  tag='terminus', is_removal=True, is_mass_removal=True)] * 2
+    # Wrath of the Skies — 2-cmc mass removal.  In real Magic the X-cost
+    # ({W}{W} + any amount of generic) scales with mana paid, making it a
+    # natural drain-mana sink.  The sim models it at fixed CMC 2 (matching
+    # the wan_shi_tong wiring) — a cheap follow-up wrath when Terminus is
+    # held back, or a second sweep after Terminus exiles the first wave.
+    d += [sorcery('Wrath of the Skies', 2, {'W':1,'generic':1}, {'W'},
+                  tag='wrath', is_removal=True, is_mass_removal=True)] * 2
 
     # ── Cantrips (10) ──
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
     d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 4
-    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 2
+    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 1
 
-    # ── Threats / drain payoffs (5) ──
-    # Cut 1 Snapcaster (marginal under aggro pressure — needs a useful flashback
-    # target in yard) and 1 Emrakul (15 cmc never realistically cast).
-    d += [creature('Snapcaster Mage', 2, {'U':1,'generic':1}, {'U'},
-                   2, 1, tag='snap', flash=True)] * 1
+    # ── Threats / drain payoffs (6) — all-generic / hard-to-kill bodies ──
     d += [planeswalker('Jace, the Mind Sculptor', 4, {'U':2,'generic':2}, {'U'},
                        tag='jace', engine=True, draw_trigger=True)] * 3
+    # Wurmcoil Engine — 6 cmc colourless 6/6 deathtouch + lifelink.  Anti-aggro
+    # haymaker that drain mana pays for directly (all generic).  Lifelink
+    # swings a losing race by 6+, deathtouch makes every chump-block lethal.
+    d += [creature('Wurmcoil Engine', 6, {'generic':6}, set(),
+                   6, 6, tag='wurmcoil', deathtouch=True, lifelink=True,
+                   win_condition=True)] * 1
     d += [creature('Sphinx of the Final Word', 6, {'U':2,'generic':4}, {'U'},
                    5, 5, tag='sphinx', flying=True, indestructible=True,
                    win_condition=True)] * 2
@@ -161,50 +168,27 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
         cast_spell(player, opponent, gs, term, mana_ref, log_fn, log_entries,
                    on_resolve=_resolve_term, cost_override=1)
 
-    # ── 2. Snapcaster Mage — flashback Drain / STP / Brainstorm ──
-    snap = player.find_tag('snap')
-    if snap and can_cast(snap):
-        drain_fb = next((c for c in player.graveyard if c.tag == 'drain'), None)
-        term_fb = (next((c for c in player.graveyard if c.tag == 'terminus'), None)
-                   if len(opponent.creatures) >= 2 else None)
-        stp_fb = next((c for c in player.graveyard
-                       if c.tag == 'stp' and opponent.creatures
-                       and max(cc.power for cc in opponent.creatures) >= stp_threshold), None)
-        bs_fb = next((c for c in player.graveyard if c.is_cantrip), None)
-        fb = drain_fb or term_fb or stp_fb or bs_fb
-        if fb:
-            def _resolve_snap(c, _fb=fb, _drain=drain_fb, _term=term_fb,
-                              _stp=stp_fb, _bs=bs_fb):
-                player.put_creature_in_play(c)
-                log_fn(f"Snapcaster Mage (2/1) — flashback {_fb.name}")
-                if _fb is _drain:
-                    player.graveyard.remove(_fb); player.exile.append(_fb)
-                elif _fb is _term and opponent.creatures:
-                    for cc in list(opponent.creatures):
-                        opponent.exile.append(cc.card)
-                        opponent.revolt_this_turn = True
-                    opponent.creatures.clear()
-                    player.graveyard.remove(_fb); player.exile.append(_fb)
-                    log_fn("  Snapcaster flashback Terminus — board cleared")
-                    update_goyf(gs)
-                elif _fb is _stp and opponent.creatures:
-                    t = max(opponent.creatures, key=lambda cc: cc.power)
-                    lg = MTGRules.stp_life_gain(t)
-                    opponent.remove_creature(t, to_exile=True); opponent.life += lg
-                    player.graveyard.remove(_fb); player.exile.append(_fb)
-                    log_fn(f"  Snapcaster flashback STP → exiles {t.card.name}")
-                    update_goyf(gs)
-                elif _fb is _bs:
-                    player.graveyard.remove(_fb); player.exile.append(_fb)
-                    drawn = player.draw(MTGRules.brainstorm_draws()
-                                        if _fb.tag == 'bs' else 1)
-                    log_fn(f"  Snapcaster flashback {_fb.name} ({len(drawn)} draw)")
-                    bowmasters_triggers(len(drawn), gs, log_entries,
-                                        controller='o' if player is gs.p1 else 'b')
-            cast_spell(player, opponent, gs, snap, mana_ref, log_fn, log_entries,
-                       on_resolve=_resolve_snap)
+    # ── 1c. Wrath of the Skies — cheap follow-up wrath (2 mana, sorcery) ──
+    # Fires when opp has 2+ creatures and Terminus already cycled OR the cost
+    # is comfortable.  Sweeps both sides; with mana_drain creature-light, the
+    # symmetric wrath strongly favours us.
+    wrath = player.find_tag('wrath')
+    if wrath and len(opponent.creatures) >= 2 and can_cast(wrath):
+        def _resolve_wrath(c):
+            player.add_to_grave(c)
+            for cc in list(opponent.creatures):
+                opponent.add_to_grave(cc.card)
+                opponent.revolt_this_turn = True
+            opponent.creatures.clear()
+            for cc in list(player.creatures):
+                player.add_to_grave(cc.card)
+            player.creatures.clear()
+            log_fn("★ Wrath of the Skies — all creatures destroyed", True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, wrath, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_wrath)
 
-    # ── 3. Jace, the Mind Sculptor — primary drain payoff at 4 mana ──
+    # ── 2. Jace, the Mind Sculptor — primary drain payoff at 4 mana ──
     jace = player.find_tag('jace')
     jace_on_board = any(p.card.tag == 'jace' for p in player.planeswalkers)
     if jace and not jace_on_board and can_cast(jace):
@@ -229,6 +213,20 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
         bowmasters_triggers(len(drawn), gs, log_entries,
                             controller='o' if player is gs.p1 else 'b')
 
+    # ── 3. Wurmcoil Engine — 6 cmc colourless anti-aggro haymaker ──
+    # Deathtouch + lifelink makes every block a value-trade and swings the
+    # life race by 6+ on the turn it ETBs.  All-generic cost is a direct
+    # drain payoff (drain a 4-cmc spell → free Wurmcoil with 2 lands).
+    wurmcoil = player.find_tag('wurmcoil')
+    wurmcoil_on_board = any(c.card.tag == 'wurmcoil' for c in player.creatures)
+    if wurmcoil and not wurmcoil_on_board and can_cast(wurmcoil):
+        def _resolve_wurmcoil(c):
+            player.put_creature_in_play(c)
+            log_fn("★ Wurmcoil Engine (6/6 deathtouch, lifelink)", True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, wurmcoil, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_wurmcoil)
+
     # ── 4. Sphinx of the Final Word — 6 cmc uncounterable finisher ──
     sphinx = player.find_tag('sphinx')
     sphinx_on_board = any(c.card.tag == 'sphinx' for c in player.creatures)
@@ -239,16 +237,6 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
             update_goyf(gs)
         cast_spell(player, opponent, gs, sphinx, mana_ref, log_fn, log_entries,
                    on_resolve=_resolve_sphinx)
-
-    # ── 5. Emrakul, the Aeons Torn — 15 cmc dream finisher ──
-    emrakul = player.find_tag('emrakul')
-    if emrakul and mana_ref[0] >= emrakul.cmc:
-        def _resolve_emrakul(c):
-            player.put_creature_in_play(c)
-            log_fn("★★★ Emrakul, the Aeons Torn (15/15 flying trample haste)", True)
-            update_goyf(gs)
-        cast_spell(player, opponent, gs, emrakul, mana_ref, log_fn, log_entries,
-                   on_resolve=_resolve_emrakul)
 
     # ── 6. Cantrips — up to 2 per turn ──
     for _ in range(2):
@@ -284,9 +272,9 @@ def _keep_mana_drain(hand, matchup=''):
     cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
     counters = sum(1 for c in nonlands
                    if c.tag in ('drain', 'fow', 'fon', 'counter', 'daze', 'fluster'))
-    removal = sum(1 for c in nonlands if c.tag in ('stp', 'terminus'))
+    removal = sum(1 for c in nonlands if c.tag in ('stp', 'terminus', 'wrath'))
     threats = sum(1 for c in nonlands
-                  if c.tag in ('jace', 'sphinx', 'snap'))
+                  if c.tag in ('jace', 'sphinx', 'wurmcoil'))
     action = cantrips + counters + removal + threats
 
     if lc < 2 or lc > 5:
