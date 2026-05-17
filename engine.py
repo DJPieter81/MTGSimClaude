@@ -1736,8 +1736,17 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
         # Full cast (1GG): enters as a 3/4 reach creature
         if opp_gy_size >= 2:
             if can_evoke:
-                # Evoke path — free, instant speed, creature sacrificed after ETB
-                green_pitch = next(c for c in player.hand if 'G' in c.colors and c.tag != 'endurance')
+                # Evoke path — free, instant speed, creature sacrificed after ETB.
+                # Pitch picker filters combo pieces / win conditions (e.g.
+                # Crop Rotation, Loam) via `select_pitch_target`. Fallback
+                # to first-green preserves old behaviour when only protected
+                # cards remain.
+                _endurance_protected = frozenset({'endurance'})
+                end_card = player.find_tag('endurance')
+                green_pitch = select_pitch_target(player.hand, 'G', end_card,
+                                                   _endurance_protected)
+                if green_pitch is None:
+                    green_pitch = next(c for c in player.hand if 'G' in c.colors and c.tag != 'endurance')
                 # Exile the green pitch as alternative cost (paid before cast)
                 player.remove_from_hand(green_pitch)
                 player.exile.append(green_pitch)
@@ -2169,7 +2178,10 @@ def _p1_force_of_vigor(gs, target_tags, log_list):
     b = gs.p1
     fov = b.find_tag('fov')
     if not fov: return False
-    green_pitch = next((c for c in b.hand if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
+    green_pitch = select_pitch_target(b.hand, 'G', fov,
+                                       frozenset({'fov', 'endurance'}))
+    if green_pitch is None:
+        green_pitch = next((c for c in b.hand if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
     if not green_pitch: return False
     targets = [p for p in gs.p2.artifacts + gs.p2.enchantments
                if p.card.tag in target_tags][:2]
@@ -2191,8 +2203,14 @@ def _force_of_vigor_generic(responder, active, gs, target_tags, log_list):
     """
     fov = responder.find_tag('fov')
     if not fov: return False
-    green_pitch = next((c for c in responder.hand
-                        if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
+    # Helper filters is_combo_piece / win_condition (excludes Crop Rotation,
+    # Endurance, etc. from being pitched). Fallback preserves old behaviour
+    # if no flagged-safe card is in hand.
+    green_pitch = select_pitch_target(responder.hand, 'G', fov,
+                                       frozenset({'fov', 'endurance'}))
+    if green_pitch is None:
+        green_pitch = next((c for c in responder.hand
+                            if 'G' in c.colors and c.tag not in ('fov','endurance')), None)
     if not green_pitch: return False
     targets = [p for p in active.artifacts + active.enchantments
                if p.card.tag in target_tags][:2]
