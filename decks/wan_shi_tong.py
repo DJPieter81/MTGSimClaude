@@ -198,6 +198,27 @@ def _strategy_wst(player, opponent, gs, total_mana, log_fn, log_entries):
         cast_spell(player, opponent, gs, wst, budget, log_fn, log_entries,
                    on_resolve=_resolve_wst, cost_override=4)
 
+    # ── 5b. Karakas — bounce opponent's legendary creatures ──
+    # CR 109.3 + audit (docs/audits/wan_shi_tong_vs_dnt.md): WST runs 1
+    # Karakas; the existing _strategy_dnt Karakas block only targets
+    # Murktide. WST needs its own bounce block for Thalia and any other
+    # tag in the shared `LEGENDARY_CREATURE_TAGS` set.
+    from game import LEGENDARY_CREATURE_TAGS as _LEGEND_TAGS
+    karakas = next((l for l in player.lands
+                    if l.card.tag == 'karakas' and not l.tapped), None)
+    if karakas and opponent.creatures:
+        legend = next((c for c in opponent.creatures
+                       if c.card.tag in _LEGEND_TAGS), None)
+        if legend is not None:
+            karakas.tapped = True
+            opponent.creatures.remove(legend)
+            opponent.hand.append(legend.card)
+            log_fn(f"★ Karakas → returns {legend.card.name}", True)
+            gs.strat_log.log_disruption(
+                gs.turn, gs, player, 'remove',
+                legend.card.tag or 'creature', 'karakas',
+                reason=f'karakas bounces {legend.card.tag or "legendary"}')
+
     # ── 6. Sanctifier en-Vec ──
     sanc = player.find_tag('sanctifier')
     if sanc and budget[0] >= 2:
