@@ -1038,10 +1038,13 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     if spell_card.tag == 'eidolon':
         is_major_threat = True
 
-    # Mirror/flash: Bowmasters + Nethergoyf are key threats worth FoWing
+    # Bowmasters and Nethergoyf are key threats worth countering in any
+    # matchup once we have 2+ counters in hand — Bowmasters generates
+    # ongoing value (Orc Army + ping-on-opp-draw) and Nethergoyf is a
+    # growing 5/5 in standard board states.  Originally gated to mirror/
+    # dimir matchups but the snowball is a problem for any defender.
     from deck_registry import is_in_category
-    is_mirror_or_flash = is_in_category(matchup, 'mirror') or is_in_category(matchup, 'dimir_only')
-    if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
+    if spell_card.tag in ('bowm', 'nether') and total_counters >= 2:
         is_major_threat = True
 
     # High-power cheap creatures from tempo/aggro decks are major threats when

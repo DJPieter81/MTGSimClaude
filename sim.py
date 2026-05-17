@@ -1092,6 +1092,10 @@ def _make_sb_cards():
     pool['leyline']   = [enchantment('Leyline of Sanctity', 4, {'W':2,'generic':2}, {'W'},
                                       tag='leyline')] * 2 if 'enchantment' in dir() else []
     pool['surgical']  = [instant('Surgical Extraction', 0, {'B':1}, {'B'}, tag='surgical')] * 2
+    # Sanctifier en-Vec — anti-burn / anti-red+black creature, 2/2 pro-red+black.
+    # Used by mana_drain SB plan vs burn / mono_black matchups.
+    pool['sanctifier'] = [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'},
+                                    2, 2, tag='sanctifier', pro_red=True)] * 2
     pool['sblood']    = [instant('Searing Blood', 2, {'R':2}, {'R'}, tag='sblood',
                                   is_removal=True)] * 4
     pool['eidolon']   = [creature('Eidolon of the Great Revel', 2, {'R':2}, {'R'}, 2, 2,
@@ -1831,6 +1835,18 @@ PROTAGONIST_SB_SWAPS = {
         # Counterspell trim regressed the matchup (Storm is naturally bad for
         # us since the engine treats their rituals/cantrips as minor threats
         # so our counters rarely fire reactively; SB shaping doesn't help).
+        # vs red-heavy aggro — Sanctifier blanket is the single strongest
+        # card.  Swap SFM (vulnerable to Bolt at cmc 2) and a Counterspell
+        # (mostly dead vs cmc-1 spells) for 2 extra Sanctifiers from the SB.
+        'burn':       ([('sfm',2),('counter',1)],           [('sanctifier',2),('fon',1)]),
+        'boros':      ([('sfm',1)],                         [('sanctifier',1)]),
+        'mardu':      ([('sfm',1)],                         [('sanctifier',1)]),
+        'goblins':    ([('sfm',1)],                         [('sanctifier',1)]),
+        # vs mono_black — pro-black Sanctifier dodges Push+Snuff, but heavy
+        # Sanctifier-stack tested worse (Hymn random discard hits extras).
+        # Light 1-for-1 swap is the sweet spot.
+        'mono_black': ([('sfm',1)],                         [('sanctifier',1)]),
+
         'doomsday':   ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),
         'oops':       ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),
         'reanimator': ([('sfm',2),('equipment',1)],          [('fon',2),('fluster',1)]),

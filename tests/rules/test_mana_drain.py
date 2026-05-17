@@ -129,6 +129,57 @@ def test_mana_drain_treasure_scales_with_countered_spell_cmc():
 
 
 @pytest.mark.fast
+def test_bowmasters_is_major_threat_in_non_mirror_matchup():
+    """Orcish Bowmasters (tag 'bowm', flash, draw_trigger) generates ongoing
+    value: 1/1 body + Orc Army token + ping-on-opp-draw.  It must be treated
+    as a major threat by try_reactive_counter in ANY matchup once the
+    defender has 2+ counters, not only mirror/dimir_only as previously gated.
+    Counter density 2+ keeps the gate from depleting the entire suite on
+    cheap creatures.
+    """
+    bowm = Card(
+        name='Orcish Bowmasters',  # abstraction-allow: rules-test fixture
+        card_type=CardType.CREATURE,
+        cmc=2,
+        mana_cost={'B': 1, 'generic': 1},
+        colors={'B'},
+        base_power=1, base_toughness=1,
+        tag='bowm',
+        gy_type='creature',
+        flash=True,
+        draw_trigger=True,
+    )
+    # Defender (mana_drain control) holds 2 Force of Will + blue pitch.
+    p1 = PlayerState(name='p1')  # caster (mono_black)
+    p2 = PlayerState(name='p2')  # defender (mana_drain)
+    fow1 = Card(name='Force of Will', card_type=CardType.INSTANT,  # abstraction-allow
+                cmc=5, mana_cost={'U': 1, 'generic': 4}, colors={'U'},
+                tag='fow', gy_type='instant', free_cast_if_blue=True)
+    # Second counter satisfies the total_counters >= 2 gate (we don't burn
+    # a counter on Bowmasters unless we have backup left).
+    drain = Card(name='Mana Drain', card_type=CardType.INSTANT,  # abstraction-allow
+                 cmc=2, mana_cost={'U': 2}, colors={'U'},
+                 tag='drain', gy_type='instant')
+    bs = Card(name='Brainstorm', card_type=CardType.INSTANT,  # abstraction-allow
+              cmc=1, mana_cost={'U': 1}, colors={'U'},
+              tag='bs', gy_type='instant')
+    p2.hand = [fow1, drain, bs, _major_threat_spell(1)]
+    p2.lands = [_untapped_island() for _ in range(2)]
+    gs = GameState(p1=p1, p2=p2)
+    gs.turn = 3
+    gs.matchup = 'mono_black'  # non-mirror, non-dimir_only matchup
+    gs.p1_deck = 'mono_black'
+    gs.p2_deck = 'mana_drain'
+    log: list[str] = []
+
+    countered = try_reactive_counter(gs, caster=gs.p1, defender=gs.p2,
+                                     spell_card=bowm, log_list=log)
+
+    assert countered is True, ("Bowmasters should be countered in non-mirror "
+                                "matchups when defender has 2+ counters")
+
+
+@pytest.mark.fast
 def test_cryptic_command_counters_and_draws_a_card():
     """Cryptic Command (1UUU): counter target spell, draw a card.  Engine
     branch in try_reactive_counter fires when defender has 4+ mana, 3+
