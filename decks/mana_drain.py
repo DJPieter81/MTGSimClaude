@@ -24,7 +24,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import (creature, instant, sorcery, artifact, planeswalker,
-                   fetch_land, dual_land, basic_land)
+                   fetch_land, dual_land, basic_land, utility_land)
 
 
 # ─── Deck builder ────────────────────────────────────────────────────────────
@@ -111,7 +111,12 @@ def make_mana_drain_deck():
     d += [fetch_land('Misty Rainforest',['Forest','Island'])] * 2
     d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 3
     d += [basic_land('Island', 'U', 'Island')] * 8
-    d += [basic_land('Plains', 'W', 'Plains')] * 5
+    d += [basic_land('Plains', 'W', 'Plains')] * 4
+    # Karakas — legendary land producing {W}, taps to bounce a legendary
+    # creature.  Bounces opp's Atraxa / Iona / Emrakul / Murktide / Thalia,
+    # also recurs our own Wan Shi Tong (legendary) or Stoneforge Mystic
+    # (legendary in real Magic) for ETB-trigger value.
+    d += [utility_land('Karakas', ['W'], 'karakas')] * 1
 
     assert len(d) == 60, f"Mana Drain deck: {len(d)}"
     return d
@@ -146,6 +151,25 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
 
     def can_cast(card):
         return opp_can_cast(card, mana_ref[0], gs, caster=player)
+
+    # ── 0b. Karakas — bounce opp's legendary creatures ──
+    # Tags treated as legendary creatures in the existing codebase
+    # (engine.py:3543 has the same legendary set for BUG-side use).
+    LEGENDARY_TAGS = {'murk', 'tamiyo', 'wst', 'atraxa', 'iona', 'emrakul',
+                      'griselbrand', 'thalia', 'kaito', 'ajani', 'voice',
+                      'narset', 'ulamog'}
+    for karakas in [l for l in player.lands
+                    if l.card.tag == 'karakas' and not l.tapped]:
+        target = next((c for c in opponent.creatures
+                       if c.card.tag in LEGENDARY_TAGS), None)
+        if target:
+            karakas.tapped = True
+            opponent.remove_creature(target)
+            opponent.hand.append(target.card)
+            log_fn(f"★ Karakas → returns {target.card.name} to opp's hand",
+                   True)
+            update_goyf(gs)
+            break
 
     # ── 1. Swords to Plowshares — remove biggest threat ──
     # Vs aggro / burn, STP fires on ANY creature ≥ 1 power (Bowmasters,
