@@ -37,7 +37,7 @@ def make_mana_drain_deck():
     d += [instant('Mana Drain', 2, {'U':2}, {'U'}, tag='drain')] * 4
     d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'},
                   tag='fow', free_cast_if_blue=True)] * 4
-    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 2
+    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 1
     d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'},
                   tag='fon', free_cast_if_blue=True)] * 2
     # Flusterstorm — 1 cmc instant counter targeting instants/sorceries.
@@ -64,7 +64,7 @@ def make_mana_drain_deck():
 
     # ── Cantrips (10) ──
     d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 4
-    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 2
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 1
 
     # ── Anti-aggro hate creature (2) ──
     # Sanctifier en-Vec — 2 cmc 2/2 pro-red+black.  Burn / red aggro deal
@@ -73,7 +73,18 @@ def make_mana_drain_deck():
     # vs goblin/burn/mardu and a pro-red shield against the deck's life
     # total being burned out before drains can swing the game.
     d += [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'}, 2, 2,
-                   tag='sanctifier', pro_red=True)] * 2
+                   tag='sanctifier', pro_red=True)] * 1
+    # Stoneforge Mystic — 2 cmc {1}{W}, ETB tutors an equipment to hand,
+    # then activates {W}{1} to put a 0-cost equipment in play.  In sim,
+    # SFM auto-tutors Batterskull on ETB and the strategy puts it in
+    # play next turn for {1} (DnT pattern).  Lifelink Germ stabilises
+    # vs aggro and gains 4 life per attack — the perfect drain payoff
+    # for a deck that wins by surviving + grinding.
+    d += [creature('Stoneforge Mystic', 2, {'W':1,'generic':1}, {'W'},
+                   1, 2, tag='sfm', engine=True)] * 2
+    # Batterskull — 5 cmc artifact equipment; equipped creature is +4/+4
+    # vigilance/lifelink/trample.  Sim uses +3/+3 simplification.
+    d += [artifact('Batterskull', 5, {'generic':5}, tag='equipment')] * 1
 
     # ── Threats / drain payoffs (6) — all-generic / hard-to-kill bodies ──
     d += [planeswalker('Jace, the Mind Sculptor', 4, {'U':2,'generic':2}, {'U'},
@@ -207,7 +218,41 @@ def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
         cast_spell(player, opponent, gs, wrath, mana_ref, log_fn, log_entries,
                    on_resolve=_resolve_wrath)
 
-    # ── 1d. Sanctifier en-Vec — anti-burn / anti-red blanket ──
+    # ── 1d. Stoneforge Mystic — 2-cmc ETB tutor for equipment ──
+    # Cast SFM, auto-tutor Batterskull (DnT pattern, engine.py:2839-2843).
+    sfm = player.find_tag('sfm')
+    sfm_on_board = any(c.card.tag == 'sfm' for c in player.creatures)
+    if sfm and not sfm_on_board and can_cast(sfm):
+        def _resolve_sfm(c):
+            player.put_creature_in_play(c)
+            equip = next((cc for cc in player.library
+                          if cc.tag in ('equipment', 'kaldra')), None)
+            if equip:
+                player.library.remove(equip)
+                player.hand.append(equip)
+                log_fn(f"Stoneforge Mystic — tutors {equip.name}")
+            else:
+                log_fn("Stoneforge Mystic (1/2)")
+        cast_spell(player, opponent, gs, sfm, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_sfm)
+
+    # SFM activation — put Batterskull in play if SFM is on board.
+    # CR 702.6 equip cost is normally 5 for Batterskull, but SFM's
+    # activated ability cheats it for {W}{1}.  Sim uses 1 mana.
+    sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)
+    equip_card = player.find_tag('equipment')
+    if sfm_perm and equip_card and mana_ref[0] >= 1:
+        player.remove_from_hand(equip_card)
+        player.put_artifact_in_play(equip_card)
+        mana_ref[0] -= 1
+        biggest = max((c for c in player.creatures if c.card.tag != 'sfm'),
+                      key=lambda c: c.power, default=sfm_perm)
+        biggest.power_mod += 3
+        biggest.toughness_mod += 3
+        log_fn(f"★ {equip_card.name} equipped to {biggest.card.name} "
+               f"(+3/+3, lifelink/vigilance/trample)", True)
+
+    # ── 1e. Sanctifier en-Vec — anti-burn / anti-red blanket ──
     # Cheap 2/2 pro-red+black blocker.  Burn's deal_face_damage checks for
     # opponent-side pro_red creatures and skips all damage.  Critical
     # life-saver vs burn / mardu / mono_black aggression.
@@ -320,7 +365,8 @@ def _keep_mana_drain(hand, matchup=''):
                    if c.tag in ('drain', 'fow', 'fon', 'counter', 'daze', 'fluster'))
     removal = sum(1 for c in nonlands if c.tag in ('stp', 'terminus', 'wrath'))
     threats = sum(1 for c in nonlands
-                  if c.tag in ('jace', 'sphinx', 'wurmcoil', 'wst', 'sanctifier'))
+                  if c.tag in ('jace', 'sphinx', 'wurmcoil', 'wst',
+                               'sanctifier', 'sfm', 'equipment'))
     action = cantrips + counters + removal + threats
 
     if lc < 2 or lc > 5:

@@ -129,6 +129,47 @@ def test_mana_drain_treasure_scales_with_countered_spell_cmc():
 
 
 @pytest.mark.fast
+def test_cryptic_command_counters_and_draws_a_card():
+    """Cryptic Command (1UUU): counter target spell, draw a card.  Engine
+    branch in try_reactive_counter fires when defender has 4+ mana, 3+
+    Islands available, and 3+ cards in hand."""
+    cryptic = Card(
+        name='Cryptic Command',  # abstraction-allow: rules-test fixture
+        card_type=CardType.INSTANT,
+        cmc=4,
+        mana_cost={'U': 3, 'generic': 1},
+        colors={'U'},
+        tag='cryptic',
+        gy_type='instant',
+    )
+    p1 = PlayerState(name='p1')
+    p2 = PlayerState(name='p2')
+    p2.hand = [cryptic, _major_threat_spell(1), _major_threat_spell(1),
+               _major_threat_spell(1)]
+    p2.lands = [_untapped_island() for _ in range(4)]
+    # Library needs a card to draw
+    p2.library = [_major_threat_spell(1)]
+    gs = GameState(p1=p1, p2=p2)
+    gs.turn = 4
+    spell = _major_threat_spell(cmc=5)
+    log: list[str] = []
+
+    pre_hand_size = len(p2.hand)
+    countered = try_reactive_counter(gs, caster=gs.p1, defender=gs.p2,
+                                     spell_card=spell, log_list=log)
+
+    assert countered is True
+    assert cryptic in gs.p2.graveyard
+    # Hand size: pre - 1 (cryptic exit) + 1 (draw) = pre.  Plus the cantrip
+    # also adds 1 from library, so net is +0 against pre.  But pre had the
+    # cryptic — after cast it's gone but a new card was drawn → hand size
+    # is pre_hand_size - 1 + 1 = pre_hand_size.  Library is now empty.
+    assert len(gs.p2.hand) == pre_hand_size  # -1 cryptic, +1 from library
+    assert len(gs.p2.library) == 0
+    assert gs._last_counter_used == 'cryptic'
+
+
+@pytest.mark.fast
 def test_mana_drain_treasure_routes_to_correct_player_slot():
     """When p1 (not p2) holds the Drain, the treasure must land on
     p1_treasure — the engine inspects defender identity to pick the attr."""

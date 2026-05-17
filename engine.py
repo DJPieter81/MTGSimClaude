@@ -978,6 +978,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     d_fluster = counters_by_tag.get('fluster')
     d_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
     d_drain = counters_by_tag.get('drain')
+    d_cryptic = counters_by_tag.get('cryptic')
 
     # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
     if gs.trinisphere_active:
@@ -985,7 +986,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         d_fon = None
         d_daze = None  # Daze alternate cost = 0 mana, doesn't meet Trini minimum
 
-    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_drain]):
+    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_drain, d_cryptic]):
         return False
 
     # ── Don't counter cantrips — save counters for threats ──
@@ -1112,6 +1113,21 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             defender.remove_from_hand(blue_pitch); defender.exile.append(blue_pitch)
             gs._last_counter_used = 'fow'
             ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+
+    # ── Cryptic Command (1UUU hard counter + draw — modal in real Magic; we
+    # model the counter-spell+draw-card mode).  Strictly stronger than
+    # Counterspell when affordable (UUU + 1 generic = 4 mana vs Counterspell's
+    # UU = 2 mana).  Preferred over Counterspell only when extra draw is
+    # actionable (defender has < 5 cards in hand and isn't tapped out).
+    if (not ctr and d_cryptic and is_major_threat and len(defender.hand) >= 3):
+        d_mana = defender.available_mana_count()
+        d_uuu = sum(1 for l in defender.lands if not l.tapped and 'U' in l.effective_produces()) >= 3
+        if d_mana >= 4 and d_uuu:
+            defender.remove_from_hand(d_cryptic); defender.add_to_grave(d_cryptic)
+            gs._last_counter_used = 'cryptic'
+            drawn = defender.draw(1)
+            ctr.append(f"Cryptic Command counters {spell_card.name} "
+                       f"(+1 card)")
 
     # ── Mana Drain (UU hard counter; controller gains {C}×spell.cmc on their
     # next main phase — CR 113.9 / oracle text).  Routed through the standard
