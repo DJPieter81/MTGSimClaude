@@ -515,8 +515,16 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
             log_fn("Goblin Charbelcher countered")
 
     # ── Step 11: Burning Wish → Empty the Warrens from sideboard ────────────
+    # Gate (docs/audits/belcher_vs_ur_delver.md): Wish (2) must leave
+    # enough mana to cast Empty (4) on the same turn — otherwise the
+    # fetched copy sits in hand with no mana to cast it. LED in hand
+    # adds +3 mana via discard-during-Wish, so the floor drops to 3:
+    #   floor = 2 (Wish) + 4 (Empty) − 3 (LED) = 3 with LED
+    #   floor = 2 (Wish) + 4 (Empty)          = 6 without LED
     wish = player.find_tag('burning_wish')
-    if not gs.game_over and wish and budget[0] >= 2 and storm[0] >= 3:
+    _led_in_hand = player.find_tag('led') is not None
+    _wish_floor = 3 if _led_in_hand else 6
+    if not gs.game_over and wish and budget[0] >= _wish_floor and storm[0] >= 3:
         # Crack LED in response (activated ability — uncounterable)
         led = player.find_tag('led')
         if led:
