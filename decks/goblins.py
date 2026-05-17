@@ -25,6 +25,55 @@ GOBLIN_TRIBE_TAGS = frozenset({
 })
 
 
+def _fire_goblin_etb(card, player, opponent, gs, log_fn):
+    """Resolve a Goblin's ETB-triggered ability regardless of entry path
+    (hard-cast, Aether Vial flash, Goblin Lackey cheat). CR 603.6a — an
+    ETB ability triggers on *every* zone change into the battlefield.
+
+    Returns the number of additional Goblins that hit the battlefield
+    via cascading ETBs (Muxus → reveal-6). Caller adds to its own
+    `goblin_count` counter.
+    """
+    tag = card.tag
+    cascaded = 0
+    if tag == 'muxus':
+        revealed = player.library[:6]
+        hits = 0
+        for c in revealed:
+            if c.is_creature() and c.tag in (GOBLIN_TRIBE_TAGS - {'muxus'}):
+                player.library.remove(c)
+                perm = player.put_creature_in_play(c)
+                perm.summoning_sick = False
+                hits += 1
+        cascaded = hits
+        log_fn(f"★ Muxus reveals {hits} Goblins!", True)
+    elif tag == 'matron':
+        muxus_lib = next((c for c in player.library if c.tag == 'muxus'), None)
+        if muxus_lib:
+            player.library.remove(muxus_lib)
+            player.hand.append(muxus_lib)
+            log_fn("Goblin Matron → tutors Muxus!", True)
+        else:
+            ringleader = next((c for c in player.library if c.tag == 'ringleader'), None)
+            if ringleader:
+                player.library.remove(ringleader)
+                player.hand.append(ringleader)
+                log_fn("Goblin Matron → tutors Ringleader", True)
+            else:
+                log_fn("Goblin Matron ETB (no target)")
+    elif tag == 'ringleader':
+        revealed = player.library[:4]
+        taken = []
+        for c in revealed:
+            if c.is_creature() and c.tag in GOBLIN_TRIBE_TAGS:
+                player.library.remove(c)
+                player.hand.append(c)
+                taken.append(c.name)
+        if taken:
+            log_fn(f"  Ringleader reveals → takes {', '.join(taken)}", True)
+    return cascaded
+
+
 # ─── Deck construction ────────────────────────────────────────────────────────
 
 def make_goblins_deck():
@@ -325,16 +374,29 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
         rem = _b[0]
 
     # ── Vial deploy (flash in creatures at vial_counters CMC) ──────────────
+    # ETB triggers fire on Vial flash same as on hard-cast (CR 603.6a).
+    # Audit-fix (docs/audits/goblins_vs_dimir_d.md): Vial-flashed Muxus /
+    # Matron / Ringleader now resolve their ETB via `_fire_goblin_etb`.
     vial_on_board = next((p for p in player.artifacts if p.card.tag == 'vial'), None)
     vc = getattr(gs, 'vial_counters', 0)
     if vial_on_board and vc > 0:
-        vial_target = next((c for c in player.hand
-                           if c.is_creature() and c.cmc == vc), None)
+        # Prefer the highest-value target at CMC vc: Muxus (vc=6) > Ringleader
+        # (vc=4) > Matron (vc=3) > anything else.
+        vial_candidates = [c for c in player.hand
+                           if c.is_creature() and c.cmc == vc]
+        _vial_priority = {'muxus': 0, 'ringleader': 1, 'matron': 2,
+                          'warchief': 3, 'sling': 3, 'expert': 4,
+                          'cratermaker': 5, 'lackey': 6, 'pashalik': 6,
+                          'prospector': 7, 'fury': 7}
+        vial_target = (min(vial_candidates,
+                           key=lambda c: _vial_priority.get(c.tag, 99))
+                       if vial_candidates else None)
         if vial_target:
             player.remove_from_hand(vial_target)
             player.put_creature_in_play(vial_target)
             goblin_count += 1
             log_fn(f"Vial ({vc}) → {vial_target.name}")
+            goblin_count += _fire_goblin_etb(vial_target, player, opponent, gs, log_fn)
 
     # ── Deploy remaining creatures (cheap → mid → big) ────────────────────
     # Ringleader (CMC 4): hard-cast for value; reveals top 4, all goblins to
