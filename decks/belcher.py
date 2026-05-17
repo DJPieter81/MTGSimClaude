@@ -231,11 +231,27 @@ def _strategy_belcher(player, opponent, gs, total_mana, log_fn, log_entries):
         log_fn(f"Lotus Petal (mana={budget[0]}, storm={storm[0]})")
 
     # ── Step 3: Chrome Mox (cast-and-tap simplified; see Petals note) ───────
+    # Audit-fix (docs/audits/belcher_vs_uwx.md): Mox was greedy on the first
+    # colored nonland, exiling Burning Wish / Empty as fuel. Helper now
+    # filters `is_combo_piece` / `win_condition` (belcher / led / burning_wish
+    # / empty / tendrils all carry one of the flags) plus explicit protected
+    # tags for chrome_mox and Veil of Summer (no flag, but losing it loses
+    # the combo turn vs FoW/Daze decks).
+    from engine import select_pitch_target
+    _belcher_protected = frozenset({'chrome_mox', 'vos'})
     for mox in [c for c in player.hand if c.tag == 'chrome_mox']:
-        pitch = next((c for c in player.hand
-                      if c is not mox and not c.is_land()
-                      and c.tag not in ('chrome_mox', 'belcher', 'led')
-                      and c.colors), None)
+        # Payoff-redundancy gate: only imprint when hand still contains
+        # ≥1 castable payoff (Belcher / Empty / Burning Wish) after the
+        # pitch lands. Without this gate, Mox imprints the deck's sole
+        # payoff and leaves a ramped-but-dead position.
+        payoff_count = sum(1 for c in player.hand
+                           if c is not mox and c.tag in ('belcher', 'empty', 'burning_wish'))
+        if payoff_count < 1:
+            continue
+        # Prefer red, fall back to black/green (deck colors).
+        pitch = (select_pitch_target(player.hand, 'R', mox, _belcher_protected)
+                 or select_pitch_target(player.hand, 'B', mox, _belcher_protected)
+                 or select_pitch_target(player.hand, 'G', mox, _belcher_protected))
         if pitch:
             player.remove_from_hand(mox)
             player.put_artifact_in_play(mox)

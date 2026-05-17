@@ -145,6 +145,28 @@ def test_pitch_selector_excludes_self():
 
 
 @pytest.mark.fast
+def test_pitch_selector_skips_combo_piece_finishers_by_flag_alone():
+    """Belcher's finishers (Burning Wish, Empty the Warrens, Tendrils) carry
+    `is_combo_piece=True` / `win_condition=True` on the card object. The
+    helper must exclude them via flags without needing a protected-tag list
+    — the audit-identified `decks/belcher.py:237` bug (Wish imprinted as
+    Mox fuel) becomes impossible once the helper is wired."""
+    from engine import select_pitch_target
+
+    mox = _mox()
+    wish = _make_card('Burning Wish', 'burning_wish', {'R'},  # abstraction-allow: rules-test fixture
+                     is_combo_piece=True)
+    empty = _make_card('Empty the Warrens', 'empty', {'R'},  # abstraction-allow: rules-test fixture
+                      win_condition=True)
+    rite = _make_card('Rite of Flame', 'rite', {'R'})  # abstraction-allow: rules-test fixture
+    hand = [mox, wish, empty, rite]
+
+    # No protected_tags set — flags alone must keep wish/empty out of pitch.
+    picked = select_pitch_target(hand, color='R', exclude_card=mox)
+    assert picked is rite, f'expected Rite of Flame, got {picked.name if picked else None}'
+
+
+@pytest.mark.fast
 def test_pitch_selector_returns_none_when_only_protected_cards():
     """If every same-color card is protected, helper returns None.
     Caller must decide whether to skip casting or accept the cost on a
