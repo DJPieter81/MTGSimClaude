@@ -43,5 +43,5 @@
   },
   "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Suboptimal mana utilization over 4 turns\ncombat: C \u2014 0 combat decision(s); combat axis inactive\ncombo: B \u2014 Non-combo deck \u2014 domain not primary axis\ninteraction: C+ \u2014 0 hold + 0 defer; interaction tokens fell short\nmeta: C \u2014 Lost \u2014 limited decision points suggest structural disadvantage\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 4 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:33:33.556982Z"
+  "graded_at": "2026-05-16T13:42:37.765767Z"
 }

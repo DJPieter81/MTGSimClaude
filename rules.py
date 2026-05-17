@@ -141,6 +141,9 @@ class Card:
     deathtouch: bool = False             # CR 702.2: any damage dealt is lethal damage
     lifelink: bool = False               # CR 702.15: damage dealt also causes life gain
     vigilance: bool = False              # CR 702.20: attacking doesn't cause creature to tap
+    first_strike: bool = False            # CR 702.7: deals combat damage in first-strike damage step
+    double_strike: bool = False           # CR 702.4: deals damage in BOTH damage steps
+    menace: bool = False                  # CR 702.110: can't be blocked except by 2+ creatures
     pro_red: bool = False                # CR 702.16: protection from red — prevents red damage to controller and permanents (currently used for Sanctifier en-Vec)
     delve: bool = False
     free_cast_if_blue: bool = False   # FoW/FoN alternate cost: exile blue card

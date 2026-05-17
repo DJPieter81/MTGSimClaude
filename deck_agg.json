@@ -170,8 +170,8 @@
     "uses_veil": false
   },
   "elves": {
-    "type": "aggro",
-    "plan": "Deploy threats, trade efficiently, close out with reach.",
+    "type": "combo",
+    "plan": "Protect the combo, dig with cantrips, go off when safe.",
     "speed": 3,
     "resilience": 3,
     "creature_based": true,

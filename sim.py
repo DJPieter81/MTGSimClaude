@@ -442,7 +442,9 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     """
     from engine import (bowmasters_triggers, update_goyf, opp_can_cast,
                         _try_counter_any, _select_attackers, combat_declare,
-                        apply_lock_effects, restore_lock_effects, _check_tamiyo_flip)
+                        apply_lock_effects, restore_lock_effects, _check_tamiyo_flip,
+                        _apply_delirium_to_drc, _check_delver_transform,
+                        _enforce_pact_upkeep)
     from rules import LandPermanent, MTGRules
     from config import MatchupCategory as _MC
 
@@ -451,6 +453,11 @@ def _execute_turn(gs, turn, b, o, who, matchup):
     def log(msg, key=False):
         gs.log_event(who, 'main', msg, key)
         log_entries.append(msg)
+
+    # Per-turn upkeep checks (delirium boosts, Delver transform, Pact upkeep)
+    _apply_delirium_to_drc(b)
+    _check_delver_transform(b, log_fn=log)
+    _enforce_pact_upkeep(b, gs)
 
     # Determine if active player is on the play and skips T1 draw
     active_on_play = (gs.p1_goes_first and who == 'p1') or (not gs.p1_goes_first and who == 'p2')

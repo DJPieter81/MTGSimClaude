@@ -12,22 +12,22 @@
     "mulligan": "B+",
     "mana": "B+",
     "combat": "B",
-    "combo": "C",
+    "combo": "B+",
     "interaction": "B",
     "meta": "B",
-    "overall": "B"
+    "overall": "B+"
   },
   "justifications": {
     "mulligan": "Kept 7; won \u2014 opening hand was adequate",
     "mana": "Won but took 7 turns \u2014 mana was adequate (0 ramp tokens)",
     "combat": "Combo deck \u2014 0 combat decision(s); combat is not the primary axis",
-    "combo": "No combo Execute decision logged \u2014 deck did not fire its plan",
+    "combo": "1 Execute decision(s); combo resolved late on T7",
     "interaction": "0 hold + 0 defer; combo resolved without holding protection",
     "meta": "Eventually closed a favored matchup",
-    "overall": "Average across 6 domains \u2014 won in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0"
+    "overall": "Average across 6 domains \u2014 won in 7 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0"
   },
   "structural_counts": {
-    "execute": 0,
+    "execute": 1,
     "hold": 0,
     "defer": 0,
     "counter": 0,
@@ -37,11 +37,11 @@
     "ramp": 0,
     "meta": 0,
     "combat": 0,
-    "combo_phase": 0,
+    "combo_phase": 1,
     "protect_phase": 0,
-    "total": 7
+    "total": 8
   },
-  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 7 turns \u2014 mana was adequate (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: B \u2014 Eventually closed a favored matchup\noverall: B \u2014 Average across 6 domains \u2014 won in 7 turns; structural counts: exec=0 hold=0 defer=0 remove=0 combat=0",
+  "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 7 turns \u2014 mana was adequate (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: B+ \u2014 1 Execute decision(s); combo resolved late on T7\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: B \u2014 Eventually closed a favored matchup\noverall: B+ \u2014 Average across 6 domains \u2014 won in 7 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:33:33.559875Z"
+  "graded_at": "2026-05-16T13:42:37.772203Z"
 }

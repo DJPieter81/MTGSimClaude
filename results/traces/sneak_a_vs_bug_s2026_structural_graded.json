@@ -43,5 +43,5 @@
   },
   "raw_response": "mulligan: B \u2014 Kept 7; lost \u2014 opening hand was possibly too greedy\nmana: C+ \u2014 Lost in 5 turns \u2014 possible mana sequencing issues (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: C \u2014 No combo Execute decision logged \u2014 deck did not fire its plan\ninteraction: C+ \u2014 2 hold + 0 defer; protection deployed but insufficient\nmeta: C+ \u2014 2 play_around token but lost in 5 turns \u2014 tried to navigate opp threats, outcome insufficient\noverall: C+ \u2014 Average across 6 domains \u2014 lost in 5 turns; structural counts: exec=0 hold=2 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:33:33.561766Z"
+  "graded_at": "2026-05-16T13:42:37.774506Z"
 }

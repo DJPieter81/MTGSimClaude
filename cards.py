@@ -11,6 +11,7 @@ def creature(name, cmc, mana_cost, colors, power, toughness, tag='',
              flash=False, haste=False, flying=False, indestructible=False,
              trample=False, delve=False, free_cast_if_blue=False,
              deathtouch=False, lifelink=False, vigilance=False, reach=False,
+             first_strike=False, double_strike=False, menace=False,
              pro_red=False,
              subtypes=None, win_condition=False, is_combo_piece=False, **kwargs):
     return Card(
@@ -23,6 +24,7 @@ def creature(name, cmc, mana_cost, colors, power, toughness, tag='',
         free_cast_if_blue=free_cast_if_blue,
         deathtouch=deathtouch, lifelink=lifelink,
         vigilance=vigilance, reach=reach,
+        first_strike=first_strike, double_strike=double_strike, menace=menace,
         pro_red=pro_red,
         win_condition=win_condition, is_combo_piece=is_combo_piece,
         tag=tag, gy_type='creature', **kwargs
@@ -396,7 +398,7 @@ def make_oops_deck() -> List[Card]:
     d += [instant('Pact of Negation', 0, {}, {'U'}, tag='pact', free_cast_if_blue=True)] * 4
     d += [instant("Summoner's Pact", 0, {}, {'G'}, tag='spact')] * 4
     # Disruption
-    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief')] * 4
+    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief', menace=True)] * 4
     d += [sorcery('Cabal Therapy', 1, {'B':1}, {'B'}, tag='therapy')] * 2
     # MDFC "lands" (spell side: these count as spells, not lands in the library)
     d += [sorcery("Agadeem's Awakening", 3, {'B':1,'generic':2}, {'B'}, tag='agadeem',
@@ -629,7 +631,7 @@ def make_doomsday_deck() -> List[Card]:
 def make_dnt_deck() -> List[Card]:
     d = []
     # Creatures (22) — tuned to real March 2026 list (cardsrealm/mtgtop8)
-    d += [creature('Thalia, Guardian of Thraben', 2, {'W':1,'generic':1}, {'W'}, 2, 1, tag='thalia')] * 3
+    d += [creature('Thalia, Guardian of Thraben', 2, {'W':1,'generic':1}, {'W'}, 2, 1, tag='thalia', first_strike=True)] * 3
     d += [creature('Stoneforge Mystic', 2, {'W':1,'generic':1}, {'W'}, 1, 2, tag='sfm',     engine=True)] * 4
     d += [creature('Recruiter of the Guard', 3, {'W':1,'generic':2}, {'W'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
     d += [creature('Skyclave Apparition', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='skyclave', is_removal=True)] * 3
@@ -661,10 +663,10 @@ def make_dnt_deck() -> List[Card]:
 def make_mono_black_deck() -> List[Card]:
     d = []
     # Creatures (20)
-    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief', flash=True)] * 4  # evoke exile black
+    d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2, tag='grief', flash=True, menace=True)] * 4  # evoke exile black
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm',    draw_trigger=True, flash=True)] * 4
     d += [creature('Dauthi Voidwalker', 2, {'B':2}, {'B'}, 3, 2, tag='dauthi')] * 4
-    d += [creature('Carnage Interpreter', 2, {'B':1,'generic':1}, {'B'}, 2, 2, tag='carnage')] * 4
+    d += [creature('Carnage Interpreter', 2, {'B':1,'generic':1}, {'B'}, 3, 3, tag='carnage', menace=True)] * 4
     d += [creature('Braids, Arisen Nightmare', 4, {'B':2,'generic':2}, {'B'}, 3, 3, tag='braids')] * 4
     # Spells (16)
     d += [sorcery('Thoughtseize', 1, {'B':1}, {'B'}, tag='ts', life_cost=2)] * 4
@@ -687,11 +689,11 @@ def make_mono_black_deck() -> List[Card]:
 def make_boros_deck() -> List[Card]:
     d = []
     # Creatures (22): core aggro + Eidolon×3 Bowmasters×4 Recruiter×4 full density
-    d += [creature('Thalia, Guardian of Thraben', 2, {'W':1,'generic':1}, {'W'}, 2, 1, tag='thalia')] * 2
+    d += [creature('Thalia, Guardian of Thraben', 2, {'W':1,'generic':1}, {'W'}, 2, 1, tag='thalia', first_strike=True)] * 2
     d += [creature('Orcish Bowmasters', 2, {'B':1,'generic':1}, {'B'}, 1, 1, tag='bowm', draw_trigger=True, flash=True)] * 4
-    d += [creature('Seasoned Dungeoneer', 3, {'W':1,'generic':2}, {'W'}, 3, 3, tag='dungeoneer')] * 3
+    d += [creature('Seasoned Dungeoneer', 3, {'W':1,'generic':2}, {'W'}, 3, 4, tag='dungeoneer')] * 3
     d += [creature('Minsc and Boo, Timeless Heroes', 4, {'R':1,'W':1,'generic':2}, {'R','W'}, 4, 4, tag='minsc')] * 2
-    d += [creature('White Orchid Phantom', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='orchid')] * 3
+    d += [creature('White Orchid Phantom', 3, {'W':2,'generic':1}, {'W'}, 2, 2, tag='orchid', first_strike=True)] * 3
     d += [creature('Recruiter of the Guard', 3, {'W':1,'generic':2}, {'W'}, 1, 1, tag='recruiter',tutor_power_max=2)] * 4
     d += [creature('Eidolon of the Great Revel', 2, {'R':2}, {'R'}, 2, 2,
                    tag='eidolon',  etb_damage=2)] * 4
@@ -1035,7 +1037,7 @@ def make_elves_deck() -> List[Card]:
     d += [creature('Llanowar Elves',    1, {'G':1}, {'G'}, 1, 1, tag='llanowar')] * 4
     d += [creature('Elvish Mystic',     1, {'G':1}, {'G'}, 1, 1, tag='mystic')]   * 4
     d += [creature('Heritage Druid',    1, {'G':1}, {'G'}, 1, 1, tag='heritage',  engine=True)] * 3
-    d += [creature('Elvish Spirit Guide',1,{'G':1}, {'G'}, 3, 2, tag='espirit',   flash=False)] * 1
+    d += [creature('Elvish Spirit Guide',3,{'G':1,'generic':2}, {'G'}, 2, 2, tag='espirit',   flash=False)] * 1
     # ── Engine ──
     d += [creature('Nettle Sentinel',   1, {'G':1}, {'G'}, 2, 2, tag='nettle')] * 4
     d += [creature('Allosaurus Shepherd',1,{'G':1}, {'G'}, 1, 1, tag='shepherd', engine=True)] * 4
@@ -1940,9 +1942,9 @@ def make_mardu_deck() -> List[Card]:
     d = []
     # Free evoke engine
     d += [creature('Grief', 5, {'B':2,'generic':3}, {'B'}, 3, 2,
-                   tag='grief', flash=True, is_combo_piece=True)] * 4
+                   tag='grief', flash=True, is_combo_piece=True, menace=True)] * 4
     d += [creature('Fury', 5, {'R':1,'generic':4}, {'R'}, 3, 3,
-                   tag='fury', flash=True, trample=True, is_combo_piece=True)] * 4
+                   tag='fury', flash=True, trample=True, is_combo_piece=True, double_strike=True)] * 4
     # Ephemerate returns the evoked creature before sacrifice resolves
     d += [instant('Ephemerate', 1, {'W':1}, {'W'}, tag='ephemerate', is_combo_piece=True)] * 4
     # Fast threats

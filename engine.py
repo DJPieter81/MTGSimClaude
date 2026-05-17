@@ -93,14 +93,17 @@ def _select_attackers(player, opponent, hold_tags=CT.HOLD_ATTACK_TAGS,
 
 
 def _check_tamiyo_flip(gs, player, log):
-    """Check if Tamiyo should flip (drew 3+ cards this turn)."""
+    """Tamiyo flips when controller draws 3+ cards in a turn.
+    Post-flip: Tamiyo, Seasoned Scholar is a PLANESWALKER, not a creature.
+    Move her from creatures -> planeswalkers (combat skips her). No P/T boost."""
     tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
     if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
         if player.draws_this_turn >= 3:
             gs.tamiyo_flipped = True
-            tam_perm.power_mod = 3
-            tam_perm.toughness_mod = 0
-            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
+            # Transform: move to planeswalkers list, drop creature P/T concept
+            player.creatures.remove(tam_perm)
+            player.planeswalkers.append(tam_perm)
+            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn) — becomes planeswalker", key=True)
 
 
 def _deduct(budget: list, cmc: int, card) -> bool:
@@ -278,15 +281,132 @@ def apply_eidolon_damage(gs, player, spells_before, log):
 
 def _check_tamiyo_flip(gs: GameState, player, log_fn) -> None:
     """Oracle: Tamiyo flips when controller draws 3+ cards in a turn.
-    Centralised so it works for ALL decks with Tamiyo, not just BUG."""
+    Post-flip: Tamiyo, Seasoned Scholar is a PLANESWALKER, not a creature.
+    Move her from creatures -> planeswalkers (combat skips her). No P/T boost."""
     tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
     if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
         if player.draws_this_turn >= 3:
             gs.tamiyo_flipped = True
-            tam_perm.power_mod = 3   # flips to Tamiyo, Seasoned Scholar (3/3)
-            tam_perm.toughness_mod = 0
-            log_fn("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
+            # Transform: move to planeswalkers list, drop creature P/T concept
+            player.creatures.remove(tam_perm)
+            player.planeswalkers.append(tam_perm)
+            log_fn("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn) — becomes planeswalker", key=True)
 
+
+# Delirium check: 4+ card types in graveyard (CR 702.x — UR Aggro / DRC + Unholy Heat)
+_CARD_TYPE_TAGS = ('creature', 'instant', 'sorcery', 'artifact', 'enchantment', 'land', 'planeswalker')
+
+def has_delirium(player) -> bool:
+    """True iff player has 4 or more distinct card types in their graveyard.
+    Counted: creature/instant/sorcery/artifact/enchantment/land/planeswalker."""
+    types_seen = set()
+    for c in player.graveyard:
+        # gy_type is set per-card at creation. Fall back to card_type.
+        t = getattr(c, 'gy_type', '') or ''
+        if t in _CARD_TYPE_TAGS:
+            types_seen.add(t)
+        else:
+            # Check card_type
+            ct = getattr(c, 'card_type', None)
+            if ct:
+                from rules import CardType
+                if ct == CardType.CREATURE: types_seen.add('creature')
+                elif ct == CardType.INSTANT: types_seen.add('instant')
+                elif ct == CardType.SORCERY: types_seen.add('sorcery')
+                elif ct == CardType.ARTIFACT: types_seen.add('artifact')
+                elif ct == CardType.ENCHANTMENT: types_seen.add('enchantment')
+                elif ct == CardType.LAND: types_seen.add('land')
+                elif ct == CardType.PLANESWALKER: types_seen.add('planeswalker')
+        if len(types_seen) >= 4:
+            return True
+    return len(types_seen) >= 4
+
+
+def _flies(perm) -> bool:
+    """Effective flying check for a permanent — covers static card.flying plus
+    per-permanent grants (Delver transformed, DRC with delirium). Used in
+    combat to determine attack/block legality without mutating shared Card."""
+    return (getattr(perm.card, 'flying', False) or
+            getattr(perm, 'delver_flying', False) or
+            getattr(perm, 'has_delirium_flying', False))
+
+
+def _check_delver_transform(player, log_fn=None) -> None:
+    """Delver of Secrets (CR 701.31): at beginning of upkeep, reveal top of
+    library. If it's an instant or sorcery, transform into Insectile Aberration
+    (3/2 flying). Once transformed, stays transformed."""
+    delver = next((c for c in player.creatures
+                   if c.card.tag == 'delver'
+                   and not getattr(c, 'delver_transformed', False)), None)
+    if not delver or not player.library:
+        return
+    top = player.library[0]  # top of library is index 0 (draws from front)
+    from rules import CardType
+    is_spell = getattr(top, 'card_type', None) in (CardType.INSTANT, CardType.SORCERY)
+    if is_spell:
+        delver.delver_transformed = True
+        # 1/1 → 3/2 flying. Use mods so the base stats stay clean.
+        delver.power_mod = 2
+        delver.toughness_mod = 1
+        delver.delver_flying = True
+        if log_fn:
+            log_fn(f"★ Delver of Secrets transforms → Insectile Aberration (revealed {top.name})", True)
+
+
+def _enforce_pact_upkeep(player, gs) -> None:
+    """Pact of Negation upkeep: if pact_upkeep_due is set, the caster must
+    pay 3UU at start of their next upkeep or lose the game. Sim approximates
+    with 5 generic mana available. If unpaid, marks game lost."""
+    if not getattr(player, 'pact_upkeep_due', False):
+        return
+    # If game already over, skip
+    if getattr(gs, 'game_over', False):
+        return
+    available = player.available_mana_count()
+    if available >= 5:
+        # Pay 5 generic — tap 5 lands. (Real cost is 3UU; we simplify.)
+        tapped = 0
+        for land in player.lands:
+            if tapped >= 5:
+                break
+            if not land.tapped:
+                land.tapped = True
+                tapped += 1
+        player.pact_upkeep_due = False
+        # Optional logging via gs.strat_log if present
+        try:
+            gs.strat_log.log_decision(
+                gs.turn, gs.p1_deck if player is gs.p1 else gs.p2_deck,
+                candidates=['pay_pact', 'lose_to_pact'],
+                chosen='pay_pact',
+                reason='paid 5 generic for Pact upkeep')
+        except Exception:
+            pass
+    else:
+        # Forfeit — caster loses
+        gs.game_over = True
+        gs.kill_turn = gs.turn
+        gs.winner = 'p2' if player is gs.p1 else 'p1'
+        gs.win_reason = f"{player.name} couldn't pay Pact of Negation upkeep (had {available} mana, needed 5)"
+
+
+def _apply_delirium_to_drc(player) -> None:
+    """If DRC is in play and controller has delirium, give +2/+2.
+    The 'flying' grant is handled via card.flying mutation — but that mutates
+    the shared Card object, so we use a per-permanent flag instead."""
+    drc = next((c for c in player.creatures if c.card.tag == 'drc'), None)
+    if not drc:
+        return
+    if has_delirium(player):
+        # +2/+2 and flying
+        drc.power_mod = max(getattr(drc, 'power_mod', 0), 2)
+        drc.toughness_mod = max(getattr(drc, 'toughness_mod', 0), 2)
+        # Flying is a static ability — we mark on permanent for combat checks
+        drc.has_delirium_flying = True
+    else:
+        drc.power_mod = 0
+        drc.toughness_mod = 0
+        drc.has_delirium_flying = False
 
 def _eidolon_trigger(gs: GameState, card, log_fn, caster=None) -> None:
     """CR 702.2: Eidolon of the Great Revel — whenever ANY player casts a spell with CMC≤3,
@@ -475,6 +595,12 @@ def opp_can_cast(card: Card, om: int, gs: GameState, caster=None) -> bool:
     if om < effective:
         return False
     caster = caster if caster is not None else gs.p2
+    # Sanctum Prelate: opponent of caster has Prelate → blocks noncreature
+    # spells with CMC = chosen number (sim assumes 1 always chosen).
+    opp_of_caster = gs.p1 if caster is gs.p2 else gs.p2
+    if any(c.card.tag == 'prelate' for c in opp_of_caster.creatures):
+        if card.cmc == 1 and not card.is_creature():
+            return False
     return can_afford(caster, card.mana_cost)
 
 
@@ -607,13 +733,13 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
 
     # CR 509.1b — flying creatures can only be blocked by creatures with flying or reach
     # Also: Brazen Borrower can only block creatures with flying (oracle)
-    flying_attackers  = [a for a in attackers if a.card.flying]
-    ground_attackers  = [a for a in attackers if not a.card.flying]
+    flying_attackers  = [a for a in attackers if _flies(a)]
+    ground_attackers  = [a for a in attackers if not _flies(a)]
 
     # Determine which defender creatures can legally block at least one attacker
     can_block = []
     for c in defender_player.creatures:
-        has_flying = c.card.flying
+        has_flying = _flies(c)
         has_reach  = getattr(c.card, 'reach', False)
         borrower   = c.card.tag == 'borrow'
 
@@ -662,7 +788,7 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
                         (a.card.deathtouch and crea.base_toughness > 0) or  # any dmg is lethal
                         high_value_etb  # ETB effect worth dying for
                         for a in attackers
-                        if not a.card.flying or crea.flying or getattr(crea, 'reach', False)
+                        if not _flies(a) or crea.flying or getattr(crea, 'reach', False)
                     )
                     if can_trade:
                         vial_owner.remove_from_hand(crea)
@@ -704,9 +830,9 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
     def can_legally_block(blocker, attacker):
         """CR 509.1b: check block legality."""
         if blocker.card.tag == 'borrow':
-            return attacker.card.flying  # Borrower blocks only flying
-        if attacker.card.flying:
-            return blocker.card.flying or getattr(blocker.card, 'reach', False)
+            return _flies(attacker)  # Borrower blocks only flying
+        if _flies(attacker):
+            return _flies(blocker) or getattr(blocker.card, 'reach', False)
         return True  # ground creature blocks ground
 
     # Sort attackers: biggest threats first (most dangerous if unblocked)
@@ -721,6 +847,11 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
         legal = [b for b in available_blockers if can_legally_block(b, atk)]
         if not legal:
             continue  # no legal blocker — attacker gets through
+        # Menace (CR 702.110): can't be blocked except by 2+ creatures.
+        # Simplified model: if fewer than 2 legal blockers available, treat
+        # as unblockable. (Full multi-block support is a future patch.)
+        if getattr(atk.card, 'menace', False) and len(legal) < 2:
+            continue
 
         # Defender block priority:
         # 1. Kill attacker with smallest blocker that survives (favorable trade)
@@ -789,84 +920,147 @@ def resolve_combat(gs: GameState, attacker_player: PlayerState,
                     attacker_tag=chump.card.tag or 'creature',
                 ))
 
-    # ── Resolve damage for each blocked pair + all unblocked ─────────────────
-    total_unblocked_dmg = 0
-    atk_names = ', '.join(a.name for a in attackers)
+    # ── Resolve combat damage (with first-strike + double-strike support) ────
+    # CR 510.1: damage is dealt in two steps if any attacker/blocker has
+    # first strike or double strike, else one step. Implementation: a single
+    # helper applies damage with a per-step filter; we call it 1 or 2 times.
+
+    total_unblocked_ref = [0]  # mutable so helper can update
     block_parts = []
+    atk_names = ', '.join(a.name for a in attackers)
 
-    for atk in attackers:
-        blocker = assignments.get(id(atk))
-        if blocker:
-            # Mutual damage
-            dmg_to_blocker  = atk.power
-            dmg_to_attacker = blocker.power
-
-            # Iter-15: pro-red prevention on combat damage TO a pro-red
-            # blocker from a red attacker. Sanctifier en-Vec must survive
-            # blocking Goblin Guide / Swiftspear / Eidolon — that's the
-            # whole point of the card.
-            if (getattr(blocker.card, 'pro_red', False)
-                    and 'R' in getattr(atk.card, 'colors', set())):
-                dmg_to_blocker = 0
-            # Symmetric case (red blocker into pro-red attacker — rare but
-            # supported for symmetry).
-            if (getattr(atk.card, 'pro_red', False)
-                    and 'R' in getattr(blocker.card, 'colors', set())):
-                dmg_to_attacker = 0
-
-            blocker.damage_marked  += dmg_to_blocker
-            atk.damage_marked      += dmg_to_attacker
-
-            atk_dt  = atk.card.deathtouch
-            blk_dt  = blocker.card.deathtouch
-
-            blocker_died = (blocker.is_destroyed() or
-                            MTGRules.check_lethal_damage(blocker,  deathtouch_source=atk_dt) or
-                            MTGRules.check_zero_toughness(blocker))
-            attacker_died = (atk.is_destroyed() or
-                             MTGRules.check_lethal_damage(atk, deathtouch_source=blk_dt) or
-                             MTGRules.check_zero_toughness(atk))
-
-            # Lifelink
-            if atk.card.lifelink and dmg_to_blocker > 0:
-                attacker_player.life += dmg_to_blocker
-            if blocker.card.lifelink and dmg_to_attacker > 0:
-                defender_player.life += dmg_to_attacker
-
-            block_parts.append(
-                f"{blocker.name} blocks {atk.name}. "                f"{atk.name} deals {dmg_to_blocker}, {blocker.name} deals {dmg_to_attacker} back. "                f"0 unblocked damage to player ({defender_player.name} at {defender_player.life})")
-
-            if blocker_died:
-                defender_player.remove_creature(blocker)
-                block_parts.append(f"  {blocker.name} dies.")
-            if attacker_died:
-                attacker_player.remove_creature(atk)
-                block_parts.append(f"  {atk.name} dies.")
+    def _deals_damage_in_step(perm, fs_step):
+        """Does this permanent deal damage in this step?
+        FS step: only FS or DS creatures deal.
+        Normal step: DS creatures or non-FS creatures deal."""
+        fs = getattr(perm.card, 'first_strike', False)
+        ds = getattr(perm.card, 'double_strike', False)
+        if fs_step:
+            return fs or ds
         else:
-            # Unblocked — route through deal_damage (handles infect → poison)
-            gs._combat_unblocked_tags.add(atk.card.tag)
-            if getattr(atk.card, 'infect', False):
-                # Infect: damage as poison counters via deal_damage
-                def _log_dmg(msg, key=False):
-                    log_list.append(msg)
-                deal_damage(gs, atk.card.tag, defender_player, atk.power,
-                            damage_type='infect', log_fn=_log_dmg,
-                            source_card=atk.card, attacker_player=attacker_player)
-            else:
-                # Iter-15: pro-red prevention on combat damage from red
-                # attackers. If defender controls a creature with pro_red
-                # and the attacker is red, prevent the damage.
-                defender_pro_red = any(
-                    getattr(c.card, 'pro_red', False)
-                    for c in defender_player.creatures)
-                attacker_red = 'R' in getattr(atk.card, 'colors', set())
-                if defender_pro_red and attacker_red:
+            return ds or not fs
+
+    def _apply_combat_step(fs_step):
+        for atk in attackers:
+            # Skip dead attackers (might have died in previous step)
+            if atk not in attacker_player.creatures:
+                continue
+            blocker = assignments.get(id(atk))
+
+            if blocker:
+                # Skip if blocker died in previous step
+                if blocker not in defender_player.creatures:
+                    # Blocked-but-blocker-dead: damage is wasted (no trample modelled).
+                    # Trample creatures would deal excess to player here; skip for now.
+                    continue
+
+                atk_deals = _deals_damage_in_step(atk, fs_step)
+                blk_deals = _deals_damage_in_step(blocker, fs_step)
+                if not atk_deals and not blk_deals:
+                    continue  # neither acts this step
+
+                dmg_to_blocker  = atk.power if atk_deals else 0
+                dmg_to_attacker = blocker.power if blk_deals else 0
+
+                # Pro-red prevention (unchanged from pre-patch)
+                if (getattr(blocker.card, 'pro_red', False)
+                        and 'R' in getattr(atk.card, 'colors', set())):
+                    dmg_to_blocker = 0
+                if (getattr(atk.card, 'pro_red', False)
+                        and 'R' in getattr(blocker.card, 'colors', set())):
+                    dmg_to_attacker = 0
+
+                # Trample (CR 702.19): excess damage over blocker's remaining
+                # toughness goes to defending player. Deathtouch counts any
+                # damage as lethal — for trample with deathtouch, assigning 1
+                # to blocker is enough, rest tramples.
+                trample_excess = 0
+                if (getattr(atk.card, 'trample', False) and dmg_to_blocker > 0
+                        and atk_deals):
+                    blocker_eff_t = blocker.toughness - blocker.damage_marked
+                    needed_to_lethal = 1 if atk.card.deathtouch else max(0, blocker_eff_t)
+                    if dmg_to_blocker > needed_to_lethal:
+                        trample_excess = dmg_to_blocker - needed_to_lethal
+                        dmg_to_blocker = needed_to_lethal
+
+                blocker.damage_marked += dmg_to_blocker
+                atk.damage_marked     += dmg_to_attacker
+                if trample_excess > 0:
+                    total_unblocked_ref[0] += trample_excess
+
+                atk_dt = atk.card.deathtouch
+                blk_dt = blocker.card.deathtouch
+
+                blocker_died = (blocker.is_destroyed() or
+                                MTGRules.check_lethal_damage(blocker, deathtouch_source=atk_dt) or
+                                MTGRules.check_zero_toughness(blocker))
+                attacker_died = (atk.is_destroyed() or
+                                 MTGRules.check_lethal_damage(atk, deathtouch_source=blk_dt) or
+                                 MTGRules.check_zero_toughness(atk))
+
+                # Lifelink
+                if atk.card.lifelink and dmg_to_blocker > 0:
+                    attacker_player.life += dmg_to_blocker
+                if blocker.card.lifelink and dmg_to_attacker > 0:
+                    defender_player.life += dmg_to_attacker
+
+                # Log only on first step or single-step
+                if dmg_to_blocker > 0 or dmg_to_attacker > 0 or fs_step:
+                    step_label = " (first strike)" if fs_step else ""
                     block_parts.append(
-                        f"  {atk.name} unblocked → prevented by pro-red")
+                        f"{blocker.name} blocks {atk.name}{step_label}. "
+                        f"{atk.name} deals {dmg_to_blocker}, {blocker.name} deals {dmg_to_attacker} back. "
+                        f"0 unblocked damage to player ({defender_player.name} at {defender_player.life})")
+
+                if blocker_died and blocker in defender_player.creatures:
+                    defender_player.remove_creature(blocker)
+                    block_parts.append(f"  {blocker.name} dies.")
+                if attacker_died and atk in attacker_player.creatures:
+                    attacker_player.remove_creature(atk)
+                    block_parts.append(f"  {atk.name} dies.")
+            else:
+                # Unblocked attacker
+                if not _deals_damage_in_step(atk, fs_step):
+                    continue
+                gs._combat_unblocked_tags.add(atk.card.tag)
+                if getattr(atk.card, 'infect', False):
+                    def _log_dmg(msg, key=False):
+                        log_list.append(msg)
+                    deal_damage(gs, atk.card.tag, defender_player, atk.power,
+                                damage_type='infect', log_fn=_log_dmg,
+                                source_card=atk.card, attacker_player=attacker_player)
                 else:
-                    total_unblocked_dmg += atk.power
-            if atk.card.lifelink:
-                attacker_player.life += atk.power
+                    defender_pro_red = any(
+                        getattr(c.card, 'pro_red', False)
+                        for c in defender_player.creatures)
+                    attacker_red = 'R' in getattr(atk.card, 'colors', set())
+                    if defender_pro_red and attacker_red:
+                        block_parts.append(
+                            f"  {atk.name} unblocked → prevented by pro-red")
+                    else:
+                        total_unblocked_ref[0] += atk.power
+                if atk.card.lifelink:
+                    attacker_player.life += atk.power
+
+    # Detect if first-strike step is needed
+    _has_fs_or_ds = any(
+        getattr(a.card, 'first_strike', False) or getattr(a.card, 'double_strike', False)
+        for a in attackers
+    ) or any(
+        b is not None and (getattr(b.card, 'first_strike', False)
+                            or getattr(b.card, 'double_strike', False))
+        for b in assignments.values()
+    )
+
+    if _has_fs_or_ds:
+        # Two-step damage
+        _apply_combat_step(fs_step=True)
+        _apply_combat_step(fs_step=False)
+    else:
+        # Single step (preserves pre-patch behavior exactly)
+        _apply_combat_step(fs_step=False)
+
+    total_unblocked_dmg = total_unblocked_ref[0]
 
     if block_parts:
         log_list.append(f"Attack: {atk_names} — " + block_parts[0])
@@ -977,14 +1171,16 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     d_cs = counters_by_tag.get('counter')
     d_fluster = counters_by_tag.get('fluster')
     d_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
+    d_pact = counters_by_tag.get('pact')
 
     # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
     if gs.trinisphere_active:
         d_fow = None
         d_fon = None
         d_daze = None  # Daze alternate cost = 0 mana, doesn't meet Trini minimum
+        d_pact = None  # Pact alternate cost = 0 mana, doesn't meet Trini minimum
 
-    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro]):
+    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_pact]):
         return False
 
     # ── Don't counter cantrips — save counters for threats ──
@@ -1146,6 +1342,20 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             defender.remove_from_hand(d_consign); defender.add_to_grave(d_consign)
             ctr.append(f"Consign to Memory counters {spell_card.name}")
 
+    # ── Pact of Negation (0 mana, hard counter, upkeep tax 3UU or lose) ──
+    # Real Pact has no immediate cost. Upkeep cost is 3UU; if unpaid the
+    # caster loses the game. For sim: cast free, set pact_upkeep_due flag.
+    # On defender's next upkeep, check mana ≥ 5 → pay (we model 5 generic
+    # instead of 3UU since most decks running Pact are UU-heavy). If not,
+    # forfeit.
+    # Only use Pact on MAJOR threats — Pact's upkeep cost is enormous, and
+    # combo decks running it need to hold for combo protection.
+    if not ctr and d_pact and is_major_threat:
+        defender.remove_from_hand(d_pact); defender.add_to_grave(d_pact)
+        defender.pact_upkeep_due = True
+        gs._last_counter_used = 'pact'
+        ctr.append(f"Pact of Negation counters {spell_card.name} (upkeep cost UU+3 next turn)")
+
     # ── Daze (return Island; caster may pay {1} to prevent) ──
     # Daze is strong T1-2 when opponents are mana-tight, but after T3 opponents
     # can usually pay {1}. Model pay-through rate scaling with turn + caster mana.
@@ -1218,6 +1428,14 @@ def play_turn(gs: GameState, turn: int, who: str = 'p1'):
     # ── Universal pre-turn rules ──
     player = gs.p1 if who == 'p1' else gs.p2
     opponent = gs.p2 if who == 'p1' else gs.p1
+    # Apply delirium to DRC stats at start of turn
+    _apply_delirium_to_drc(player)
+    _apply_delirium_to_drc(opponent)
+    # Delver of Secrets: check transform at start of upkeep
+    _check_delver_transform(player)
+    _check_delver_transform(opponent)
+    # Pact of Negation: upkeep cost enforcement
+    _enforce_pact_upkeep(player, gs)
     # Narset: if opponent controls Narset, this player can't draw extra cards
     player._narset_lock = any(
         c.card.tag == 'narset' for c in
@@ -2055,10 +2273,17 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
         can_cast = budget[0] >= effective_cmc(kaito) and can_afford(player, kaito.mana_cost)
         if can_cast and ok_to_deploy() and not (hold_mana and threats_this_turn[0] >= 1):
             def _resolve_kaito(c):
-                player.put_creature_in_play(c)
+                # Kaito, Bane of Nightmares is a PLANESWALKER (loyalty 4), not a 3/4 creature.
+                # Per oracle: "During your turn, as long as Kaito has one or more loyalty
+                # counters on him, he's a 3/4 Ninja creature and has hexproof."
+                # For sim simplicity we keep him as a planeswalker only — the "becomes-creature-
+                # during-your-turn" rule is a TODO. This means Kaito no longer attacks for 3/turn;
+                # he sits as a do-nothing PW. Closer to real MTG than the 3/4-always bug, but
+                # underplays his offensive value.
+                player.put_planeswalker_in_play(c)
                 threats_this_turn[0] += 1
                 drawn = player.draw(1)
-                log_fn(f"Cast Kaito, Bane of Nightmares (3/4 hexproof) → Surveil 2, draw 1 [{drawn[0].name if drawn else 'empty'}]", key=True)
+                log_fn(f"Cast Kaito, Bane of Nightmares (planeswalker, loyalty 4) → Surveil 2, draw 1 [{drawn[0].name if drawn else 'empty'}]", key=True)
             cast_spell(player, opponent, gs, kaito, budget, log_fn, log_entries,
                        on_resolve=_resolve_kaito, cost_override=effective_cmc(kaito))
             update_goyf(gs)
@@ -2082,14 +2307,17 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _check_tamiyo_flip(gs, player, log):
-    """Check if Tamiyo should flip (drew 3+ cards this turn)."""
+    """Tamiyo flips when controller draws 3+ cards in a turn.
+    Post-flip: Tamiyo, Seasoned Scholar is a PLANESWALKER, not a creature.
+    Move her from creatures -> planeswalkers (combat skips her). No P/T boost."""
     tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
     if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
         if player.draws_this_turn >= 3:
             gs.tamiyo_flipped = True
-            tam_perm.power_mod = 3
-            tam_perm.toughness_mod = 0
-            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
+            # Transform: move to planeswalkers list, drop creature P/T concept
+            player.creatures.remove(tam_perm)
+            player.planeswalkers.append(tam_perm)
+            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn) — becomes planeswalker", key=True)
 
 
 def _trace_board_state(player, opponent, log):
@@ -2263,17 +2491,23 @@ def _respond_on_opponent_turn(responder, active, gs, log_fn, log_entries):
     bolt = responder.find_tag('bolt') or responder.find_tag('heat')
     if bolt and active.creatures and responder.available_mana_count() >= 1:
         mana_after = responder.available_mana_count() - 1
+        # Unholy Heat scales with delirium (2 normally, 3 with 4+ types in GY)
+        # Bolt is always 3.
+        _is_heat = bolt.tag == 'heat'
+        _dmg = 3 if (not _is_heat or has_delirium(responder)) else 2
         # Iter-15: skip pro-red targets when bolting from red source
         targets = [c for c in active.creatures
-                   if c.toughness <= 3 and c.power >= 2 and _can_target(c, mana_after)
+                   if c.toughness <= _dmg and c.power >= 2 and _can_target(c, mana_after)
                    and not getattr(c.card, 'pro_red', False)]
         if targets:
             target = max(targets, key=lambda c: c.power)
             responder.remove_from_hand(bolt)
             responder.add_to_grave(bolt)
-            target.damage_marked += 3
+            target.damage_marked += _dmg
             _will_die = target.damage_marked >= target.toughness
-            log_fn(f"★ Bolt (instant, opp's turn) → {target.card.name} takes 3 damage", True)
+            _name = 'Unholy Heat' if _is_heat else 'Bolt'
+            _scale = ' (delirium scaled)' if _is_heat and _dmg == 3 else ''
+            log_fn(f"★ {_name} (instant, opp's turn){_scale} → {target.card.name} takes {_dmg} damage", True)
             gs.state_based_actions()
             update_goyf(gs)
             if _will_die:
@@ -2761,7 +2995,7 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
     # ── 3. Deploy creatures — priority order matters ──
     # Thalia FIRST (taxes opponent's spells), then SFM (tutors equipment),
     # then other threats. Recruiter last (value, not tempo).
-    deploy_priority = ['thalia', 'sfm', 'skyclave', 'phelia', 'flickerwisp',
+    deploy_priority = ['thalia', 'prelate', 'sfm', 'skyclave', 'phelia', 'flickerwisp',
                        'orchid', 'mom', 'recruiter']
 
     # Hard cast creatures — always deploy when mana available.
@@ -2815,6 +3049,16 @@ def _strategy_dnt(player, opponent, gs, total_mana, log_fn, log_entries):
                         new_p.summoning_sick = True
                         log_fn(f"  Flickerwisp blinks {tgt.card.name}")
                         update_goyf(gs)
+                if _tag == 'prelate':
+                    log_fn(f"  Sanctum Prelate chooses 1 — noncreature CMC=1 spells locked", True)
+                    # Typed disruption log so structural grader credits the lock.
+                    try:
+                        gs.strat_log.log_disruption(
+                            gs.turn, gs, player, 'lock',
+                            'cmc1_noncreature', 'prelate',
+                            reason='prelate locks CMC=1 noncreature spells')
+                    except Exception:
+                        pass
             cast_spell(player, opponent, gs, crea, budget, log_fn, log_entries,
                        on_resolve=_resolve_crea)
             deployed_this_turn += 1
@@ -3253,13 +3497,44 @@ def _strategy_mono_black(player, opponent, gs, total_mana, log_fn, log_entries):
             candidates=deploy_priority,
             chosen=tag,
             reason=f"mana={budget[0]}, deployed={deployed}, board={len(player.creatures)}")
-        def _resolve_crea_mb(c):
-            player.put_creature_in_play(c)
+        def _resolve_crea_mb(c, _tag=tag):
+            perm = player.put_creature_in_play(c)
             log_fn(f"{c.name} ({c.base_power}/{c.base_toughness})")
+            # Carnage Interpreter ETB: discard hand, investigate 4 times.
+            # While hand ≤1: +2/+2 (menace already on card from patch 1).
+            if _tag == 'carnage':
+                discarded_count = len(player.hand)
+                # Discard hand
+                while player.hand:
+                    c2 = player.hand.pop(0)
+                    player.add_to_grave(c2)
+                # Track 4 clue tokens for future card draw (sim approximation:
+                # spawn as future draws over next turns when mana allows)
+                player.clue_tokens = getattr(player, 'clue_tokens', 0) + 4
+                # Apply +2/+2 since hand is now 0 (≤1)
+                perm.power_mod = max(getattr(perm, 'power_mod', 0), 2)
+                perm.toughness_mod = max(getattr(perm, 'toughness_mod', 0), 2)
+                log_fn(f"  Carnage ETB: discard {discarded_count}, +4 clues, +2/+2 (5/5 menace)", True)
         if cast_spell(player, opponent, gs, crea, budget, log_fn, log_entries,
                       on_resolve=_resolve_crea_mb):
             deployed += 1
     total_mana = budget[0]
+
+    # ── Clue tokens: sac {2},T to draw a card (from Carnage Interpreter ETB) ──
+    _clues = getattr(player, 'clue_tokens', 0)
+    while _clues > 0 and total_mana >= 2:
+        # Sacrifice one clue, pay 2 generic, draw 1
+        drawn = player.draw(1)
+        if drawn:
+            log_fn(f"  Crack Clue (2 mana) → draw {drawn[0].name}")
+        total_mana -= 2
+        budget[0] = total_mana
+        _clues -= 1
+        player.clue_tokens = _clues
+        # Stop if we want to save mana for other plays (heuristic: keep ≥2 mana
+        # spare unless we have multiple clues stockpiled)
+        if _clues == 0 or budget[0] < 4:
+            break
 
     # ── 7. Wasteland — disrupt opp's nonbasic ──
     wl = next((l for l in player.lands if l.card.tag == 'wl' and not l.tapped), None)
@@ -3877,6 +4152,31 @@ def _strategy_show(player, opponent, gs, total_mana, log_fn, log_entries):
         chosen='entry',
         reason=f"mana={total_mana}, hand={len(player.hand)}")
 
+    # ── Stock Up — 3-mana sorcery: look at top 5, take 2 ──
+    _stockup = player.find_tag('stockup')
+    if _stockup and total_mana >= 3 and len(player.library) >= 5:
+        budget_su = [total_mana]
+        def _resolve_stockup(c):
+            top5 = player.library[:5]
+            # Priority: combo pieces (Show/Sneak/Emrakul/Omni), then any spell, then lands
+            priority_tags = ('show', 'sneak', 'emrakul', 'omni', 'omniscience',
+                             'griselbrand', 'archon', 'atraxa', 'jace', 'rip',
+                             'brainstorm', 'ponder', 'preordain', 'fow', 'fon')
+            ranked = sorted(range(len(top5)),
+                            key=lambda i: (
+                                0 if top5[i].tag in priority_tags else
+                                1 if not top5[i].is_land() else 2))
+            keep_idxs = sorted(ranked[:2])  # take top 2 by priority
+            taken_names = []
+            for idx in reversed(keep_idxs):  # reverse to pop without shifting
+                taken = player.library.pop(idx)
+                player.hand.append(taken)
+                taken_names.append(taken.name)
+            log_fn(f"★ Stock Up → take {', '.join(reversed(taken_names))}", True)
+        cast_spell(player, opponent, gs, _stockup, budget_su, log_fn, log_entries,
+                   on_resolve=_resolve_stockup)
+        total_mana = budget_su[0]
+
     # ── Combo-engine protection decision (Hold/Defer surface a 'protect'
     # keyword for the heuristic grader). Behaviour-preserving — the actual
     # combo gating below uses local mana/payoff checks plus Veil. See
@@ -4067,6 +4367,199 @@ def _strategy_lands(player, opponent, gs, total_mana, log_fn, log_entries):
                 f"depths_out={any(l.card.tag=='depths' for l in player.lands)}"))
 
     budget = [total_mana]
+
+    # ── Mox Diamond — discard a land, gain 1 mana per Mox in play ────────
+    # Already-deployed Moxes tap for 1 mana of any color each turn.
+    _mox_in_play = sum(1 for a in player.artifacts if a.card.tag == 'moxd')
+    if _mox_in_play:
+        budget[0] += _mox_in_play
+    # Try to deploy more Moxes from hand if we have spare land cards to discard.
+    _mox_in_hand = [c for c in player.hand if c.tag == 'moxd']
+    if _mox_in_hand:
+        # Lands to keep (key combo / utility): Depths, Stage, Wasteland, Saga,
+        # Tab, Karakas, Maze, Boseiju, Ghost Quarter. Discard duplicates of
+        # basic-ish lands first (Forest, Yavimaya, Bog).
+        _key_tags = {'depths', 'stage', 'wl', 'saga', 'tab', 'karakas', 'maze',
+                     'gq', 'boseiju', 'tomb'}
+        _land_cards = [c for c in player.hand if c.is_land()]
+        # Discardable: not key, OR have a duplicate of this key
+        def _discardable(c):
+            if c.tag not in _key_tags:
+                return True
+            same = sum(1 for d in _land_cards if d.tag == c.tag)
+            return same > 1
+        _discardable_lands = [c for c in _land_cards if _discardable(c)]
+        # Prefer to discard: forest, yavimaya, bog (non-key), then duplicate keys
+        def _discard_priority(c):
+            order = ['forest', 'yavimaya', 'bog', 'tomb']
+            return order.index(c.tag) if c.tag in order else 99
+        _discardable_lands.sort(key=_discard_priority)
+        for _mox in list(_mox_in_hand):
+            if not _discardable_lands:
+                break
+            _to_discard = _discardable_lands.pop(0)
+            player.remove_from_hand(_to_discard)
+            player.add_to_grave(_to_discard)
+            player.remove_from_hand(_mox)
+            player.put_artifact_in_play(_mox)
+            budget[0] += 1
+            log_fn(f"Mox Diamond — discard {_to_discard.name}, tap for 1 mana")
+
+    # ── Expedition Map — tutor for utility land ──────────────────────────
+    # {2},{T},sac: search for a land card. Priority targets in order:
+    # Dark Depths (combo), Thespian's Stage (combo), Urza's Saga (engine),
+    # Wasteland (disruption), then any missing utility.
+    _map_in_play = next((a for a in player.artifacts
+                         if a.card.tag == 'map' and not a.tapped), None)
+    if _map_in_play and budget[0] >= 2:
+        # Determine target priority based on what we already have
+        _has = lambda tag: any(l.card.tag == tag for l in player.lands) or any(c.tag == tag for c in player.hand)
+        target = None
+        for _tag in ('depths', 'stage', 'saga', 'wl', 'karakas', 'tab'):
+            if not _has(_tag):
+                # Check if it's actually in our library
+                idx = next((i for i, c in enumerate(player.library) if c.tag == _tag), None)
+                if idx is not None:
+                    target = (idx, _tag)
+                    break
+        if target:
+            idx, _tag = target
+            tutored = player.library.pop(idx)
+            player.hand.append(tutored)
+            _map_in_play.tapped = True
+            player.artifacts.remove(_map_in_play)
+            player.add_to_grave(_map_in_play.card)
+            budget[0] -= 2
+            log_fn(f"Expedition Map: {{2}},T,sac → tutor {tutored.name}", True)
+
+    # ── Once Upon a Time — first-spell-free creature/land tutor ──────────
+    # Free if this is the first spell cast in the game. Look 5, take creature/land.
+    # For lands deck: no creatures, so we tutor a key utility land.
+    _ouat = player.find_tag('ouat')
+    _first_spell = not any(c.card_type.value in ('instant', 'sorcery')
+                           for c in player.graveyard)
+    if (_ouat and _first_spell and not getattr(gs, '_ouat_cast_this_game', False)
+            and len(player.library) >= 5):
+        top5 = player.library[:5]
+        # Take highest-priority land we don't have on battlefield
+        _has_land = lambda tag: any(l.card.tag == tag for l in player.lands)
+        priority = ['depths', 'stage', 'saga', 'wl', 'karakas']
+        target_idx = None
+        for tag in priority:
+            for i, c in enumerate(top5):
+                if c.tag == tag and not _has_land(tag):
+                    target_idx = i; break
+            if target_idx is not None: break
+        # Fall back: any land in top 5
+        if target_idx is None:
+            for i, c in enumerate(top5):
+                if c.is_land():
+                    target_idx = i; break
+        if target_idx is not None:
+            taken = player.library.pop(target_idx)
+            # Rest of top 4 go to bottom in random order — for sim, just leave order
+            # Actually MTG says random; for determinism we keep order (good enough)
+            player.hand.append(taken)
+            player.remove_from_hand(_ouat)
+            player.add_to_grave(_ouat)
+            gs._ouat_cast_this_game = True
+            log_fn(f"★ Once Upon a Time (FREE — first spell) → tutor {taken.name}", True)
+
+    # ── Expedition Map — cast for 1 mana to set up later activation ─────
+    _map_in_hand = player.find_tag('map')
+    _map_in_play_check = any(a.card.tag == 'map' for a in player.artifacts)
+    if _map_in_hand and not _map_in_play_check and budget[0] >= 1:
+        def _resolve_map(c):
+            player.put_artifact_in_play(c)
+            log_fn("Expedition Map (artifact, 1 mana)")
+        cast_spell(player, opponent, gs, _map_in_hand, budget, log_fn, log_entries,
+                   on_resolve=_resolve_map)
+
+    # ── Grafdigger's Cage — cast for 1 mana, locks opp graveyard plays ───
+    _cage_in_hand = player.find_tag('cage')
+    _cage_in_play = any(a.card.tag == 'cage' for a in player.artifacts)
+    if _cage_in_hand and not _cage_in_play and budget[0] >= 1:
+        def _resolve_cage(c):
+            player.put_artifact_in_play(c)
+            opponent.cage_lock = True   # opponent can't reanimate from GY
+            log_fn("Grafdigger's Cage (locks GY/library creature ETBs)", True)
+        cast_spell(player, opponent, gs, _cage_in_hand, budget, log_fn, log_entries,
+                   on_resolve=_resolve_cage)
+
+    # ── Malevolent Rumble — 2-mana sorcery, reveal 4 take 1 permanent ────
+    _rumble = player.find_tag('rumble')
+    if _rumble and budget[0] >= 2:
+        # Look at top 4 of library
+        top4 = player.library[:4]
+        if top4:
+            # Priority: take a key permanent we don't have
+            _has = lambda tag: (any(l.card.tag == tag for l in player.lands) or
+                                any(c.tag == tag for c in player.hand) or
+                                any(a.card.tag == tag for a in player.artifacts) or
+                                any(e.card.tag == tag for e in player.enchantments))
+            # Lands deck priority: Depths, Stage, Saga, Loam, Exploration, Wasteland
+            priorities = ['depths', 'stage', 'saga', 'loam', 'exploration', 'wl',
+                          'crop', 'moxd', 'tab', 'karakas', 'flute']
+            chosen_idx = None
+            # First pass: permanent card we don't have
+            for tag in priorities:
+                for i, c in enumerate(top4):
+                    if c.tag == tag and not _has(tag):
+                        chosen_idx = i; break
+                if chosen_idx is not None: break
+            # Second pass: any permanent card
+            if chosen_idx is None:
+                for i, c in enumerate(top4):
+                    if c.card_type in (CardType.LAND, CardType.CREATURE,
+                                       CardType.ARTIFACT, CardType.ENCHANTMENT,
+                                       CardType.PLANESWALKER):
+                        chosen_idx = i; break
+
+            def _resolve_rumble(c):
+                # Take chosen card to hand
+                if chosen_idx is not None and chosen_idx < len(player.library):
+                    taken = player.library.pop(chosen_idx)
+                    player.hand.append(taken)
+                    taken_name = taken.name
+                else:
+                    taken_name = "(no permanent found)"
+                # Mill rest of top 4 to graveyard
+                milled = []
+                for _ in range(min(3, len(player.library))):
+                    milled_card = player.library.pop(0)
+                    player.add_to_grave(milled_card)
+                    milled.append(milled_card.name)
+                # Eldrazi Spawn token: track as +1 ritual mana available next turn
+                # (sim model — real spawn is a creature, here we just buff mana)
+                gs._lands_spawn_tokens = getattr(gs, '_lands_spawn_tokens', 0) + 1
+                log_fn(f"★ Malevolent Rumble → take {taken_name}, mill {len(milled)}, "
+                       f"+Eldrazi Spawn (+1 ritual mana)", True)
+            cast_spell(player, opponent, gs, _rumble, budget, log_fn, log_entries,
+                       on_resolve=_resolve_rumble)
+
+    # ── Eldrazi Spawn tokens from previous Rumbles: sac for {C} ──────────
+    _spawn = getattr(gs, '_lands_spawn_tokens', 0)
+    if _spawn > 0:
+        budget[0] += _spawn
+        # Don't auto-deplete — keep available across turns. Real Eldrazi Spawn
+        # sticks around until sacrificed. For sim simplicity, we let it
+        # contribute every turn (slightly stronger than reality, but bounded).
+
+    # ── Skateboard — 1-mana artifact equipment, ETB taps opp permanent ─
+    _skate = player.find_tag('skateboard')
+    _skate_on_board = any(a.card.tag == 'skateboard' for a in player.artifacts)
+    if _skate and not _skate_on_board and budget[0] >= 1:
+        def _resolve_skate(c):
+            player.put_artifact_in_play(c)
+            # ETB: tap target permanent (prefer biggest opp creature for tempo)
+            if opponent.creatures:
+                tgt = max(opponent.creatures, key=lambda cc: cc.power)
+                tgt.tapped = True
+                log_fn(f"Skateboard — taps {tgt.card.name}")
+            else:
+                log_fn("Skateboard (no target — no opp creatures)")
+        cast_spell(player, opponent, gs, _skate, budget, log_fn, log_entries,
+                   on_resolve=_resolve_skate)
 
     # ── Exploration: cheap engine, deploy ASAP ───────────────────────────
     # Real Lands plays Exploration on T1 to get a 2nd land drop. The engine
@@ -4595,6 +5088,27 @@ def _strategy_oops(player, opponent, gs, total_mana, log_fn, log_entries):
         # (Countered combo_card is already in graveyard via cast_spell's default)
 
 
+
+    # v3 transparency: if no combo cast this turn, emit explicit PASS reason
+    # so the replayer can show why the turn was empty (e.g., "0 lands, 1 spy,
+    # sim_mana=3 vs needed 4"). Without this, multi-turn OOPS stalls look broken.
+    # combo_card is set in section 4 if we attempted a combo (even if countered);
+    # only emit PASS log if we genuinely passed without trying.
+    if combo_card is None:
+        has_spy_now = any(c.tag in ('spy', 'informer') for c in player.hand)
+        has_pact_now = any(c.tag == 'spact' for c in player.hand)
+        if not has_spy_now and not has_pact_now:
+            log_fn(f"PASS — no combo piece in hand ({len(player.hand)}c hand, {len(player.lands)}L)")
+        elif total_mana < 4:
+            # Recompute sim_mana with current state
+            _petals = sum(1 for c in player.hand if c.tag in ('petal', 'cmox'))
+            _guides = sum(1 for c in player.hand if c.tag in ('esg', 'ssg'))
+            _cantors = sum(1 for c in player.hand if c.tag == 'cantor')
+            _rits = [c for c in player.hand if c.tag in ('darkrit', 'cabalrit')]
+            _sim = total_mana + _petals + _guides + _cantors
+            for _r in _rits:
+                if _r.cmc <= _sim: _sim += 2
+            log_fn(f"PASS — have combo piece but only {_sim} mana available (need 4); {len(player.lands)}L in play")
 
 def _strategy_doomsday(player, opponent, gs, total_mana, log_fn, log_entries):
     """Doomsday combo: cast Doomsday (BBB, pay half life, build 5-card pile),
@@ -5758,6 +6272,31 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
                    on_resolve=_resolve_grind)
     total_mana = budget[0]
 
+    # ── Deploy supporting artifacts: Voltaic Key, Manifold Key, Mishra's Desk ──
+    # These each cost 1 generic. Count toward Mox Opal metalcraft and serve
+    # as Karn wish targets. Voltaic Key + Manifold Key can untap Grindstone
+    # if a second activation is needed (rare, since first activation usually
+    # wins). For sim simplicity, deploy without modeling untap activations.
+    # GATE: only deploy when combo is assembled (extra artifact has tempo cost)
+    # OR we have spare mana after key plays (≥3 mana left).
+    _can_deploy_support = (painter_in_play and grind_in_play) or budget[0] >= 3
+    if _can_deploy_support:
+        for _tag in ('vkey', 'mfkey', 'desk'):
+            _support = player.find_tag(_tag)
+            if not _support:
+                continue
+            _on_board = any(a.card.tag == _tag for a in player.artifacts)
+            if _on_board:
+                continue
+            if budget[0] < 1:
+                break
+            def _resolve_support(c, _t=_tag):
+                player.put_artifact_in_play(c)
+                log_fn(f"{c.name} (artifact)")
+            cast_spell(player, opponent, gs, _support, budget, log_fn, log_entries,
+                       on_resolve=_resolve_support)
+    total_mana = budget[0]
+
     # Check combo again after deploying
     if painter_in_play and grind_in_play and total_mana >= 3:
         gs.strat_log.log_decision(
@@ -6147,6 +6686,9 @@ def _strategy_storm(player, opponent, gs, total_mana, log_fn, log_entries):
 
 
 def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
+    # Grafdigger's Cage lockout — if opponent has Cage in play, we can't
+    # reanimate creatures from graveyard or library. Block animate effects.
+    cage_locked = getattr(player, 'cage_lock', False)
     """
     Reanimator strategy — correct sequencing:
     1. Lotus Petal (0 mana — always play first, adds free mana)
@@ -6306,8 +6848,8 @@ def _strategy_reanimator(player, opponent, gs, total_mana, log_fn, log_entries):
     gy_target = next((c for c in player.graveyard
                       if (c.win_condition or c.is_combo_piece) and c.is_creature()), None)
     
-    if gy_target and not gs.leyline_active:
-        # Try Reanimate (cheapest)
+    if gy_target and not gs.leyline_active and not getattr(player, 'cage_lock', False):
+        # Try Reanimate (cheapest). Cage blocks creature ETBs from GY/library.
         rean = player.find_tag('reanimate')
         exhume = player.find_tag('exhume')
         animate = player.find_tag('animatedead')

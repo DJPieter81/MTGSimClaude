@@ -43,5 +43,5 @@
   },
   "raw_response": "mulligan: B \u2014 Mulled to 6; still won\nmana: A \u2014 7 ramp tokens, T4 kill \u2014 full ritual chain backed the win\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: A+ \u2014 1 Execute decision(s); combo resolved on T4\ninteraction: B \u2014 0 hold + 0 defer; combo resolved without holding protection\nmeta: A \u2014 Won an unfavored matchup (storm vs dnt) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 4 turns; structural counts: exec=1 hold=0 defer=0 remove=0 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T12:33:33.564304Z"
+  "graded_at": "2026-05-16T13:42:37.780024Z"
 }

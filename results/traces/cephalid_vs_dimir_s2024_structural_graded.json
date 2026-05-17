@@ -43,5 +43,5 @@
   },
   "raw_response": "mulligan: B+ \u2014 Kept 7; won \u2014 opening hand was adequate\nmana: B+ \u2014 Won but took 15 turns \u2014 mana was adequate (0 ramp tokens)\ncombat: B \u2014 Combo deck \u2014 0 combat decision(s); combat is not the primary axis\ncombo: B+ \u2014 2 Execute decision(s); combo resolved late on T15\ninteraction: B+ \u2014 2 hold + 0 defer; protected combo via typed hold\nmeta: A \u2014 Won an unfavored matchup (cephalid vs dimir) \u2014 strong matchup awareness\noverall: B+ \u2014 Average across 6 domains \u2014 won in 15 turns; structural counts: exec=2 hold=2 defer=0 remove=1 combat=0",
   "model": "structural-v1",
-  "graded_at": "2026-05-16T13:29:37.865545Z"
+  "graded_at": "2026-05-16T13:42:37.750122Z"
 }

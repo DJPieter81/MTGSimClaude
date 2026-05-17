@@ -208,7 +208,7 @@ class CombatThresholds:
 
 class CounterLogic:
     """Parameters for try_reactive_counter spell evaluation."""
-    COUNTER_TAGS = frozenset({'fow', 'fon', 'daze', 'consign', 'counter',
+    COUNTER_TAGS = frozenset({'fow', 'fon', 'daze', 'consign', 'counter', 'pact',
                                'fluster', 'pyro', 'reb'})
     NEVER_COUNTER_TAGS = frozenset({'bs', 'ponder', 'bauble'})  # cantrips — not worth a counter
     BURN_TAGS = frozenset({'bolt', 'pop', 'chain', 'spike', 'fireblast', 'rift',
