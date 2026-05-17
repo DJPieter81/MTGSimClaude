@@ -5905,6 +5905,42 @@ def _strategy_painter(player, opponent, gs, total_mana, log_fn, log_entries):
 
     budget = [total_mana]
 
+    # ── 1c. Removal vs opponent creatures (deploy unused cards) ──
+    # Audit-fix (docs/audits/painter_vs_burn.md): Portable Hole + Kozilek's
+    # Command sat in hand vs aggro because no strategy branch cast them.
+    # Portable Hole exiles a permanent with CMC ≤ 2 (covers most aggro
+    # 1-drops); Kozilek's Command is a 4-mana modal removal instant.
+    # Both fire any time an opp creature is on the board, not gated on
+    # archetype — wasting a Hole on a 1-drop in a combo matchup is fine
+    # when there's nothing else to spend mana on.
+    if opponent.creatures:
+        # Portable Hole — cheapest, exile a 1-drop / small threat first.
+        hole = player.find_tag('hole')
+        if hole and budget[0] >= 1:
+            target = next((c for c in opponent.creatures
+                           if c.card.cmc <= 2), None)
+            if target is not None:
+                def _resolve_hole(c, _t=target):
+                    player.put_artifact_in_play(c)
+                    if _t in opponent.creatures:
+                        opponent.remove_creature(_t, to_exile=True)
+                        log_fn(f"Portable Hole → exiles {_t.card.name}", True)
+                cast_spell(player, opponent, gs, hole, budget, log_fn, log_entries,
+                           on_resolve=_resolve_hole)
+
+        # Kozilek's Command — 4 mana, hit the biggest remaining threat.
+        kcmd = player.find_tag('kozcommand')
+        if kcmd and budget[0] >= 4 and opponent.creatures:
+            target = max(opponent.creatures, key=lambda c: c.power + c.toughness)
+            def _resolve_kcmd(c, _t=target):
+                player.add_to_grave(c)
+                if _t in opponent.creatures:
+                    opponent.remove_creature(_t)
+                    log_fn(f"Kozilek's Command → kills {_t.card.name}", True)
+            cast_spell(player, opponent, gs, kcmd, budget, log_fn, log_entries,
+                       on_resolve=_resolve_kcmd)
+    total_mana = budget[0]
+
     # ── 2. Deploy combo pieces from hand ──
     # Skip naked combo-piece deployment when combo_plan returned Defer.
     p_card = player.find_tag('painter')
