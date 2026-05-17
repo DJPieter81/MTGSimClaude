@@ -1816,6 +1816,31 @@ PROTAGONIST_SB_SWAPS = {
         'dimir':      ([('map',1)],                        [('fon',1)]),
         'reanimator': ([('map',1)],                        [('nihil',1)]),
     },
+
+    # ── Mana Drain protagonist SB ─────────────────────────────────────────────
+    # Limited to tags that are wired into engine.try_reactive_counter and
+    # actually fire: 'fon' (Force of Negation), 'fluster' (Flusterstorm).
+    # Other SB-pool tags (hydro, mindbreak, nihil, needle, leyline) require
+    # engine support that isn't present, so they sit dead in hand.
+    #
+    # General plan: vs combo decks (where the engine's major-threat gate
+    # makes our counters fire), board up to more FoNs and Flusterstorms.
+    # vs aggro/control we leave the main deck mostly intact.
+    'mana_drain': {
+        'storm':      ([('preordain',1),('counter',1)],     [('fluster',1),('fon',1)]),
+        'doomsday':   ([('terminus',1),('wrath',1)],         [('fon',2)]),
+        'oops':       ([('terminus',1),('wrath',1)],         [('fon',2)]),
+        'reanimator': ([('terminus',1),('wrath',1)],         [('fon',2)]),
+        'show':       ([('terminus',1),('sanctifier',1)],    [('fon',2)]),
+        'sneak_a':    ([('terminus',1),('sanctifier',1)],    [('fon',2)]),
+        'sneak_b':    ([('terminus',1),('sanctifier',1)],    [('fon',2)]),
+        'painter':    ([('terminus',1)],                     [('fon',1)]),
+        'depths':     ([('counter',1)],                      [('fon',1)]),
+        'lands':      ([('counter',1),('terminus',1)],       [('fon',2)]),
+        'uwx':        ([('stp',1),('terminus',1)],           [('fon',1),('fluster',1)]),
+        'dimir_flash':([('terminus',1)],                     [('fon',1)]),
+        'eldrazi':    ([('drain',1)],                        [('fon',1)]),
+    },
 }
 
 
