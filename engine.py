@@ -980,6 +980,16 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             log_list.append(f"    → Veil of Summer active — spell cannot be countered")
             log_list.append(f"    → {spell_card.name} RESOLVES")
         return False
+    # Teferi, Time Raveler: opponents can cast spells only at sorcery speed
+    # (CR oracle).  The defender here is reacting to the active player's
+    # cast on the active player's turn — that's instant speed, blocked.
+    # Defender's counter window is closed.
+    caster_has_teferi = any(p.card.tag == 'teferi' for p in caster.planeswalkers)
+    if caster_has_teferi:
+        if gs.trace:
+            log_list.append(f"    → Caster controls Teferi, Time Raveler — defender locked to sorcery speed")
+            log_list.append(f"    → {spell_card.name} RESOLVES")
+        return False
     if getattr(gs, 'shepherd_in_play', False) and 'G' in getattr(spell_card, 'colors', set()):
         if gs.trace:
             log_list.append(f"    → Allosaurus Shepherd — green spells uncounterable")
@@ -1006,14 +1016,19 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     d_cs = counters_by_tag.get('counter')
     d_fluster = counters_by_tag.get('fluster')
     d_pyro = counters_by_tag.get('pyro') or counters_by_tag.get('reb')
+    d_drain = counters_by_tag.get('drain')
+    d_cryptic = counters_by_tag.get('cryptic')
+    d_mindbreak = counters_by_tag.get('mindbreak')
+    d_misstep = counters_by_tag.get('misstep')
 
     # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
     if gs.trinisphere_active:
         d_fow = None
         d_fon = None
         d_daze = None  # Daze alternate cost = 0 mana, doesn't meet Trini minimum
+        d_mindbreak = None  # alt cost is free, blocked by Trinisphere min-3 floor
 
-    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro]):
+    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_drain, d_cryptic, d_mindbreak, d_misstep]):
         return False
 
     # ── Don't counter cantrips — save counters for threats ──
@@ -1065,10 +1080,13 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     if spell_card.tag == 'eidolon':
         is_major_threat = True
 
-    # Mirror/flash: Bowmasters + Nethergoyf are key threats worth FoWing
+    # Bowmasters and Nethergoyf are key threats worth countering in any
+    # matchup once we have 2+ counters in hand — Bowmasters generates
+    # ongoing value (Orc Army + ping-on-opp-draw) and Nethergoyf is a
+    # growing 5/5 in standard board states.  Originally gated to mirror/
+    # dimir matchups but the snowball is a problem for any defender.
     from deck_registry import is_in_category
-    is_mirror_or_flash = is_in_category(matchup, 'mirror') or is_in_category(matchup, 'dimir_only')
-    if spell_card.tag in ('bowm', 'nether') and is_mirror_or_flash and total_counters >= 2:
+    if spell_card.tag in ('bowm', 'nether') and total_counters >= 2:
         is_major_threat = True
 
     # High-power cheap creatures from tempo/aggro decks are major threats when
@@ -1100,6 +1118,21 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             and not getattr(spell_card, 'lock_piece', False)
             and not getattr(spell_card, 'engine', False)):
         is_major_threat = False
+
+    # Mindbreak Trap exception: its alt-cost (free if caster has cast 3+
+    # spells this turn) IS the threat-evaluation gate — bypass major/minor
+    # gating because by the time storm has chained 3+ spells, EVERY spell
+    # on the stack is a kill threat.
+    caster_spells_cast = getattr(caster, 'spells_cast_this_turn', 0)
+    if d_mindbreak and caster_spells_cast >= 3:
+        is_major_threat = True
+    # Mental Misstep exception: alt-cost is 2 life (sim: always payable).
+    # Counters 1-cmc spells specifically — Vintage's cheapest threats
+    # (Ancestral, Brainstorm, Ponder, STP, Lotus Petal, opp's own Misstep)
+    # are all 1-cmc and worth a free counter.  The 1-cmc gate IS the
+    # threat-evaluation gate, bypass major/minor.
+    if d_misstep and spell_card.cmc == 1:
+        is_major_threat = True
 
     is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
     if is_minor_threat and total_counters <= CL.FOW_MINOR_THREAT_COUNTER_FLOOR:
@@ -1140,6 +1173,56 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             defender.remove_from_hand(blue_pitch); defender.exile.append(blue_pitch)
             gs._last_counter_used = 'fow'
             ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+
+    # ── Mental Misstep — alt cost is pay 2 life (sim: always payable).
+    # Counters 1-cmc spell.  Fires first because free + 1-cmc-only.
+    if not ctr and d_misstep and spell_card.cmc == 1:
+        defender.remove_from_hand(d_misstep); defender.add_to_grave(d_misstep)
+        defender.life -= 2
+        gs._last_counter_used = 'misstep'
+        ctr.append(f"Mental Misstep (pay 2 life) counters {spell_card.name}")
+
+    # ── Mindbreak Trap — alt cost is free if caster has cast 3+ spells
+    # this turn (CR 118.6 alternate-cost trap).  Threshold is checked
+    # earlier in the function (which forces is_major_threat=True so the
+    # function doesn't return early on the cmc-1 ritual gate).
+    if not ctr and d_mindbreak and caster_spells_cast >= 3:
+        defender.remove_from_hand(d_mindbreak); defender.add_to_grave(d_mindbreak)
+        gs._last_counter_used = 'mindbreak'
+        ctr.append(f"Mindbreak Trap (free alt cost — {caster_spells_cast} spells this turn) "
+                   f"exiles {spell_card.name}")
+
+    # ── Cryptic Command (1UUU hard counter + draw — modal in real Magic; we
+    # model the counter-spell+draw-card mode).  Strictly stronger than
+    # Counterspell when affordable (UUU + 1 generic = 4 mana vs Counterspell's
+    # UU = 2 mana).  Preferred over Counterspell only when extra draw is
+    # actionable (defender has < 5 cards in hand and isn't tapped out).
+    if (not ctr and d_cryptic and is_major_threat and len(defender.hand) >= 3):
+        d_mana = defender.available_mana_count()
+        d_uuu = sum(1 for l in defender.lands if not l.tapped and 'U' in l.effective_produces()) >= 3
+        if d_mana >= 4 and d_uuu:
+            defender.remove_from_hand(d_cryptic); defender.add_to_grave(d_cryptic)
+            gs._last_counter_used = 'cryptic'
+            drawn = defender.draw(1)
+            ctr.append(f"Cryptic Command counters {spell_card.name} "
+                       f"(+1 card)")
+
+    # ── Mana Drain (UU hard counter; controller gains {C}×spell.cmc on their
+    # next main phase — CR 113.9 / oracle text).  Routed through the standard
+    # treasure attr (sim.py:686-695) which is consumed at start of main and
+    # added to total_mana.  Preferred over Counterspell when both available
+    # because the cost is identical but Drain ramps the controller. ──
+    if not ctr and d_drain and is_major_threat and len(defender.hand) >= 4:
+        d_mana = defender.available_mana_count()
+        d_has_uu = sum(1 for l in defender.lands if not l.tapped and 'U' in l.effective_produces()) >= 2
+        if d_mana >= 2 and d_has_uu:
+            defender.remove_from_hand(d_drain); defender.add_to_grave(d_drain)
+            gs._last_counter_used = 'drain'
+            drained = max(0, spell_card.cmc)
+            treasure_attr = 'p1_treasure' if defender is gs.p1 else 'p2_treasure'
+            setattr(gs, treasure_attr, getattr(gs, treasure_attr, 0) + drained)
+            ctr.append(f"Mana Drain counters {spell_card.name} "
+                       f"(+{{C}}×{drained} on next main phase)")
 
     # ── Counterspell (UU, requires mana + hand depth ≥ 4) ──
     if not ctr and d_cs and is_major_threat and len(defender.hand) >= 4:

@@ -1092,6 +1092,32 @@ def _make_sb_cards():
     pool['leyline']   = [enchantment('Leyline of Sanctity', 4, {'W':2,'generic':2}, {'W'},
                                       tag='leyline')] * 2 if 'enchantment' in dir() else []
     pool['surgical']  = [instant('Surgical Extraction', 0, {'B':1}, {'B'}, tag='surgical')] * 2
+    # Sanctifier en-Vec — anti-burn / anti-red+black creature, 2/2 pro-red+black.
+    # Used by mana_drain SB plan vs burn / mono_black matchups.
+    pool['sanctifier'] = [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'},
+                                    2, 2, tag='sanctifier', pro_red=True)] * 2
+    # Sphinx of the Final Word — 6 cmc uncounterable hexproof finisher.
+    # Used by mana_drain SB plan vs control mirrors (UWx, dimir_flash)
+    # where every other threat we cast eats a counterspell.
+    pool['sphinx'] = [creature('Sphinx of the Final Word', 6, {'U':2,'generic':4}, {'U'},
+                                5, 5, tag='sphinx', flying=True, indestructible=True,
+                                win_condition=True)] * 2
+    # ── Colorless planeswalkers — drain mana ({C}) directly casts these ──
+    # Karn, the Great Creator (4 generic): locks opp's artifact activations
+    # via gs.p1_karn_active / gs.p2_karn_active properties (game.py:286-293).
+    # Hard-counter to Mox Diamond / Lotus Petal / LED / The One Ring etc.
+    from cards import planeswalker
+    pool['karn'] = [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(),
+                                  tag='karn', engine=True, lock_piece=True)] * 2
+    # Ugin, Eye of the Storms (6 generic): wraths colored creatures + ongoing
+    # card-filter (see decks/cloudpost.py:341-355 for the existing pattern).
+    pool['ugin'] = [planeswalker('Ugin, Eye of the Storms', 6, {'generic':6}, set(),
+                                  tag='ugin', engine=True)] * 1
+    # Karn Liberated (7 generic): ETB hand attack + -3 to exile permanent.
+    # Anti-control / anti-combo bomb.
+    pool['karn_lib'] = [planeswalker('Karn Liberated', 7, {'generic':7}, set(),
+                                      tag='karn_lib', engine=True,
+                                      win_condition=True)] * 1
     pool['sblood']    = [instant('Searing Blood', 2, {'R':2}, {'R'}, tag='sblood',
                                   is_removal=True)] * 4
     pool['eidolon']   = [creature('Eidolon of the Great Revel', 2, {'R':2}, {'R'}, 2, 2,
@@ -1815,6 +1841,73 @@ PROTAGONIST_SB_SWAPS = {
         'oops':       ([('map',1)],                        [('fon',1)]),
         'dimir':      ([('map',1)],                        [('fon',1)]),
         'reanimator': ([('map',1)],                        [('nihil',1)]),
+    },
+
+    # ── Mana Drain protagonist SB ─────────────────────────────────────────────
+    # 15-card sideboard pool with full coverage of the meta:
+    #   2 Sanctifier en-Vec  (red/black aggro)
+    #   2 Sphinx of the FW   (uncounterable finisher vs control)
+    #   2 Karn, Great Creator (anti-artifact-mana + anti-Painter)
+    #   1 Karn Liberated      (PW exile vs control mirrors)
+    #   1 Ugin, Eye of Storms (mass exile colored creatures)
+    #   3 Force of Negation   (extra free counter vs combo)
+    #   2 Flusterstorm        (vs storm chains / tempo)
+    #   2 Nihil Spellbomb     (vs graveyard combo)
+    'mana_drain': {
+        # ── vs Red / black aggro — Sanctifier blanket is gold ──
+        'burn':       ([('sfm',2),('counter',1)],
+                       [('sanctifier',2),('fon',1)]),
+        'boros':      ([('sfm',2),('counter',1)],
+                       [('sanctifier',2),('fon',1)]),
+        'mardu':      ([('sfm',1)],                         [('sanctifier',1)]),
+        'goblins':    ([('sfm',1),('counter',1)],
+                       [('sanctifier',1),('ugin',1)]),
+        'mono_black': ([('sfm',1)],                         [('sanctifier',1)]),
+
+        # ── vs Combo — free FoN counters on opp's kill spell.  Karn at
+        # 4 mana was tested across all combo matchups and was too slow
+        # (opp kills T1-T3).  FoN-heavy with Fluster for instant chains.
+        # 'storm' SB omitted — Storm's atomic kill bypasses cast_spell
+        # entirely (engine.py:6320-6336), so trimming Mainboard cards
+        # for Mindbreak/Fluster regresses since the counters can't fire.
+        'doomsday':   ([('sfm',2),('equipment',1)],
+                       [('fon',2),('fluster',1)]),
+        'oops':       ([('sfm',2),('equipment',1)],
+                       [('fon',2),('fluster',1)]),
+        'reanimator': ([('sfm',2),('equipment',1)],
+                       [('fon',2),('nihil',1)]),
+        'show':       ([('sfm',2),('equipment',1)],
+                       [('fon',2),('fluster',1)]),
+        'sneak_a':    ([('sfm',2),('equipment',1)],
+                       [('fon',2),('fluster',1)]),
+        'sneak_b':    ([('sfm',2),('equipment',1)],
+                       [('fon',2),('fluster',1)]),
+        'painter':    ([('sfm',2),('equipment',1)],
+                       [('fon',1),('fluster',1),('karn',1)]),
+        'depths':     ([('counter',1),('sfm',1)],
+                       [('fon',1),('karn',1)]),
+        # Lands: Karn locks Mox Diamond + Crucible of Worlds activations.
+        # Slow-combo deck — Karn lands before their T5+ Loam recursion.
+        'lands':      ([('sfm',2),('terminus',1)],
+                       [('karn',2),('nihil',1)]),
+
+        # ── vs Control mirrors — uncounterable threats + PW exile ──
+        # UWx: every counterable threat eats a counter; Sphinx + Karn
+        # Liberated land through their stack.  Karn Lib -3 exiles their
+        # Narset / Jace planeswalkers that our wraths can't touch.
+        'uwx':        ([('stp',2),('terminus',1),('wrath',1),('sfm',1)],
+                       [('sphinx',2),('karn_lib',1),('fon',1),('fluster',1)]),
+        'dimir_flash':([('terminus',1),('wrath',1)],
+                       [('sphinx',1),('fon',1)]),
+        'prison':     ([('counter',1),('terminus',1)],       [('needle',2)]),
+
+        # ── vs Dimir tempo variants — Fluster swap + Sphinx flex ──
+        'dimir':      ([('counter',1)],
+                       [('fluster',1)]),
+        'dimir_c':    ([('counter',1)],
+                       [('fluster',1)]),
+        'eldrazi':    ([('drain',1),('counter',1)],
+                       [('karn',1),('fon',1)]),
     },
 }
 

@@ -1,0 +1,587 @@
+"""
+Mana Drain Control — VINTAGE build.
+
+Mana Drain is banned in Legacy, unrestricted in Vintage (since Feb 2021).
+This deck adds the Power 9 fast mana + Tinker → Blightsteel combo to a
+UW Drain Control shell.  Restrictions noted but not enforced by the
+simulator — we run 1 of each restricted card in the spirit of Vintage.
+
+Engine wiring (config.py + engine.py):
+  * 'drain' counter tag — banks spell.cmc as treasure on next main.
+  * 'misstep' counter tag — Mental Misstep, pays 2 life to counter 1-cmc spells.
+  * 'mindbreak' counter tag — free if caster cast 3+ spells this turn.
+  * 'cryptic' counter tag — Cryptic Command counter + draw.
+  * 'drain' treasure → spent on Jace TMS, Wurmcoil, Sphinx, Blightsteel.
+
+Win paths (every payoff is all-generic cost, drain-mana friendly):
+  * Tinker → Blightsteel Colossus (T2-T3 with Lotus + Mox + Sol Ring):
+    11/11 indestructible infect trample = 10-poison swing kills the game.
+  * Jace, the Mind Sculptor (4 cmc planeswalker — primary drain payoff).
+  * Wurmcoil Engine (6 cmc lifelink — anti-aggro backup).
+  * Karn, the Great Creator (4 cmc lock vs artifact mana).
+"""
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from cards import (creature, instant, sorcery, artifact, planeswalker,
+                   fetch_land, dual_land, basic_land, utility_land)
+
+
+# ─── Deck builder ────────────────────────────────────────────────────────────
+
+def make_mana_drain_deck():
+    d = []
+    # ── VINTAGE POWER 9 / FAST MANA (6) ──
+    # Restricted to 1 each in Vintage; each gives a one-shot net mana
+    # boost on cast (Mox Diamond pattern — sim doesn't track ongoing tap).
+    # Yields encoded in strategy: Lotus=3, Crypt=2, Vault=2, Mox/SolRing=1.
+    d += [artifact('Black Lotus', 0, {}, tag='lotus', mana_ritual=True,
+                   is_combo_piece=True)] * 1
+    d += [artifact('Sol Ring', 1, {'generic':1}, tag='solring',
+                   mana_ritual=True)] * 1
+    d += [artifact('Mana Crypt', 0, {}, tag='crypt', mana_ritual=True)] * 1
+    d += [artifact('Mana Vault', 1, {'generic':1}, tag='vault',
+                   mana_ritual=True)] * 1
+    d += [artifact('Mox Sapphire', 0, {}, tag='moxsap', mana_ritual=True)] * 1
+    d += [artifact('Mox Pearl', 0, {}, tag='moxpearl', mana_ritual=True)] * 1
+
+    # ── Counters (13) ──
+    d += [instant('Mana Drain', 2, {'U':2}, {'U'}, tag='drain')] * 4
+    d += [instant('Force of Will', 5, {'U':1,'generic':4}, {'U'},
+                  tag='fow', free_cast_if_blue=True)] * 4
+    # Mental Misstep — restricted in Vintage (1 copy).  Pay 2 life to
+    # counter any 1-cmc spell.  Engine wiring via 'misstep' COUNTER_TAG.
+    d += [instant('Mental Misstep', 1, {'U':1}, {'U'}, tag='misstep')] * 1
+    d += [instant('Counterspell', 2, {'U':2}, {'U'}, tag='counter')] * 1
+    d += [instant('Force of Negation', 3, {'U':1,'generic':2}, {'U'},
+                  tag='fon', free_cast_if_blue=True)] * 2
+    d += [instant('Flusterstorm', 1, {'U':1}, {'U'}, tag='fluster')] * 1
+
+    # ── Removal (7) ──
+    d += [instant('Swords to Plowshares', 1, {'W':1}, {'W'},
+                  tag='stp', is_removal=True)] * 3
+    # Terminus — miracle wrath at {W}.  Critical vs cmc-1/2 aggro (Ocelot,
+    # Delver) where the engine's counter gate treats every threat as "minor"
+    # and our 14 counter slots otherwise sit dead in hand.
+    d += [sorcery('Terminus', 6, {'W':1,'generic':5}, {'W'},
+                  tag='terminus', is_removal=True, is_mass_removal=True)] * 2
+    # Wrath of the Skies — 2-cmc mass removal.  In real Magic the X-cost
+    # ({W}{W} + any amount of generic) scales with mana paid, making it a
+    # natural drain-mana sink.  The sim models it at fixed CMC 2 (matching
+    # the wan_shi_tong wiring) — a cheap follow-up wrath when Terminus is
+    # held back, or a second sweep after Terminus exiles the first wave.
+    d += [sorcery('Wrath of the Skies', 2, {'W':1,'generic':1}, {'W'},
+                  tag='wrath', is_removal=True, is_mass_removal=True)] * 2
+
+    # ── Cantrips (6) — Vintage restrictions enforced (1 each of BS,
+    # Ponder, Preordain, Treasure Cruise, Dig Through Time).  Ancestral
+    # Recall added as the 1-cmc draw-3 anchor. ──
+    d += [instant('Brainstorm', 1, {'U':1}, {'U'}, tag='bs', is_cantrip=True)] * 1
+    d += [sorcery('Ponder', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 1
+    d += [sorcery('Preordain', 1, {'U':1}, {'U'}, tag='ponder', is_cantrip=True)] * 1
+    d += [instant('Ancestral Recall', 1, {'U':1}, {'U'},
+                  tag='ancestral', is_cantrip=True)] * 1
+    # Treasure Cruise (delve) — 2 cmc effective in our sim; restricted.
+    d += [sorcery('Treasure Cruise', 2, {'U':1,'generic':1}, {'U'},
+                  tag='bs', is_cantrip=True, delve=True)] * 1
+    # Dig Through Time (delve) — 2 cmc effective; restricted.
+    d += [instant('Dig Through Time', 2, {'U':1,'generic':1}, {'U'},
+                  tag='bs', is_cantrip=True, delve=True)] * 1
+
+    # ── Anti-aggro hate creature (2) ──
+    # Sanctifier en-Vec — 2 cmc 2/2 pro-red+black.  Burn / red aggro deal
+    # 0 damage while it's in play (pro_red blanket — see decks/burn.py
+    # deal_face_damage).  Also evades Push / black removal.  Cheap blocker
+    # vs goblin/burn/mardu and a pro-red shield against the deck's life
+    # total being burned out before drains can swing the game.
+    # Sanctifier en-Vec — anti-burn / anti-red / anti-black creature.
+    # Pro-red+black blanket nullifies face damage from burn AND Push/Snuff
+    # Out (Mono Black), and once in play it's safe from Hymn/TS targeting.
+    # Also valuable vs Reanimator (pro-black means Reanimate-targeting
+    # graveyard recursion can't hit a Sanctifier we've gotten into play
+    # via some kind of recursion).  v14 tests confirmed cutting maindeck
+    # copies regresses Burn −15pp / Ocelot −17pp.
+    d += [creature('Sanctifier en-Vec', 2, {'W':1,'generic':1}, {'W'}, 2, 2,
+                   tag='sanctifier', pro_red=True)] * 1
+    # Stoneforge Mystic — 2 cmc {1}{W}, ETB tutors an equipment to hand,
+    # then activates {W}{1} to put a 0-cost equipment in play.  In sim,
+    # SFM auto-tutors Batterskull on ETB and the strategy puts it in
+    # play next turn for {1} (DnT pattern).  Lifelink Germ stabilises
+    # vs aggro and gains 4 life per attack — the perfect drain payoff
+    # for a deck that wins by surviving + grinding.
+    d += [creature('Stoneforge Mystic', 2, {'W':1,'generic':1}, {'W'},
+                   1, 2, tag='sfm', engine=True)] * 1
+    # Batterskull — 5 cmc artifact equipment; equipped creature is +4/+4
+    # vigilance/lifelink/trample.  Sim uses +3/+3 simplification.
+    # Batterskull cut — only 1 SFM, low hit rate.
+
+    # ── VINTAGE COMBO (3) — Tinker → Blightsteel + Karn ──
+    # Tinker (restricted): sac an artifact, search lib for an artifact
+    # and put it directly into play.  Win line:
+    #   T1: Mox + Sol Ring + Lotus + Tinker(sac mox) → Blightsteel T1
+    # Blightsteel: 11/11 indestructible infect trample → 10-poison swing
+    # = lethal in one attack.
+    d += [sorcery('Tinker', 3, {'U':1,'generic':2}, {'U'},
+                  tag='tinker', is_combo_piece=True, win_condition=True)] * 1
+    d += [creature('Blightsteel Colossus', 12, {'generic':12}, set(),
+                   11, 11, tag='blightsteel', indestructible=True,
+                   infect=True, trample=True, win_condition=True)] * 1
+    # Karn, the Great Creator — anti-artifact lock (4 cmc all-generic
+    # = perfect drain payoff).  Locks opp's artifact activations.
+    d += [planeswalker('Karn, the Great Creator', 4, {'generic':4}, set(),
+                       tag='karn', engine=True, lock_piece=True)] * 1
+
+    # ── Threats / drain payoffs (6) — all-generic / hard-to-kill bodies ──
+    d += [planeswalker('Jace, the Mind Sculptor', 4, {'U':2,'generic':2}, {'U'},
+                       tag='jace', engine=True, draw_trigger=True)] * 3
+    # Wurmcoil Engine — 6 cmc colourless 6/6 deathtouch + lifelink.  Anti-aggro
+    # haymaker that drain mana pays for directly (all generic).  Lifelink
+    # swings a losing race by 6+, deathtouch makes every chump-block lethal.
+    d += [creature('Wurmcoil Engine', 6, {'generic':6}, set(),
+                   6, 6, tag='wurmcoil', deathtouch=True, lifelink=True,
+                   win_condition=True)] * 1
+    d += [creature('Sphinx of the Final Word', 6, {'U':2,'generic':4}, {'U'},
+                   5, 5, tag='sphinx', flying=True, indestructible=True,
+                   win_condition=True)] * 1
+    # Wan Shi Tong, Librarian — 4 cmc 3/5 flying card-draw engine.  Drain
+    # mana easily pays the {2}WU cost.  Tested 2 maindeck (v15) — net
+    # neutral (-0.2pp); WST is legendary so the 2nd copy mostly bricks.
+    d += [creature('Wan Shi Tong, Librarian', 4, {'W':1,'U':1,'generic':2},
+                   {'W','U'}, 3, 5, tag='wst', engine=True, flying=True)] * 1
+
+    # ── Lands (17) — Vintage runs ~17 lands with Power 9 ramp ──
+    d += [fetch_land('Flooded Strand', ['Island','Plains'])] * 4
+    d += [fetch_land('Polluted Delta', ['Island','Swamp'])] * 2
+    d += [fetch_land('Scalding Tarn',  ['Island','Mountain'])] * 1
+    d += [dual_land('Tundra', ['U','W'], ['Island','Plains'])] * 2
+    # Tolarian Academy — produces {U}/artifact in real Magic; modeled
+    # as a U-source utility land (the bonus mana from artifacts in
+    # play isn't tracked but the fast-mana yields capture the burst).
+    d += [utility_land('Tolarian Academy', ['U'], 'academy')] * 1
+    # Library of Alexandria — draws when hand size 7; modeled as a
+    # colorless source (the draw ability isn't wired).
+    d += [utility_land('Library of Alexandria', ['C'], 'library')] * 1
+    # Strip Mine — Wasteland-equivalent tag fires existing engine logic.
+    d += [utility_land('Wasteland', ['C'], 'wl')] * 1
+    d += [basic_land('Island', 'U', 'Island')] * 4
+    d += [basic_land('Plains', 'W', 'Plains')] * 1
+
+    assert len(d) == 60, f"Mana Drain deck: {len(d)}"
+    return d
+
+
+# ─── Strategy ────────────────────────────────────────────────────────────────
+
+def _strategy_mana_drain(player, opponent, gs, total_mana, log_fn, log_entries):
+    """Drain Control.
+
+    Reactive counter selection (Mana Drain, FoW, FoN, Counterspell) is handled
+    by engine.try_reactive_counter automatically — this function only drives
+    proactive plays.  Bonus mana from Drains arrives as treasure (consumed
+    at start of main, see sim.py:686-695), so it's already folded into
+    `total_mana` by the time this function runs.
+
+    Order of operations:
+      1. Swords to Plowshares any creature ≥ 2 power.
+      2. Snapcaster Mage flashbacks Mana Drain, STP, or Brainstorm.
+      3. Jace, the Mind Sculptor (4 cmc) — primary drain payoff.
+      4. Sphinx of the Final Word (6 cmc) — uncounterable finisher.
+      5. Emrakul (15 cmc) — only when drain-ramp gets you there.
+      6. Cantrips up to 2 per turn.
+      7. Combat with anything not summoning-sick.
+    """
+    from engine import (opp_can_cast, combat_declare, cast_spell, update_goyf,
+                        bowmasters_triggers)
+    from rules import MTGRules
+    from config import MatchupCategory as _MC, CombatThresholds as _CT
+
+    mana_ref = [total_mana]
+
+    def can_cast(card):
+        return opp_can_cast(card, mana_ref[0], gs, caster=player)
+
+    # ── 0a. VINTAGE FAST MANA — Power 9 + Sol Ring family ──
+    # Each artifact gives a one-shot net mana boost on cast (Mox Diamond
+    # pattern).  Yields: Lotus=+3, Crypt=+2, Mox/SolRing=+1, Vault=+2.
+    # Cast all available fast mana before spending on threats.
+    _FAST_MANA = {
+        'lotus':    3, 'crypt':    2, 'moxsap':   1,
+        'moxpearl': 1, 'solring':  1, 'vault':    2,
+    }
+    for tag, yld in _FAST_MANA.items():
+        fm = player.find_tag(tag)
+        if fm and mana_ref[0] >= fm.cmc:
+            _b = [mana_ref[0]]
+            def _resolve_fm(c, _y=yld):
+                player.put_artifact_in_play(c)
+                log_fn(f"{c.name} → +{_y} mana")
+            if cast_spell(player, opponent, gs, fm, _b, log_fn, log_entries,
+                          on_resolve=_resolve_fm, cost_override=fm.cmc):
+                mana_ref[0] = _b[0] + yld
+
+    # ── 0b. Ancestral Recall — 1 cmc, draw 3 (no put-back) ──
+    ancestral = player.find_tag('ancestral')
+    if ancestral and can_cast(ancestral):
+        def _resolve_ancestral(c):
+            player.add_to_grave(c)
+            drawn = player.draw(3)
+            log_fn(f"★ Ancestral Recall — draw {len(drawn)}", True)
+            bowmasters_triggers(len(drawn), gs, log_entries,
+                                controller='o' if player is gs.p1 else 'b')
+        cast_spell(player, opponent, gs, ancestral, mana_ref,
+                   log_fn, log_entries, on_resolve=_resolve_ancestral)
+
+    # ── 0c. Tinker → Blightsteel Colossus combo ──
+    # Cast Tinker (3 cmc), sacrifice a fast-mana artifact in play, search
+    # library for Blightsteel and put it directly into play.
+    tinker = player.find_tag('tinker')
+    sac_targets = [a for a in player.artifacts
+                   if a.card.tag in ('lotus','crypt','moxsap','moxpearl',
+                                      'solring','vault')]
+    blightsteel_in_lib = next((c for c in player.library
+                               if c.tag == 'blightsteel'), None)
+    if tinker and sac_targets and blightsteel_in_lib and can_cast(tinker):
+        def _resolve_tinker(c, _sac=sac_targets[0], _bs=blightsteel_in_lib):
+            player.add_to_grave(c)
+            if _sac in player.artifacts:
+                player.artifacts.remove(_sac)
+                player.add_to_grave(_sac.card)
+                log_fn(f"  Tinker sacrifices {_sac.card.name}")
+            player.library.remove(_bs)
+            blight_perm = player.put_creature_in_play(_bs)
+            blight_perm.summoning_sick = True
+            log_fn("★★★ Tinker → Blightsteel Colossus (11/11 infect trample)",
+                   True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, tinker, mana_ref,
+                   log_fn, log_entries, on_resolve=_resolve_tinker)
+
+    # ── 0d. Karn, the Great Creator — anti-artifact lock ──
+    karn = player.find_tag('karn')
+    karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
+    if karn and not karn_on_board and can_cast(karn):
+        def _resolve_karn(c):
+            player.put_artifact_in_play(c)
+            log_fn("★ Karn, the Great Creator — opp artifact activations locked",
+                   True)
+        cast_spell(player, opponent, gs, karn, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_karn)
+
+    # ── 1. Swords to Plowshares — remove biggest threat ──
+    # Vs aggro / burn, STP fires on ANY creature ≥ 1 power (Bowmasters,
+    # Ocelot Pride, Guide of Souls are all 1/1s that snowball if left
+    # unanswered).  Vs fair / combo, STP holds for ≥ 2-power threats.
+    p2_deck = getattr(gs, 'p2_deck', '') or getattr(gs, 'matchup', '')
+    opp_is_aggro = p2_deck in _MC.AGGRO or p2_deck == 'burn'
+    stp_threshold = _CT.STP_THRESHOLD_AGGRO if opp_is_aggro else _CT.STP_THRESHOLD_FAIR
+    _mom_protected = getattr(gs, '_mom_protected_tag', None)
+    while opponent.creatures and mana_ref[0] >= 1:
+        stp = player.find_tag('stp')
+        if not stp or not can_cast(stp):
+            break
+        valid = [c for c in opponent.creatures if c.card.tag != _mom_protected]
+        if not valid:
+            break
+        target = max(valid, key=lambda c: c.power)
+        if target.power < stp_threshold:
+            break
+        def _resolve_stp(c, _t=target):
+            player.add_to_grave(c)
+            if _t in opponent.creatures:
+                lg = MTGRules.stp_life_gain(_t)
+                opponent.remove_creature(_t, to_exile=True)
+                opponent.life += lg
+                log_fn(f"Swords to Plowshares → exiles {_t.card.name}, opp gains {lg}")
+                update_goyf(gs)
+        cast_spell(player, opponent, gs, stp, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_stp)
+
+    # ── 1b. Terminus (Miracle wrath, {W} cost-override) ──
+    # Fires when opp has 2+ creatures (the snowball state — Bowmasters + tokens,
+    # Ocelot Pride + copies, multiple Delver/Goblins).  We sweep our own
+    # board too (including Jace via summoning sickness on creatures) but
+    # mana_drain is creature-light so this is acceptable.
+    term = player.find_tag('terminus')
+    if term and len(opponent.creatures) >= 2:
+        def _resolve_term(c):
+            player.add_to_grave(c)
+            for cc in list(opponent.creatures):
+                opponent.exile.append(cc.card)
+                opponent.revolt_this_turn = True
+            opponent.creatures.clear()
+            for cc in list(player.creatures):
+                player.library.append(cc.card)
+            player.creatures.clear()
+            log_fn("★ Terminus (Miracle {W}) — all creatures to bottom of library",
+                   True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, term, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_term, cost_override=1)
+
+    # ── 1c. Wrath of the Skies — cheap follow-up wrath (2 mana, sorcery) ──
+    # Fires when opp has 2+ creatures and Terminus already cycled OR the cost
+    # is comfortable.  Sweeps both sides; with mana_drain creature-light, the
+    # symmetric wrath strongly favours us.
+    wrath = player.find_tag('wrath')
+    if wrath and len(opponent.creatures) >= 2 and can_cast(wrath):
+        def _resolve_wrath(c):
+            player.add_to_grave(c)
+            for cc in list(opponent.creatures):
+                opponent.add_to_grave(cc.card)
+                opponent.revolt_this_turn = True
+            opponent.creatures.clear()
+            for cc in list(player.creatures):
+                player.add_to_grave(cc.card)
+            player.creatures.clear()
+            log_fn("★ Wrath of the Skies — all creatures destroyed", True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, wrath, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_wrath)
+
+    # ── 1d. Stoneforge Mystic — 2-cmc ETB tutor for equipment ──
+    # Cast SFM, auto-tutor Batterskull (DnT pattern, engine.py:2839-2843).
+    sfm = player.find_tag('sfm')
+    sfm_on_board = any(c.card.tag == 'sfm' for c in player.creatures)
+    if sfm and not sfm_on_board and can_cast(sfm):
+        def _resolve_sfm(c):
+            player.put_creature_in_play(c)
+            equip = next((cc for cc in player.library
+                          if cc.tag in ('equipment', 'kaldra')), None)
+            if equip:
+                player.library.remove(equip)
+                player.hand.append(equip)
+                log_fn(f"Stoneforge Mystic — tutors {equip.name}")
+            else:
+                log_fn("Stoneforge Mystic (1/2)")
+        cast_spell(player, opponent, gs, sfm, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_sfm)
+
+    # SFM activation — put Batterskull in play if SFM is on board.
+    # CR 702.6 equip cost is normally 5 for Batterskull, but SFM's
+    # activated ability cheats it for {W}{1}.  Sim uses 1 mana.
+    sfm_perm = next((p for p in player.creatures if p.card.tag == 'sfm'), None)
+    equip_card = player.find_tag('equipment')
+    if sfm_perm and equip_card and mana_ref[0] >= 1:
+        player.remove_from_hand(equip_card)
+        player.put_artifact_in_play(equip_card)
+        mana_ref[0] -= 1
+        biggest = max((c for c in player.creatures if c.card.tag != 'sfm'),
+                      key=lambda c: c.power, default=sfm_perm)
+        biggest.power_mod += 3
+        biggest.toughness_mod += 3
+        log_fn(f"★ {equip_card.name} equipped to {biggest.card.name} "
+               f"(+3/+3, lifelink/vigilance/trample)", True)
+
+    # ── 1e. Sanctifier en-Vec — anti-burn / anti-red blanket ──
+    # Cheap 2/2 pro-red+black blocker.  Burn's deal_face_damage checks for
+    # opponent-side pro_red creatures and skips all damage.  Critical
+    # life-saver vs burn / mardu / mono_black aggression.
+    sanc = player.find_tag('sanctifier')
+    sanc_on_board = any(c.card.tag == 'sanctifier' for c in player.creatures)
+    if sanc and not sanc_on_board and can_cast(sanc):
+        def _resolve_sanc(c):
+            player.put_creature_in_play(c)
+            log_fn("Sanctifier en-Vec (2/2, pro black/red)", True)
+        cast_spell(player, opponent, gs, sanc, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_sanc)
+
+
+    # ── 1g. Karn, the Great Creator (SB) — 4 generic, anti-artifact ──
+    # Lands in artifacts list to activate gs.p1_karn_active / gs.p2_karn_-
+    # active properties (game.py:286).  Opp's Mox/Petal/LED/Ring become
+    # dead.  Drain mana fuels the all-generic cost.
+    karn = player.find_tag('karn')
+    karn_on_board = any(p.card.tag == 'karn' for p in player.artifacts)
+    if karn and not karn_on_board and can_cast(karn):
+        def _resolve_karn(c):
+            player.put_artifact_in_play(c)
+            log_fn("★ Karn, the Great Creator — opp's artifact activations locked",
+                   True)
+        cast_spell(player, opponent, gs, karn, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_karn)
+
+    # ── 1h. Ugin, Eye of the Storms (SB) — 6 generic, exile colored ──
+    # Cloudpost pattern (engine.py:341-355): exile all colored creatures
+    # opp controls + flag ongoing engine.  Drain a 4-cmc spell → free
+    # Ugin with 2 lands.
+    ugin = player.find_tag('ugin')
+    if ugin and can_cast(ugin):
+        colored = [cc for cc in opponent.creatures if cc.card.colors]
+        if colored:
+            def _resolve_ugin(c, _col=list(colored)):
+                player.add_to_grave(c)
+                for cc in _col:
+                    if cc in opponent.creatures:
+                        opponent.remove_creature(cc)
+                        opponent.exile.append(cc.card)
+                log_fn(f"★ Ugin — exiles {len(_col)} colored creatures + ongoing engine",
+                       True)
+                update_goyf(gs)
+            cast_spell(player, opponent, gs, ugin, mana_ref, log_fn, log_entries,
+                       on_resolve=_resolve_ugin)
+
+    # ── 1i. Karn Liberated (SB) — 7 generic, PW removal + hand attack ──
+    # Drain a 5-6 cmc spell → free Karn Lib with 1-2 lands.  -3 ability
+    # exiles any permanent — including planeswalkers (Narset, Jace TMS)
+    # that our STP/wraths can't touch.
+    karn_lib = player.find_tag('karn_lib')
+    karn_lib_on_board = any(p.card.tag == 'karn_lib' for p in player.planeswalkers)
+    if karn_lib and not karn_lib_on_board and can_cast(karn_lib):
+        def _resolve_karn_lib(c):
+            player.put_planeswalker_in_play(c)
+            # ETB: -3 to exile a permanent.  Priority: planeswalker >
+            # biggest creature > biggest land > artifact.
+            target = None
+            target_zone = None
+            if opponent.planeswalkers:
+                target = max(opponent.planeswalkers,
+                              key=lambda pp: pp.card.cmc)
+                target_zone = 'pw'
+            elif opponent.creatures:
+                target = max(opponent.creatures, key=lambda cc: cc.power)
+                target_zone = 'creature'
+            if target:
+                if target_zone == 'pw':
+                    opponent.planeswalkers.remove(target)
+                    opponent.exile.append(target.card)
+                    log_fn(f"★ Karn Liberated — exiles planeswalker {target.card.name}",
+                           True)
+                else:
+                    opponent.remove_creature(target, to_exile=True)
+                    log_fn(f"★ Karn Liberated — exiles creature {target.card.name}",
+                           True)
+                update_goyf(gs)
+            else:
+                log_fn("★ Karn Liberated — no exile target, ticks +4 loyalty",
+                       True)
+        cast_spell(player, opponent, gs, karn_lib, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_karn_lib)
+
+    # ── 2. Jace, the Mind Sculptor — primary drain payoff at 4 mana ──
+    jace = player.find_tag('jace')
+    jace_on_board = any(p.card.tag == 'jace' for p in player.planeswalkers)
+    if jace and not jace_on_board and can_cast(jace):
+        def _resolve_jace(c):
+            player.put_planeswalker_in_play(c)
+            log_fn("Jace, the Mind Sculptor — draw engine + bounce", True)
+            # +0 Brainstorm-style draw on resolution (simplified passive).
+            if not getattr(player, '_narset_lock', False):
+                drawn = player.draw(1)
+                bowmasters_triggers(len(drawn), gs, log_entries,
+                                    controller='o' if player is gs.p1 else 'b')
+        cast_spell(player, opponent, gs, jace, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_jace)
+
+    # Per-turn Jace +0 (Brainstorm-style): if already on board, draw a card.
+    jace_perm = next((p for p in player.planeswalkers
+                      if p.card.tag == 'jace' and not p.tapped), None)
+    if jace_perm and not getattr(player, '_narset_lock', False):
+        jace_perm.tapped = True
+        drawn = player.draw(1)
+        log_fn(f"Jace +0 (Brainstorm-style): draw {len(drawn)}")
+        bowmasters_triggers(len(drawn), gs, log_entries,
+                            controller='o' if player is gs.p1 else 'b')
+
+    # ── 2b. Wan Shi Tong, Librarian — 4 cmc 3/5 flying draw engine ──
+    # Cheap alternative to the 4-cmc Jace slot when Jace is unavailable
+    # or already on board.  Triggers on opp draws so it grinds value vs
+    # other blue decks especially.
+    wst = player.find_tag('wst')
+    wst_on_board = any(c.card.tag == 'wst' for c in player.creatures)
+    if wst and not wst_on_board and can_cast(wst):
+        def _resolve_wst(c):
+            player.put_creature_in_play(c)
+            log_fn("★ Wan Shi Tong, Librarian (3/5 flying)", True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, wst, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_wst)
+
+    # ── 3. Wurmcoil Engine — 6 cmc colourless anti-aggro haymaker ──
+    # Deathtouch + lifelink makes every block a value-trade and swings the
+    # life race by 6+ on the turn it ETBs.  All-generic cost is a direct
+    # drain payoff (drain a 4-cmc spell → free Wurmcoil with 2 lands).
+    wurmcoil = player.find_tag('wurmcoil')
+    wurmcoil_on_board = any(c.card.tag == 'wurmcoil' for c in player.creatures)
+    if wurmcoil and not wurmcoil_on_board and can_cast(wurmcoil):
+        def _resolve_wurmcoil(c):
+            player.put_creature_in_play(c)
+            log_fn("★ Wurmcoil Engine (6/6 deathtouch, lifelink)", True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, wurmcoil, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_wurmcoil)
+
+    # ── 4. Sphinx of the Final Word — 6 cmc uncounterable finisher ──
+    sphinx = player.find_tag('sphinx')
+    sphinx_on_board = any(c.card.tag == 'sphinx' for c in player.creatures)
+    if sphinx and not sphinx_on_board and can_cast(sphinx):
+        def _resolve_sphinx(c):
+            player.put_creature_in_play(c)
+            log_fn("★ Sphinx of the Final Word (5/5 flying, uncounterable)", True)
+            update_goyf(gs)
+        cast_spell(player, opponent, gs, sphinx, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_sphinx)
+
+    # ── 6. Cantrips — up to 2 per turn ──
+    for _ in range(2):
+        if mana_ref[0] < 1:
+            break
+        cant = next((c for c in player.hand if c.is_cantrip and can_cast(c)), None)
+        if not cant:
+            break
+        def _resolve_cant(c):
+            draws = MTGRules.brainstorm_draws() if c.tag == 'bs' else 1
+            player.add_to_grave(c)
+            drawn = player.draw(draws)
+            log_fn(f"{c.name} ({len(drawn)} draw{'s' if len(drawn) > 1 else ''})")
+            bowmasters_triggers(len(drawn), gs, log_entries,
+                                controller='o' if player is gs.p1 else 'b')
+        cast_spell(player, opponent, gs, cant, mana_ref, log_fn, log_entries,
+                   on_resolve=_resolve_cant)
+
+    # ── 7. Combat ──
+    attackers = [c for c in player.creatures if not c.summoning_sick]
+    if attackers:
+        combat_declare(player, opponent, gs, log_entries, attackers)
+
+
+# ─── Mulligan ────────────────────────────────────────────────────────────────
+
+def _keep_mana_drain(hand, matchup=''):
+    """Mana Drain keep — values lands + cantrips + at least one counter or
+    removal.  A Drain in opener is gravy but not required (4-of, ~32% in 7)."""
+    lands = [c for c in hand if c.is_land()]
+    nonlands = [c for c in hand if not c.is_land()]
+    lc = len(lands)
+    cantrips = sum(1 for c in nonlands if c.tag in ('bs', 'ponder'))
+    counters = sum(1 for c in nonlands
+                   if c.tag in ('drain', 'fow', 'fon', 'counter', 'daze', 'fluster'))
+    removal = sum(1 for c in nonlands if c.tag in ('stp', 'terminus', 'wrath'))
+    threats = sum(1 for c in nonlands
+                  if c.tag in ('jace', 'sphinx', 'wurmcoil', 'wst',
+                               'sanctifier', 'sfm', 'equipment'))
+    action = cantrips + counters + removal + threats
+
+    if lc < 2 or lc > 5:
+        return False
+    if action == 0:
+        return False
+    if lc <= 3:
+        return action >= 1
+    # 4-5 lands: need ≥ 2 action cards
+    return action >= 2
+
+
+# ─── DECK_META ───────────────────────────────────────────────────────────────
+
+DECK_META = {
+    'key':        'mana_drain',
+    'name':       'Mana Drain Control',
+    'make_deck':  make_mana_drain_deck,
+    'strategy':   _strategy_mana_drain,
+    'keep':       _keep_mana_drain,
+    'categories': {'control'},
+    'interaction': {'speed': 5, 'resilience': 5, 'uses_graveyard': False,
+                    'uses_veil': False, 'soft_to_wasteland': False,
+                    'creature_based': False},
+    'meta_share': 0.02,
+}
