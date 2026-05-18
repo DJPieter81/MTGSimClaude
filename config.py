@@ -210,7 +210,7 @@ class CounterLogic:
     """Parameters for try_reactive_counter spell evaluation."""
     COUNTER_TAGS = frozenset({'fow', 'fon', 'daze', 'consign', 'counter',
                                'fluster', 'pyro', 'reb', 'drain', 'cryptic',
-                               'mindbreak'})
+                               'mindbreak', 'misstep'})
     NEVER_COUNTER_TAGS = frozenset({'bs', 'ponder', 'bauble'})  # cantrips — not worth a counter
     BURN_TAGS = frozenset({'bolt', 'pop', 'chain', 'spike', 'fireblast', 'rift',
                             'blaze', 'skullcrack', 'heat', 'lball', 'price'})

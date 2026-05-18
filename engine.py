@@ -990,6 +990,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     d_drain = counters_by_tag.get('drain')
     d_cryptic = counters_by_tag.get('cryptic')
     d_mindbreak = counters_by_tag.get('mindbreak')
+    d_misstep = counters_by_tag.get('misstep')
 
     # Trinisphere: alternate costs still need to pay at least 3 mana (CR 601.2f)
     if gs.trinisphere_active:
@@ -998,7 +999,7 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
         d_daze = None  # Daze alternate cost = 0 mana, doesn't meet Trini minimum
         d_mindbreak = None  # alt cost is free, blocked by Trinisphere min-3 floor
 
-    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_drain, d_cryptic, d_mindbreak]):
+    if not any([d_fow, d_fon, d_daze, d_consign, d_cs, d_fluster, d_pyro, d_drain, d_cryptic, d_mindbreak, d_misstep]):
         return False
 
     # ── Don't counter cantrips — save counters for threats ──
@@ -1096,6 +1097,13 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
     caster_spells_cast = getattr(caster, 'spells_cast_this_turn', 0)
     if d_mindbreak and caster_spells_cast >= 3:
         is_major_threat = True
+    # Mental Misstep exception: alt-cost is 2 life (sim: always payable).
+    # Counters 1-cmc spells specifically — Vintage's cheapest threats
+    # (Ancestral, Brainstorm, Ponder, STP, Lotus Petal, opp's own Misstep)
+    # are all 1-cmc and worth a free counter.  The 1-cmc gate IS the
+    # threat-evaluation gate, bypass major/minor.
+    if d_misstep and spell_card.cmc == 1:
+        is_major_threat = True
 
     is_minor_threat = spell_card.tag in ('tamiyo', 'borrow')
     if is_minor_threat and total_counters <= CL.FOW_MINOR_THREAT_COUNTER_FLOOR:
@@ -1136,6 +1144,14 @@ def try_reactive_counter(gs: GameState, caster, defender, spell_card, log_list: 
             defender.remove_from_hand(blue_pitch); defender.exile.append(blue_pitch)
             gs._last_counter_used = 'fow'
             ctr.append(f"Force of Will counters {spell_card.name} (exiles {blue_pitch.name})")
+
+    # ── Mental Misstep — alt cost is pay 2 life (sim: always payable).
+    # Counters 1-cmc spell.  Fires first because free + 1-cmc-only.
+    if not ctr and d_misstep and spell_card.cmc == 1:
+        defender.remove_from_hand(d_misstep); defender.add_to_grave(d_misstep)
+        defender.life -= 2
+        gs._last_counter_used = 'misstep'
+        ctr.append(f"Mental Misstep (pay 2 life) counters {spell_card.name}")
 
     # ── Mindbreak Trap — alt cost is free if caster has cast 3+ spells
     # this turn (CR 118.6 alternate-cost trap).  Threshold is checked
