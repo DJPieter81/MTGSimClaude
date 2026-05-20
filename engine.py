@@ -2056,16 +2056,11 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             cast_spell(player, opponent, gs, murk, budget, log_fn, log_entries,
                        on_resolve=_resolve_murk, cost_override=effective_cmc(murk))
 
-    # ── Kaito, Bane of Nightmares — Ninjutsu {1UB}: 3/4 hexproof, draw on damage ──
-    # Deploy either: (a) cast at sorcery speed for {1UB}=3, or
-    # (b) Ninjutsu via unblocked attacker (handled in resolve_combat if Kaito in hand).
-    # Here: cast if we have 3 mana and a threat in play to set up Ninjutsu next turn.
+    # ── Kaito, Bane of Nightmares — hard-cast at sorcery speed for {1UB}=3 ──
+    # Ninjutsu-from-hand is not modeled; Kaito is deployed by casting it.
     kaito = player.find_tag('kaito')
     kaito_in_play = any(c.card.tag == 'kaito' for c in player.creatures + player.planeswalkers)
     if kaito and not kaito_in_play and not gs.spell_blocked_by_chalice(kaito.cmc):
-        # Prefer Ninjutsu window — don't hard-cast if a cheaper attacker is already active
-        has_attacker = any(not c.summoning_sick and not c.tapped for c in player.creatures)
-        can_ninjutsu = has_attacker and budget[0] >= 3  # {1UB}
         can_cast = budget[0] >= effective_cmc(kaito) and can_afford(player, kaito.mana_cost)
         if can_cast and ok_to_deploy() and not (hold_mana and threats_this_turn[0] >= 1):
             def _resolve_kaito(c):
