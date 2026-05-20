@@ -801,15 +801,6 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                 else:
                     b.add_to_grave(stp)
 
-    # ── Gameplan layer ──
-    from gameplan import GAMEPLANS, assess, active_goal
-    plan = GAMEPLANS.get(matchup)
-    if plan:
-        ba = assess(gs, turn)
-        gs.p2_goal = active_goal(plan, ba)
-    else:
-        gs.p2_goal = None
-
     # ── Lock piece enforcement (shared helpers — single source of truth) ──
     _adjustments = apply_lock_effects(gs, b, log)
 

@@ -40,7 +40,7 @@ NUM_TO_GRADE = {i: g for g, i in GRADE_TO_NUM.items()}
 
 # Decks known to be combo-centric
 COMBO_DECKS = {'storm', 'doomsday', 'oops', 'belcher', 'cephalid', 'reanimator',
-               'sneak_a', 'sneak_b', 'show', 'show_fix', 'tes', 'depths', 'elves'}
+               'sneak_a', 'sneak_b', 'show', 'tes', 'depths', 'elves'}
 # Decks known to be interaction-heavy
 INTERACTION_DECKS = {'bug', 'dimir', 'dimir_b', 'dimir_c', 'dimir_d', 'dimir_flash',
                      'ur_delver', 'ur_tempo', 'uwx', 'dnt', 'mardu'}

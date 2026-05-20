@@ -45,7 +45,7 @@ def _discover_decks():
 
     for filepath in sorted(glob.glob(os.path.join(decks_dir, '*.py'))):
         modname = os.path.basename(filepath)[:-3]
-        if modname.startswith('_') or modname.startswith('test') or modname in ('patch_parallel', 'show_fix'):
+        if modname.startswith('_') or modname.startswith('test'):
             continue
 
         try:

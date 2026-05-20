@@ -19,7 +19,6 @@ from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
                    StackObject, StackType, MTGRules)
 from game import GameState, PlayerState, LogEntry, can_afford, tap_for_cost
 from cards import DECKS, artifact, creature
-from gameplan import GAMEPLANS, assess, active_goal, Goal
 from interaction import (best_proactive_target, classify_threat, ThreatLevel)
 from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as IP,
                     GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
