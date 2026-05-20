@@ -19,7 +19,6 @@ Key differences from dimir_c:
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import random
 from cards import (creature, instant, sorcery, artifact, planeswalker,
                    fetch_land, dual_land, basic_land, utility_land)
 from rules import Card, CardType
@@ -141,7 +140,7 @@ def _strategy_dimir_d(player, opponent, gs, total_mana, log_fn, log_entries):
     8. Brazen Borrower as flash threat (3 mana)
     """
     from config import CombatThresholds as CT
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
+    from engine import combat_declare, bowmasters_triggers, update_goyf, cast_spell
 
     budget = [total_mana]
 

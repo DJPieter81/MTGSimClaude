@@ -344,7 +344,7 @@ for dk in sorted(DECKS.keys()):
     
     # Decklist
     try: cards_list=DECKS[dk]()
-    except: cards_list=[]
+    except Exception: cards_list=[]
     card_data={}
     for c in cards_list:
         role,note=assign_role(c)

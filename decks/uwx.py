@@ -5,7 +5,6 @@ Deck constructor in cards.py.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import random
 from cards import make_uwx_deck
 
 
@@ -16,9 +15,9 @@ def _strategy_uwx(player, opponent, gs, total_mana, log_fn, log_entries):
     Priority: STP any creature (vs aggro) → Terminus → Mentor → lock pieces → cantrips → combat.
     Key fix: STP fires on ANY creature power >= 1 vs aggro/burn (not just >= 2).
     """
-    from engine import (opp_can_cast, _try_counter_any, bowmasters_triggers,
-                        update_goyf, combat_declare, cast_spell)
-    from rules import MTGRules, Permanent, Card, CardType
+    from engine import (opp_can_cast, bowmasters_triggers, update_goyf,
+                        combat_declare, cast_spell)
+    from rules import MTGRules, Card, CardType
 
     _MONK_TOKEN = Card(name='Monk Token', card_type=CardType.CREATURE, cmc=0,
                        mana_cost={}, colors=set(), base_power=1, base_toughness=1,

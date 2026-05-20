@@ -15,8 +15,7 @@ Typical goldfish kill: T3-4 with explosive artifact starts.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import random
-from cards import creature, instant, sorcery, artifact, fetch_land, dual_land, basic_land, utility_land
+from cards import creature, instant, sorcery, artifact, basic_land, utility_land
 from rules import Card, CardType
 from typing import List
 
@@ -187,7 +186,7 @@ def _strategy_affinity(player, opponent, gs, total_mana, log_fn, log_entries):
     9. Urza's Saga — tick chapters, generate constructs, tutor artifacts
     10. Attack with all creatures
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell, opp_can_cast
+    from engine import _try_counter_any, combat_declare, bowmasters_triggers, cast_spell, opp_can_cast
     from rules import Card as _Card, CardType as _CT, Permanent
 
     def _has_blue():

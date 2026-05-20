@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from grade_traces import parse_grades, grade_avg, check_threshold, GRADE_TO_NUM, RUBRIC_DOMAINS
+from grade_traces import parse_grades, grade_avg, check_threshold, RUBRIC_DOMAINS
 
 
 # ---------------------------------------------------------------------------

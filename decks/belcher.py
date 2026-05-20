@@ -18,9 +18,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, '/home/claude/mtg_sim')
 
-import random
 from cards import creature, instant, sorcery, artifact, dual_land
-from rules import Card, CardType
 from decision import ManaDecision, MetaDecision
 
 
