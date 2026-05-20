@@ -24,12 +24,11 @@ Strategy priority order:
 7. Attack with growing army
 """
 
-import sys, os
+import sys
 sys.path.insert(0, '/home/claude/mtg_sim')
 
-import random
-from cards import instant, sorcery, creature, artifact, enchantment
-from rules import Card as _Card, CardType as _CT, Permanent, LandPermanent
+from cards import instant, creature, artifact
+from rules import Card as _Card, CardType as _CT
 
 # ─── Deck construction ────────────────────────────────────────────────────────
 
@@ -221,7 +220,7 @@ def _strategy_eight_cast(player, opponent, gs, total_mana, log_fn, log_entries):
     7. Karn — tutor answer or lock piece
     8. Combat
     """
-    from engine import resolve_combat, update_goyf, _try_counter_any, cast_spell
+    from engine import cast_spell
     # Recalculate mana accounting for Ancient Tomb/City (produce 2 each, not 1)
     mana = sum(getattr(l.card,'taps_for',1) for l in player.lands
                if not l.tapped and l.effective_produces())

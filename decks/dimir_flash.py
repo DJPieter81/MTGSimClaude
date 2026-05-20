@@ -17,8 +17,8 @@ def _strategy_dimir_flash(player, opponent, gs, total_mana, log_fn, log_entries)
     deployment order. Priority: cantrips → WST → other threats → Bowmasters →
     removal → Wasteland → combat.
     """
-    from engine import (opp_can_cast, _try_counter_any, bowmasters_triggers,
-                        update_goyf, combat_declare, cast_spell, resolve_cantrip)
+    from engine import (opp_can_cast, bowmasters_triggers, update_goyf,
+                        combat_declare, cast_spell, resolve_cantrip)
     from rules import MTGRules
     from decision import DisruptionDecision
 

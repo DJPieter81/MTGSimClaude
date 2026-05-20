@@ -11,7 +11,7 @@ Key plan:
 import sys
 sys.path.insert(0, '.')
 
-from cards import creature, instant, sorcery, artifact
+from cards import creature, sorcery, artifact
 from rules import Card, CardType
 from combo_engine import TribalPath
 
@@ -224,7 +224,7 @@ def _strategy_goblins(player, opponent, gs, total_mana, log_fn, log_entries):
     6. Munitions Expert ETB → removal
     7. Attack with everything
     """
-    from engine import _try_counter_any, bowmasters_triggers, combat_declare, cast_spell
+    from engine import combat_declare, cast_spell
 
     rem = total_mana
     goblin_count = len(player.creatures)

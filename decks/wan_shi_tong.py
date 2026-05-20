@@ -4,7 +4,8 @@ Adapted from Modern UW Control shell with full Legacy conversion.
 Key: Chalice on 1 + wraths + counters + Wan Shi Tong as card advantage engine.
 No Brainstorm/Ponder (anti-synergy with own Chalice on 1).
 """
-import sys, os, random
+import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cards import (creature, instant, sorcery, artifact, planeswalker,
@@ -74,8 +75,8 @@ def _strategy_wst(player, opponent, gs, total_mana, log_fn, log_entries):
     Wan Shi Tong Control — UW Chalice Control.
     Priority: Chalice on 1 → removal → wraths → Teferi → WST → counters → combat.
     """
-    from engine import (opp_can_cast, _try_counter_any, combat_declare,
-                        update_goyf, _resolve_lock, MTGRules, cast_spell)
+    from engine import (combat_declare, update_goyf, _resolve_lock,
+                        MTGRules, cast_spell)
 
     budget = [total_mana]
 
@@ -92,7 +93,6 @@ def _strategy_wst(player, opponent, gs, total_mana, log_fn, log_entries):
     #     drawn before firing — otherwise the bug from
     #     docs/audits/wan_shi_tong_vs_dnt.md / mono_black.md occurs (turn-1
     #     Chalice locks out 4 STP + 4 March still in library).
-    from config import MatchupCategory as MC
     opp_deck = gs.p2_deck if player is gs.p1 else gs.p1_deck
     # Cantrip-combo subset of MC.COMBO — these decks rely on CMC-1 spells
     # (Brainstorm, Ponder, Petal, Probe, Ritual etc.) for engine velocity.

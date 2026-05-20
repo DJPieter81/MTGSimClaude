@@ -14,9 +14,8 @@ by Force of Will, Daze, and Orim's Chant.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import random
-from cards import (creature, instant, sorcery, artifact, enchantment,
-                   planeswalker, fetch_land, dual_land, basic_land, utility_land)
+from cards import (creature, instant, sorcery, artifact, fetch_land,
+                   dual_land, basic_land, utility_land)
 from rules import Card, CardType
 from combo_engine import AssemblyPath
 from decision import MetaDecision
@@ -220,7 +219,7 @@ def _strategy_cephalid(player, opponent, gs, total_mana, log_fn, log_entries):
     8. Fair creatures as backup plan
     9. Combat with available creatures
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
+    from engine import combat_declare, update_goyf, cast_spell
 
     budget = [total_mana]
 

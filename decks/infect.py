@@ -18,8 +18,7 @@ Typical kill line:
 import sys
 sys.path.insert(0, '/home/user/MTGSimClaude')
 
-import random
-from cards import creature, instant, sorcery, artifact
+from cards import creature, instant, sorcery
 from cards import fetch_land, dual_land, basic_land, utility_land
 from rules import Card, CardType
 from decision import MetaDecision

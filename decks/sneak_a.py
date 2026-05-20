@@ -18,7 +18,6 @@ Protection: Force of Will, Daze, Sink into Stupor (bounce).
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import random
 from decision import ManaDecision, MetaDecision
 from cards import (creature, instant, sorcery, artifact, enchantment,
                    fetch_land, dual_land, basic_land, utility_land)
@@ -153,7 +152,7 @@ def _strategy_sneak_a(player, opponent, gs, total_mana, log_fn, log_entries):
     4. Sneak Attack activation with a creature in hand
     5. Combat with any creatures in play
     """
-    from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
+    from engine import combat_declare, bowmasters_triggers, cast_spell
 
     mana = total_mana
 

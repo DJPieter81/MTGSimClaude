@@ -20,10 +20,8 @@ cheap lock pieces against opposing combo and planeswalkers.
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import random
-from cards import (creature, instant, sorcery, artifact, enchantment,
-                   planeswalker, fetch_land, dual_land, basic_land, utility_land)
-from rules import Card, CardType
+from cards import (creature, instant, artifact, planeswalker, basic_land,
+                   utility_land)
 
 
 # ─── Deck construction ────────────────────────────────────────────────────────
@@ -181,7 +179,7 @@ def _strategy_cloudpost(player, opponent, gs, total_mana, log_fn, log_entries):
      8. Combat with creatures
     """
     from engine import _try_counter_any, combat_declare, bowmasters_triggers, update_goyf, cast_spell
-    from rules import Card as _Card, CardType as _CT, LandPermanent
+    from rules import LandPermanent
 
     mana = _calc_effective_mana(player, total_mana)
 

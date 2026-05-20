@@ -46,10 +46,9 @@ def _strategy_eldrazi(player, opponent, gs, total_mana, log_fn, log_entries):
     6. Wasteland opponent's duals
     7. Attack with everything
     """
-    from engine import _try_counter_any, combat_declare, update_goyf
+    from engine import combat_declare, update_goyf
     from rules import MTGRules
     from decision import DisruptionDecision
-    import random
 
     mana, ssg_avail = _eldrazi_effective_mana(player, total_mana)
 

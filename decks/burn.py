@@ -127,7 +127,7 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
       3. Cast burn spells at face, saving Fireblast as finisher
       4. Set eidolon_active when Eidolon is on the battlefield
     """
-    from engine import _try_counter_any, combat_declare, cast_spell
+    from engine import combat_declare, cast_spell
 
     mana = total_mana
 
@@ -336,7 +336,6 @@ def _strategy_burn(player, opponent, gs, total_mana, log_fn, log_entries):
     if attackers:
         # Goblin Guide trigger: each attacking Guide reveals defender's top card.
         # If it's a land, defender puts it in their hand (CR 510 — Guide downside).
-        import random as _rng
         for atk in attackers:
             if atk.card.tag == 'guide' and opponent.library:
                 top = opponent.library[0]

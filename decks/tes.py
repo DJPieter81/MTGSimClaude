@@ -21,8 +21,7 @@ T1 pass line (opponent goes first):
 import sys
 sys.path.insert(0, '/home/claude/mtg_sim')
 
-import random
-from cards import instant, sorcery, creature, artifact
+from cards import instant, sorcery, artifact
 from combo_engine import AssemblyPath
 from decision import ManaDecision, MetaDecision
 
@@ -235,7 +234,7 @@ def _strategy_tes(player, opponent, gs, total_mana, log_fn, log_entries):
     Tendrils (4BB), not when it can guarantee lethal. Storm 4-5 Tendrils
     (10-12 damage) is often enough, especially with follow-up turns.
     """
-    from engine import _try_counter_any, bowmasters_triggers, combat_declare
+    from engine import _try_counter_any, bowmasters_triggers
     from state_encoder import record as _trace_record
     import random as _rnd
 

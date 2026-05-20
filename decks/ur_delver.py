@@ -19,7 +19,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import random
-from cards import creature, instant, sorcery, artifact, fetch_land, dual_land, basic_land
+from cards import creature, instant, sorcery, fetch_land, dual_land, basic_land
 from rules import Card, CardType
 from typing import List
 
@@ -98,8 +98,8 @@ def _strategy_ur_delver(player, opponent, gs, total_mana, log_fn, log_entries):
     5. Combat — attack with all non-summoning-sick creatures
     6. Daze / FoW held reactively (via _try_counter_any)
     """
-    from engine import _try_counter_any, bowmasters_triggers, combat_declare
-    from engine import update_goyf, opp_can_cast
+    from engine import bowmasters_triggers, combat_declare
+    from engine import update_goyf
     from state_encoder import record as _trace_record
 
     mana = total_mana
