@@ -29,7 +29,6 @@ import glob
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cards import DECKS
 from deck_registry import get_meta
 
 
