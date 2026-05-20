@@ -33,7 +33,7 @@ If three consecutive commits target the same outlier deck without moving the win
 ```bash
 # Verify installation
 python3 -m pytest -m fast
-# Should print: 495+ passed, 2 skipped in ~3s
+# Should print: 519 passed, 2 skipped in ~3s
 
 # Run a game
 python3 -c "from sim import run_game; r = run_game('ur_delver', 'dimir'); print(r.winner, r.win_reason)"
@@ -104,7 +104,7 @@ from sim import run_any_match, run_any_bo3
 
 run_any_match('ur_delver', 'dimir', verbose=True)   # any deck Bo3
 run_any_bo3('storm', 'bug', n_matches=100)           # Bo3 batch
-# Rules suite: `pytest -m fast` (495+ tests, ~3s under xdist).
+# Rules suite: `pytest -m fast` (519 tests, ~3s under xdist).
 # Tests live in tests/rules/ — one mechanic per file, one assert per `def test_…`.
 ```
 
@@ -201,7 +201,7 @@ import_decklist(decklist_text, name='My Deck', categories={'aggro'})
 The importer auto-matches known cards, generates a strategy, and registers the deck.
 Verify with `python3 run_meta.py --deck my_deck`.
 
-## Available Decks (36)
+## Available Decks (38)
 
 | Key | Deck Name |
 |-----|-----------|
@@ -228,6 +228,7 @@ Verify with `python3 run_meta.py --deck my_deck`.
 | `lands` | Lands |
 | `mardu` | Mardu Aggro |
 | `mono_black` | Mono Black Aggro |
+| `ocelot` | Ocelot Pride Midrange |
 | `oops` | Oops All Spells |
 | `painter` | Painter |
 | `prison` | Artifacts Prison |
@@ -241,6 +242,7 @@ Verify with `python3 run_meta.py --deck my_deck`.
 | `ur_delver` | UR Delver |
 | `ur_tempo` | UR Tempo (Cori-Steel) |
 | `uwx` | UWx Control |
+| `wan_shi_tong` | Wan Shi Tong Control |
 
 ## GameResult Fields
 

@@ -176,6 +176,29 @@ def test_run_any_bo3_smoke_runs_without_exception(_bo3_smoke_result):
     assert exc is None
 
 
+# ── Sideboard pool / field-EV invariants ───────────────────────────────────
+
+
+@pytest.mark.fast
+def test_sideboard_pool_exposes_leyline_of_sanctity():
+    """Mechanic: the protagonist SB pool must actually contain its enchantment
+    hate copies. A stale `if 'enchantment' in dir()` guard had silently left
+    the entry empty because the factory was never imported into sim."""
+    from sim import _make_sb_cards
+    assert len(_make_sb_cards()['leyline']) > 0
+
+
+@pytest.mark.fast
+def test_best_deck_for_field_resolves_default_decks_from_registry(monkeypatch):
+    """Mechanic: with decks=None, best_deck_for_field enumerates the live deck
+    registry, not a removed STRATEGIES global (NameError regression)."""
+    import sim
+    from cards import DECKS
+    monkeypatch.setattr(sim, 'run_any_bo3', lambda p, a, n: {'match_wr': 0.5})
+    result = sim.best_deck_for_field({'bug': 1.0}, n_per_matchup=1)
+    assert {deck for deck, _ev in result} == set(DECKS)
+
+
 # ── Doomsday tier-1 list invariants ────────────────────────────────────────
 
 

@@ -12,7 +12,7 @@ from typing import List, Optional
 
 from rules import MTGRules, StackType, Card
 from cards import (DECKS, MATCHUP_META, make_postboard_opp_deck,
-                   instant, sorcery, artifact, creature)
+                   instant, sorcery, artifact, creature, enchantment)
 from game import GameState, PlayerState, london_mulligan, opp_keep, score_timeout
 from engine import opp_turn, play_turn, update_goyf
 from config import (GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
@@ -801,15 +801,6 @@ def _execute_turn(gs, turn, b, o, who, matchup):
                 else:
                     b.add_to_grave(stp)
 
-    # ── Gameplan layer ──
-    from gameplan import GAMEPLANS, assess, active_goal
-    plan = GAMEPLANS.get(matchup)
-    if plan:
-        ba = assess(gs, turn)
-        gs.p2_goal = active_goal(plan, ba)
-    else:
-        gs.p2_goal = None
-
     # ── Lock piece enforcement (shared helpers — single source of truth) ──
     _adjustments = apply_lock_effects(gs, b, log)
 
@@ -1044,7 +1035,7 @@ def best_deck_for_field(field: dict, n_per_matchup: int = 1000,
     Returns sorted list of (deck, ev_wr) tuples, best first.
     """
     if decks is None:
-        decks = list(STRATEGIES.keys()) + ['bug']
+        decks = list(DECKS.keys())
 
     field_total = sum(field.values())
     field_norm  = {k: v/field_total for k, v in field.items()}
@@ -1090,7 +1081,7 @@ def _make_sb_cards():
                                   free_cast_if_blue=False)] * 2
     pool['collector'] = [creature('Collector Ouphe', 2, {'G':1,'generic':1}, {'G'}, 2, 2, tag='collector')] * 2
     pool['leyline']   = [enchantment('Leyline of Sanctity', 4, {'W':2,'generic':2}, {'W'},
-                                      tag='leyline')] * 2 if 'enchantment' in dir() else []
+                                      tag='leyline')] * 2
     pool['surgical']  = [instant('Surgical Extraction', 0, {'B':1}, {'B'}, tag='surgical')] * 2
     pool['sblood']    = [instant('Searing Blood', 2, {'R':2}, {'R'}, tag='sblood',
                                   is_removal=True)] * 4

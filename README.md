@@ -1,7 +1,7 @@
 # MTGSimClaude — Legacy Format Monte Carlo Simulator
 
 Python Monte Carlo simulator for Legacy MTG metagame analysis.
-36 decks, 1,260 matchups, 630,000 games per matrix run (n=500).
+38 decks, 1,406 matchups, 703,000 games per matrix run (n=500).
 
 ## Products
 
@@ -38,7 +38,7 @@ python3 game_replay.py ur_delver --pro burn --bo3 42 99 7
 | File | Purpose |
 |------|---------|
 | `sim.py` | Game runner, sweep, meta matrix, rules tests |
-| `cards.py` | Card definitions, all 36 deck functions, DECKS dict |
+| `cards.py` | Card definitions, all 38 deck functions, DECKS dict |
 | `game_replay.py` | Bo3 HTML replayer with 17 play categories |
 | `gen_guides.py` | Generates all 38 deck guides from sim data |
 | `refresh_all.py` | Single command: rebuild matrix HTML + guides + verify |
@@ -51,7 +51,7 @@ python3 game_replay.py ur_delver --pro burn --bo3 42 99 7
 ## Architecture
 
 ```
-cards.py (36 decks) → sim.py (run_game) → meta_fresh.json (matrix)
+cards.py (38 decks) → sim.py (run_game) → meta_fresh.json (matrix)
                                         → deck_agg.json (profiles)
                                         → card_trimmed.json (card stats)
                                         → interact_v3.json (events)

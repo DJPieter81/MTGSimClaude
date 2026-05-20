@@ -1,5 +1,9 @@
 __pycache__/
 *.pyc
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/hooks/*
+.claude/settings.local.json
 **/__pycache__/
 results/neural_logs/

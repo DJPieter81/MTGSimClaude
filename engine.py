@@ -14,15 +14,14 @@ v2 fixes applied:
 """
 
 import random
-from typing import List, Optional
-from rules import (Card, CardType, Permanent, LandPermanent, ManaPool,
+from typing import List
+from rules import (Card, CardType, Permanent, LandPermanent,
                    StackObject, StackType, MTGRules)
-from game import GameState, PlayerState, LogEntry, can_afford, tap_for_cost
-from cards import DECKS, artifact, creature
-from gameplan import GAMEPLANS, assess, active_goal, Goal
-from interaction import (best_proactive_target, classify_threat, ThreatLevel)
+from game import GameState, PlayerState, can_afford
+from cards import artifact, creature
+from interaction import best_proactive_target
 from config import (CardRoles as CR, MatchupCategory as MC, InteractionParams as IP,
-                    GameRules as GR, CombatThresholds as CT, CounterLogic as CL,
+                    CombatThresholds as CT, CounterLogic as CL,
                     RaceThresholds as RT, WastelandPriority as WP,
                     BurnLethal as BL, Elves as EL)
 from decision import DisruptionDecision, ManaDecision, CombatDecision, MetaDecision
@@ -90,17 +89,6 @@ def _select_attackers(player, opponent, hold_tags=CT.HOLD_ATTACK_TAGS,
             continue
         attackers.append(c)
     return attackers
-
-
-def _check_tamiyo_flip(gs, player, log):
-    """Check if Tamiyo should flip (drew 3+ cards this turn)."""
-    tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
-    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
-        if player.draws_this_turn >= 3:
-            gs.tamiyo_flipped = True
-            tam_perm.power_mod = 3
-            tam_perm.toughness_mod = 0
-            log("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
 
 
 def _deduct(budget: list, cmc: int, card) -> bool:
@@ -274,18 +262,6 @@ def apply_eidolon_damage(gs, player, spells_before, log):
             p_label = 'P1' if player is gs.p1 else 'P2'
             log(f"Eidolon trigger — {spells_cast} spell(s) cast, {eidolon_dmg} damage to {p_label} ({player.life})")
             gs.check_life_totals()
-
-
-def _check_tamiyo_flip(gs: GameState, player, log_fn) -> None:
-    """Oracle: Tamiyo flips when controller draws 3+ cards in a turn.
-    Centralised so it works for ALL decks with Tamiyo, not just BUG."""
-    tam_perm = next((c for c in player.creatures if c.card.tag == 'tamiyo'), None)
-    if tam_perm and not gs.tamiyo_flipped and not tam_perm.tapped:
-        if player.draws_this_turn >= 3:
-            gs.tamiyo_flipped = True
-            tam_perm.power_mod = 3   # flips to Tamiyo, Seasoned Scholar (3/3)
-            tam_perm.toughness_mod = 0
-            log_fn("★ Tamiyo flips → Tamiyo, Seasoned Scholar (drew 3rd card this turn)", key=True)
 
 
 def _eidolon_trigger(gs: GameState, card, log_fn, caster=None) -> None:
@@ -2080,16 +2056,11 @@ def _strategy_bug(player, opponent, gs, total_mana, log_fn, log_entries):
             cast_spell(player, opponent, gs, murk, budget, log_fn, log_entries,
                        on_resolve=_resolve_murk, cost_override=effective_cmc(murk))
 
-    # ── Kaito, Bane of Nightmares — Ninjutsu {1UB}: 3/4 hexproof, draw on damage ──
-    # Deploy either: (a) cast at sorcery speed for {1UB}=3, or
-    # (b) Ninjutsu via unblocked attacker (handled in resolve_combat if Kaito in hand).
-    # Here: cast if we have 3 mana and a threat in play to set up Ninjutsu next turn.
+    # ── Kaito, Bane of Nightmares — hard-cast at sorcery speed for {1UB}=3 ──
+    # Ninjutsu-from-hand is not modeled; Kaito is deployed by casting it.
     kaito = player.find_tag('kaito')
     kaito_in_play = any(c.card.tag == 'kaito' for c in player.creatures + player.planeswalkers)
     if kaito and not kaito_in_play and not gs.spell_blocked_by_chalice(kaito.cmc):
-        # Prefer Ninjutsu window — don't hard-cast if a cheaper attacker is already active
-        has_attacker = any(not c.summoning_sick and not c.tapped for c in player.creatures)
-        can_ninjutsu = has_attacker and budget[0] >= 3  # {1UB}
         can_cast = budget[0] >= effective_cmc(kaito) and can_afford(player, kaito.mana_cost)
         if can_cast and ok_to_deploy() and not (hold_mana and threats_this_turn[0] >= 1):
             def _resolve_kaito(c):
